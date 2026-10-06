@@ -25,6 +25,15 @@ class User extends Authenticatable
 
     protected $hidden = ['password', 'remember_token'];
 
+    protected $attributes = [
+        'locale' => 'fr',
+        'is_active' => true,
+        'is_platform_staff' => false,
+        'must_change_password' => false,
+        'current_organization_id' => null,
+        'last_login_at' => null,
+    ];
+
     /** Affectations chargées une fois par requête. */
     private ?Collection $cachedAssignments = null;
 
