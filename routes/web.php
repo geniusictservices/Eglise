@@ -53,6 +53,9 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/menages', Livewire\Households\Index::class)->name('households.index');
     Route::get('/menages/{id}', Livewire\Households\Show::class)->whereNumber('id')->name('households.show');
 
+    Route::get('/departements', Livewire\Departments\Index::class)->name('departments.index');
+    Route::get('/departements/{department}', Livewire\Departments\Show::class)->name('departments.show');
+
     Route::get('/devises', Livewire\Currencies\Index::class)->name('currencies.index');
     Route::get('/journal', Livewire\Audit\Index::class)->name('audit.index');
     Route::get('/parametres', Livewire\Settings\Edit::class)->name('settings.edit');

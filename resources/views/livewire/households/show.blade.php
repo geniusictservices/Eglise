@@ -10,7 +10,7 @@
                 <p class="text-sm text-ink-100">{{ $household->address() ?: __('Adresse non renseignée') }}@if ($household->phone) · <span class="tabular">{{ \App\Support\Phone::format($household->phone) }}</span>@endif</p>
             </div>
             @if ($canManage)
-                <div class="flex flex-wrap gap-2">
+                <div class="flex w-full flex-wrap gap-2 sm:w-auto">
                     <button type="button" wire:click="edit" class="btn-accent !min-h-0 !py-2"><x-icon name="pencil" class="size-4" /> {{ __('Modifier') }}</button>
                     <button type="button" wire:click="delete" wire:confirm="{{ __('Supprimer ce ménage ? Les fiches des personnes sont conservées.') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="trash-2" class="size-4" /> <span class="sr-only sm:not-sr-only">{{ __('Supprimer') }}</span></button>
                 </div>
@@ -29,7 +29,7 @@
             <ul class="divide-y divide-sand-100">
                 @forelse ($members as $m)
                     <li class="flex flex-wrap items-center gap-3 py-3" wire:key="hm-{{ $m->id }}">
-                        <a href="{{ route('members.show', $m) }}" class="flex min-w-0 flex-1 items-center gap-3">
+                        <a href="{{ route('members.show', $m) }}" class="flex min-w-0 basis-full items-center gap-3 sm:basis-auto sm:flex-1">
                             @include('livewire.members.partials.avatar', ['member' => $m, 'size' => 'size-10 text-sm'])
                             <span class="min-w-0">
                                 <span class="block truncate font-semibold text-ink-700">{{ $m->officialName() }}
@@ -38,7 +38,7 @@
                             </span>
                         </a>
                         @if ($canManage)
-                            <div class="flex items-center gap-2">
+                            <div class="ml-[52px] flex items-center gap-2 sm:ml-0">
                                 <select wire:change="setRole({{ $m->id }}, $event.target.value)" class="input !min-h-0 w-auto !py-1.5 text-sm" aria-label="{{ __('Place dans le ménage') }}">
                                     @foreach (\App\Models\Household::ROLES as $key => $label)<option value="{{ $key }}" @selected($m->household_role === $key)>{{ __($label) }}</option>@endforeach
                                 </select>

@@ -38,6 +38,7 @@ class Navigation
                 'items' => [
                     ['route' => 'members.index', 'label' => __('Membres'), 'icon' => 'contact-round', 'can' => 'members.view', 'mobile' => true, 'short' => __('Membres')],
                     ['route' => 'households.index', 'label' => __('Ménages'), 'icon' => 'house', 'can' => 'members.view'],
+                    ['route' => 'departments.index', 'label' => __('Départements'), 'icon' => 'users-round', 'can' => 'members.view'],
                     ['route' => 'members.settings', 'label' => __('Réglages du registre'), 'icon' => 'sliders-horizontal', 'can' => 'members.settings'],
                 ],
             ],

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Department;
 use App\Models\Organization;
 use App\Models\Role;
 use App\Models\RoleAssignment;
@@ -32,6 +33,7 @@ class OrganizationProvisioner
             $this->installRoleTemplates($organization);
             $this->installDefaultCurrencies($organization);
             app(MemberRegistry::class)->installDefaults($organization);
+            $this->installDefaultDepartments($organization);
             $this->assign($administrator, $organization->roles()->where('key', 'administrateur')->firstOrFail(), $organization, includesDescendants: true);
 
             $administrator->forceFill(['current_organization_id' => $organization->id])->save();
@@ -55,9 +57,20 @@ class OrganizationProvisioner
             ]);
 
             $this->installDefaultCurrencies($organization);
+            $this->installDefaultDepartments($organization);
 
             return $organization;
         });
+    }
+
+    /** Chaque niveau a ses départements ; l'Administration générale existe d'office. */
+    public function installDefaultDepartments(Organization $organization): void
+    {
+        Department::withoutOrganizationScope()->firstOrCreate(
+            ['organization_id' => $organization->id, 'is_system' => true],
+            ['name' => __('Administration générale'), 'kind' => 'administrative', 'color' => 'ink',
+                'description' => __('Dépenses et besoins communs : loyer, électricité, secrétariat, entretien…')],
+        );
     }
 
     /** Copie les rôles modèles de config/waumini.php dans l'organisation. */

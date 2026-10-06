@@ -150,6 +150,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('color', 20)->default('ink');
             $table->boolean('is_active')->default(true);
+            // « Administration générale » : créé d'office, ne peut pas être supprimé.
+            $table->boolean('is_system')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

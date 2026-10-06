@@ -28,7 +28,7 @@ class Department extends Model
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return ['is_active' => 'boolean', 'is_system' => 'boolean'];
     }
 
     public function members(): BelongsToMany

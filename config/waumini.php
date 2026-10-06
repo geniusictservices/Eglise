@@ -153,6 +153,12 @@ return [
         'colors' => ['ink' => 'Couleur principale', 'ochre' => 'Ocre', 'terra' => 'Terre cuite', 'leaf' => 'Vert', 'sand' => 'Gris'],
     ],
 
+    // Départements proposés à la création (chacun reste libre de les nommer).
+    'department_suggestions' => [
+        'ministry' => ['Chorale', 'Jeunesse', 'Mamans', 'Papas', 'École du dimanche', 'Évangélisation', 'Intercession', 'Protocole et accueil', 'Diaconie et social', 'Médias et sonorisation'],
+        'administrative' => ['Finances', 'Secrétariat', 'Logistique et entretien', 'Construction'],
+    ],
+
     // Niveaux proposés pour la hiérarchie ; chaque communauté peut les renommer.
     'level_suggestions' => ['Siège', 'Région', 'Secteur', 'District', 'Paroisse', 'Église locale', 'Annexe'],
 

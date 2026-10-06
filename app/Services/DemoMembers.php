@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Department;
 use App\Models\Household;
 use App\Models\LifeEvent;
 use App\Models\Member;
@@ -150,6 +151,25 @@ class DemoMembers
                     $member->statusChanges()->update(['to_status_id' => $statuses['Membre']->id]);
                     MemberStatusChange::create(['member_id' => $member->id, 'from_status_id' => $statuses['Membre']->id, 'to_status_id' => $statuses[$status]->id,
                         'changed_on' => now()->subMonths(mt_rand(1, 10)), 'reason' => ['Décédé' => 'Rappelé auprès du Seigneur', 'Transféré' => 'Transféré à la CEP Kadutu (Bukavu)', 'Inactif' => 'Absente depuis plus d’un an'][$status]]);
+                }
+            }
+
+            // Départements de la paroisse, avec responsables et membres.
+            $byFirst = fn (string $first) => Member::where('first_name', $first)->first();
+            $departments = [
+                ['Chorale Les Messagers', 'ministry', 'ochre', 'Louange du dimanche et des grandes fêtes.', ['Grâce' => 'leader', 'Josué' => 'deputy', 'Daniel' => 'member', 'Bénédicte' => 'member', 'Neema' => 'member', 'Héritier' => 'member']],
+                ['Jeunesse', 'ministry', 'leaf', 'Cultes et activités des 15 à 35 ans.', ['Gloire' => 'leader', 'Christelle' => 'deputy', 'Grâce' => 'member', 'Josué' => 'member', 'Joël' => 'member', 'Nadège' => 'member']],
+                ['Mamans', 'ministry', 'terra', 'Réunions de prière et œuvres sociales des mamans.', ['Rebecca' => 'leader', 'Marthe' => 'deputy', 'Sifa' => 'member', 'Esther' => 'member', 'Divine' => 'member']],
+                ['École du dimanche', 'ministry', 'ochre', 'Enseignement des enfants pendant le culte.', ['Pascaline' => 'leader', 'Ruth' => 'member']],
+                ['Intercession', 'ministry', 'ink', null, ['Rebecca' => 'member', 'Samuel' => 'leader']],
+                ['Finances', 'administrative', 'leaf', 'Recettes, dépenses, rapports au conseil.', ['Jérémie' => 'leader', 'Patrick' => 'member']],
+            ];
+            foreach ($departments as [$name, $kind, $color, $description, $people]) {
+                $department = Department::create(['organization_id' => $himbi->id, 'name' => $name, 'kind' => $kind, 'color' => $color, 'description' => $description]);
+                foreach ($people as $first => $role) {
+                    if ($m = $byFirst($first)) {
+                        $department->members()->syncWithoutDetaching([$m->id => ['role' => $role, 'joined_on' => now()->subMonths(mt_rand(2, 40))]]);
+                    }
                 }
             }
         });
