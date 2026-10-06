@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\CardVerificationController;
+use App\Http\Controllers\CollectionPrintController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MemberCardController;
@@ -71,6 +72,9 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/finances/operations', Livewire\Finances\Journal::class)->name('finances.journal');
     Route::get('/finances/recette', Livewire\Finances\IncomeForm::class)->name('finances.income');
     Route::get('/finances/virement', Livewire\Finances\TransferForm::class)->name('finances.transfer');
+    Route::get('/finances/collecte', Livewire\Finances\Collections\Index::class)->name('finances.collections');
+    Route::get('/finances/collecte/{sheet}', Livewire\Finances\Collections\Sheet::class)->name('finances.collections.show');
+    Route::get('/finances/collecte/{sheet}/proces-verbal', CollectionPrintController::class)->name('finances.collections.print');
     Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
     Route::get('/finances/recu/{transaction}', ReceiptController::class)->name('finances.receipt');
 

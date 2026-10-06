@@ -25,7 +25,8 @@
             </div>
             @if ($totalUsd !== null && $byCurrency->count() > 1)<p class="mt-1 text-sm text-ochre-300">{{ __('soit environ :t au taux du jour', ['t' => Money::format($totalUsd, 'USD')]) }}</p>@endif
             <div class="mt-4 flex flex-wrap gap-2">
-                @can('finance.income')<a href="{{ route('finances.income') }}" class="btn-accent !min-h-0 !py-2"><x-icon name="download" class="size-4" /> {{ __('Recette') }}</a>@endcan
+                @can('finance.income')<a href="{{ route('finances.collections') }}" class="btn-accent !min-h-0 !py-2"><x-icon name="hand-coins" class="size-4" /> {{ __('Collecte du culte') }}</a>
+                <a href="{{ route('finances.income') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="download" class="size-4" /> {{ __('Recette') }}</a>@endcan
                 @can('finance.exchange')<a href="{{ route('finances.transfer') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="arrow-left-right" class="size-4" /> {{ __('Virement ou change') }}</a>@endcan
                 <a href="{{ route('finances.journal') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="history" class="size-4" /> {{ __('Opérations') }}</a>
             </div>

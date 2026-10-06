@@ -4,12 +4,16 @@ namespace App\Services;
 
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
+use App\Models\CollectionEnvelope;
+use App\Models\CollectionLine;
+use App\Models\CollectionSheet;
 use App\Models\Department;
 use App\Models\FinanceCategory;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Support\CurrentOrganization;
 use App\Support\OrganizationLogo;
+use Illuminate\Support\Carbon;
 
 /** Finances de démonstration : comptes, offrandes des dimanches, dîmes, change, dépôts. */
 class DemoFinances
@@ -59,7 +63,8 @@ class DemoFinances
             $chorale = Department::where('name', 'like', 'Chorale%')->value('id');
 
             // Les dimanches des deux derniers mois.
-            for ($sunday = now()->subWeeks(8)->startOfWeek()->addDays(6); $sunday->lte(today()); $sunday->addWeek()) {
+            $lastSunday = today()->isSunday() ? today() : today()->previous(Carbon::SUNDAY);
+            for ($sunday = now()->subWeeks(8)->startOfWeek()->addDays(6); $sunday->lt($lastSunday); $sunday->addWeek()) {
                 $on = ['occurred_on' => $sunday->toDateString()];
                 $ledger->record($caisse, 'CDF', 'income', $on + ['amount' => (string) (mt_rand(28, 55) * 5000), 'category_id' => $cat['Offrande du culte'], 'description' => __('Culte du :d', ['d' => $sunday->translatedFormat('j F')])]);
                 $ledger->record($caisse, 'USD', 'income', $on + ['amount' => (string) mt_rand(35, 90), 'category_id' => $cat['Offrande du culte'], 'description' => __('Culte du :d', ['d' => $sunday->translatedFormat('j F')])]);
@@ -79,6 +84,22 @@ class DemoFinances
             $last = today()->copy()->subDays(10);
             $ledger->record($caisse, 'CDF', 'income', ['amount' => '150000', 'occurred_on' => $last->toDateString(), 'category_id' => $cat['Contribution d’un département'], 'department_id' => $chorale, 'description' => 'Concert de louange']);
             $ledger->record($caisse, 'USD', 'income', ['amount' => '100', 'occurred_on' => $last->toDateString(), 'category_id' => $cat['Don'], 'payer_name' => 'Famille Mbuyi (visiteurs de Kolwezi)']);
+
+            // La collecte du dernier dimanche, comptée et validée, et un brouillon en cours.
+            $offrande = $cat['Offrande du culte'];
+            $sheet = CollectionSheet::create(['service_date' => $lastSunday, 'service_label' => 'Culte du dimanche', 'cash_account_id' => $caisse->id,
+                'counters' => ['Marthe Paluku', 'Joël Paluku'], 'counts' => ['USD' => ['20' => 2, '10' => 3, '5' => 4, '1' => 7], 'CDF' => ['20000' => 6, '10000' => 9, '5000' => 14, '1000' => 25]]]);
+            CollectionLine::create(['collection_id' => $sheet->id, 'category_id' => $offrande, 'currency' => 'USD', 'amount' => 77]);
+            CollectionLine::create(['collection_id' => $sheet->id, 'category_id' => $offrande, 'currency' => 'CDF', 'amount' => 195000]);
+            CollectionLine::create(['collection_id' => $sheet->id, 'category_id' => $cat['Offrande spéciale'], 'currency' => 'CDF', 'amount' => 50000]);
+            foreach ([[$members[0] ?? null, 'USD', 20], [$members[1] ?? null, 'CDF', 30000], [$members[2] ?? null, 'CDF', 20000], [$members[3] ?? null, 'CDF', 10000]] as [$m, $currency, $amount]) {
+                CollectionEnvelope::create(['collection_id' => $sheet->id, 'category_id' => $cat['Dîme'], 'member_id' => $m?->id, 'currency' => $currency, 'amount' => $amount]);
+            }
+            app(Collections::class)->validate($sheet->fresh(['lines', 'envelopes', 'account']));
+
+            $draft = CollectionSheet::create(['service_date' => $lastSunday, 'service_label' => 'Culte des jeunes', 'cash_account_id' => $caisse->id,
+                'counters' => ['Gloire Kasereka'], 'counts' => ['USD' => ['10' => 1, '5' => 2]]]);
+            CollectionLine::create(['collection_id' => $draft->id, 'category_id' => $offrande, 'currency' => 'USD', 'amount' => 20]);
 
             // Change et dépôt à la banque.
             $ledger->transfer($caisse, 'CDF', $caisse, 'USD', '570000', '200', 'Change au marché de Birere', today()->subDays(6));

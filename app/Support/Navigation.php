@@ -46,6 +46,7 @@ class Navigation
                 'label' => __('Finances'),
                 'items' => [
                     ['route' => 'finances.index', 'label' => __('Finances'), 'icon' => 'wallet', 'can' => 'finance.view', 'mobile' => true, 'short' => __('Finances')],
+                    ['route' => 'finances.collections', 'label' => __('Collecte du culte'), 'icon' => 'hand-coins', 'can' => 'finance.view'],
                     ['route' => 'finances.journal', 'label' => __('Opérations'), 'icon' => 'history', 'can' => 'finance.view'],
                     ['route' => 'finances.settings', 'label' => __('Comptes et catégories'), 'icon' => 'landmark', 'can' => 'finance.settings'],
                 ],

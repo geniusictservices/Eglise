@@ -7,6 +7,7 @@ use App\Http\Middleware\SetCurrentOrganization;
 use App\Models\AttachmentRequest;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
+use App\Models\CollectionSheet;
 use App\Models\Department;
 use App\Models\ExchangeRate;
 use App\Models\FinanceCategory;
@@ -71,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
             'department' => Department::class,
             'member_import' => MemberImport::class,
             'cash_account' => CashAccount::class,
+            'collection' => CollectionSheet::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,
             'finance_transaction' => FinanceTransaction::class,
