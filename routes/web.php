@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\HelpController;
 use App\Http\Controllers\SwitchOrganizationController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
@@ -12,6 +13,9 @@ Route::redirect('/', '/tableau-de-bord');
 // Pages publiques
 Route::view('/installer', 'install')->name('install');
 Route::view('/hors-ligne', 'offline')->name('offline');
+Route::get('/aide', [HelpController::class, 'show'])->name('help.index');
+Route::get('/aide/captures/{device}/{file}', [HelpController::class, 'capture'])->name('help.capture');
+Route::get('/aide/{chapter}', [HelpController::class, 'show'])->name('help.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/connexion', Livewire\Auth\Login::class)->name('login');

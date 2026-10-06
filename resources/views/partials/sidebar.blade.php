@@ -34,7 +34,8 @@
     </nav>
 
     <div class="border-t border-ink-600 px-5 py-4 text-xs text-ink-300">
-        <a href="{{ route('install') }}" class="flex items-center gap-2 hover:text-white"><x-icon name="download" class="size-4" /> {{ __('Installer l’application') }}</a>
+        <a href="{{ route('help.index') }}" class="flex items-center gap-2 hover:text-white"><x-icon name="circle-help" class="size-4" /> {{ __('Aide et manuel') }}</a>
+        <a href="{{ route('install') }}" class="mt-2 flex items-center gap-2 hover:text-white"><x-icon name="download" class="size-4" /> {{ __('Installer l’application') }}</a>
         <p class="mt-2">Waumini · Genius ICT</p>
     </div>
 </div>

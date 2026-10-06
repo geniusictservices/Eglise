@@ -13,7 +13,7 @@ npm ci && npm run build
 git archive --format=tar HEAD | tar -x -C "$WORK"
 cp -r public/build "$WORK/public/build"
 (cd "$WORK" && composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist)
-rm -rf "$WORK/tests" "$WORK/node_modules" "$WORK/.github" "$WORK/docs" "$WORK/branding/generate.py" "$WORK/Hekalu - Pitch deck.pdf"
+rm -rf "$WORK/tests" "$WORK/node_modules" "$WORK/.github" "$WORK/docs/feuille-de-route.html" "$WORK/branding/generate.py" "$WORK/Hekalu - Pitch deck.pdf"
 (cd "$WORK" && zip -qr "$OLDPWD/$OUT" . -x '.env')
 rm -rf "$WORK"
 echo "Archive prête : $OUT"

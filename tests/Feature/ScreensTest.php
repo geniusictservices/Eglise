@@ -257,4 +257,13 @@ class ScreensTest extends TestCase
 
         $this->actingAs($admin)->get(route('currencies.index'))->assertOk();
     }
+
+    public function test_the_user_manual_is_available_in_the_application(): void
+    {
+        $this->get(route('help.index'))->assertOk()->assertSee('Manuel d');
+        $this->get(route('help.show', '05-utilisateurs'))->assertOk()->assertSee('Gérer les utilisateurs');
+        $this->get(route('help.capture', ['mobile', '01-connexion.png']))->assertOk();
+        $this->get('/aide/inexistant')->assertNotFound();
+        $this->get('/aide/captures/autre/x.png')->assertNotFound();
+    }
 }

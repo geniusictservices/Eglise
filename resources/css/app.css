@@ -165,3 +165,40 @@
         font-variant-numeric: tabular-nums;
     }
 }
+
+/* Centre d'aide : mise en forme du manuel (Markdown converti en HTML). */
+@layer components {
+    .manuel {
+        @apply text-ink-900;
+        line-height: 1.65;
+    }
+
+    .manuel h1 { @apply mb-4 font-display text-3xl font-bold text-ink-700; }
+    .manuel h2 { @apply mt-10 mb-3 scroll-mt-6 font-display text-2xl font-semibold text-ink-700; }
+    .manuel h3 { @apply mt-8 mb-2 scroll-mt-6 font-display text-lg font-semibold text-ink-700; }
+    .manuel p, .manuel ul, .manuel ol, .manuel table, .manuel blockquote { @apply my-4 max-w-3xl; }
+    .manuel ul { @apply list-disc pl-6; }
+    .manuel ol { @apply list-decimal pl-6; }
+    .manuel li { @apply my-1.5; }
+    .manuel li::marker { @apply text-ochre-600; }
+    .manuel a { @apply font-bold text-ink-600 underline decoration-ochre-300 underline-offset-4 hover:decoration-ink-600; }
+    .manuel strong { @apply text-ink-700; }
+    .manuel code { @apply rounded bg-sand-100 px-1.5 py-0.5 font-mono text-[0.9em] text-ink-700; }
+    .manuel blockquote { @apply rounded-xl border-l-4 border-ochre-500 bg-ochre-50 px-4 py-3 text-ink-800; }
+    .manuel blockquote p { @apply my-0; }
+    .manuel hr { @apply my-8 border-sand-200; }
+    .manuel img { @apply h-auto max-w-full rounded-xl border border-sand-200 shadow-sm; }
+    .manuel table { @apply block w-full max-w-none overflow-x-auto text-sm; }
+    .manuel th { @apply border-b border-sand-200 bg-sand-50 px-3 py-2 text-left font-display font-semibold text-ink-700; }
+    .manuel td { @apply border-b border-sand-100 px-3 py-2 align-top; }
+    .manuel table:has(img) { @apply table w-full; }
+    .manuel table:has(img) td { @apply border-0 p-1.5 align-top; }
+    .manuel .manuel-capture { @apply block no-underline; }
+
+    /* Sur téléphone : la capture téléphone d'abord, en grand, puis celle de l'ordinateur. */
+    @media (max-width: 640px) {
+        .manuel table:has(img) tr { @apply flex flex-col-reverse gap-3; }
+        .manuel table:has(img) td { @apply !w-full; }
+        .manuel table:has(img) td:last-child img { @apply mx-auto max-w-[300px]; }
+    }
+}
