@@ -44,8 +44,8 @@
         </section>
     @endif
 
-    <section class="card p-3 sm:p-5">
-        <div class="mb-2 flex items-center justify-between px-2">
+    <section class="card p-3 sm:p-5 sm:[--indent:1.5rem]">
+        <div class="mb-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-2">
             <p class="text-sm text-sand-700">{{ trans_choice(':count niveau|:count niveaux', $nodeCount) }}</p>
             <p class="text-sm text-sand-700">{{ __('Code de rattachement :') }} <span class="rounded bg-sand-100 px-1.5 py-0.5 font-mono text-ink-700">{{ $organization->slug }}</span></p>
         </div>

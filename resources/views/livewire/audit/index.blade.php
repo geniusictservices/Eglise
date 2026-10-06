@@ -54,7 +54,7 @@
                             <thead><tr><th>{{ __('Champ') }}</th><th>{{ __('Avant') }}</th><th>{{ __('Après') }}</th></tr></thead>
                             <tbody>
                                 @foreach (array_unique(array_merge(array_keys($log->old_values ?? []), array_keys($log->new_values ?? []))) as $field)
-                                    @continue(in_array($field, ['id', 'path', 'depth', 'slug', 'created_by', 'granted_by']))
+                                    @continue(in_array($field, ['id', 'path', 'depth', 'slug', 'created_by', 'granted_by', 'organization_id', 'user_id', 'role_id', 'requested_by', 'decided_by']))
                                     <tr>
                                         <td class="font-bold text-ink-700">{{ AuditPresenter::field($field) }}</td>
                                         <td class="text-sand-700">{{ \Illuminate\Support\Str::limit(AuditPresenter::value($log->old_values[$field] ?? null), 120) }}</td>

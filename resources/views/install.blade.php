@@ -14,7 +14,7 @@
         <div class="mt-8 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist">
             <button type="button" role="tab" @click="tab = 'android'" :aria-selected="tab === 'android'" :class="tab === 'android' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold"><x-icon name="smartphone" class="size-4" /> Android</button>
             <button type="button" role="tab" @click="tab = 'iphone'" :aria-selected="tab === 'iphone'" :class="tab === 'iphone' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold"><x-icon name="smartphone" class="size-4" /> iPhone</button>
-            <button type="button" role="tab" @click="tab = 'windows'" :aria-selected="tab === 'windows'" :class="tab === 'windows' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold"><x-icon name="monitor" class="size-4" /> {{ __('Windows et ordinateur') }}</button>
+            <button type="button" role="tab" @click="tab = 'windows'" :aria-selected="tab === 'windows'" :class="tab === 'windows' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold"><x-icon name="monitor" class="size-4" /> <span class="sm:hidden">Windows</span><span class="hidden sm:inline">{{ __('Windows et ordinateur') }}</span></button>
         </div>
 
         @php

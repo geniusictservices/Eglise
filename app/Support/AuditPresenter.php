@@ -77,6 +77,10 @@ class AuditPresenter
 
     public static function value(mixed $value): string
     {
+        if (is_string($value) && preg_match('/^(\d{4})-(\d{2})-(\d{2})(?:[ T]00:00:00(?:\.0+Z?)?)?$/', $value, $m)) {
+            return "{$m[3]}/{$m[2]}/{$m[1]}";
+        }
+
         return match (true) {
             $value === null => '—',
             is_bool($value) => $value ? __('oui') : __('non'),
