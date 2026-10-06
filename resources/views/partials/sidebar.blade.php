@@ -12,7 +12,7 @@
         @foreach (Navigation::sections() as $section)
             <div>
                 @if ($section['label'])
-                    <p class="px-3 pb-2 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-300">{{ $section['label'] }}</p>
+                    <p class="px-3 pb-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-200/80">{{ $section['label'] }}</p>
                 @endif
                 <ul class="space-y-0.5">
                     @foreach ($section['items'] as $item)
@@ -20,10 +20,10 @@
                         <li>
                             <a href="{{ route($item['route']) }}" @class([
                                 'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition',
-                                'bg-ink-600 font-bold text-white' => $active,
-                                'text-ink-100 hover:bg-ink-600/60 hover:text-white' => ! $active,
+                                'bg-ochre-500 font-semibold text-[#2A1B04] shadow-sm' => $active,
+                                'text-ink-50/90 hover:bg-white/10 hover:text-white' => ! $active,
                             ]) @if($active) aria-current="page" @endif>
-                                <x-icon :name="$item['icon']" @class(['size-5', 'text-ochre-300' => $active, 'text-ink-300' => ! $active]) />
+                                <x-icon :name="$item['icon']" @class(['size-5', 'text-[#2A1B04]' => $active, 'text-ink-200' => ! $active]) />
                                 {{ $item['label'] }}
                             </a>
                         </li>
@@ -33,7 +33,7 @@
         @endforeach
     </nav>
 
-    <div class="border-t border-ink-600 px-5 py-4 text-xs text-ink-300">
+    <div class="border-t border-white/10 px-5 py-4 text-xs text-ink-200">
         <a href="{{ route('help.index') }}" class="flex items-center gap-2 hover:text-white"><x-icon name="circle-help" class="size-4" /> {{ __('Aide et manuel') }}</a>
         <a href="{{ route('install') }}" class="mt-2 flex items-center gap-2 hover:text-white"><x-icon name="download" class="size-4" /> {{ __('Installer l’application') }}</a>
         <p class="mt-2">Waumini · Genius ICT</p>

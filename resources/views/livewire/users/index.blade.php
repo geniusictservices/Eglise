@@ -33,9 +33,9 @@
                     <tr class="hover:bg-sand-50/60">
                         <td>
                             <div class="flex items-center gap-3">
-                                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-ochre-100 font-display text-xs font-bold text-ochre-700">{{ $user->initials() }}</span>
+                                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-ochre-100 font-display text-xs font-semibold text-ochre-700">{{ $user->initials() }}</span>
                                 <div>
-                                    <p class="font-bold text-ink-700">{{ $user->name }}</p>
+                                    <p class="font-semibold text-ink-700">{{ $user->name }}</p>
                                     @unless ($user->is_active)<span class="badge bg-sand-100 text-sand-700">{{ __('Désactivé') }}</span>@endunless
                                 </div>
                             </div>
@@ -69,9 +69,9 @@
         @forelse ($users as $user)
             <li>
                 <a @can('users.manage') href="{{ route('users.edit', $user) }}" @endcan class="card flex items-start gap-3 p-4">
-                    <span class="grid size-10 shrink-0 place-items-center rounded-full bg-ochre-100 font-display text-sm font-bold text-ochre-700">{{ $user->initials() }}</span>
+                    <span class="grid size-10 shrink-0 place-items-center rounded-full bg-ochre-100 font-display text-sm font-semibold text-ochre-700">{{ $user->initials() }}</span>
                     <div class="min-w-0 flex-1">
-                        <p class="truncate font-bold text-ink-700">{{ $user->name }}</p>
+                        <p class="truncate font-semibold text-ink-700">{{ $user->name }}</p>
                         <p class="text-sm text-sand-700 tabular">{{ $user->formattedPhone() }}</p>
                         <div class="mt-2 flex flex-wrap gap-1.5">
                             @foreach ($user->roleAssignments as $assignment)

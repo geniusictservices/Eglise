@@ -4,7 +4,7 @@
     <div class="mb-6 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist">
         @foreach (['general' => __('Informations'), 'libelles' => __('Libellés'), 'support' => __('Support')] as $key => $label)
             <button type="button" role="tab" wire:click="$set('tab', '{{ $key }}')" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
-                    @class(['flex-1 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-bold', 'bg-ink-700 text-white' => $tab === $key, 'text-ink-600 hover:bg-sand-50' => $tab !== $key])>{{ $label }}</button>
+                    @class(['flex-1 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold', 'bg-ink-700 text-white' => $tab === $key, 'text-ink-600 hover:bg-sand-50' => $tab !== $key])>{{ $label }}</button>
         @endforeach
     </div>
 
@@ -85,7 +85,7 @@
             @can('support.grant')
                 <label class="mt-5 flex items-center gap-3">
                     <input wire:model.live="supportAccess" type="checkbox" class="size-6 rounded border-sand-300 text-ink-700">
-                    <span class="font-bold text-ink-700">{{ __('Autoriser l’accès du support') }}</span>
+                    <span class="font-semibold text-ink-700">{{ __('Autoriser l’accès du support') }}</span>
                 </label>
                 @if ($organization->support_access_until?->isFuture())
                     <p class="mt-2 text-sm text-ochre-700">{{ __('Accès autorisé jusqu’au :date.', ['date' => $organization->support_access_until->timezone($organization->timezone)->translatedFormat('j F Y à H:i')]) }}</p>

@@ -51,7 +51,8 @@ Tant que ce n'est pas fait, les autres écrans restent inaccessibles.
 <td width="50%"><img src="captures/mobile/05-menu-telephone.png" alt="Menu ouvert sur téléphone"></td>
 </tr></table>
 
-- En bas, la **barre d'onglets** donne accès aux écrans les plus utilisés. **Plus** ouvre le menu complet.
+- En haut, le **bandeau** au motif wax rappelle la communauté dans laquelle vous travaillez.
+- En bas, la **barre d'onglets** donne accès aux écrans les plus utilisés. L'onglet ouvert est en ocre. **Plus** ouvre le menu complet.
 - En haut à gauche, le bouton **☰** ouvre aussi le menu complet ①.
 - En haut à droite, vos **initiales** ouvrent votre profil et la déconnexion.
 

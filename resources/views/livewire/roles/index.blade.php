@@ -18,8 +18,8 @@
                 </div>
                 <p class="mt-2 flex-1 text-sm text-sand-700">{{ $role->description }}</p>
                 <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-                    <span class="text-ink-700"><span class="font-bold tabular">{{ count($role->grantedPermissions()) }}</span>/{{ $total }} {{ __('permissions') }}</span>
-                    <span class="text-ink-700"><span class="font-bold tabular">{{ $role->assignments_count }}</span> {{ trans_choice('attribution|attributions', $role->assignments_count) }}</span>
+                    <span class="text-ink-700"><span class="font-semibold tabular">{{ count($role->grantedPermissions()) }}</span>/{{ $total }} {{ __('permissions') }}</span>
+                    <span class="text-ink-700"><span class="font-semibold tabular">{{ $role->assignments_count }}</span> {{ trans_choice('attribution|attributions', $role->assignments_count) }}</span>
                 </div>
                 @if ($role->organization_id !== $organization->id)
                     <p class="mt-2 text-xs text-sand-500">{{ __('Défini par :name', ['name' => $role->organization->name]) }}</p>

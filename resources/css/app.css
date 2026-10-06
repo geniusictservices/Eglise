@@ -1,54 +1,60 @@
 @import 'tailwindcss';
-@import '@fontsource/outfit/500.css';
-@import '@fontsource/outfit/600.css';
-@import '@fontsource/outfit/700.css';
-@import '@fontsource/source-sans-3/400.css';
-@import '@fontsource/source-sans-3/400-italic.css';
-@import '@fontsource/source-sans-3/600.css';
-@import '@fontsource/source-sans-3/700.css';
+@import '@fontsource/lexend/400.css';
+@import '@fontsource/lexend/500.css';
+@import '@fontsource/lexend/600.css';
+@import '@fontsource/lexend/700.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 /*
- * Identité Waumini : bleu-vert profond (confiance), ocre (chaleur, action),
- * terre cuite (accent), fond sable. Titres en Outfit, textes en Source Sans 3,
- * très lisible sur les petits écrans et complet pour le lingala (ɛ, ɔ).
+ * Style « Chaleureux, inspiré du wax » (choisi par Genius ICT) :
+ * indigo (confiance), ocre (chaleur, action principale), terre cuite et vert
+ * (accents), fond crème. Police Lexend, conçue pour la lecture facile,
+ * complète pour le lingala (ɛ, ɔ). Motif de pagne wax en en-tête.
+ *
+ * Les noms de couleurs restent ceux du code (ink = couleur principale).
  */
 @theme {
-    --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
-    --font-display: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+    --font-sans: 'Lexend', 'Segoe UI', system-ui, sans-serif;
+    --font-display: 'Lexend', 'Segoe UI', system-ui, sans-serif;
 
-    --color-ink-50: #EEF4F6;
-    --color-ink-100: #D7E5EA;
-    --color-ink-200: #AFCAD3;
-    --color-ink-300: #7FA6B3;
-    --color-ink-400: #4E7F8F;
-    --color-ink-500: #2D6070;
-    --color-ink-600: #1F4E5E;
-    --color-ink-700: #173F4E;
-    --color-ink-800: #12323E;
-    --color-ink-900: #0C232C;
+    --color-ink-50: #EEEFF8;
+    --color-ink-100: #DADCF0;
+    --color-ink-200: #B7BAE0;
+    --color-ink-300: #8D91C9;
+    --color-ink-400: #6064A8;
+    --color-ink-500: #45498C;
+    --color-ink-600: #363A7B;
+    --color-ink-700: #2C2F6B;
+    --color-ink-800: #22255A;
+    --color-ink-900: #181A42;
 
-    --color-ochre-50: #FDF5E7;
-    --color-ochre-100: #FAE6C2;
-    --color-ochre-300: #EFC06E;
-    --color-ochre-500: #E09A2D;
-    --color-ochre-600: #C47F17;
-    --color-ochre-700: #8A5A0E;
+    --color-ochre-50: #FEF6E9;
+    --color-ochre-100: #FCE7C4;
+    --color-ochre-300: #F1C276;
+    --color-ochre-500: #E39B2C;
+    --color-ochre-600: #C98317;
+    --color-ochre-700: #8F5A0C;
 
-    --color-terra-50: #FBEEE8;
-    --color-terra-100: #F4D3C5;
-    --color-terra-500: #B5532F;
-    --color-terra-600: #9A4325;
-    --color-terra-700: #7A341C;
+    --color-terra-50: #FCEEE8;
+    --color-terra-100: #F6D4C6;
+    --color-terra-500: #C2522D;
+    --color-terra-600: #A54322;
+    --color-terra-700: #7E3218;
 
-    --color-sand-50: #FBF8F2;
-    --color-sand-100: #F4EFE5;
-    --color-sand-200: #E8E0D1;
-    --color-sand-300: #D6CBB7;
-    --color-sand-500: #8C8272;
-    --color-sand-700: #5A5246;
+    --color-leaf-50: #E7F3EC;
+    --color-leaf-100: #CBE5D6;
+    --color-leaf-500: #2E7A5A;
+    --color-leaf-600: #246349;
+    --color-leaf-700: #1B4C38;
+
+    --color-sand-50: #FFFAF3;
+    --color-sand-100: #FBF2E5;
+    --color-sand-200: #F0E6D6;
+    --color-sand-300: #E2D4BE;
+    --color-sand-500: #8F8577;
+    --color-sand-700: #5E574E;
 }
 
 @layer base {
@@ -58,7 +64,7 @@
 
     body {
         @apply bg-sand-50 text-ink-900 antialiased;
-        font-size: 1.0625rem;
+        font-size: 1rem;
     }
 
     input[type='checkbox'],
@@ -67,7 +73,7 @@
     }
 
     h1, h2, h3, h4 {
-        @apply font-display text-ink-700;
+        @apply font-display font-semibold text-ink-800;
         text-wrap: balance;
     }
 
@@ -82,7 +88,7 @@
 
 @layer components {
     .btn, .btn-primary, .btn-accent, .btn-secondary, .btn-danger, .btn-ghost {
-        @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition
+        @apply inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition
             disabled:cursor-not-allowed disabled:opacity-50;
         min-height: 2.75rem;
     }
@@ -92,11 +98,11 @@
     }
 
     .btn-accent {
-        @apply bg-ochre-500 text-ink-900 hover:bg-ochre-600 hover:text-white;
+        @apply bg-ochre-500 text-[#2A1B04] hover:bg-ochre-600;
     }
 
     .btn-secondary {
-        @apply border border-sand-300 bg-white text-ink-700 hover:border-ink-300 hover:bg-ink-50;
+        @apply border-[1.5px] border-sand-300 bg-white text-ink-700 hover:border-ochre-300 hover:bg-ochre-50;
     }
 
     .btn-danger {
@@ -108,11 +114,60 @@
     }
 
     .card {
-        @apply rounded-2xl border border-sand-200 bg-white;
+        @apply rounded-[18px] border border-sand-200 bg-white;
+    }
+
+    /* Pastille d'icône colorée (cartes de chiffres, listes). */
+    .icon-tile {
+        @apply grid size-10 shrink-0 place-items-center rounded-xl;
+    }
+
+    /* Bouton d'action rapide en forme de pastille. */
+    .chip {
+        @apply inline-flex items-center gap-2 rounded-full border-[1.5px] border-sand-300 bg-white px-3.5 py-2 text-sm font-medium text-ink-800 transition hover:border-ochre-300 hover:bg-ochre-50;
+    }
+
+    /* Motif de pagne wax : pois ocre et terre cuite, anneaux clairs, sur indigo. */
+    .wax {
+        background-color: var(--color-ink-700);
+        background-image:
+            radial-gradient(circle at 12px 12px, var(--color-ochre-500) 0 5px, transparent 5.5px),
+            radial-gradient(circle at 36px 36px, var(--color-terra-500) 0 5px, transparent 5.5px),
+            radial-gradient(circle at 36px 12px, transparent 0 7px, rgb(255 255 255 / 0.18) 7px 8.5px, transparent 9px),
+            radial-gradient(circle at 12px 36px, transparent 0 7px, rgb(255 255 255 / 0.18) 7px 8.5px, transparent 9px);
+        background-size: 48px 48px;
+    }
+
+    /* Voile indigo posé sur le motif pour garder le texte lisible. */
+    .wax-veil {
+        @apply relative isolate;
+    }
+
+    .wax-veil::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(180deg, rgb(44 47 107 / 0.55), rgb(44 47 107 / 0.92));
+    }
+
+    .wax-veil-strong::before {
+        background: linear-gradient(180deg, rgb(44 47 107 / 0.86), rgb(44 47 107 / 0.96));
+    }
+
+    /* Anneau de progression : style="--v: 62" */
+    .ring-progress {
+        --v: 0;
+        @apply grid size-14 shrink-0 place-items-center rounded-full;
+        background: conic-gradient(var(--color-ochre-500) calc(var(--v) * 1%), var(--color-sand-200) 0);
+    }
+
+    .ring-progress > span {
+        @apply grid size-10 place-items-center rounded-full bg-white text-xs font-semibold text-ink-800;
     }
 
     .label {
-        @apply mb-1.5 block text-sm font-bold text-ink-700;
+        @apply mb-1.5 block text-sm font-semibold text-ink-700;
     }
 
     .hint {
@@ -130,19 +185,19 @@
     }
 
     .error {
-        @apply mt-1 text-sm font-bold text-terra-600;
+        @apply mt-1 text-sm font-semibold text-terra-600;
     }
 
     .badge {
-        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold;
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
     }
 
     .page-title {
-        @apply font-display text-2xl font-bold text-ink-700 sm:text-3xl;
+        @apply text-2xl font-semibold text-ink-800 sm:text-[1.75rem];
     }
 
     .eyebrow {
-        @apply font-display text-xs font-semibold uppercase tracking-[0.12em] text-terra-500;
+        @apply text-xs font-semibold uppercase tracking-[0.1em] text-terra-500;
     }
 
     .table {
@@ -150,7 +205,7 @@
     }
 
     .table th {
-        @apply border-b border-sand-200 bg-sand-50 px-4 py-3 font-display text-xs font-semibold uppercase tracking-wider text-sand-700;
+        @apply border-b border-sand-200 bg-sand-50 px-4 py-3 text-xs font-semibold uppercase tracking-wider text-sand-700;
     }
 
     .table td {
@@ -173,7 +228,7 @@
         line-height: 1.65;
     }
 
-    .manuel h1 { @apply mb-4 font-display text-3xl font-bold text-ink-700; }
+    .manuel h1 { @apply mb-4 font-display text-3xl font-semibold text-ink-700; }
     .manuel h2 { @apply mt-10 mb-3 scroll-mt-6 font-display text-2xl font-semibold text-ink-700; }
     .manuel h3 { @apply mt-8 mb-2 scroll-mt-6 font-display text-lg font-semibold text-ink-700; }
     .manuel p, .manuel ul, .manuel ol, .manuel table, .manuel blockquote { @apply my-4 max-w-3xl; }
@@ -181,7 +236,7 @@
     .manuel ol { @apply list-decimal pl-6; }
     .manuel li { @apply my-1.5; }
     .manuel li::marker { @apply text-ochre-600; }
-    .manuel a { @apply font-bold text-ink-600 underline decoration-ochre-300 underline-offset-4 hover:decoration-ink-600; }
+    .manuel a { @apply font-semibold text-ink-600 underline decoration-ochre-300 underline-offset-4 hover:decoration-ink-600; }
     .manuel strong { @apply text-ink-700; }
     .manuel code { @apply rounded bg-sand-100 px-1.5 py-0.5 font-mono text-[0.9em] text-ink-700; }
     .manuel blockquote { @apply rounded-xl border-l-4 border-ochre-500 bg-ochre-50 px-4 py-3 text-ink-800; }

@@ -1,5 +1,5 @@
 <div>
-    <a href="{{ route('roles.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-bold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Rôles et permissions') }}</a>
+    <a href="{{ route('roles.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Rôles et permissions') }}</a>
     <x-page-header :title="$role ? $role->name : __('Nouveau rôle')" />
 
     @if ($readOnly)
@@ -25,7 +25,7 @@
         <div>
             <div class="mb-3 flex items-end justify-between gap-3">
                 <h2 class="text-lg font-semibold">{{ __('Permissions') }}</h2>
-                <p class="text-sm text-sand-700"><span class="font-bold text-ink-700 tabular">{{ count($permissions) }}</span> {{ __('cochées') }}</p>
+                <p class="text-sm text-sand-700"><span class="font-semibold text-ink-700 tabular">{{ count($permissions) }}</span> {{ __('cochées') }}</p>
             </div>
             @error('permissions') <p class="error mb-3">{{ $message }}</p> @enderror
             <div class="grid gap-4 lg:grid-cols-2">
@@ -35,7 +35,7 @@
                         <div class="mb-3 flex items-center justify-between gap-3">
                             <legend class="font-display font-semibold text-ink-700">{{ __($group['label']) }}</legend>
                             @unless ($readOnly)
-                                <button type="button" wire:click="toggleGroup('{{ $key }}')" class="text-xs font-bold text-ink-600 hover:underline">
+                                <button type="button" wire:click="toggleGroup('{{ $key }}')" class="text-xs font-semibold text-ink-600 hover:underline">
                                     {{ $checked === count($group['items']) ? __('Tout décocher') : __('Tout cocher') }}
                                 </button>
                             @endunless

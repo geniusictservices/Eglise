@@ -17,7 +17,7 @@
             @foreach ($ancestors as $ancestor)
                 <span>{{ $ancestor->name }}</span><x-icon name="chevron-right" class="size-3.5 text-sand-300" />
             @endforeach
-            <span class="font-bold text-ink-700">{{ $organization->name }}</span>
+            <span class="font-semibold text-ink-700">{{ $organization->name }}</span>
         </p>
     @endif
 
@@ -28,7 +28,7 @@
                 @foreach ($incoming as $request)
                     <li class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-4">
                         <div class="min-w-0">
-                            <p class="font-bold text-ink-700">{{ $request->organization->name }}</p>
+                            <p class="font-semibold text-ink-700">{{ $request->organization->name }}</p>
                             <p class="text-sm text-sand-700">{{ __('Demandée par :name, :date', ['name' => $request->requester?->name ?? '—', 'date' => $request->created_at->diffForHumans()]) }}</p>
                             @if ($request->message)<p class="mt-1 text-sm italic">« {{ $request->message }} »</p>@endif
                         </div>

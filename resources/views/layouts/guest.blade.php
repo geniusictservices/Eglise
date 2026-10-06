@@ -6,11 +6,11 @@
 <body class="min-h-dvh">
     <div class="grid min-h-dvh lg:grid-cols-[1fr_minmax(0,560px)]">
         {{-- Panneau de marque (ordinateur) --}}
-        <div class="relative hidden overflow-hidden bg-ink-700 p-12 text-ink-50 lg:flex lg:flex-col">
+        <div class="wax wax-veil relative hidden overflow-hidden p-12 text-ink-50 lg:flex lg:flex-col">
             <x-logo light />
             <div class="mt-auto max-w-lg">
                 <p class="eyebrow !text-ochre-300">{{ __('La mémoire de votre communauté') }}</p>
-                <p class="mt-4 font-display text-4xl font-semibold leading-tight text-white">{{ __('Le registre de vos fidèles, vos finances en toute transparence, votre année préparée ensemble.') }}</p>
+                <p class="mt-4 text-4xl font-semibold leading-tight text-white">{{ __('Le registre de vos fidèles, vos finances en toute transparence, votre année préparée ensemble.') }}</p>
                 <p class="mt-6 text-ink-200">{{ __('Waumini signifie « les fidèles » en swahili.') }}</p>
             </div>
             <svg class="pointer-events-none absolute -right-24 -top-16 size-[460px] opacity-[0.07]" viewBox="6 11 108 108" aria-hidden="true">
@@ -20,7 +20,7 @@
         </div>
 
         <main class="flex flex-col px-5 py-8 sm:px-10" style="padding-top: max(2rem, env(safe-area-inset-top))">
-            <div class="lg:hidden"><x-logo /></div>
+            <div class="wax wax-veil -mx-5 -mt-8 mb-2 px-5 pb-6 pt-8 sm:-mx-10 sm:px-10 lg:hidden" style="padding-top: max(2rem, env(safe-area-inset-top))"><x-logo light /></div>
             <div class="my-auto w-full max-w-md self-center py-10">
                 {{ $slot }}
             </div>

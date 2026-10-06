@@ -6,13 +6,13 @@
                 <x-icon name="chevron-down" class="size-4" />
             </button>
             <ul class="mt-2 space-y-0.5 lg:mt-0 lg:block" :class="open ? 'block' : 'hidden'">
-                <li><a href="{{ route('help.index') }}" @class(['block rounded-lg px-3 py-2 text-sm', 'bg-ink-700 font-bold text-white' => ! $chapter, 'text-ink-700 hover:bg-sand-100' => $chapter])>{{ __('Accueil du manuel') }}</a></li>
+                <li><a href="{{ route('help.index') }}" @class(['block rounded-lg px-3 py-2 text-sm', 'bg-ink-700 font-semibold text-white' => ! $chapter, 'text-ink-700 hover:bg-sand-100' => $chapter])>{{ __('Accueil du manuel') }}</a></li>
                 @foreach ($chapters as $slug => $label)
-                    <li><a href="{{ route('help.show', $slug) }}" @class(['block rounded-lg px-3 py-2 text-sm', 'bg-ink-700 font-bold text-white' => $chapter === $slug, 'text-ink-700 hover:bg-sand-100' => $chapter !== $slug])>{{ $label }}</a></li>
+                    <li><a href="{{ route('help.show', $slug) }}" @class(['block rounded-lg px-3 py-2 text-sm', 'bg-ink-700 font-semibold text-white' => $chapter === $slug, 'text-ink-700 hover:bg-sand-100' => $chapter !== $slug])>{{ $label }}</a></li>
                 @endforeach
             </ul>
             @auth
-                <a href="{{ route('dashboard') }}" class="mt-4 hidden items-center gap-1 px-3 text-sm font-bold text-ink-600 hover:underline lg:flex"><x-icon name="chevron-left" class="size-4" /> {{ __('Retour à Waumini') }}</a>
+                <a href="{{ route('dashboard') }}" class="mt-4 hidden items-center gap-1 px-3 text-sm font-semibold text-ink-600 hover:underline lg:flex"><x-icon name="chevron-left" class="size-4" /> {{ __('Retour à Waumini') }}</a>
             @endauth
         </nav>
 

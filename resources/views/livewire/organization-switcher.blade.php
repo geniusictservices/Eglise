@@ -1,14 +1,14 @@
 <div x-data="{ open: false, q: '' }" @click.outside="open = false" @keydown.escape="open = false" class="relative">
-    <button type="button" @click="open = !open" class="flex w-full items-center gap-3 rounded-xl bg-ink-800/60 px-3 py-2.5 text-left hover:bg-ink-800" :aria-expanded="open">
-        <span class="grid size-9 shrink-0 place-items-center rounded-lg bg-ochre-500 font-display text-sm font-bold text-ink-900">
+    <button type="button" @click="open = !open" class="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5 text-left ring-1 ring-white/15 backdrop-blur-sm hover:bg-white/15" :aria-expanded="open">
+        <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-ochre-500 text-sm font-semibold text-[#2A1B04]">
             {{ $current->initials() }}
         </span>
         <span class="min-w-0 flex-1">
-            <span class="block truncate text-[11px] uppercase tracking-wider text-ink-300">{{ $current->level_label }}</span>
-            <span class="block truncate font-bold text-white">{{ $current->displayName() }}</span>
+            <span class="block truncate text-[11px] uppercase tracking-wider text-ink-200">{{ $current->level_label }}</span>
+            <span class="block truncate font-semibold text-white">{{ $current->displayName() }}</span>
         </span>
         @if ($organizations->count() > 1)
-            <x-icon name="chevrons-up-down" class="size-4 text-ink-300" />
+            <x-icon name="chevrons-up-down" class="size-4 text-ink-200" />
         @endif
     </button>
 
@@ -26,7 +26,7 @@
                             @csrf
                             <button type="submit" class="flex w-full items-center gap-2 py-2 pr-3 text-left text-sm hover:bg-sand-50" style="padding-left: {{ 0.75 + ($organization->depth - $minDepth) * 1 }}rem">
                                 @if ($organization->depth > $minDepth)<span class="text-sand-300">└</span>@endif
-                                <span class="min-w-0 flex-1 truncate @if($organization->id === $current->id) font-bold text-ink-700 @endif">{{ $organization->name }}</span>
+                                <span class="min-w-0 flex-1 truncate @if($organization->id === $current->id) font-semibold text-ink-700 @endif">{{ $organization->name }}</span>
                                 <span class="shrink-0 text-xs text-sand-500">{{ $organization->level_label }}</span>
                                 @if ($organization->id === $current->id)<x-icon name="check" class="size-4 text-ochre-600" />@endif
                             </button>

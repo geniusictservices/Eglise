@@ -7,14 +7,14 @@
         <div class="mt-5" x-data x-show="$store.pwa.canInstall" x-cloak>
             <button type="button" class="btn-accent !py-3 text-base" @click="$store.pwa.install()"><x-icon name="download" /> {{ __('Installer maintenant') }}</button>
         </div>
-        <p class="mt-5 inline-flex items-center gap-2 rounded-xl bg-ink-50 px-3 py-2 text-sm font-bold text-ink-700" x-data x-show="$store.pwa.installed" x-cloak>
+        <p class="mt-5 inline-flex items-center gap-2 rounded-xl bg-ink-50 px-3 py-2 text-sm font-semibold text-ink-700" x-data x-show="$store.pwa.installed" x-cloak>
             <x-icon name="circle-check" class="size-4" /> {{ __('Waumini est déjà installé sur cet appareil.') }}
         </p>
 
         <div class="mt-8 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist">
-            <button type="button" role="tab" @click="tab = 'android'" :aria-selected="tab === 'android'" :class="tab === 'android' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold"><x-icon name="smartphone" class="size-4" /> Android</button>
-            <button type="button" role="tab" @click="tab = 'iphone'" :aria-selected="tab === 'iphone'" :class="tab === 'iphone' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold"><x-icon name="smartphone" class="size-4" /> iPhone</button>
-            <button type="button" role="tab" @click="tab = 'windows'" :aria-selected="tab === 'windows'" :class="tab === 'windows' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-bold"><x-icon name="monitor" class="size-4" /> <span class="sm:hidden">Windows</span><span class="hidden sm:inline">{{ __('Windows et ordinateur') }}</span></button>
+            <button type="button" role="tab" @click="tab = 'android'" :aria-selected="tab === 'android'" :class="tab === 'android' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold"><x-icon name="smartphone" class="size-4" /> Android</button>
+            <button type="button" role="tab" @click="tab = 'iphone'" :aria-selected="tab === 'iphone'" :class="tab === 'iphone' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold"><x-icon name="smartphone" class="size-4" /> iPhone</button>
+            <button type="button" role="tab" @click="tab = 'windows'" :aria-selected="tab === 'windows'" :class="tab === 'windows' ? 'bg-ink-700 text-white' : 'text-ink-600 hover:bg-sand-50'" class="flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-xl px-4 py-2.5 text-sm font-semibold"><x-icon name="monitor" class="size-4" /> <span class="sm:hidden">Windows</span><span class="hidden sm:inline">{{ __('Windows et ordinateur') }}</span></button>
         </div>
 
         @php
@@ -44,7 +44,7 @@
             <ol x-show="tab === '{{ $key }}'" @if ($key !== 'windows') x-cloak @endif class="mt-6 space-y-3">
                 @foreach ($steps as $i => $step)
                     <li class="card flex items-start gap-4 p-4">
-                        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ochre-500 font-display font-bold text-ink-900">{{ $i + 1 }}</span>
+                        <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ochre-500 font-display font-semibold text-ink-900">{{ $i + 1 }}</span>
                         <p class="pt-1">{{ $step }}</p>
                     </li>
                 @endforeach
@@ -52,7 +52,7 @@
         @endforeach
 
         <div class="mt-8 rounded-2xl border border-dashed border-sand-300 p-5 text-sm text-sand-700" x-show="tab === 'windows'">
-            <p class="font-bold text-ink-700">{{ __('Ordinateur de l’église') }}</p>
+            <p class="font-semibold text-ink-700">{{ __('Ordinateur de l’église') }}</p>
             <p class="mt-1">{{ __('Un fichier d’installation Windows (MSIX) sera aussi proposé au lancement, pour installer Waumini sans passer par le navigateur.') }}</p>
         </div>
 

@@ -4,7 +4,7 @@
     @if ($user->must_change_password)
         <div class="mb-6 flex gap-3 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm">
             <x-icon name="key-round" class="size-5 text-ochre-700" />
-            <p><span class="font-bold text-ink-700">{{ __('Choisissez votre mot de passe.') }}</span> {{ __('Vous vous êtes connecté avec un mot de passe provisoire : remplacez-le par un mot de passe que vous seul connaissez.') }}</p>
+            <p><span class="font-semibold text-ink-700">{{ __('Choisissez votre mot de passe.') }}</span> {{ __('Vous vous êtes connecté avec un mot de passe provisoire : remplacez-le par un mot de passe que vous seul connaissez.') }}</p>
         </div>
     @endif
 
@@ -65,7 +65,7 @@
                 <x-icon name="plus" class="size-4" /> {{ __('Activer sur cet appareil') }}
             </button>
         </div>
-        <p class="mt-3 text-sm font-bold text-terra-600" x-show="!supported" x-cloak>{{ __('Ce navigateur ne permet pas la connexion par empreinte.') }}</p>
+        <p class="mt-3 text-sm font-semibold text-terra-600" x-show="!supported" x-cloak>{{ __('Ce navigateur ne permet pas la connexion par empreinte.') }}</p>
         <p class="error" x-show="error" x-text="error" x-cloak></p>
 
         <ul class="mt-4 divide-y divide-sand-100 rounded-xl border border-sand-200">
@@ -73,7 +73,7 @@
                 <li class="flex items-center gap-3 px-4 py-3" wire:key="pk-{{ $passkey->id }}">
                     <x-icon name="smartphone" class="size-5 text-ink-400" />
                     <div class="min-w-0 flex-1">
-                        <p class="font-bold text-ink-700">{{ $passkey->name }}</p>
+                        <p class="font-semibold text-ink-700">{{ $passkey->name }}</p>
                         <p class="text-xs text-sand-700">{{ __('Activée :date', ['date' => $passkey->created_at->diffForHumans()]) }}@if ($passkey->last_used_at) · {{ __('dernière utilisation :date', ['date' => $passkey->last_used_at->diffForHumans()]) }}@endif</p>
                     </div>
                     <button type="button" class="rounded-lg p-2 text-sand-500 hover:bg-terra-50 hover:text-terra-600" wire:click="deletePasskey({{ $passkey->id }})"

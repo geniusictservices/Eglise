@@ -12,15 +12,18 @@ Le logo ne contient aucun symbole propre à une religion. Il convient aussi bien
 
 | Nom | Code | Usage |
 |---|---|---|
-| Bleu-vert profond | `#173F4E` | Couleur principale : textes, mains du symbole, fonds sombres |
-| Ocre | `#E09A2D` | Graine centrale, points des « i », accents et actions principales |
-| Terre cuite | `#B5532F` | Graines latérales, accents secondaires |
-| Crème | `#FBF8F2` | Fond clair |
+| Indigo | `#2C2F6B` | Couleur principale : textes, mains du symbole, fond du motif wax |
+| Ocre | `#E39B2C` | Graine centrale, points des « i », action principale, élément actif |
+| Terre cuite | `#C2522D` | Graines latérales, accents |
+| Vert | `#2E7A5A` | Accents (réussite, validation) |
+| Crème | `#FFFAF3` | Fond clair |
+
+Style de l'application : **« Chaleureux, inspiré du wax »**, choisi parmi quatre directions (voir `docs/design/styles-waumini.html`). Le motif de pagne (pois ocre et terre cuite, anneaux clairs sur indigo) habille les en-têtes et la barre latérale.
 
 ## Typographie
 
-**Outfit** (licence SIL Open Font License, voir `fonts/Outfit-OFL.txt`) :
-- *Bold* pour le nom et les titres ;
+**Lexend** (licence SIL Open Font License, voir `fonts/Lexend-OFL.txt`), conçue pour faciliter la lecture :
+- *SemiBold* pour le nom et les titres ;
 - *Regular* pour les textes.
 
 Dans le nom « waumini », les points des deux « i » sont ocre. Ce sont deux fidèles de plus.

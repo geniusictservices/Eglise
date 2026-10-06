@@ -13,12 +13,12 @@ from fontTools.ttLib import TTFont
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent
-FONT = ROOT / 'fonts' / 'Outfit-Bold.ttf'
+FONT = ROOT / 'fonts' / 'Lexend-SemiBold.woff'
 
-INK = '#173F4E'    # bleu-vert profond : confiance, sérieux
-OCHRE = '#E09A2D'  # ocre : soleil, chaleur
-TERRA = '#B5532F'  # terre cuite : la terre, les racines
-CREAM = '#FBF8F2'  # fond clair
+INK = '#2C2F6B'    # indigo : confiance, sérieux
+OCHRE = '#E39B2C'  # ocre : soleil, chaleur
+TERRA = '#C2522D'  # terre cuite : la terre, les racines
+CREAM = '#FFFAF3'  # fond crème
 WHITE = '#FFFFFF'
 
 # Le symbole est dessiné dans un repère de 120 unités ; sa boîte utile est
@@ -181,14 +181,14 @@ def presentation(svgs):
     body += place(svgs['waumini-horizontal.svg'], 70, 90, 600)
     body += place(svgs['waumini-vertical.svg'], 220, 360, 300)
     body += place(svgs['waumini-horizontal-blanc.svg'], 830, 90, 500)
-    body += f'<rect x="839" y="379" width="202" height="202" rx="41" fill="none" stroke="#3C6676" stroke-width="2"/>'
+    body += f'<rect x="839" y="379" width="202" height="202" rx="41" fill="none" stroke="#45498C" stroke-width="2"/>'
     body += place(svgs['waumini-icone-app.svg'], 840, 380, 200)
     body += place(svgs['waumini-symbole-blanc.svg'], 1110, 390, 180)
-    for i, (col, name) in enumerate([(INK, '#173F4E'), (OCHRE, '#E09A2D'), (TERRA, '#B5532F'), (CREAM, '#FBF8F2')]):
+    for i, (col, name) in enumerate([(INK, INK), (OCHRE, OCHRE), (TERRA, TERRA), (CREAM, CREAM)]):
         body += f'<rect x="{70 + i * 160}" y="740" width="140" height="90" rx="12" fill="{col}" stroke="#E2DACB"/>'
     for i, size in enumerate((64, 32, 16)):
         x = 840 + i * 110
-        body += f'<rect x="{x - 1}" y="699" width="{size + 2}" height="{size + 2}" rx="{size * 0.2 + 1:.1f}" fill="none" stroke="#3C6676" stroke-width="1.5"/>'
+        body += f'<rect x="{x - 1}" y="699" width="{size + 2}" height="{size + 2}" rx="{size * 0.2 + 1:.1f}" fill="none" stroke="#45498C" stroke-width="1.5"/>'
         body += place(svgs['waumini-icone-app.svg'], x, 700, size)
     return doc('0 0 1400 900', body, 1400, 900)
 

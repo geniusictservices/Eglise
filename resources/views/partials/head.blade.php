@@ -3,13 +3,13 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>{{ $title ? $title.' · ' : '' }}Waumini</title>
 <meta name="description" content="Waumini, la plateforme de gestion des communautés de foi.">
-<meta name="theme-color" content="#173F4E">
+<meta name="theme-color" content="#2C2F6B">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Waumini">
 <meta name="application-name" content="Waumini">
-<meta name="msapplication-TileColor" content="#173F4E">
+<meta name="msapplication-TileColor" content="#2C2F6B">
 <meta name="msapplication-TileImage" content="{{ asset('icons/windows/Square150x150Logo.png') }}">
 <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
 <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">

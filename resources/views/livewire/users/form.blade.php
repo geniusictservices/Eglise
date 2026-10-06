@@ -1,14 +1,14 @@
 <div>
-    <a href="{{ route('users.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-bold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Utilisateurs') }}</a>
+    <a href="{{ route('users.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Utilisateurs') }}</a>
     <x-page-header :title="$user ? $user->name : __('Nouvel utilisateur')"
                    :description="$user ? null : __('La personne se connectera avec son numéro de téléphone et un mot de passe provisoire, qu’elle changera à la première connexion.')" />
 
     @if ($temporaryPassword)
         <div class="card mb-6 border-ochre-300 bg-ochre-50 p-5" x-data="{ copied: false }">
-            <p class="font-bold text-ink-700">{{ __('Mot de passe provisoire') }}</p>
+            <p class="font-semibold text-ink-700">{{ __('Mot de passe provisoire') }}</p>
             <p class="mt-1 text-sm text-sand-700">{{ __('Communiquez-le à :name, de vive voix ou par WhatsApp. Il ne sera plus affiché.', ['name' => $user->name]) }}</p>
             <div class="mt-3 flex flex-wrap items-center gap-3">
-                <code class="rounded-xl bg-white px-4 py-2 font-mono text-2xl font-bold tracking-wider text-ink-700">{{ $temporaryPassword }}</code>
+                <code class="rounded-xl bg-white px-4 py-2 font-mono text-2xl font-semibold tracking-wider text-ink-700">{{ $temporaryPassword }}</code>
                 <button type="button" class="btn-secondary" @click="navigator.clipboard?.writeText(@js($temporaryPassword)).then(() => copied = true)">
                     <x-icon name="check" class="size-4" x-show="copied" x-cloak /> <span x-text="copied ? '{{ __('Copié') }}' : '{{ __('Copier') }}'"></span>
                 </button>
@@ -79,7 +79,7 @@
                         <li class="flex items-center gap-3 px-4 py-3">
                             <x-icon name="shield-check" class="size-5 text-ink-400" />
                             <div class="min-w-0 flex-1">
-                                <p class="font-bold text-ink-700">{{ $assignment->role->name }}</p>
+                                <p class="font-semibold text-ink-700">{{ $assignment->role->name }}</p>
                                 <p class="text-xs text-sand-700">{{ $assignment->organization->name }}@if ($assignment->includes_descendants) · {{ __('et niveaux inférieurs') }}@endif</p>
                             </div>
                             <button type="button" class="rounded-lg p-2 text-sand-500 hover:bg-terra-50 hover:text-terra-600" wire:click="removeRole({{ $assignment->id }})"

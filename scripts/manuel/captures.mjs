@@ -109,7 +109,7 @@ const SCENES = [
         run: async (page) => {
             await page.goto(`${BASE}/tableau-de-bord`);
             await settle(page);
-            const marks = [{ selector: 'main .grid.grid-cols-3', label: '2' }, { selector: 'main section.card', label: '3' }];
+            const marks = [{ selector: 'main .grid.grid-cols-2', label: '2' }, { selector: 'main .ring-progress', label: '3' }];
             marks.unshift(isMobile(page) ? { selector: 'button[aria-label="Ouvrir le menu"]', label: '1' } : { selector: 'aside button[aria-expanded]', label: '1' });
             if (isMobile(page)) marks.push({ selector: 'nav[aria-label="Navigation principale"]', label: '4' });
             await mark(page, marks);

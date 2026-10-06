@@ -1,19 +1,20 @@
 @php $children = $byParent->get($node->id, collect()); @endphp
 <li>
     <div class="group flex items-center gap-3 rounded-xl px-2 py-2.5 hover:bg-sand-50" style="padding-left: calc(0.5rem + {{ $level }} * var(--indent, 1rem))">
-        <span @class(['grid size-9 shrink-0 place-items-center rounded-lg font-display text-sm font-bold',
-            'bg-ink-700 text-white' => $level === 0, 'bg-ink-50 text-ink-600' => $level > 0])>
+        <span @class(['grid size-9 shrink-0 place-items-center rounded-xl text-sm font-semibold',
+            'bg-ink-700 text-white' => $level % 4 === 0, 'bg-ochre-500 text-[#2A1B04]' => $level % 4 === 1,
+            'bg-terra-500 text-white' => $level % 4 === 2, 'bg-leaf-500 text-white' => $level % 4 === 3])>
             {{ $node->initials() }}
         </span>
         <div class="min-w-0 flex-1">
-            <p class="font-bold leading-snug text-ink-700">{{ $node->name }}</p>
+            <p class="font-semibold leading-snug text-ink-700">{{ $node->name }}</p>
             <p class="text-xs text-sand-700">{{ $node->level_label }}@if ($node->city) · {{ $node->city }}@endif @if ($children->isNotEmpty()) · {{ trans_choice(':count niveau inférieur|:count niveaux inférieurs', $children->count()) }}@endif</p>
         </div>
         <div class="flex shrink-0 items-center gap-1">
             @if ($level > 0 && auth()->user()->canAccess($node))
                 <form method="POST" action="{{ route('organizations.switch', $node) }}">
                     @csrf
-                    <button type="submit" class="rounded-lg px-2.5 py-1.5 text-sm font-bold text-ink-600 hover:bg-ink-50">{{ __('Ouvrir') }}</button>
+                    <button type="submit" class="rounded-lg px-2.5 py-1.5 text-sm font-semibold text-ink-600 hover:bg-ink-50">{{ __('Ouvrir') }}</button>
                 </form>
             @endif
             @if ($canManage)

@@ -55,7 +55,7 @@
     </div>
 
     <p class="mt-6 flex flex-col items-center gap-2 text-center text-sm">
-        <a href="{{ route('install') }}" class="font-bold text-ink-600 underline-offset-4 hover:underline">{{ __('Installer Waumini sur votre téléphone ou ordinateur') }}</a>
-        <a href="{{ route('help.index') }}" class="font-bold text-ink-600 underline-offset-4 hover:underline">{{ __('Manuel d’utilisation') }}</a>
+        <a href="{{ route('install') }}" class="font-semibold text-ink-600 underline-offset-4 hover:underline">{{ __('Installer Waumini sur votre téléphone ou ordinateur') }}</a>
+        <a href="{{ route('help.index') }}" class="font-semibold text-ink-600 underline-offset-4 hover:underline">{{ __('Manuel d’utilisation') }}</a>
     </p>
 </div>

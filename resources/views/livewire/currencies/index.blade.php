@@ -9,7 +9,7 @@
 
     <div class="mb-4 flex flex-wrap items-center gap-3 rounded-2xl border border-sand-200 bg-white p-4">
         <x-icon name="calendar" class="size-5 text-ink-400" />
-        <label for="rate-date" class="text-sm font-bold text-ink-700">{{ __('Date des taux') }}</label>
+        <label for="rate-date" class="text-sm font-semibold text-ink-700">{{ __('Date des taux') }}</label>
         <input wire:model.live="date" id="rate-date" type="date" max="{{ today()->toDateString() }}" class="input !w-auto !min-h-0 !py-2">
         @error('date') <p class="error">{{ $message }}</p> @enderror
         <p class="text-sm text-sand-700">{{ __('Par défaut aujourd’hui. Choisissez une date passée pour corriger un oubli.') }}</p>
@@ -17,7 +17,7 @@
 
     <div class="grid gap-4 md:grid-cols-2">
         <article class="card flex items-center gap-4 p-5">
-            <span class="grid size-12 place-items-center rounded-xl bg-ink-700 font-display text-lg font-bold text-white">$</span>
+            <span class="grid size-12 place-items-center rounded-xl bg-ink-700 font-display text-lg font-semibold text-white">$</span>
             <div>
                 <p class="font-display text-lg font-semibold text-ink-700">USD · {{ __('Dollar américain') }}</p>
                 <p class="text-sm text-sand-700">{{ __('Devise de base : tous les totaux sont convertis en dollars.') }}</p>
@@ -32,17 +32,17 @@
                         <p class="font-display text-lg font-semibold text-ink-700">{{ $c->currency }} · {{ $c->name() }}</p>
                         @if ($row['effective'])
                             <p class="mt-0.5 text-sm text-sand-700">
-                                <span class="font-bold text-ink-700 tabular">{{ Money::rate($row['effective'], $c->currency) }}</span>
+                                <span class="font-semibold text-ink-700 tabular">{{ Money::rate($row['effective'], $c->currency) }}</span>
                                 @if ($row['today']) <span class="badge ml-1 bg-ink-50 text-ink-600">{{ __('à jour') }}</span>
                                 @elseif ($row['inherited']) <span class="badge ml-1 bg-sand-100 text-sand-700">{{ __('taux du niveau supérieur') }}</span>
                                 @else <span class="badge ml-1 bg-ochre-100 text-ochre-700">{{ __('du :date', ['date' => $row['own']->effective_on->translatedFormat('j M')]) }}</span>
                                 @endif
                             </p>
                         @else
-                            <p class="mt-0.5 text-sm font-bold text-terra-600">{{ __('Aucun taux saisi') }}</p>
+                            <p class="mt-0.5 text-sm font-semibold text-terra-600">{{ __('Aucun taux saisi') }}</p>
                         @endif
                     </div>
-                    <button type="button" class="text-xs font-bold text-sand-700 hover:text-ink-700" wire:click="toggle({{ $c->id }})">{{ $c->is_active ? __('Désactiver') : __('Réactiver') }}</button>
+                    <button type="button" class="text-xs font-semibold text-sand-700 hover:text-ink-700" wire:click="toggle({{ $c->id }})">{{ $c->is_active ? __('Désactiver') : __('Réactiver') }}</button>
                 </div>
 
                 @if ($c->is_active)
@@ -53,13 +53,13 @@
                                 <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-sand-700">1 $ =</span>
                                 <input wire:model="rates.{{ $c->currency }}" id="rate-{{ $c->currency }}" inputmode="decimal" class="input pl-14 pr-14 tabular"
                                        placeholder="{{ $row['effective'] ? (string) $row['effective']->strippedOfTrailingZeros() : '2850' }}">
-                                <span class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-sand-700">{{ config("waumini.currencies.{$c->currency}.symbol") }}</span>
+                                <span class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-sand-700">{{ config("waumini.currencies.{$c->currency}.symbol") }}</span>
                             </div>
                             @error("rates.{$c->currency}") <p class="error">{{ $message }}</p> @enderror
                         </div>
                         <button type="submit" class="btn-primary">{{ __('Enregistrer') }}</button>
                     </form>
-                    <button type="button" wire:click="$set('historyFor', '{{ $c->currency }}')" class="mt-3 text-sm font-bold text-ink-600 hover:underline">{{ __('Voir l’historique') }}</button>
+                    <button type="button" wire:click="$set('historyFor', '{{ $c->currency }}')" class="mt-3 text-sm font-semibold text-ink-600 hover:underline">{{ __('Voir l’historique') }}</button>
                 @endif
             </article>
         @endforeach
@@ -77,7 +77,7 @@
                         @forelse ($history as $rate)
                             <tr>
                                 <td class="whitespace-nowrap">{{ $rate->effective_on->translatedFormat('l j F Y') }}</td>
-                                <td class="whitespace-nowrap font-bold text-ink-700 tabular">{{ Money::rate($rate->rate, $rate->currency) }}</td>
+                                <td class="whitespace-nowrap font-semibold text-ink-700 tabular">{{ Money::rate($rate->rate, $rate->currency) }}</td>
                                 <td class="text-sand-700">{{ $rate->author?->name ?? '—' }}</td>
                             </tr>
                         @empty
