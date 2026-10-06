@@ -46,3 +46,15 @@ Ne supprimez pas sa fiche : changez son **statut** en « Transféré », avec le
 ### Notre ancien registre est sur papier. Faut-il tout ressaisir à la main ?
 
 Vous pouvez recopier le registre dans le **modèle Excel** de Waumini (sur un ordinateur, c'est bien plus rapide), puis l'importer en une fois. Genius ICT peut vous accompagner. Voir [Importer depuis Excel](14-import-export.md).
+
+### On s'est trompé dans une recette. Comment la corriger ?
+
+Rien ne s'efface dans les finances : dans **Opérations**, **annulez** la recette fausse avec un motif (elle reste visible, barrée), puis saisissez-la de nouveau correctement. Si le mois est déjà clôturé, l'administrateur doit d'abord le rouvrir. Voir [Clôtures et rapports](20-clotures-rapports.md).
+
+### Le pasteur a demandé une dépense : qui la signe ?
+
+Personne ne signe sa propre demande. Il faut les signatures d'**autres** personnes qui ont la permission « Approuver les dépenses » (le conseil, un autre pasteur, l'administrateur). Si personne d'autre ne l'a, l'administrateur l'ajoute à un rôle. Voir [Les dépenses et les avances](19-depenses.md).
+
+### Nos offrandes sont en francs et en dollars. Comment lire le résultat ?
+
+Chaque compte garde ses devises : les francs restent des francs. Pour additionner, Waumini convertit chaque opération en dollars au **taux du jour où elle a été saisie**. Pensez donc à saisir le taux du jour régulièrement, dans [Devises et taux](07-devises.md).

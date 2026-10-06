@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : 7 octobre 2026, site public livré</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : 7 octobre 2026, finances livrées</span>
   </header>
 
   <div class="hero">
@@ -250,10 +250,10 @@ const BLOCKS = [
       goal: "Le registre complet, retrouvable en une seconde.",
       items: ["Registre réglé par le siège : format du numéro, statuts, champs communs ; chaque paroisse ajoute ses champs et fonctions", "Membres : recherche, filtres, effectifs, détection des doublons dans toute la dénomination", "Ménages (un seul chef de ménage), statuts avec historique, fonctions et mandats", "Étapes de vie (baptême, mariage…) avec les numéros des anciens registres", "Départements créés par l’administrateur, avec responsables ; Administration générale d’office", "Import Excel guidé : modèle Waumini, vérification ligne par ligne, annulation pendant 30 jours ; export", "Carte de membre avec QR code de vérification et photo passeport facultative", "Effectifs sur le tableau de bord ; 4 nouveaux chapitres du manuel"],
       demo: "Livré : un registre papier recopié dans le modèle Excel, vérifié puis importé ; 100 tests automatiques." },
-    { status: "doing", title: "Finances",
+    { status: "done", title: "Finances",
       goal: "Chaque franc tracé, chaque rapport vérifiable.",
-      items: ["Caisses en USD, CDF et autres devises, change entre caisses", "Recettes collectives (la boîte : total seul), personnelles (au nom du membre) et de groupe", "Feuille de collecte du culte avec billets et compteurs", "Promesses : sur un projet, une campagne, une contribution régulière ; promis, versé, reste ; relance WhatsApp en un clic", "Déclarations de paiement mobile money (ID et capture) validées par la finance", "Dépenses : demande, contrôle budgétaire, approbation, décaissement, justification ; avances à justifier", "Reçus, clôtures mensuelles et annuelles, rapports PDF et Excel"],
-      demo: "Un dimanche complet : collecte, dîmes, une dépense approuvée et le rapport du mois." },
+      items: ["Comptes : caisses physiques, mobile money et banques, chacun dans les devises choisies par l’église ; virements et change", "Recettes collectives, personnelles et de groupe ; reçus numérotés en A4 et en ticket 80 ou 58 mm, avec l’identité juridique choisie par l’église", "Feuille de collecte du culte : boîte, enveloppes, comptage des billets, procès-verbal", "Promesses et campagnes : échéancier, versements, dons en nature, relance WhatsApp préparée", "Paiements mobile money déclarés (ID et capture), doublons signalés, validés par la finance", "Dépenses : demande, contrôle, une à trois signatures (deux par défaut), décaissement, justification ; avances avec délai, reste rendu en caisse, blocage en option", "Clôtures mensuelles et annuelles, réouverture par l’administrateur avec motif", "Rapports du mois et de l’exercice : à l’écran, imprimés en PDF et en Excel ; 5 nouveaux chapitres du manuel"],
+      demo: "Livré : un dimanche complet, de la collecte à la dépense approuvée, puis le mois clôturé et son rapport ; 140 tests automatiques." },
     { status: "todo", title: "Plan d’action et budget",
       goal: "L’année de la communauté, préparée ensemble et suivie.",
       items: ["Vision pluriannuelle, plan d’action annuel, objectifs et actions", "Avancement en pourcentage", "Propositions des départements (dépenses et recettes prévues)", "Arbitrage par la finance, budget adopté puis révisions versionnées", "Autorisation pour toute dépense hors budget", "Réunions : participants, procès-verbal, décisions", "Plan et budget à chaque niveau : paroisse, secteur, région, siège"],
@@ -280,7 +280,7 @@ const BLOCKS = [
   { letter: "Bloc 4", title: "Le réseau et la plateforme", steps: [
     { status: "todo", title: "Consolidation multi-paroisses",
       goal: "Le siège voit toutes ses paroisses sans ressaisie.",
-      items: ["Rapports consolidés à chaque niveau", "Transferts de membres entre paroisses", "Quotes-parts calculées et suivies", "Paroisses en retard de saisie repérées"],
+      items: ["Rapports consolidés à chaque niveau", "Transferts de membres entre paroisses", "Quotes-parts propres à chaque dénomination (pourcentage, montant fixe ou aucune), calculées et suivies", "Paroisses en retard de saisie repérées"],
       demo: "Une dénomination de six paroisses, vue depuis la région." },
     { status: "todo", title: "Sites vitrines",
       goal: "Chaque paroisse en ligne, sans rien saisir deux fois.",
@@ -324,9 +324,14 @@ const DECISIONS = [
     "Chaque montant s’affiche dans sa devise avec son équivalent en dollars.",
     "Les opérations de change entre caisses sont enregistrées avec le taux obtenu.",
     "Trois modes de recette : collectif (la boîte, total seul), personnel (au nom du membre), mixte ; plus les contributions d’un groupe.",
-    "Circuit des dépenses : demande, contrôle budgétaire, approbation, décaissement, justification ; approbateurs et seuils réglables.",
+    "Circuit des dépenses : demande, contrôle, approbation, décaissement, justification ; deux signatures par défaut, une ou trois au choix de l’église ; jamais celle du demandeur.",
+    "Le contrôle budgétaire des dépenses arrivera avec le module Plan d’action et budget.",
     "Avances à justifier avec échéance et relances ; blocage des nouvelles demandes en option.",
-    "Un département « Administration générale » pour les charges courantes."
+    "Un département « Administration générale » pour les charges courantes.",
+    "Comptes : caisses physiques, mobile money et banques, chacun avec les devises choisies par l’église.",
+    "Reçus en A4 et en ticket thermique (80 mm par défaut, 58 mm possible) ; l’église choisit les informations affichées.",
+    "Un mois clôturé est verrouillé ; seul l’administrateur le rouvre, avec un motif conservé.",
+    "La quote-part due au niveau supérieur dépend de chaque dénomination : pourcentage, montant fixe ou aucune (étape Consolidation)."
   ]],
   ["Promesses", [
     "Une promesse peut porter sur un projet, une campagne, une contribution régulière ou une demande ponctuelle.",

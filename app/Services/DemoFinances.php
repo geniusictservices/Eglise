@@ -243,11 +243,11 @@ class DemoFinances
         $as($pasteur, 4, fn () => $service->approve($toit, $pasteur));
         $as($admin, 3, fn () => $service->approve($toit, $admin));
 
-        // Une signature sur deux.
+        // Une signature sur deux : celle du pasteur de la paroisse manque.
         $chaises = $request(3, ['department_id' => $dept['Jeunesse'], 'category_id' => $cat['Fournitures et matériel'], 'title' => '50 chaises pour la salle des jeunes',
             'amount' => 450, 'needed_on' => today()->addWeeks(2)->toDateString()]);
         $as($furaha, 2, fn () => $service->check($chaises));
-        $as($pasteur, 1, fn () => $service->approve($chaises, $pasteur, 'D’accord, si possible avant la convention.'));
+        $as($admin, 1, fn () => $service->approve($chaises, $admin, 'D’accord, si possible avant la convention.'));
 
         // À contrôler.
         $request(1, ['department_id' => $general, 'category_id' => $cat['Accueil et réceptions'], 'title' => 'Rafraîchissements pour la réunion des diacres',

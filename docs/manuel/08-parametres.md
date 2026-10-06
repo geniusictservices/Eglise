@@ -2,7 +2,7 @@
 
 > Permission nécessaire : **Modifier les paramètres, le logo et les libellés** (rôle Administrateur par défaut).
 
-Les paramètres concernent **la communauté affichée**. Ils sont répartis en quatre onglets ① : **Informations**, **Apparence**, **Libellés** et **Support**.
+Les paramètres concernent **la communauté affichée**. Ils sont répartis en cinq onglets ① : **Informations**, **Identité et documents**, **Apparence**, **Libellés** et **Support**.
 
 <table><tr>
 <td width="68%"><img src="captures/bureau/20-parametres.png" alt="Paramètres de la communauté sur ordinateur"></td>
@@ -18,6 +18,23 @@ Les paramètres concernent **la communauté affichée**. Ils sont répartis en q
 - **Fuseau horaire** : *Est de la RDC* pour Goma, Bukavu et Lubumbashi ; *Ouest de la RDC* pour Kinshasa et Matadi.
 
 Touchez **Enregistrer** en bas du formulaire.
+
+## Identité et documents : le statut juridique sur les reçus
+
+Une église est une personne morale : ses reçus, et plus tard ses attestations et ses lettres, portent son identité juridique. L'onglet **Identité et documents** la renseigne, et **l'église décide de ce qui s'affiche**.
+
+<table><tr>
+<td width="68%"><img src="captures/bureau/59-identite.png" alt="Identité et documents sur ordinateur"></td>
+<td width="32%"><img src="captures/mobile/59-identite.png" alt="Identité et documents sur téléphone"></td>
+</tr></table>
+
+① **Le logo** (PNG à fond transparent de préférence).
+
+② **Le statut juridique** : dénomination officielle, forme juridique (ASBL, établissement d'utilité publique, confession religieuse reconnue…), arrêté ou décret de personnalité juridique, Id. Nat., NIF, représentant légal, et une devise ou un verset.
+
+③ **Ce qui s'affiche sur les documents** : cochez ou décochez chaque élément (logo, dénomination, forme juridique, personnalité juridique, Id. Nat., NIF, représentant, devise, adresse, téléphone, e-mail, nom du niveau supérieur). Seules les informations renseignées s'affichent. Choisissez aussi le **texte en bas des reçus** et le **format de reçu par défaut** (A4, ticket 80 mm ou 58 mm).
+
+**Dans une dénomination**, l'identité juridique est celle du **siège** : les paroisses la reçoivent telle quelle, avec le logo du siège si elles n'ont pas le leur. Chaque paroisse garde son nom, son adresse et son téléphone, et peut régler ce qui s'affiche sur ses propres documents ; sinon, elle suit le réglage de son niveau supérieur.
 
 ## Apparence : les couleurs de votre espace
 

@@ -537,6 +537,220 @@ const SCENES = [
             await mark(page, [{ selector: 'main button[wire\\:click=editField]', label: '1' }]);
         },
     },
+    // ---------- Finances (trésorière de la paroisse de Himbi) ----------
+    {
+        id: '39-finances', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances`);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.wax', label: '1' }, { selector: 'main a[href*="/finances/operations?compte="]', label: '2' }]);
+        },
+    },
+    {
+        id: '40-compte', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/comptes`);
+            await page.click('main button:has-text("Caisse principale")');
+            await page.waitForSelector('[role=dialog] input[type=checkbox]');
+            await settle(page);
+            await mark(page, [{ selector: '[role=dialog] form > :first-child', label: '1' }, { selector: '[role=dialog] label:has(input[type=checkbox])', label: '2' }]);
+        },
+    },
+    {
+        id: '41-recette', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/recette`);
+            await settle(page);
+            await page.selectOption('#categoryId', { label: 'Dîme' });
+            await page.waitForSelector('main input[aria-label="Rechercher le membre"]');
+            await page.fill('main input[aria-label="Rechercher le membre"]', 'Kavira');
+            await page.waitForSelector('main button[wire\\:click^=chooseMember]');
+            await page.click('main button[wire\\:click^=chooseMember]');
+            await page.waitForTimeout(400);
+            await page.selectOption('#accountId', { label: 'Caisse principale' });
+            await page.waitForTimeout(400);
+            await page.selectOption('#currency', 'USD');
+            await page.waitForTimeout(300);
+            await page.fill('#amount', '25');
+            await settle(page);
+            await mark(page, [{ selector: '#accountId', label: '1' }, { selector: '#categoryId', label: '2' }, { selector: '#amount', label: '3' }]);
+        },
+    },
+    {
+        id: '42-recu', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/operations`);
+            const href = await page.getAttribute('main a[href*="/finances/recu/"]', 'href');
+            await page.goto(href);
+            await settle(page);
+            await mark(page, [{ selector: '[role=group]', label: '1' }, { selector: 'button[onclick="window.print()"]', label: '2' }]);
+        },
+    },
+    {
+        id: '43-virement', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/virement`);
+            await settle(page);
+            await page.fill('#amountOut', '285000');
+            await page.waitForTimeout(300);
+            if (await page.$('#amountIn')) await page.fill('#amountIn', '100');
+            await settle(page);
+            await mark(page, [{ selector: '#from', label: '1' }, { selector: '#to', label: '2' }]);
+        },
+    },
+    {
+        id: '44-journal', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/operations`);
+            await settle(page);
+            await mark(page, [{ selector: 'main button[wire\\:click="shiftMonth(-1)"]', label: '1' }, { selector: 'main select[wire\\:model\\.live=account]', label: '2' }]);
+        },
+    },
+    {
+        id: '45-collecte', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/collecte`);
+            await page.click('main a:has-text("Culte des jeunes")');
+            await page.waitForURL(/\/finances\/collecte\/\d+$/);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main input[wire\\:model\\.blur^="counts.USD"]', label: '1' }]
+                : [{ selector: 'main input[wire\\:model\\.blur^="counts.USD"]', label: '1' }, { selector: 'main :has(> h2.mb-3)', label: '2' }, { selector: 'main button[wire\\:click=validateSheet]', label: '3' }]);
+        },
+    },
+    {
+        id: '46-promesses', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/promesses`);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.wax', label: '1' }, { selector: 'main a[href$="/finances/promesses/nouvelle"]', label: '2' }]);
+        },
+    },
+    {
+        id: '47-promesse', user: '0990000007',
+        run: async (page) => {
+            // La première promesse de la démo : trois mois versés sur six.
+            await page.goto(`${BASE}/finances/promesses/1`);
+            await settle(page);
+            await mark(page, [{ selector: 'main button[wire\\:click=openPayment]', label: '1' }, { selector: 'main a[href^="https://wa.me"]', label: '2' }]);
+        },
+    },
+    {
+        id: '48-declarations', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/paiements-declares`);
+            await page.click('main button[wire\\:click^=review]');
+            await page.waitForSelector('#rv-account');
+            await settle(page);
+            await mark(page, [{ selector: '#rv-account', label: '1' }, { selector: '[role=dialog] button[wire\\:click=approve]', label: '2' }]);
+        },
+    },
+    {
+        id: '49-depenses', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/depenses?etape=all`);
+            await settle(page);
+            await mark(page, [{ selector: 'main .overflow-x-auto', label: '1' }, { selector: 'main p.border-terra-100', label: '2' }]);
+        },
+    },
+    {
+        id: '50-depense-demande', user: '0990000009',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/depenses/nouvelle`);
+            await settle(page);
+            await page.fill('#title', 'Location de bâches pour la convention des jeunes');
+            await page.selectOption('#departmentId', { label: 'Jeunesse' });
+            await page.selectOption('#categoryId', { label: 'Fournitures et matériel' });
+            await page.fill('#amount', '120');
+            await page.check('main input[type=checkbox]');
+            await page.waitForSelector('main input[placeholder^="Membre"]');
+            await settle(page);
+            await mark(page, [{ selector: '#title', label: '1' }, { selector: 'main label:has(input[type=checkbox])', label: '2' }]);
+        },
+    },
+    {
+        id: '51-depense-signature', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/depenses?etape=all`);
+            await page.click('main a:has-text("50 chaises")');
+            await page.waitForURL(/\/finances\/depenses\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main ol[aria-label=Circuit]', label: '1' }, { selector: 'main form[wire\\:submit=approve] button.btn-primary', label: '2' }]);
+        },
+    },
+    {
+        id: '52-depense-decaisser', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/depenses?etape=all`);
+            await page.click('main a:has-text("toiture")');
+            await page.waitForURL(/\/finances\/depenses\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main form[wire\\:submit=disburse] .space-y-2', label: '1' }, { selector: 'main aside section', label: '2' }]);
+        },
+    },
+    {
+        id: '53-avance-justifier', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/depenses?etape=all`);
+            await page.click('main a:has-text("Cordes de guitare")');
+            await page.waitForURL(/\/finances\/depenses\/\d+$/);
+            await page.fill('#spent', '65');
+            await page.waitForSelector('main p.bg-leaf-50');
+            await settle(page);
+            await mark(page, [{ selector: '#spent', label: '1' }, { selector: 'main p.bg-leaf-50', label: '2' }]);
+        },
+    },
+    {
+        id: '54-circuit', user: '0990000001',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/comptes?onglet=circuit`);
+            await settle(page);
+            await mark(page, [{ selector: 'main form .grid-cols-3', label: '1' }, { selector: '#advanceDays', label: '2' }]);
+        },
+    },
+    {
+        id: '55-clotures', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/clotures`);
+            await settle(page);
+            await mark(page, [{ selector: 'main li.border-leaf-300', label: '1' }, { selector: 'main button[wire\\:click^=askClose]', label: '2' }]);
+        },
+    },
+    {
+        id: '56-cloture-fenetre', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/clotures`);
+            await page.click('main button[wire\\:click^=askClose]');
+            await page.waitForSelector('[role=dialog] .bg-ochre-50');
+            await settle(page);
+            await mark(page, [{ selector: '[role=dialog] .bg-ochre-50', label: '1' }]);
+        },
+    },
+    {
+        id: '57-rapport', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/rapports?annee=2026&mois=8`);
+            await settle(page);
+            await mark(page, [{ selector: 'main select[wire\\:model\\.live=month]', label: '1' }, { selector: 'main a[href*="/rapports/imprimer"]', label: '2' }, { selector: 'main a[href*="/rapports/excel"]', label: '3' }]);
+        },
+    },
+    {
+        id: '58-rapport-imprime', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/rapports/imprimer?annee=2026&mois=0`);
+            await settle(page);
+        },
+    },
+    {
+        id: '59-identite', user: '0990000001',
+        run: async (page) => {
+            await page.goto(`${BASE}/parametres?onglet=identite`);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main form section:first-child', label: '1' }]
+                : [{ selector: 'main form section:first-child', label: '1' }, { selector: 'main form section:nth-child(2) h2', label: '2' }, { selector: 'main form aside section:first-child h2, main form > div:nth-child(2) section:first-child h2', label: '3' }]);
+        },
+    },
 ];
 
 const browser = await chromium.launch();

@@ -31,15 +31,23 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 7. [Importer depuis Excel et exporter](14-import-export.md)
 8. [Réglages du registre : numéro, statuts, champs](15-reglages-registre.md)
 
+### Les finances
+
+9. [Comptes, recettes, reçus, virements et opérations](16-finances.md)
+10. [La collecte du culte](17-collecte.md)
+11. [Promesses, campagnes et paiements déclarés](18-promesses.md)
+12. [Les dépenses et les avances](19-depenses.md)
+13. [Clôtures et rapports financiers](20-clotures-rapports.md)
+
 ### Pour l'administrateur et les responsables
 
-9. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
-10. [Gérer les utilisateurs](05-utilisateurs.md)
-11. [Rôles et permissions](06-roles.md)
-12. [Devises et taux du jour](07-devises.md)
-13. [Paramètres, apparence, libellés et accès du support](08-parametres.md)
-14. [Le journal d'audit](09-journal.md)
-15. [L'abonnement](11-abonnement.md)
+14. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
+15. [Gérer les utilisateurs](05-utilisateurs.md)
+16. [Rôles et permissions](06-roles.md)
+17. [Devises et taux du jour](07-devises.md)
+18. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
+19. [Le journal d'audit](09-journal.md)
+20. [L'abonnement](11-abonnement.md)
 
 ### Aide
 
