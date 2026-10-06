@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Models\AttachmentRequest;
+use App\Models\Budget;
+use App\Models\BudgetProposal;
 use App\Models\Campaign;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
@@ -84,6 +86,8 @@ class AppServiceProvider extends ServiceProvider
             'pledge_delivery' => PledgeDelivery::class,
             'expense_request' => ExpenseRequest::class,
             'finance_closing' => FinanceClosing::class,
+            'budget' => Budget::class,
+            'budget_proposal' => BudgetProposal::class,
             'payment_declaration' => PaymentDeclaration::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,

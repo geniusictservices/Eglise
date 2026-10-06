@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\BudgetPrintController;
 use App\Http\Controllers\CardVerificationController;
 use App\Http\Controllers\CollectionPrintController;
 use App\Http\Controllers\DeclarationScreenshotController;
@@ -93,6 +94,10 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/finances/rapports/imprimer', [FinanceReportController::class, 'print'])->name('finances.reports.print');
     Route::get('/finances/rapports/excel', [FinanceReportController::class, 'excel'])->name('finances.reports.excel');
     Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
+    Route::get('/budget', Livewire\Budget\Index::class)->name('budget.index');
+    Route::get('/budget/{year}/departement/{department}', Livewire\Budget\Proposal::class)->whereNumber(['year', 'department'])->name('budget.proposal');
+    Route::get('/budget/version/{budget}', Livewire\Budget\Version::class)->name('budget.version');
+    Route::get('/budget/version/{budget}/imprimer', BudgetPrintController::class)->name('budget.print');
     Route::get('/finances/recu/{transaction}', ReceiptController::class)->name('finances.receipt');
 
     Route::get('/devises', Livewire\Currencies\Index::class)->name('currencies.index');

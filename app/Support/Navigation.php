@@ -57,6 +57,12 @@ class Navigation
                 ],
             ],
             [
+                'label' => __('Plan d’action'),
+                'items' => [
+                    ['route' => 'budget.index', 'label' => __('Budget'), 'icon' => 'scroll-text', 'can' => ['planning.view', 'budget.propose', 'budget.arbitrate', 'budget.approve']],
+                ],
+            ],
+            [
                 'label' => __('Administration'),
                 'items' => [
                     ['route' => 'hierarchy.index', 'label' => __('Hiérarchie'), 'icon' => 'network', 'can' => 'organization.view'],
