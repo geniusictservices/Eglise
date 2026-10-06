@@ -291,6 +291,7 @@ return [
             'items' => [
                 'payroll.view' => 'Voir la paie et les rémunérations',
                 'payroll.manage' => 'Gérer les bénéficiaires, les éléments et les paies',
+                'payroll.approve' => 'Approuver les paies et les avances sur salaire',
             ],
         ],
         'community' => [
@@ -352,6 +353,7 @@ return [
                 'members.view', 'members.manage', 'members.sensitive',
                 'finance.view', 'finance.contributions.view', 'finance.expenses.approve', 'finance.reports',
                 'planning.view', 'planning.manage', 'budget.approve', 'budget.authorize', 'meetings.manage',
+                'payroll.view', 'payroll.approve',
                 'activities.manage', 'communication.send',
                 'documents.issue',
                 'pastoral.view', 'pastoral.confidential',

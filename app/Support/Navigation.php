@@ -51,6 +51,7 @@ class Navigation
                     ['route' => 'finances.expenses', 'label' => __('Dépenses'), 'icon' => 'banknote', 'can' => ['finance.view', 'finance.expenses.request', 'finance.expenses.approve']],
                     ['route' => 'finances.declarations', 'label' => __('Paiements déclarés'), 'icon' => 'smartphone', 'can' => 'finance.payments.validate'],
                     ['route' => 'finances.journal', 'label' => __('Opérations'), 'icon' => 'history', 'can' => 'finance.view'],
+                    ['route' => 'payroll.index', 'label' => __('Paie'), 'icon' => 'briefcase', 'can' => ['payroll.view', 'payroll.manage', 'payroll.approve']],
                     ['route' => 'finances.reports', 'label' => __('Rapports'), 'icon' => 'file-text', 'can' => 'finance.reports'],
                     ['route' => 'finances.closings', 'label' => __('Clôtures'), 'icon' => 'lock', 'can' => ['finance.close', 'finance.reopen', 'finance.reports']],
                     ['route' => 'finances.settings', 'label' => __('Comptes et catégories'), 'icon' => 'landmark', 'can' => 'finance.settings'],

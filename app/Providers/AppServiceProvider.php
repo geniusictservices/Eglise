@@ -30,7 +30,10 @@ use App\Models\MemberImport;
 use App\Models\MemberStatus;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
+use App\Models\Payee;
+use App\Models\PayItem;
 use App\Models\PaymentDeclaration;
+use App\Models\PaySchedule;
 use App\Models\Plan;
 use App\Models\PlanAction;
 use App\Models\PlanObjective;
@@ -98,6 +101,9 @@ class AppServiceProvider extends ServiceProvider
             'plan_objective' => PlanObjective::class,
             'plan_action' => PlanAction::class,
             'meeting' => Meeting::class,
+            'pay_schedule' => PaySchedule::class,
+            'payee' => Payee::class,
+            'pay_item' => PayItem::class,
             'payment_declaration' => PaymentDeclaration::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,
