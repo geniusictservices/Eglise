@@ -2,7 +2,7 @@
 
 Un **utilisateur** est une personne qui se connecte à Waumini : pasteur, secrétaire, trésorier, responsable de département… Chacun reçoit un ou plusieurs **rôles**, qui décident de ce qu'il voit et peut faire.
 
-> Les **membres** de la communauté (les fidèles) seront gérés dans le registre des membres, à l'étape suivante. Ils n'ont pas besoin d'être utilisateurs.
+> Les **membres** de la communauté (les fidèles) sont inscrits dans le [registre des membres](12-membres.md). Ils n'ont pas besoin d'être utilisateurs.
 
 > Permissions nécessaires : **Voir les utilisateurs** pour la liste, **Créer les utilisateurs et leur attribuer des rôles** pour le reste.
 

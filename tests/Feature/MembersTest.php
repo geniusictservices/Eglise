@@ -9,6 +9,7 @@ use App\Models\MemberField;
 use App\Models\MemberFunction;
 use App\Models\MemberStatus;
 use App\Models\User;
+use App\Services\MemberRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -246,10 +247,32 @@ class MembersTest extends TestCase
 
         $path = $member->fresh()->photo_path;
         Storage::disk('local')->assertExists($path);
-        $this->assertSame([480, 480], array_slice(getimagesizefromstring(Storage::disk('local')->get($path)), 0, 2));
+        $this->assertSame([420, 540], array_slice(getimagesizefromstring(Storage::disk('local')->get($path)), 0, 2));
         $this->get(route('members.photo', $member))->assertOk();
 
         $this->actingAs(User::factory()->create());
         $this->get(route('members.photo', $member))->assertStatus(302);
+    }
+
+    public function test_a_member_card_is_printed_and_verified_by_qr_code(): void
+    {
+        $eglise = $this->community();
+        $member = Member::create(['last_name' => 'KAHINDO', 'first_name' => 'Esther',
+            'status_id' => app(MemberRegistry::class)->defaultStatus($eglise)->id]);
+        app(MemberRegistry::class)->assignNumber($member);
+
+        $this->get(route('members.card', $member))->assertOk()->assertSee('<svg', false)->assertSee($member->fresh()->number);
+        $token = $member->fresh()->card_token;
+        $this->assertSame(32, strlen($token));
+
+        auth()->logout();
+        $this->get(route('cards.verify', $token))->assertOk()->assertSee('Carte valide')->assertSee('KAHINDO')->assertDontSee('+243');
+
+        $member->update(['status_id' => MemberStatus::where('organization_id', $eglise->id)->where('name', 'Décédé')->value('id')]);
+        $this->get(route('cards.verify', $token))->assertOk()->assertSee('Carte non valide');
+
+        $member->delete();
+        $this->get(route('cards.verify', $token))->assertSee('ne figure plus au registre');
+        $this->get(route('cards.verify', str_repeat('a', 32)))->assertNotFound();
     }
 }

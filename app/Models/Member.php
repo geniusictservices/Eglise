@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 /** Un fidèle inscrit au registre d'une communauté. */
 class Member extends Model
@@ -25,7 +26,7 @@ class Member extends Model
         'separated' => 'Séparé(e)',
     ];
 
-    protected $guarded = ['id', 'number', 'number_year', 'number_sequence'];
+    protected $guarded = ['id', 'number', 'number_year', 'number_sequence', 'card_token'];
 
     protected function casts(): array
     {
@@ -75,6 +76,22 @@ class Member extends Model
     public function departments(): BelongsToMany
     {
         return $this->belongsToMany(Department::class, 'department_members')->withoutGlobalScope('organization')->withPivot(['role', 'joined_on'])->withTimestamps();
+    }
+
+    /** Jeton du QR code de la carte, créé à la première impression. */
+    public function cardToken(): string
+    {
+        if (! $this->card_token) {
+            $this->forceFill(['card_token' => Str::random(32)])->saveQuietly();
+        }
+
+        return $this->card_token;
+    }
+
+    /** Une carte n'est valide que pour un statut qui compte dans l'effectif. */
+    public function hasValidCard(): bool
+    {
+        return ! $this->trashed() && (bool) $this->status?->counts_as_member;
     }
 
     public function fullName(): string

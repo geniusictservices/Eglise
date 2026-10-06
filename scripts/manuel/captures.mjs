@@ -406,6 +406,137 @@ const SCENES = [
             await mark(page, [{ selector: 'main code', label: '1' }, { selector: 'main a[href^="https://wa.me"]', label: '2' }]);
         },
     },
+    // ---------- Registre des membres (secrétaire de la paroisse de Himbi) ----------
+    {
+        id: '27-membres', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres`);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main .grid.grid-cols-2', label: '1' }, { selector: '#search', label: '2' }, { selector: 'button[aria-controls=member-filters]', label: '3' }, { selector: 'main a[href$="/membres/nouveau"]', label: '4' }]
+                : [{ selector: 'main .grid.grid-cols-2', label: '1' }, { selector: '#search', label: '2' }, { selector: '#member-filters', label: '3' }, { selector: 'main a[href$="/membres/nouveau"]', label: '4', position: 'right' }, { selector: 'button[aria-label="Excel"]', label: '5' }]);
+        },
+    },
+    {
+        id: '28-membre-doublon', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres/nouveau`);
+            await settle(page);
+            await page.fill('#last_name', 'Kahindo');
+            await page.fill('#first_name', 'Esther');
+            await page.click('main label:has(input[value=F])');
+            await page.click('main form button[type=submit]');
+            await page.waitForSelector('main [role=alert]');
+            await page.evaluate(() => window.scrollTo(0, 0));
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main [role=alert]', label: '1' }]
+                : [{ selector: 'main [role=alert]', label: '1' }, { selector: 'main aside section:nth-of-type(2)', label: '2' }, { selector: 'main aside section:nth-of-type(3)', label: '3' }]);
+        },
+    },
+    {
+        id: '29-membre-fiche', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres?q=Jean-Paul`);
+            await page.click(isMobile(page) ? 'main ul a[href*="/membres/"]' : 'main table a[href*="/membres/"]');
+            await page.waitForURL(/\/membres\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main a[href$="/carte"]', label: '1' }, { selector: 'main button[wire\\:click=openStatus]', label: '2' }, { selector: 'main [role=tablist]', label: '3' }]);
+        },
+    },
+    {
+        id: '30-membre-parcours', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres?q=Jean-Paul`);
+            await page.click(isMobile(page) ? 'main ul a[href*="/membres/"]' : 'main table a[href*="/membres/"]');
+            await page.waitForURL(/\/membres\/\d+$/);
+            await page.click('main [role=tab]:nth-child(2)');
+            await page.waitForSelector('text=Étapes de vie');
+            await settle(page);
+            await page.evaluate(() => document.querySelector('[role=tablist]').scrollIntoView());
+            await mark(page, [{ selector: 'main button[wire\\:click=openEvent]', label: '1' }, { selector: 'main section:has(> h2) ol', label: '2' }]);
+        },
+    },
+    {
+        id: '31-menage', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/menages`);
+            await page.click('main ul a[href*="/menages/"]');
+            await page.waitForURL(/\/menages\/\d+$/);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main ul select', label: '1' }]
+                : [{ selector: 'main ul select', label: '1' }, { selector: 'main input[type=search]', label: '2' }, { selector: 'main button[wire\\:click=shareAddress]', label: '3' }]);
+        },
+    },
+    {
+        id: '32-departements', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/departements`);
+            await settle(page);
+            await mark(page, [{ selector: 'main ul li:first-child a', label: '1' }, { selector: 'main section.border-dashed', label: '2' }]);
+        },
+    },
+    {
+        id: '33-departement', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/departements`);
+            await page.click('main ul a:has-text("Chorale")');
+            await page.waitForURL(/\/departements\/\d+$/);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main ul select', label: '1' }]
+                : [{ selector: 'main ul select', label: '1' }, { selector: 'main input[type=search]', label: '2' }]);
+        },
+    },
+    {
+        id: '34-import-modele', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres/importer`);
+            await settle(page);
+            await mark(page, [{ selector: 'main a[href$="/modele-excel"]', label: '1' }, { selector: 'main label:has(input[type=file])', label: '2' }]);
+        },
+    },
+    {
+        id: '35-import-verification', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres/importer`);
+            await page.setInputFiles('input[type=file]', new URL('./registre-exemple.xlsx', import.meta.url).pathname);
+            await page.waitForSelector('text=lignes lues', { timeout: 20000 });
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main .card .grid', label: '1' }]
+                : [{ selector: 'main .card .grid', label: '1' }, { selector: 'main .card ul li:first-child', label: '2' }, { selector: 'main section.sticky button.btn-primary', label: '3' }]);
+            // On repart sans importer : la base de démonstration reste intacte.
+        },
+    },
+    {
+        id: '36-carte', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres?q=Jean-Paul`);
+            await page.click(isMobile(page) ? 'main ul a[href*="/membres/"]' : 'main table a[href*="/membres/"]');
+            await page.waitForURL(/\/membres\/\d+$/);
+            await page.goto(page.url() + '/carte');
+            await settle(page);
+            await mark(page, [{ selector: '[role=group]', label: '1' }, { selector: 'button[onclick="window.print()"]', label: '2' }, { selector: 'section[aria-label=Verso] svg', label: '3' }]);
+        },
+    },
+    {
+        id: '37-reglages-registre', user: '0990000001',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres/reglages`);
+            await settle(page);
+            await mark(page, [{ selector: '#numberFormat', label: '1' }, { selector: '#code', label: '2' }, { selector: 'main section.wax', label: '3' }]);
+        },
+    },
+    {
+        id: '38-reglages-champs', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres/reglages?onglet=champs`);
+            await settle(page);
+            await mark(page, [{ selector: 'main button[wire\\:click=editField]', label: '1' }]);
+        },
+    },
 ];
 
 const browser = await chromium.launch();

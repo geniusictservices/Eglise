@@ -34,3 +34,15 @@ Oui. Renommez les libellés (*Pasteur* en *Imam*, *Culte* en *Prière*…) dans 
 - Chaque action est inscrite dans un **journal inaltérable**.
 - Le support Genius ICT n'entre qu'avec **votre accord**, et vous pouvez le retirer à tout moment.
 - Vos données vous appartiennent : elles restent **exportables**, même en cas de retard de paiement.
+
+### Pourquoi ne puis-je pas changer le format du numéro de membre ?
+
+Dans une dénomination, c'est le **siège** qui fixe le format du numéro, les statuts et les champs communs : toutes les paroisses les suivent. Votre paroisse peut choisir son sigle et ajouter ses propres champs et fonctions (voir [Réglages du registre](15-reglages-registre.md)).
+
+### Une personne a quitté la paroisse pour une autre. Que faire ?
+
+Ne supprimez pas sa fiche : changez son **statut** en « Transféré », avec le motif (« Transférée à la CEP Kadutu »). Son histoire reste dans le registre, et sa carte de membre n'est plus valide.
+
+### Notre ancien registre est sur papier. Faut-il tout ressaisir à la main ?
+
+Vous pouvez recopier le registre dans le **modèle Excel** de Waumini (sur un ordinateur, c'est bien plus rapide), puis l'importer en une fois. Genius ICT peut vous accompagner. Voir [Importer depuis Excel](14-import-export.md).

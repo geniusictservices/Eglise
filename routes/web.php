@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\CardVerificationController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\MemberCardController;
 use App\Http\Controllers\MemberPhotoController;
 use App\Http\Controllers\MemberTemplateController;
 use App\Http\Controllers\SwitchOrganizationController;
@@ -18,6 +20,7 @@ Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : view
 Route::get('/conditions-utilisation', [LegalController::class, 'terms'])->name('legal.terms');
 Route::get('/confidentialite', [LegalController::class, 'privacy'])->name('legal.privacy');
 Route::view('/installer', 'install')->name('install');
+Route::get('/verifier/carte/{token}', CardVerificationController::class)->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('cards.verify');
 Route::view('/hors-ligne', 'offline')->name('offline');
 Route::get('/aide', [HelpController::class, 'show'])->name('help.index');
 Route::get('/aide/captures/{device}/{file}', [HelpController::class, 'capture'])->name('help.capture');
@@ -52,6 +55,7 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/membres/reglages', Livewire\Members\Settings::class)->name('members.settings');
     Route::get('/membres/{id}', Livewire\Members\Show::class)->whereNumber('id')->name('members.show');
     Route::get('/membres/{id}/modifier', Livewire\Members\Form::class)->whereNumber('id')->name('members.edit');
+    Route::get('/membres/{id}/carte', MemberCardController::class)->whereNumber('id')->name('members.card');
     Route::get('/membres/{member}/photo', MemberPhotoController::class)->whereNumber('member')->name('members.photo');
     Route::get('/menages', Livewire\Households\Index::class)->name('households.index');
     Route::get('/menages/{id}', Livewire\Households\Show::class)->whereNumber('id')->name('households.show');

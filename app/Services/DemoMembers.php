@@ -13,6 +13,7 @@ use App\Models\MemberStatus;
 use App\Models\MemberStatusChange;
 use App\Models\Organization;
 use App\Support\CurrentOrganization;
+use App\Support\MemberPhoto;
 use Illuminate\Support\Carbon;
 
 /**
@@ -48,7 +49,7 @@ class DemoMembers
         ['KYAKIMWA', 'Mwenge', 'Olive', 'F', 45, 'Kyeshero', 'Inactif'],
     ];
 
-    public function build(Organization $siege, Organization $himbi, Organization $katindo): void
+    public function build(Organization $siege, Organization $himbi, Organization $katindo, bool $withPhotos = true): void
     {
         mt_srand(2026);
         $siege->update(['settings' => array_merge($siege->settings ?? [], ['members_code' => 'CEP'])]);
@@ -89,7 +90,7 @@ class DemoMembers
             return $member;
         };
 
-        app(CurrentOrganization::class)->within($himbi, function () use ($himbi, $katindo, $create, $functions, $statuses) {
+        app(CurrentOrganization::class)->within($himbi, function () use ($himbi, $katindo, $create, $functions, $statuses, $withPhotos) {
             $n = 0;
             foreach (self::HOUSEHOLDS as $i => [$last, $middle, $district, $street, $people]) {
                 $org = $i % 4 === 2 ? $katindo : $himbi;
@@ -140,6 +141,12 @@ class DemoMembers
                     MemberFunctionTerm::create(['member_id' => $m->id, 'function_id' => $functions[$function]->id, 'started_on' => now()->subYears(mt_rand(1, 6))->startOfYear()]);
                 }
             }
+            // Une photo d'identité (silhouette dessinée, sans visage réel) pour la carte de membre.
+            if ($withPhotos) {
+                $kambale->update(['photo_path' => $this->silhouette($kambale, [44, 47, 107])]);
+                $esther->update(['photo_path' => $this->silhouette($esther, [194, 82, 45])]);
+            }
+
             $grace = Member::where('first_name', 'Grâce')->first();
             $grace?->update(['custom' => array_merge($grace->custom ?? [], ['chorale_voix' => 'Soprano'])]);
 
@@ -173,5 +180,24 @@ class DemoMembers
                 }
             }
         });
+    }
+
+    /** Portrait de démonstration au format passeport : une silhouette sur fond clair. */
+    private function silhouette(Member $member, array $rgb): string
+    {
+        $w = MemberPhoto::WIDTH;
+        $h = MemberPhoto::HEIGHT;
+        $image = imagecreatetruecolor($w, $h);
+        imagefill($image, 0, 0, imagecolorallocate($image, 240, 230, 214));
+        $color = imagecolorallocate($image, ...$rgb);
+        imagefilledellipse($image, (int) ($w / 2), (int) ($h * 0.38), 190, 230, $color);
+        imagefilledellipse($image, (int) ($w / 2), $h + 40, 400, 330, $color);
+
+        $file = tempnam(sys_get_temp_dir(), 'wau');
+        imagejpeg($image, $file, 85);
+        $path = MemberPhoto::store($file, $member);
+        @unlink($file);
+
+        return $path;
     }
 }

@@ -24,15 +24,22 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 3. [Le tableau de bord](03-tableau-de-bord.md)
 4. [Mon profil : langue, mot de passe et empreinte](10-profil.md)
 
+### Le registre des membres
+
+5. [Le registre des membres : liste, fiche, carte de membre](12-membres.md)
+6. [Ménages et départements](13-menages-departements.md)
+7. [Importer depuis Excel et exporter](14-import-export.md)
+8. [Réglages du registre : numéro, statuts, champs](15-reglages-registre.md)
+
 ### Pour l'administrateur et les responsables
 
-5. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
-6. [Gérer les utilisateurs](05-utilisateurs.md)
-7. [Rôles et permissions](06-roles.md)
-8. [Devises et taux du jour](07-devises.md)
-9. [Paramètres, apparence, libellés et accès du support](08-parametres.md)
-10. [Le journal d'audit](09-journal.md)
-11. [L'abonnement](11-abonnement.md)
+9. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
+10. [Gérer les utilisateurs](05-utilisateurs.md)
+11. [Rôles et permissions](06-roles.md)
+12. [Devises et taux du jour](07-devises.md)
+13. [Paramètres, apparence, libellés et accès du support](08-parametres.md)
+14. [Le journal d'audit](09-journal.md)
+15. [L'abonnement](11-abonnement.md)
 
 ### Aide
 

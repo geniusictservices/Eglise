@@ -252,7 +252,7 @@
             <section class="card p-5" x-data="{ preview: null }">
                 <p class="label">{{ __('Photo') }}</p>
                 <div class="flex items-center gap-4">
-                    <div class="size-24 shrink-0 overflow-hidden rounded-2xl bg-sand-100">
+                    <div class="h-[7.5rem] w-24 shrink-0 overflow-hidden rounded-2xl bg-sand-100">
                         <template x-if="preview"><img :src="preview" alt="" class="size-full object-cover"></template>
                         @if ($member?->photo_path && ! $removePhoto)
                             <img x-show="! preview" src="{{ route('members.photo', $member) }}" alt="" class="size-full object-cover">
@@ -273,6 +273,7 @@
                 </div>
                 <div wire:loading wire:target="photo" class="mt-2 text-sm text-sand-700">{{ __('Envoi de la photo…') }}</div>
                 @error('photo') <p class="error">{{ $message }}</p> @enderror
+                <p class="hint">{{ __('Format photo d’identité : elle sert aussi pour la carte de membre.') }}</p>
             </section>
 
             <section class="card p-5">

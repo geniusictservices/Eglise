@@ -246,11 +246,11 @@ const BLOCKS = [
       demo: "Livré : une église s’inscrit seule et arrive sur son tableau de bord, prête à démarrer." }
   ]},
   { letter: "Bloc 2", title: "Gérer la communauté", steps: [
-    { status: "doing", title: "Noyau : membres et départements",
+    { status: "done", title: "Noyau : membres et départements",
       goal: "Le registre complet, retrouvable en une seconde.",
-      items: ["Membres, ménages, statuts et historique", "Étapes de vie (baptême, mariage…) et anciens numéros de registre", "Départements créés par l’administrateur", "Tableau de bord par rôle", "Import Excel guidé : modèles Waumini, vérification, aperçu, annulation", "Carte de membre avec QR code"],
-      demo: "Import d’un registre Excel de 300 membres, doublons traités." },
-    { status: "todo", title: "Finances",
+      items: ["Registre réglé par le siège : format du numéro, statuts, champs communs ; chaque paroisse ajoute ses champs et fonctions", "Membres : recherche, filtres, effectifs, détection des doublons dans toute la dénomination", "Ménages (un seul chef de ménage), statuts avec historique, fonctions et mandats", "Étapes de vie (baptême, mariage…) avec les numéros des anciens registres", "Départements créés par l’administrateur, avec responsables ; Administration générale d’office", "Import Excel guidé : modèle Waumini, vérification ligne par ligne, annulation pendant 30 jours ; export", "Carte de membre avec QR code de vérification et photo passeport facultative", "Effectifs sur le tableau de bord ; 4 nouveaux chapitres du manuel"],
+      demo: "Livré : un registre papier recopié dans le modèle Excel, vérifié puis importé ; 100 tests automatiques." },
+    { status: "doing", title: "Finances",
       goal: "Chaque franc tracé, chaque rapport vérifiable.",
       items: ["Caisses en USD, CDF et autres devises, change entre caisses", "Recettes collectives (la boîte : total seul), personnelles (au nom du membre) et de groupe", "Feuille de collecte du culte avec billets et compteurs", "Promesses : sur un projet, une campagne, une contribution régulière ; promis, versé, reste ; relance WhatsApp en un clic", "Déclarations de paiement mobile money (ID et capture) validées par la finance", "Dépenses : demande, contrôle budgétaire, approbation, décaissement, justification ; avances à justifier", "Reçus, clôtures mensuelles et annuelles, rapports PDF et Excel"],
       demo: "Un dimanche complet : collecte, dîmes, une dépense approuvée et le rapport du mois." },
@@ -359,7 +359,10 @@ const DECISIONS = [
     "Connexion par téléphone et mot de passe, puis empreinte du téléphone.",
     "Pas de paiement en ligne dans l’espace membre pour l’instant.",
     "La communication passe par les notifications de l’application, avec envoi manuel sur WhatsApp en complément.",
-    "Chaque membre choisit sa langue parmi français, swahili, lingala, kikongo et tshiluba."
+    "Chaque membre choisit sa langue parmi français, swahili, lingala, kikongo et tshiluba.",
+    "Le registre est réglé par le siège : une église qui le rejoint s’adapte à son format de numéro et à ses statuts ; elle peut ajouter ses propres champs et fonctions.",
+    "Les familles sont gérées par ménage : chef de ménage, conjoint(e), enfants et personnes à charge.",
+    "La carte de membre peut porter une photo au format passeport, si la communauté le souhaite."
   ]],
   ["Documents", [
     "Tous les documents courants, plus carte de service, ordre de mission, convocation, présentation d’enfant.",
