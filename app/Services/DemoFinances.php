@@ -13,6 +13,7 @@ use App\Models\FinanceCategory;
 use App\Models\Household;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\PaymentDeclaration;
 use App\Models\Pledge;
 use App\Support\CurrentOrganization;
 use App\Support\OrganizationLogo;
@@ -129,6 +130,13 @@ class DemoFinances
             Pledge::create(['campaign_id' => $sake->id, 'department_id' => $chorale, 'amount' => 400, 'currency' => 'USD', 'pledged_on' => now()->subWeeks(3), 'first_due_on' => now()->addMonth()]);
             Pledge::create(['campaign_id' => $sake->id, 'pledger_name' => 'Frère Kasongo (visiteur de Bukavu)', 'pledger_phone' => '+243997001122',
                 'amount' => 150000, 'currency' => 'CDF', 'pledged_on' => now()->subWeeks(2), 'first_due_on' => now()->subDays(3)]);
+
+            // Paiements mobile money déclarés, à vérifier par la trésorière.
+            PaymentDeclaration::create(['member_id' => $members[4]->id ?? null, 'amount' => 20, 'currency' => 'USD', 'operator' => 'M-Pesa',
+                'transaction_reference' => 'MP261005'.mt_rand(1000, 9999), 'paid_on' => today()->subDay(), 'category_id' => $cat['Dîme'], 'message' => 'Dîme de septembre']);
+            PaymentDeclaration::create(['declarant_name' => 'Maman Furaha Kahambu', 'declarant_phone' => '+243997445566', 'amount' => 50000, 'currency' => 'CDF',
+                'operator' => 'M-Pesa', 'transaction_reference' => 'MP261006'.mt_rand(1000, 9999), 'paid_on' => today(), 'category_id' => $cat['Offrande d’action de grâce'],
+                'message' => 'Action de grâce pour la naissance de mon petit-fils']);
 
             // Change et dépôt à la banque.
             $ledger->transfer($caisse, 'CDF', $caisse, 'USD', '570000', '200', 'Change au marché de Birere', today()->subDays(6));

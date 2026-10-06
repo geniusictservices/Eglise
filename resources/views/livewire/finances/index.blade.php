@@ -7,6 +7,14 @@
         </x-slot:actions>
     </x-page-header>
 
+    @if ($pendingDeclarations)
+        <a href="{{ route('finances.declarations') }}" class="flex items-center gap-3 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800 hover:bg-ochre-100">
+            <x-icon name="smartphone" class="size-5 text-ochre-600" />
+            <span class="flex-1 font-semibold">{{ trans_choice(':count paiement mobile money déclaré attend votre vérification.|:count paiements mobile money déclarés attendent votre vérification.', $pendingDeclarations) }}</span>
+            <x-icon name="chevron-right" class="size-4" />
+        </a>
+    @endif
+
     @unless ($hasAccounts)
         <div class="card flex flex-col items-center px-6 py-12 text-center">
             <span class="icon-tile size-14 bg-leaf-50 text-leaf-600"><x-icon name="wallet" class="size-7" /></span>

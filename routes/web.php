@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\CardVerificationController;
 use App\Http\Controllers\CollectionPrintController;
+use App\Http\Controllers\DeclarationScreenshotController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MemberCardController;
@@ -79,6 +80,8 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/finances/promesses/nouvelle', Livewire\Finances\Pledges\Form::class)->name('finances.pledges.create');
     Route::get('/finances/promesses/{pledge}', Livewire\Finances\Pledges\Show::class)->whereNumber('pledge')->name('finances.pledges.show');
     Route::get('/finances/promesses/{id}/modifier', Livewire\Finances\Pledges\Form::class)->whereNumber('id')->name('finances.pledges.edit');
+    Route::get('/finances/paiements-declares', Livewire\Finances\Declarations\Index::class)->name('finances.declarations');
+    Route::get('/finances/paiements-declares/{declaration}/capture', DeclarationScreenshotController::class)->name('finances.declarations.screenshot');
     Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
     Route::get('/finances/recu/{transaction}', ReceiptController::class)->name('finances.receipt');
 

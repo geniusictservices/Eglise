@@ -3,6 +3,7 @@
 namespace App\Livewire\Finances;
 
 use App\Models\FinanceTransaction;
+use App\Models\PaymentDeclaration;
 use App\Services\Ledger;
 use Brick\Math\BigDecimal;
 use Illuminate\Support\Facades\Gate;
@@ -35,6 +36,7 @@ class Index extends Component
             'recent' => FinanceTransaction::with(['account', 'category', 'member'])->latest('occurred_on')->latest('id')->limit(8)->get(),
             'canSeeNames' => Gate::allows('finance.contributions.view'),
             'hasAccounts' => $balances->isNotEmpty(),
+            'pendingDeclarations' => Gate::allows('finance.payments.validate') ? PaymentDeclaration::where('status', 'pending')->count() : 0,
         ]);
     }
 }

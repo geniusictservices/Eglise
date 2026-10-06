@@ -24,6 +24,7 @@ use App\Models\MemberImport;
 use App\Models\MemberStatus;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
+use App\Models\PaymentDeclaration;
 use App\Models\Plan;
 use App\Models\PlanPrice;
 use App\Models\Pledge;
@@ -79,6 +80,7 @@ class AppServiceProvider extends ServiceProvider
             'campaign' => Campaign::class,
             'pledge' => Pledge::class,
             'pledge_delivery' => PledgeDelivery::class,
+            'payment_declaration' => PaymentDeclaration::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,
             'finance_transaction' => FinanceTransaction::class,
