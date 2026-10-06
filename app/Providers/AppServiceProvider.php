@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Models\AttachmentRequest;
 use App\Models\Budget;
+use App\Models\BudgetOverrun;
 use App\Models\BudgetProposal;
 use App\Models\Campaign;
 use App\Models\CashAccount;
@@ -88,6 +89,7 @@ class AppServiceProvider extends ServiceProvider
             'finance_closing' => FinanceClosing::class,
             'budget' => Budget::class,
             'budget_proposal' => BudgetProposal::class,
+            'budget_overrun' => BudgetOverrun::class,
             'payment_declaration' => PaymentDeclaration::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,

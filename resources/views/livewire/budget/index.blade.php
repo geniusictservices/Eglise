@@ -6,6 +6,14 @@
         </x-slot:actions>
     </x-page-header>
 
+    @foreach ($pendingOverruns as $o)
+        <a href="{{ $o->expense ? route('finances.expenses.show', $o->expense) : route('budget.execution') }}" class="mb-3 flex items-center gap-3 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800 hover:bg-ochre-100">
+            <x-icon name="triangle-alert" class="size-5 text-ochre-600" />
+            <span class="flex-1 font-semibold">{{ __('Dépassement de :m demandé :e : il attend votre décision.', ['m' => Money::format($o->amount, 'USD'), 'e' => $o->expense ? '('.$o->expense->number.')' : '']) }}</span>
+            <x-icon name="chevron-right" class="size-4" />
+        </a>
+    @endforeach
+
     {{-- Le budget de l'exercice --}}
     <section class="wax wax-veil wax-veil-strong mb-5 overflow-hidden rounded-[22px] p-5 text-white sm:p-6">
         @if ($adopted)
@@ -22,6 +30,7 @@
         @endif
         <div class="mt-4 flex flex-wrap gap-2">
             @if ($adopted)<a href="{{ route('budget.version', $adopted) }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="file-text" class="size-4" /> {{ __('Voir le budget adopté') }}</a>@endif
+            @if ($adopted)<a href="{{ route('budget.execution', ['exercice' => $year]) }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="circle-dollar-sign" class="size-4" /> {{ __('Suivi du budget') }}</a>@endif
             @if ($pending)
                 <a href="{{ route('budget.version', $pending) }}" class="btn-accent !min-h-0 !py-2"><x-icon name="pencil" class="size-4" /> {{ $pending->status === 'submitted' ? __('Version :v à approuver', ['v' => $pending->version]) : __('Version :v en préparation', ['v' => $pending->version]) }}</a>
             @elseif ($canArbitrate && ! $adopted && $versions->isEmpty())

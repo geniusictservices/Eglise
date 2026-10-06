@@ -3,9 +3,11 @@
 namespace App\Livewire\Finances\Expenses;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Models\BudgetOverrun;
 use App\Models\CashAccount;
 use App\Models\ExpenseAttachment;
 use App\Models\ExpenseRequest;
+use App\Services\BudgetControl;
 use App\Services\Expenses;
 use App\Services\Ledger;
 use Illuminate\Support\Facades\Gate;
@@ -33,6 +35,11 @@ class Show extends Component
     public array $files = [];
 
     public string $fileKind = 'invoice';
+
+    /** Demande de dépassement du budget : montant, source de l'argent, motif. */
+    public array $overrun = [];
+
+    public string $decisionNote = '';
 
     public function mount(ExpenseRequest $expense): void
     {
@@ -132,6 +139,56 @@ class Show extends Component
         $this->run(fn () => $expenses->cancel($this->expense), __('Demande annulée.'));
     }
 
+    public function askOverrun(BudgetControl $control): void
+    {
+        $this->authorizeWrite('finance.disburse');
+        $missing = $control->shortfall($this->expense);
+        $this->overrun = ['amount' => $missing ? (string) ceil($missing) : '', 'source' => 'transfer', 'source_key' => '', 'source_detail' => '', 'reason' => ''];
+        $this->resetValidation();
+        $this->dispatch('open-modal', name: 'overrun');
+    }
+
+    public function requestOverrun(BudgetControl $control): void
+    {
+        $this->authorizeWrite('finance.disburse');
+        $data = $this->validate([
+            'overrun.amount' => 'required|numeric|gt:0',
+            'overrun.source' => ['required', Rule::in(array_keys(BudgetOverrun::SOURCES))],
+            'overrun.source_key' => [Rule::requiredIf(($this->overrun['source'] ?? '') === 'transfer'), 'nullable', 'regex:/^\d+-\d+$/'],
+            'overrun.source_detail' => [Rule::requiredIf(($this->overrun['source'] ?? '') !== 'transfer'), 'nullable', 'string', 'max:255'],
+            'overrun.reason' => 'required|string|min:10|max:1000',
+        ], [
+            'overrun.source_key.required' => __('Choisissez la ligne du budget qui cède l’argent.'),
+            'overrun.source_detail.required' => __('Précisez d’où vient l’argent (exemple : excédent 2025, don de la famille Mbuyi).'),
+        ], ['overrun.amount' => __('montant'), 'overrun.reason' => __('motif')])['overrun'];
+
+        [$department, $category] = $data['source'] === 'transfer' ? array_map('intval', explode('-', $data['source_key'])) : [null, null];
+        try {
+            $control->requestOverrun($this->expense, $data + ['source_department_id' => $department ?: null, 'source_category_id' => $category]);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('overrun.amount', $e->getMessage());
+
+            return;
+        }
+        $this->dispatch('close-modal', name: 'overrun');
+        $this->notify(__('Demande de dépassement envoyée au pasteur.'));
+    }
+
+    public function decideOverrun(BudgetControl $control, bool $authorize): void
+    {
+        $this->authorizeWrite('budget.authorize');
+        $overrun = BudgetOverrun::where('expense_request_id', $this->expense->id)->where('status', 'pending')->firstOrFail();
+        try {
+            $control->decide($overrun, auth()->user(), $authorize, trim($this->decisionNote) ?: null);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('decisionNote', $e->getMessage());
+
+            return;
+        }
+        $this->decisionNote = '';
+        $this->notify($authorize ? __('Dépassement autorisé : la finance peut contrôler la dépense.') : __('Dépassement refusé.'));
+    }
+
     public function render(Ledger $ledger, Expenses $expenses)
     {
         $this->expense->refresh()->load(['department', 'category', 'beneficiary', 'requester', 'checker', 'disburser', 'justifier', 'account', 'transaction', 'approvals.user', 'attachments']);
@@ -148,7 +205,28 @@ class Show extends Component
             }
         }
 
+        // Le budget de la dépense, tant qu'elle n'est pas décaissée.
+        $control = app(BudgetControl::class);
+        $seesBudget = Gate::any(['finance.view', 'finance.disburse', 'finance.expenses.approve', 'budget.authorize']);
+        $budgetLine = $seesBudget && in_array($e->status, ['submitted', 'checked', 'approved'], true) ? $control->lineFor($e) : null;
+        $missing = $budgetLine ? max(0, round($budgetLine['needed'] - $budgetLine['available'], 2)) : 0;
+        $overruns = BudgetOverrun::with(['requester', 'decider', 'sourceDepartment', 'sourceCategory'])->where('expense_request_id', $e->id)->latest()->get();
+        $pendingOverrun = $overruns->firstWhere('status', 'pending');
+        $sourceLines = [];
+        if ($budgetLine && $missing > 0) {
+            $own = BudgetControl::key($e->department_id, (int) $e->category_id);
+            $sourceLines = collect($control->execution($this->organization(), $budgetLine['year'])['expense'])
+                ->reject(fn ($l, $k) => $k === $own || $l['available'] <= 0)->sortByDesc('available')->all();
+        }
+
         return view('livewire.finances.expenses.show', [
+            'budgetLine' => $budgetLine,
+            'missing' => $missing,
+            'overruns' => $overruns,
+            'pendingOverrun' => $pendingOverrun,
+            'sourceLines' => $sourceLines,
+            'canAskOverrun' => $writable && $e->status === 'submitted' && $missing > 0 && ! $pendingOverrun && Gate::allows('finance.disburse'),
+            'canDecideOverrun' => $writable && $pendingOverrun && Gate::allows('budget.authorize') && $pendingOverrun->requested_by !== $me,
             'accounts' => $accounts,
             'canCheck' => $writable && $e->status === 'submitted' && Gate::allows('finance.disburse'),
             'canSign' => $writable && $e->status === 'checked' && Gate::allows('finance.expenses.approve') && $e->requested_by !== $me && ! $e->approvals->contains('user_id', $me),

@@ -6,9 +6,16 @@
         <section class="card space-y-4 p-5 sm:p-6">
             <div><label for="title" class="label">{{ __('Objet') }}</label><input wire:model="title" id="title" class="input" placeholder="{{ __('Exemple : achat de 50 chaises pour la salle') }}">@error('title') <p class="error">{{ $message }}</p> @enderror</div>
             <div class="grid gap-4 sm:grid-cols-2">
-                <div><label for="departmentId" class="label">{{ __('Département') }}</label><select wire:model="departmentId" id="departmentId" class="input">@foreach ($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach</select></div>
-                <div><label for="categoryId" class="label">{{ __('Catégorie') }}</label><select wire:model="categoryId" id="categoryId" class="input">@foreach ($categories as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></div>
+                <div><label for="departmentId" class="label">{{ __('Département') }}</label><select wire:model.live="departmentId" id="departmentId" class="input">@foreach ($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach</select></div>
+                <div><label for="categoryId" class="label">{{ __('Catégorie') }}</label><select wire:model.live="categoryId" id="categoryId" class="input">@foreach ($categories as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></div>
             </div>
+            @if ($budgetLine)
+                @if ($budgetLine['available'] === null)
+                    <p class="rounded-xl bg-ochre-50 p-3 text-sm text-ink-800"><x-icon name="info" class="mr-1 inline size-4 text-ochre-600" /> {{ __('Cette ligne n’est pas prévue au budget : la dépense demandera une autorisation de dépassement.') }}</p>
+                @else
+                    <p class="rounded-xl bg-sand-50 p-3 text-sm text-ink-800">{{ __('Budget de cette ligne : :a disponibles.', ['a' => \App\Support\Money::format($budgetLine['available'], 'USD')]) }}</p>
+                @endif
+            @endif
             <div class="grid gap-4 sm:grid-cols-[1fr_7rem]">
                 <div><label for="amount" class="label">{{ __('Montant') }}</label><input wire:model="amount" id="amount" type="number" step="0.01" min="0" class="input text-lg font-semibold tabular">@error('amount') <p class="error">{{ $message }}</p> @enderror</div>
                 <div><label for="currency" class="label">{{ __('Devise') }}</label><select wire:model="currency" id="currency" class="input">@foreach ($currencies as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach</select></div>

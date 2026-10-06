@@ -8,6 +8,7 @@ use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -68,6 +69,10 @@ class Expenses
     public function check(ExpenseRequest $request, ?string $note = null): void
     {
         $this->expect($request, 'submitted');
+        // Le contrôle budgétaire : au-delà du disponible, il faut une autorisation de dépassement.
+        if ($missing = app(BudgetControl::class)->shortfall($request)) {
+            throw new InvalidArgumentException(__('Cette dépense dépasse le budget de :m : demandez l’autorisation de dépassement, en disant d’où viendra l’argent.', ['m' => Money::format($missing, 'USD')]));
+        }
         $request->update(['status' => 'checked', 'checked_by' => auth()->id(), 'checked_at' => now(), 'check_note' => $note]);
     }
 

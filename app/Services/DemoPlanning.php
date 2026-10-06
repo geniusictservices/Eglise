@@ -120,6 +120,15 @@ class DemoPlanning
             ['expense', 'Fournitures et matériel', 'Nouvelle sonorisation complète', 2500, 'Reportée de cette année.'],
         ], null, null);
 
+        // Une dépense de la Jeunesse dépasse sa ligne : la trésorière demande l'autorisation au pasteur.
+        $sono = $as($josue, today()->subDays(2)->toDateString(), fn () => app(Expenses::class)->submit($himbi, [
+            'department_id' => $dept['Jeunesse'], 'category_id' => $cat['Accueil et réceptions'], 'title' => 'Location d’une sonorisation pour la convention',
+            'description' => 'La salle louée pour la convention n’a pas de sonorisation.', 'amount' => 650, 'currency' => 'USD', 'is_advance' => false,
+            'needed_on' => today()->addWeeks(3)->toDateString()]));
+        $as($tresoriere, today()->subDay()->toDateString(), fn () => app(BudgetControl::class)->requestOverrun($sono, [
+            'amount' => 250, 'source' => 'transfer', 'source_department_id' => $dept['Jeunesse'], 'source_category_id' => $cat['Évangélisation et missions'],
+            'reason' => 'La convention est dans trois semaines ; la campagne de Sake a coûté moins que prévu.']));
+
         Auth::setUser($admin);
     }
 

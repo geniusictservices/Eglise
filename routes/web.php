@@ -95,6 +95,7 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/finances/rapports/excel', [FinanceReportController::class, 'excel'])->name('finances.reports.excel');
     Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
     Route::get('/budget', Livewire\Budget\Index::class)->name('budget.index');
+    Route::get('/budget/suivi', Livewire\Budget\Execution::class)->name('budget.execution');
     Route::get('/budget/{year}/departement/{department}', Livewire\Budget\Proposal::class)->whereNumber(['year', 'department'])->name('budget.proposal');
     Route::get('/budget/version/{budget}', Livewire\Budget\Version::class)->name('budget.version');
     Route::get('/budget/version/{budget}/imprimer', BudgetPrintController::class)->name('budget.print');

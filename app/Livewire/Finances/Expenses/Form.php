@@ -7,8 +7,10 @@ use App\Models\Department;
 use App\Models\ExpenseAttachment;
 use App\Models\FinanceCategory;
 use App\Models\Member;
+use App\Services\BudgetControl;
 use App\Services\Expenses;
 use App\Services\Ledger;
+use App\Support\FiscalYear;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
@@ -99,6 +101,19 @@ class Form extends Component
         return $this->redirectRoute('finances.expenses.show', $request);
     }
 
+    /** Le disponible de la ligne du budget choisie (null : pas de budget adopté). */
+    private function budgetLine(): ?array
+    {
+        if (! $this->departmentId || ! $this->categoryId) {
+            return null;
+        }
+        $control = app(BudgetControl::class);
+        $year = FiscalYear::of($this->organization(), $this->neededOn ?: today());
+        $execution = $control->execution($this->organization(), $year);
+
+        return $execution['budget'] ? ($execution['expense'][BudgetControl::key((int) $this->departmentId, (int) $this->categoryId)] ?? ['available' => null]) : null;
+    }
+
     public function render(Ledger $ledger)
     {
         return view('livewire.finances.expenses.form', [
@@ -108,6 +123,7 @@ class Form extends Component
             'beneficiary' => $this->beneficiaryId ? Member::find($this->beneficiaryId) : null,
             'candidates' => ! $this->beneficiaryId && trim($this->beneficiarySearch) !== '' ? Member::search($this->beneficiarySearch)->orderBy('last_name')->limit(5)->get() : collect(),
             'settings' => app(Expenses::class)->settings($this->organization()),
+            'budgetLine' => $this->budgetLine(),
         ]);
     }
 }

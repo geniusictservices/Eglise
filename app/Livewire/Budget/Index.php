@@ -4,6 +4,7 @@ namespace App\Livewire\Budget;
 
 use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\Budget;
+use App\Models\BudgetOverrun;
 use App\Models\BudgetProposal;
 use App\Models\Department;
 use App\Services\Budgets;
@@ -84,6 +85,7 @@ class Index extends Component
             'canArbitrate' => Gate::allows('budget.arbitrate') && ! $organization->isReadOnly(),
             'canPropose' => Gate::any(['budget.propose', 'budget.arbitrate']) && ! $organization->isReadOnly(),
             'linked' => (bool) DepartmentScope::member(auth()->user(), $organization),
+            'pendingOverruns' => Gate::allows('budget.authorize') ? BudgetOverrun::where('status', 'pending')->with('expense')->get() : collect(),
         ]);
     }
 }

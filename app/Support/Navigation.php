@@ -60,6 +60,7 @@ class Navigation
                 'label' => __('Plan d’action'),
                 'items' => [
                     ['route' => 'budget.index', 'label' => __('Budget'), 'icon' => 'scroll-text', 'can' => ['planning.view', 'budget.propose', 'budget.arbitrate', 'budget.approve']],
+                    ['route' => 'budget.execution', 'label' => __('Suivi du budget'), 'icon' => 'circle-dollar-sign', 'can' => ['planning.view', 'budget.arbitrate', 'budget.approve', 'budget.authorize', 'finance.reports']],
                 ],
             ],
             [
