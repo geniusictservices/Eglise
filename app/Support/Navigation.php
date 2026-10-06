@@ -39,8 +39,15 @@ class Navigation
                     ['route' => 'members.index', 'label' => __('Membres'), 'icon' => 'contact-round', 'can' => 'members.view', 'mobile' => true, 'short' => __('Membres')],
                     ['route' => 'households.index', 'label' => __('Ménages'), 'icon' => 'house', 'can' => 'members.view'],
                     ['route' => 'departments.index', 'label' => __('Départements'), 'icon' => 'users-round', 'can' => 'members.view'],
-                    ['route' => 'groups.index', 'label' => __('Groupes'), 'icon' => 'handshake', 'can' => ['groups.manage', 'members.view', 'attendance.record']],
                     ['route' => 'members.settings', 'label' => __('Réglages du registre'), 'icon' => 'sliders-horizontal', 'can' => 'members.settings'],
+                ],
+            ],
+            [
+                'label' => __('Vie de la communauté'),
+                'items' => [
+                    ['route' => 'events.index', 'label' => __('Calendrier'), 'icon' => 'calendar-days', 'can' => 'organization.view'],
+                    ['route' => 'attendance.index', 'label' => __('Présences'), 'icon' => 'clipboard-check', 'can' => ['attendance.record', 'activities.manage']],
+                    ['route' => 'groups.index', 'label' => __('Groupes'), 'icon' => 'handshake', 'can' => ['groups.manage', 'members.view', 'attendance.record']],
                 ],
             ],
             [

@@ -121,6 +121,7 @@ class DemoCommunityBuilder
         app(DemoPlanning::class)->build($siege, $levels['himbi']);
         app(DemoPayroll::class)->build($levels['himbi']);
         app(DemoGroups::class)->build($levels['himbi']);
+        app(DemoCalendar::class)->build($levels['himbi']);
         // Les nouveautés de plus de trois jours ont été ouvertes depuis longtemps.
         DatabaseNotification::where('organization_id', $levels['himbi']->id)->whereNull('read_at')
             ->where('created_at', '<', now()->subDays(3))->update(['read_at' => DB::raw('created_at')]);

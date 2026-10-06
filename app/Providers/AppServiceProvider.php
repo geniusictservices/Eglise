@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Models\AttachmentRequest;
+use App\Models\AttendanceRecord;
 use App\Models\Budget;
 use App\Models\BudgetOverrun;
 use App\Models\BudgetProposal;
@@ -107,6 +108,8 @@ class AppServiceProvider extends ServiceProvider
             'meeting' => Meeting::class,
             'group' => Group::class,
             'group_meeting' => GroupMeeting::class,
+            'event' => \App\Models\Event::class,
+            'attendance_record' => AttendanceRecord::class,
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,

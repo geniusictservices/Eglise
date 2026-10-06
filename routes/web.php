@@ -81,6 +81,9 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/departements/{department}', Livewire\Departments\Show::class)->name('departments.show');
     Route::get('/groupes', Livewire\Groups\Index::class)->name('groups.index');
     Route::get('/groupes/{group}', Livewire\Groups\Show::class)->name('groups.show');
+    Route::get('/calendrier', Livewire\Events\Index::class)->name('events.index');
+    Route::get('/calendrier/{event}/{date}', Livewire\Events\Show::class)->where('date', '\d{4}-\d{2}-\d{2}')->name('events.show');
+    Route::get('/presences', Livewire\Attendance\Index::class)->name('attendance.index');
 
     Route::get('/finances', Livewire\Finances\Index::class)->name('finances.index');
     Route::get('/finances/operations', Livewire\Finances\Journal::class)->name('finances.journal');
