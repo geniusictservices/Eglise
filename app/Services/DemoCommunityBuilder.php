@@ -117,6 +117,7 @@ class DemoCommunityBuilder
         app(DemoMembers::class)->build($siege, $levels['himbi'], $levels['katindo'], withPhotos: ! isset($flags['is_demo']));
         app(DemoFinances::class)->build($siege, $levels['himbi'], withFiles: ! isset($flags['is_demo']));
         app(DemoPlanning::class)->build($siege, $levels['himbi']);
+        app(DemoPayroll::class)->build($levels['himbi']);
 
         // Une église inscrite seule qui demande à rejoindre la région.
         $bethel = $person('Pasteur Samuel Kitambala', 20);

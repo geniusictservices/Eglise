@@ -106,7 +106,7 @@ class Ledger
             }
 
             $transaction = FinanceTransaction::create($this->values($account, $currency, $type, $amount, $on) + array_intersect_key($data, array_flip([
-                'category_id', 'member_id', 'department_id', 'payer_name', 'description', 'payment_method', 'external_reference', 'collection_id', 'expense_request_id',
+                'category_id', 'member_id', 'department_id', 'payer_name', 'description', 'payment_method', 'external_reference', 'collection_id', 'expense_request_id', 'pay_slip_id',
             ])));
 
             if ($type === 'income') {

@@ -98,9 +98,10 @@ class DemoPlanning
                 ['expense', $general, 'Électricité et eau', 'SNEL et REGIDESO', 2000],
                 ['expense', $general, 'Communication et téléphone', 'Crédit téléphone du pasteur', 120],
                 ['expense', $general, 'Rémunérations et motivations', 'Motivation de la sentinelle', 720],
+                ['expense', $general, 'Rémunérations et motivations', 'Paie du pasteur et de la secrétaire', 4800],
                 ['expense', $general, 'Entretien et réparations', 'Entretien du temple', 600],
-                ['income', null, 'Offrande du culte', 'Offrandes des cultes', 4500],
-                ['income', null, 'Dîme', 'Dîmes', 2900],
+                ['income', null, 'Offrande du culte', 'Offrandes des cultes', 7500],
+                ['income', null, 'Dîme', 'Dîmes', 5000],
             ] as [$type, $department, $category, $label, $amount]) {
                 BudgetLine::create(['budget_id' => $budget->id, 'type' => $type, 'department_id' => $department, 'category_id' => $cat[$category], 'label' => $label, 'amount' => $amount]);
             }

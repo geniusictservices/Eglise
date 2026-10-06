@@ -33,6 +33,7 @@ use App\Models\OrganizationCurrency;
 use App\Models\Payee;
 use App\Models\PayItem;
 use App\Models\PaymentDeclaration;
+use App\Models\PayRun;
 use App\Models\PaySchedule;
 use App\Models\Plan;
 use App\Models\PlanAction;
@@ -42,6 +43,7 @@ use App\Models\Pledge;
 use App\Models\PledgeDelivery;
 use App\Models\Role;
 use App\Models\RoleAssignment;
+use App\Models\SalaryAdvance;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Vision;
@@ -104,6 +106,8 @@ class AppServiceProvider extends ServiceProvider
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,
+            'pay_run' => PayRun::class,
+            'salary_advance' => SalaryAdvance::class,
             'payment_declaration' => PaymentDeclaration::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,

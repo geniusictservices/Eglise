@@ -94,8 +94,11 @@ class DemoFinances
                 $charges = [
                     [8, 'CDF', '20000', 'Communication et téléphone', 'Crédit téléphone du pasteur'],
                     [10, 'CDF', '35000', 'Électricité et eau', 'Eau REGIDESO'],
-                    [27, 'USD', '60', 'Rémunérations et motivations', 'Motivation de la sentinelle'],
                 ];
+                // Dès août, la sentinelle est payée par la paie.
+                if ($back === 3) {
+                    $charges[] = [27, 'USD', '60', 'Rémunérations et motivations', 'Motivation de la sentinelle'];
+                }
                 if ($back > 1) {
                     $charges[] = [14, 'CDF', '110000', 'Électricité et eau', 'Facture SNEL'];
                 }

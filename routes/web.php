@@ -14,6 +14,7 @@ use App\Http\Controllers\MemberCardController;
 use App\Http\Controllers\MemberPhotoController;
 use App\Http\Controllers\MemberTemplateController;
 use App\Http\Controllers\OrganizationLogoController;
+use App\Http\Controllers\PayrollPrintController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SwitchOrganizationController;
 use App\Http\Middleware\EnsurePasswordChanged;
@@ -99,6 +100,9 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/paie', Livewire\Payroll\Index::class)->name('payroll.index');
     Route::get('/paie/beneficiaires', Livewire\Payroll\Payees::class)->name('payroll.payees');
     Route::get('/paie/reglages', Livewire\Payroll\Settings::class)->name('payroll.settings');
+    Route::get('/paie/{run}', Livewire\Payroll\Run::class)->whereNumber('run')->name('payroll.run');
+    Route::get('/paie/{run}/imprimer', [PayrollPrintController::class, 'run'])->whereNumber('run')->name('payroll.print');
+    Route::get('/paie/bulletin/{slip}', [PayrollPrintController::class, 'slip'])->name('payroll.slip');
     Route::get('/reunions', Livewire\Meetings\Index::class)->name('meetings.index');
     Route::get('/reunions/{meeting}', Livewire\Meetings\Show::class)->name('meetings.show');
     Route::get('/reunions/{meeting}/proces-verbal', MeetingPrintController::class)->name('meetings.print');
