@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FinanceTransaction;
+use App\Models\Member;
 use App\Support\DocumentIdentity;
 use Illuminate\Support\Facades\Gate;
 
@@ -12,9 +13,11 @@ class ReceiptController extends Controller
     public function __invoke(FinanceTransaction $transaction)
     {
         abort_unless($transaction->type === 'income', 404);
-        abort_unless(Gate::allows('finance.view'), 403);
+        // Un membre retrouve ses propres reçus dans son espace.
+        $own = $transaction->member_id && Member::withoutOrganizationScope()->whereKey($transaction->member_id)->value('user_id') === auth()->id();
+        abort_unless($own || Gate::allows('finance.view'), 403);
         // Un reçu nominatif montre le nom du donateur : il faut la permission des contributions.
-        abort_if($transaction->member_id && ! Gate::allows('finance.contributions.view'), 403);
+        abort_if($transaction->member_id && ! $own && ! Gate::allows('finance.contributions.view'), 403);
 
         $transaction->load(['account', 'category', 'member', 'department', 'author', 'organization']);
         $identity = $transaction->organization->documentIdentity();

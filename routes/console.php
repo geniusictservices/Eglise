@@ -17,3 +17,6 @@ Schedule::command('model:prune')->daily();
 
 // Chaque matin : fin des essais, délais de grâce et passages en lecture seule.
 Schedule::command('waumini:abonnements')->dailyAt('05:00');
+
+// Chaque matin : les anniversaires du jour à l'équipe pastorale.
+Schedule::command('waumini:anniversaires')->dailyAt('06:30');

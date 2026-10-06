@@ -121,6 +121,40 @@
                     <p class="whitespace-pre-line text-sm text-ink-800">{{ $member->notes }}</p>
                 </section>
             @endif
+            @can('users.manage')
+                <section class="card p-5 sm:p-6 lg:col-span-2">
+                    <h2 class="mb-2 flex items-center gap-2 text-lg"><x-icon name="user-round" class="size-5 text-ochre-600" /> {{ __('Espace membre') }}</h2>
+                    @if ($spacePassword)
+                        @php $welcome = __("Bonjour :p, votre espace membre de :o est ouvert.\nAdresse : :u\nTéléphone : :t\nMot de passe provisoire : :m\nVous choisirez votre propre mot de passe à la première connexion.", ['p' => $member->first_name ?: $member->last_name, 'o' => $member->organization->displayName(), 'u' => route('login'), 't' => $member->user?->formattedPhone(), 'm' => $spacePassword]); @endphp
+                        <p class="rounded-xl bg-leaf-50 p-3 text-sm text-ink-800">{{ __('Mot de passe provisoire :') }} <span class="font-mono text-base font-semibold">{{ $spacePassword }}</span><br><span class="text-sand-700">{{ __('Il ne sera plus affiché : transmettez-le maintenant.') }}</span></p>
+                        @if ($member->phone || $member->user)<a href="https://wa.me/{{ ltrim((string) ($member->user?->phone ?? $member->phone), '+') }}?text={{ rawurlencode($welcome) }}" target="_blank" rel="noopener" class="btn mt-3 bg-[#25D366] text-white"><x-icon name="message-circle" class="size-4" /> {{ __('Envoyer par WhatsApp') }}</a>@endif
+                    @elseif ($member->user_id)
+                        <p class="text-sm text-ink-800">{{ __('Ouvert : la personne se connecte avec le numéro :t.', ['t' => $member->user?->formattedPhone()]) }}</p>
+                    @elseif (! $member->organization->isReadOnly())
+                        <p class="mb-3 text-sm text-sand-700">{{ __('La personne retrouvera sa carte, ses dons et reçus, ses promesses, le programme et les annonces, et pourra demander la prière ou une attestation.') }}</p>
+                        <form wire:submit="openSpace" class="flex flex-wrap items-start gap-2">
+                            <div class="min-w-0 flex-1 basis-48"><input wire:model="spacePhone" type="tel" class="input" placeholder="{{ $member->phone ?: __('Téléphone de la personne') }}" aria-label="{{ __('Téléphone') }}">@error('spacePhone') <p class="error">{{ $message }}</p> @enderror</div>
+                            <button class="btn-primary">{{ __('Ouvrir son espace') }}</button>
+                        </form>
+                    @endif
+                </section>
+            @endcan
+            @can('pastoral.view')
+                <section class="card p-5 sm:p-6 lg:col-span-2">
+                    <div class="mb-3 flex items-center justify-between gap-2">
+                        <h2 class="flex items-center gap-2 text-lg"><x-icon name="heart" class="size-5 text-ochre-600" /> {{ __('Suivi pastoral') }}</h2>
+                        <a href="{{ route('pastoral.index', ['membre' => $member->id]) }}" class="btn-ghost !min-h-0 !py-1.5 text-sm"><x-icon name="plus" class="size-4" /> {{ __('Ouvrir un suivi') }}</a>
+                    </div>
+                    <ul class="space-y-1.5 text-sm">
+                        @forelse ($pastoralCases as $pc)
+                            <li><a href="{{ route('pastoral.show', $pc) }}" class="text-ink-700 hover:underline">{{ __(\App\Models\PastoralCase::KINDS[$pc->kind]) }} · {{ $pc->title }}</a>
+                                <span class="text-sand-600">· {{ $pc->opened_on->translatedFormat('M Y') }}@if ($pc->status === 'closed') · {{ __('clos') }}@endif</span></li>
+                        @empty
+                            <li class="text-sand-700">{{ __('Aucun suivi.') }}</li>
+                        @endforelse
+                    </ul>
+                </section>
+            @endcan
         </div>
 
     @elseif ($tab === 'parcours')

@@ -12,6 +12,7 @@ use App\Services\Notifier;
 use App\Support\AnnouncementAccess;
 use App\Support\EventAccess;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -33,7 +34,7 @@ class Index extends Component
 
     public function mount(): void
     {
-        $this->authorize('organization.view');
+        abort_unless(Gate::any(['organization.view', 'member.space']), 403);
         // Annoncer une activité depuis le calendrier : ?activite=12&date=2026-10-25
         $eventId = (int) request()->query('activite');
         $date = (string) request()->query('date');

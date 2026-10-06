@@ -31,6 +31,7 @@ class Navigation
                 'label' => null,
                 'items' => [
                     ['route' => 'dashboard', 'label' => __('Tableau de bord'), 'icon' => 'layout-dashboard', 'can' => 'organization.view', 'mobile' => true, 'short' => __('Accueil')],
+                    ['route' => 'member.space', 'label' => __('Mon espace'), 'icon' => 'user-round', 'can' => 'member.space', 'mobile' => 'alone', 'short' => __('Mon espace')],
                 ],
             ],
             [
@@ -45,9 +46,10 @@ class Navigation
             [
                 'label' => __('Vie de la communauté'),
                 'items' => [
-                    ['route' => 'events.index', 'label' => __('Calendrier'), 'icon' => 'calendar-days', 'can' => 'organization.view'],
+                    ['route' => 'pastoral.index', 'label' => __('Suivi pastoral'), 'icon' => 'heart', 'can' => 'pastoral.view'],
+                    ['route' => 'events.index', 'label' => __('Calendrier'), 'icon' => 'calendar-days', 'can' => ['organization.view', 'member.space'], 'mobile' => 'alone', 'short' => __('Programme')],
                     ['route' => 'attendance.index', 'label' => __('Présences'), 'icon' => 'clipboard-check', 'can' => ['attendance.record', 'activities.manage']],
-                    ['route' => 'announcements.index', 'label' => __('Annonces'), 'icon' => 'megaphone', 'can' => 'organization.view'],
+                    ['route' => 'announcements.index', 'label' => __('Annonces'), 'icon' => 'megaphone', 'can' => ['organization.view', 'member.space'], 'mobile' => 'alone', 'short' => __('Annonces')],
                     ['route' => 'groups.index', 'label' => __('Groupes'), 'icon' => 'handshake', 'can' => ['groups.manage', 'members.view', 'attendance.record']],
                 ],
             ],
@@ -100,7 +102,11 @@ class Navigation
 
     public static function mobile(): array
     {
-        return collect(self::sections())->flatMap(fn ($s) => $s['items'])->filter(fn ($i) => $i['mobile'] ?? false)->take(3)->values()->all();
+        // « alone » : seulement pour qui n'a pas d'autre accès (un membre et son espace).
+        $alone = ! Gate::allows('organization.view');
+
+        return collect(self::sections())->flatMap(fn ($s) => $s['items'])
+            ->filter(fn ($i) => ($i['mobile'] ?? false) === true || (($i['mobile'] ?? false) === 'alone' && $alone))->take(3)->values()->all();
     }
 
     public static function isActive(string $route): bool

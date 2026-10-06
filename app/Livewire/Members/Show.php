@@ -9,10 +9,13 @@ use App\Models\LifeEvent;
 use App\Models\Member;
 use App\Models\MemberFunctionTerm;
 use App\Models\MemberStatusChange;
+use App\Models\PastoralCase;
+use App\Services\MemberAccounts;
 use App\Services\MemberRegistry;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -57,6 +60,7 @@ class Show extends Component
     public function mount(int $id): void
     {
         $this->member = $this->findMember($id);
+        $this->spacePhone = (string) $this->member->phone;
     }
 
     private function canManage(): bool
@@ -255,6 +259,27 @@ class Show extends Component
         $this->redirectRoute('members.index');
     }
 
+    public string $spacePhone = '';
+
+    public ?string $spacePassword = null;
+
+    /** Ouvre l'espace du membre : un compte à son téléphone, avec un mot de passe provisoire. */
+    public function openSpace(MemberAccounts $accounts): void
+    {
+        abort_unless(Gate::allows('users.manage', $this->member->organization) && ! $this->member->organization->isReadOnly(), 403);
+        $this->validate(['spacePhone' => 'required|string|max:30'], attributes: ['spacePhone' => __('téléphone')]);
+        try {
+            $result = $accounts->open($this->member, $this->spacePhone);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('spacePhone', $e->getMessage());
+
+            return;
+        }
+        $this->member->refresh();
+        $this->spacePassword = $result['password'];
+        $this->dispatch('notify', message: $result['password'] ? __('Espace ouvert. Communiquez le mot de passe provisoire à la personne.') : __('Espace ouvert avec le compte qui existait déjà à ce numéro.'), type: 'success');
+    }
+
     public function render(MemberRegistry $registry)
     {
         $member = $this->member->fresh(['status', 'organization']);
@@ -282,6 +307,7 @@ class Show extends Component
             'terms' => $member->functionTerms()->with('function')->get(),
             'events' => $member->lifeEvents()->get(),
             'statusChanges' => $member->statusChanges()->with(['from', 'to', 'user'])->get(),
+            'pastoralCases' => Gate::allows('pastoral.view') ? PastoralCase::where('member_id', $member->id)->latest('opened_on')->get() : collect(),
             'departments' => $member->departments()->withoutGlobalScope('organization')->get(),
             'groups' => Group::where('leader_member_id', $member->id)->get()
                 ->concat(Group::whereHas('members', fn ($q) => $q->where('members.id', $member->id))->with(['members' => fn ($q) => $q->where('members.id', $member->id)])->get()

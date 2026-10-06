@@ -22,7 +22,7 @@
 <body class="min-h-dvh bg-sand-100">
     <div class="no-print sticky top-0 z-10 border-b border-sand-200 bg-white/95 backdrop-blur">
         <div class="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 py-3">
-            <a href="{{ route('members.show', $member) }}" class="inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ $member->fullName() }}</a>
+            <a href="{{ auth()->user()->can('members.view') ? route('members.show', $member) : route('member.space') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ $member->fullName() }}</a>
             <span class="flex-1"></span>
             <div class="flex rounded-xl border border-sand-200 bg-sand-50 p-0.5 text-sm font-semibold" role="group" aria-label="{{ __('Photo sur la carte') }}">
                 <a href="{{ route('members.card', $member) }}" @class(['rounded-lg px-3 py-1.5', 'bg-ink-700 text-white' => $withPhoto, 'text-ink-600' => ! $withPhoto]) @if ($withPhoto) aria-current="true" @endif>{{ __('Avec photo') }}</a>

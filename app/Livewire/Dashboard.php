@@ -19,8 +19,12 @@ use Livewire\Component;
 #[Title('Tableau de bord')]
 class Dashboard extends Component
 {
-    public function mount(): void
+    public function mount()
     {
+        // Un membre sans autre rôle arrive dans son espace.
+        if (! auth()->user()->can('organization.view') && auth()->user()->can('member.space')) {
+            return $this->redirectRoute('member.space');
+        }
         $this->authorize('organization.view');
     }
 

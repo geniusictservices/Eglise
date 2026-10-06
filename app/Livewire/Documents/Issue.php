@@ -3,11 +3,13 @@
 namespace App\Livewire\Documents;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Models\DocumentRequest;
 use App\Models\DocumentType;
 use App\Models\Member;
 use App\Models\RegisterEntry;
 use App\Services\Documents;
 use App\Services\DocumentTypes;
+use App\Services\MemberAccounts;
 use App\Support\DocumentTemplate;
 use InvalidArgumentException;
 use Livewire\Attributes\Title;
@@ -25,6 +27,9 @@ class Issue extends Component
 
     #[Url(as: 'membre')]
     public ?int $memberId = null;
+
+    #[Url(as: 'demande')]
+    public ?int $requestId = null;
 
     #[Url(as: 'acte')]
     public ?int $entryId = null;
@@ -107,6 +112,11 @@ class Issue extends Component
             $this->addError('issue', $e->getMessage());
 
             return null;
+        }
+
+        // Une demande venue de l'espace membre est servie : la personne est prévenue.
+        if ($this->requestId && ($request = DocumentRequest::where('status', 'pending')->find($this->requestId))) {
+            app(MemberAccounts::class)->fulfil($request, $document);
         }
 
         return $this->redirectRoute('documents.print', $document);

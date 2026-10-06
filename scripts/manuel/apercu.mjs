@@ -13,7 +13,7 @@ for (const [name, opts] of Object.entries({
     await page.fill('#phone', process.env.PHONE ?? '0990000001');
     await page.fill('#password', 'Waumini2026');
     await page.click('main form button[type=submit], form button[type=submit]');
-    await page.waitForURL(/tableau-de-bord|admin/);
+    await page.waitForURL(/tableau-de-bord|admin|mon-espace/);
     for (const p of paths) {
         const [path, action] = p.split('#');
         await page.goto(BASE + path);

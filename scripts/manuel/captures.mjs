@@ -72,7 +72,7 @@ async function login(page, phone) {
     await page.goto(`${BASE}/connexion`);
     await page.fill('#phone', phone);
     await page.fill('#password', PASSWORD);
-    await Promise.all([page.waitForURL(/tableau-de-bord|profil/), page.click('button[type=submit]')]);
+    await Promise.all([page.waitForURL(/tableau-de-bord|profil|mon-espace/), page.click('button[type=submit]')]);
 }
 
 async function settle(page) {

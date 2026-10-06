@@ -6,6 +6,23 @@
         </x-slot:actions>
     </x-page-header>
 
+    @if ($pending->isNotEmpty())
+        <section class="mb-5 rounded-[18px] border border-ochre-300 bg-ochre-50 p-5">
+            <h2 class="mb-3 flex items-center gap-2 text-base"><x-icon name="file-text" class="size-5 text-ochre-600" /> {{ trans_choice(':count demande d’un membre|:count demandes de membres', $pending->count()) }}</h2>
+            <ul class="space-y-2">
+                @foreach ($pending as $r)
+                    <li class="flex flex-wrap items-center gap-2">
+                        <span class="min-w-0 flex-1 basis-56 text-sm"><span class="font-semibold text-ink-800">{{ $r->member?->officialName() }}</span> · {{ $r->type?->name }}@if ($r->message) <span class="text-sand-700">« {{ $r->message }} »</span>@endif <span class="text-xs text-sand-600">· {{ $r->created_at->diffForHumans() }}</span></span>
+                        @if ($canIssue)
+                            <a href="{{ route('documents.issue', ['modele' => $r->document_type_id, 'membre' => $r->member_id, 'demande' => $r->id]) }}" class="btn-primary !min-h-0 !py-1.5 text-sm">{{ __('Délivrer') }}</a>
+                            <button type="button" wire:click="askRefuse({{ $r->id }})" class="btn-ghost !min-h-0 !py-1.5 text-sm text-terra-600">{{ __('Refuser') }}</button>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <div class="mb-4 flex flex-wrap gap-2">
         <input wire:model.live.debounce.300ms="search" type="search" class="input min-w-0 flex-1 basis-56" placeholder="{{ __('Numéro ou nom de la personne') }}" aria-label="{{ __('Rechercher') }}">
         <select wire:model.live="typeCode" class="input w-auto min-w-0" aria-label="{{ __('Modèle') }}">
@@ -37,6 +54,15 @@
         @endforelse
     </ul>
     <div class="mt-4">{{ $documents->links() }}</div>
+
+    <x-modal name="refuse-request" :title="__('Refuser la demande')">
+        <form wire:submit="refuse" class="space-y-4">
+            <p class="text-sm text-sand-700">{{ __('La personne verra ce motif dans son espace.') }}</p>
+            <input wire:model="refusal" class="input" placeholder="{{ __('Exemple : votre baptême n’est pas encore inscrit ; passez au secrétariat.') }}" aria-label="{{ __('Motif') }}">
+            @error('refusal') <p class="error">{{ $message }}</p> @enderror
+            <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'refuse-request' })">{{ __('Retour') }}</button><button class="btn-danger">{{ __('Refuser') }}</button></div>
+        </form>
+    </x-modal>
 
     <x-modal name="cancel-document" :title="__('Annuler le document')">
         <form wire:submit="cancel" class="space-y-4">

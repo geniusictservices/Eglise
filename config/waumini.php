@@ -323,6 +323,7 @@ return [
             'items' => [
                 'pastoral.view' => 'Voir et gérer le suivi pastoral',
                 'pastoral.confidential' => 'Écrire et lire ses notes confidentielles',
+                'member.space' => 'Accéder à son espace membre : sa fiche, ses reçus, ses demandes',
             ],
         ],
         'network' => [
@@ -346,6 +347,11 @@ return [
     */
 
     'role_templates' => [
+        'membre' => [
+            'name' => 'Membre',
+            'description' => 'Son espace membre seulement : sa fiche, sa carte, ses contributions et reçus, ses promesses, le programme, les annonces, ses demandes.',
+            'permissions' => ['member.space'],
+        ],
         'administrateur' => [
             'name' => 'Administrateur',
             'description' => 'Accès complet à la communauté. Attribué à la personne qui a créé le compte.',
@@ -356,6 +362,7 @@ return [
             'name' => 'Pasteur',
             'description' => 'Vue d’ensemble, suivi pastoral et notes confidentielles, validation des dépenses.',
             'permissions' => [
+                'member.space',
                 'organization.view', 'users.view', 'audit.view',
                 'members.view', 'members.manage', 'members.sensitive',
                 'finance.view', 'finance.contributions.view', 'finance.expenses.approve', 'finance.reports',
@@ -371,6 +378,7 @@ return [
             'name' => 'Secrétaire',
             'description' => 'Registre des membres, départements, activités, documents et communication. Ne voit pas les dîmes nominatives.',
             'permissions' => [
+                'member.space',
                 'organization.view', 'users.view',
                 'members.view', 'members.manage', 'members.export', 'members.import', 'members.sensitive', 'members.settings', 'departments.manage',
                 'planning.view', 'meetings.manage',
@@ -383,6 +391,7 @@ return [
             'name' => 'Trésorier',
             'description' => 'Caisses, recettes, promesses, dépenses, change, clôtures et rapports.',
             'permissions' => [
+                'member.space',
                 'organization.view', 'currencies.manage',
                 'members.view',
                 'finance.view', 'finance.settings', 'finance.income', 'finance.contributions.view', 'finance.pledges',
@@ -395,6 +404,7 @@ return [
             'name' => 'Responsable de département',
             'description' => 'Son département uniquement : membres, réunions, présences, besoins budgétaires, demandes de dépense.',
             'permissions' => [
+                'member.space',
                 'organization.view',
                 'members.view',
                 'finance.expenses.request',
@@ -406,6 +416,7 @@ return [
             'name' => 'Conseil / comité',
             'description' => 'Lecture seule des rapports et indicateurs, pour contrôler sans modifier.',
             'permissions' => [
+                'member.space',
                 'organization.view', 'audit.view',
                 'finance.view', 'finance.reports',
                 'planning.view',
@@ -416,6 +427,7 @@ return [
             'name' => 'Responsable de niveau',
             'description' => 'Secteur, région ou siège : consolidation, comparaisons, transferts. Lecture des paroisses.',
             'permissions' => [
+                'member.space',
                 'organization.view', 'users.view',
                 'members.view',
                 'finance.view', 'finance.reports',

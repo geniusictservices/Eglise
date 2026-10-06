@@ -52,6 +52,7 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::post('/communaute/{organization}/ouvrir', SwitchOrganizationController::class)->name('organizations.switch');
 
     Route::get('/tableau-de-bord', Livewire\Dashboard::class)->name('dashboard');
+    Route::get('/mon-espace', Livewire\Member\Space::class)->name('member.space');
     Route::get('/nouveautes', Livewire\Notifications\Index::class)->name('notifications.index');
     Route::get('/nouveautes/{id}/ouvrir', [NotificationController::class, 'open'])->whereUuid('id')->name('notifications.open');
     Route::post('/nouveautes/telephone', [NotificationController::class, 'subscribe'])->name('notifications.subscribe');
@@ -91,6 +92,8 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/documents', Livewire\Documents\Index::class)->name('documents.index');
     Route::get('/documents/delivrer', Livewire\Documents\Issue::class)->name('documents.issue');
     Route::get('/documents/{document}/imprimer', [DocumentController::class, 'print'])->whereNumber('document')->name('documents.print');
+    Route::get('/suivi-pastoral', Livewire\Pastoral\Index::class)->name('pastoral.index');
+    Route::get('/suivi-pastoral/{case}', Livewire\Pastoral\Show::class)->whereNumber('case')->name('pastoral.show');
     Route::get('/registres', Livewire\Registers\Index::class)->name('registers.index');
     Route::get('/registres/{register}', Livewire\Registers\Show::class)->whereNumber('register')->name('registers.show');
     Route::get('/documents/modeles', Livewire\Documents\Templates::class)->name('documents.templates');

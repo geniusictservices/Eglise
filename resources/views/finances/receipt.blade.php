@@ -30,7 +30,11 @@
 <body class="min-h-dvh bg-sand-100">
     <div class="no-print sticky top-0 z-10 border-b border-sand-200 bg-white/95">
         <div class="mx-auto flex max-w-3xl flex-wrap items-center gap-3 px-4 py-3">
-            <a href="{{ route('finances.journal') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Opérations') }}</a>
+            @can('finance.view')
+                <a href="{{ route('finances.journal') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Opérations') }}</a>
+            @else
+                <a href="{{ route('member.space') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Mon espace') }}</a>
+            @endcan
             <span class="flex-1"></span>
             <div class="flex rounded-xl border border-sand-200 bg-sand-50 p-0.5 text-sm font-semibold" role="group" aria-label="{{ __('Format') }}">
                 @foreach (\App\Support\DocumentIdentity::RECEIPT_FORMATS as $key => $label)

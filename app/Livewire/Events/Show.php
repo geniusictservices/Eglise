@@ -15,6 +15,7 @@ use App\Support\AnnouncementAccess;
 use App\Support\DepartmentScope;
 use App\Support\EventAccess;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use Livewire\Component;
 
@@ -39,7 +40,7 @@ class Show extends Component
 
     public function mount(Event $event, string $date): void
     {
-        $this->authorize('organization.view');
+        abort_unless(Gate::any(['organization.view', 'member.space']), 403);
         abort_unless(preg_match('/^\d{4}-\d{2}-\d{2}$/', $date), 404);
         $this->event = $event;
         $this->date = $date;
@@ -233,6 +234,7 @@ class Show extends Component
             'canEdit' => ! $organization->isReadOnly() && EventAccess::canEdit($user, $organization, $this->event),
             'canRecord' => $canRecord,
             'canRegisterOthers' => $this->canRegisterOthers(),
+            'canSeeAttendance' => Gate::allows('organization.view'),
             'canAnnounce' => ! $organization->isReadOnly() && AnnouncementAccess::canCreate($user, $organization),
         ] + $this->eventFormOptions())->title($this->event->title);
     }

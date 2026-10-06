@@ -15,7 +15,8 @@ class MemberCardController extends Controller
         $current = current_organization();
 
         abort_unless($member->organization_id === $current->id || in_array($current->id, $member->organization->ancestorIds(), true), 404);
-        abort_unless(Gate::allows('members.view', $member->organization), 403);
+        // Chacun voit sa propre carte et sa photo depuis son espace membre.
+        abort_unless(($member->user_id && $member->user_id === auth()->id()) || Gate::allows('members.view', $member->organization), 403);
 
         $url = route('cards.verify', $member->cardToken());
 

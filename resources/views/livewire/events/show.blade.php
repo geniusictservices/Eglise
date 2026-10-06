@@ -53,7 +53,7 @@
     @if ($event->description)<p class="mb-5 max-w-3xl whitespace-pre-line text-ink-700">{{ $event->description }}</p>@endif
 
     <div class="grid gap-5 lg:grid-cols-2">
-        @if ($event->tracks_attendance && ! $skipped)
+        @if ($event->tracks_attendance && ! $skipped && $canSeeAttendance)
             {{-- Effectifs --}}
             <section class="card p-5 sm:p-6">
                 <h2 class="mb-1 text-lg">{{ __('Effectifs') }}</h2>

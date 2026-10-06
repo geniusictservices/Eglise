@@ -9,6 +9,7 @@ use App\Models\EventRegistration;
 use App\Services\Calendar;
 use App\Support\EventAccess;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -24,7 +25,7 @@ class Index extends Component
 
     public function mount(): void
     {
-        $this->authorize('organization.view');
+        abort_unless(Gate::any(['organization.view', 'member.space']), 403);
         if (! preg_match('/^\d{4}-\d{2}$/', $this->month)) {
             $this->month = today()->format('Y-m');
         }

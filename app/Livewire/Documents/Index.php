@@ -3,9 +3,11 @@
 namespace App\Livewire\Documents;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Models\DocumentRequest;
 use App\Models\IssuedDocument;
 use App\Services\Documents;
 use App\Services\DocumentTypes;
+use App\Services\MemberAccounts;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
 use Livewire\Attributes\Title;
@@ -65,6 +67,27 @@ class Index extends Component
         $this->notify(__('Document annulé : son QR code l’indique désormais.'));
     }
 
+    public ?int $refusingId = null;
+
+    public string $refusal = '';
+
+    public function askRefuse(int $id): void
+    {
+        $this->authorizeWrite('documents.issue');
+        $this->refusingId = DocumentRequest::where('status', 'pending')->findOrFail($id)->id;
+        $this->refusal = '';
+        $this->dispatch('open-modal', name: 'refuse-request');
+    }
+
+    public function refuse(MemberAccounts $accounts): void
+    {
+        $this->authorizeWrite('documents.issue');
+        $this->validate(['refusal' => 'required|string|max:255'], attributes: ['refusal' => __('motif')]);
+        $accounts->refuse(DocumentRequest::where('status', 'pending')->findOrFail($this->refusingId), $this->refusal);
+        $this->dispatch('close-modal', name: 'refuse-request');
+        $this->notify(__('Demande refusée ; la personne est prévenue.'));
+    }
+
     public function render(DocumentTypes $types)
     {
         $term = trim($this->search);
@@ -77,6 +100,7 @@ class Index extends Component
             'documents' => $documents,
             'types' => $types->available($this->organization()),
             'canIssue' => Gate::allows('documents.issue') && ! $this->organization()->isReadOnly(),
+            'pending' => DocumentRequest::with(['member', 'type'])->where('status', 'pending')->oldest()->get(),
             'thisYear' => IssuedDocument::where('year', now()->year)->count(),
         ]);
     }

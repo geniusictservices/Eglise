@@ -14,6 +14,11 @@ class EventRegistration extends Model
         return ['occurs_on' => 'date'];
     }
 
+    public function event(): BelongsTo
+    {
+        return $this->belongsTo(Event::class)->withTrashed();
+    }
+
     public function member(): BelongsTo
     {
         return $this->belongsTo(Member::class)->withoutGlobalScope('organization');

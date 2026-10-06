@@ -36,6 +36,7 @@ use App\Models\MemberImport;
 use App\Models\MemberStatus;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
+use App\Models\PastoralCase;
 use App\Models\Payee;
 use App\Models\PayItem;
 use App\Models\PaymentDeclaration;
@@ -120,6 +121,7 @@ class AppServiceProvider extends ServiceProvider
             'issued_document' => IssuedDocument::class,
             'register' => Register::class,
             'register_entry' => RegisterEntry::class,
+            'pastoral_case' => PastoralCase::class,
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,
