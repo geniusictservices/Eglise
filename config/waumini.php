@@ -22,6 +22,12 @@ return [
     'default_timezone' => 'Africa/Lubumbashi',
 
     'trial_days' => 30,
+
+    // Démo publique : chaque visiteur a sa copie, effacée après ce nombre de jours.
+    'demo' => [
+        'days' => 3,
+        'max_active' => 300,
+    ],
     'grace_days' => 30,
 
     // Coordonnées de Genius ICT affichées sur le site public et dans l'application.

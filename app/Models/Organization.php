@@ -32,6 +32,7 @@ class Organization extends Model
         'locale' => 'fr',
         'timezone' => 'Africa/Lubumbashi',
         'status' => 'trial',
+        'is_demo' => false,
         'path' => '',
         'depth' => 0,
     ];
@@ -43,6 +44,8 @@ class Organization extends Model
             'settings' => 'array',
             'trial_ends_at' => 'datetime',
             'support_access_until' => 'datetime',
+            'is_demo' => 'boolean',
+            'demo_expires_at' => 'datetime',
         ];
     }
 

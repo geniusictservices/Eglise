@@ -299,6 +299,16 @@ const SCENES = [
         },
     },
     {
+        id: '21-apparence', user: '0990000001',
+        run: async (page) => {
+            await page.goto(`${BASE}/parametres?onglet=apparence`);
+            await settle(page);
+            await page.click('button:has-text("Forêt")');
+            await page.waitForTimeout(600);
+            await mark(page, [{ selector: 'main fieldset', label: '1' }, { selector: '#primaryColor', label: '2' }, { selector: 'main section[aria-label]', label: '3' }]);
+        },
+    },
+    {
         id: '22-acces-support', user: '0990000001',
         run: async (page) => {
             await page.goto(`${BASE}/parametres?onglet=support`);

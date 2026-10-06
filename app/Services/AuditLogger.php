@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\AuditLog;
+use App\Models\Organization;
+use App\Models\User;
 use App\Support\CurrentOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,30 @@ use Illuminate\Support\Facades\DB;
  */
 class AuditLogger
 {
+    /** @var array<int, bool> */
+    private array $demoOrganizations = [];
+
     public function __construct(private CurrentOrganization $current) {}
+
+    /** Les actions dans un bac à sable de démo vont dans la chaîne « demo ». */
+    private function chainFor(?Model $subject, ?int $organizationId): string
+    {
+        if ($subject instanceof User && $subject->is_demo) {
+            return 'demo';
+        }
+
+        if ($subject instanceof Organization && $subject->is_demo) {
+            return 'demo';
+        }
+
+        if ($organizationId === null) {
+            return 'main';
+        }
+
+        $this->demoOrganizations[$organizationId] ??= (bool) Organization::withTrashed()->whereKey($organizationId)->value('is_demo');
+
+        return $this->demoOrganizations[$organizationId] ? 'demo' : 'main';
+    }
 
     public function record(string $event, ?Model $subject = null, array $old = [], array $new = [], ?string $description = null, ?int $organizationId = null): AuditLog
     {
@@ -28,6 +53,7 @@ class AuditLogger
         $organizationId ??= $this->current->id();
 
         $data = [
+            'chain' => $this->chainFor($subject, $organizationId),
             'organization_id' => $organizationId,
             'user_id' => auth()->id(),
             'event' => $event,
@@ -42,7 +68,7 @@ class AuditLogger
         ];
 
         return DB::transaction(function () use ($data) {
-            $previous = AuditLog::query()->orderByDesc('id')->lockForUpdate()->value('hash');
+            $previous = AuditLog::query()->where('chain', $data['chain'])->orderByDesc('id')->lockForUpdate()->value('hash');
             $data['previous_hash'] = $previous;
             $data['hash'] = self::hash($data);
 
@@ -85,14 +111,14 @@ class AuditLogger
     }
 
     /**
-     * Vérifie toute la chaîne. Renvoie l'identifiant de la première ligne
+     * Vérifie la chaîne des vraies communautés. Renvoie l'identifiant de la première ligne
      * altérée, ou null si le journal est intact.
      */
     public function verify(): ?int
     {
         $previous = null;
 
-        foreach (AuditLog::query()->orderBy('id')->cursor() as $log) {
+        foreach (AuditLog::query()->where('chain', 'main')->orderBy('id')->cursor() as $log) {
             $data = [
                 'previous_hash' => $log->previous_hash,
                 'organization_id' => $log->organization_id,

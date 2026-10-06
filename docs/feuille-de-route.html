@@ -238,7 +238,7 @@ const BLOCKS = [
       demo: "Cette page." },
     { status: "done", title: "Fondations techniques",
       goal: "Le socle sur lequel tous les modules reposent.",
-      items: ["Projet Laravel, structure multi-communautés et hiérarchie (siège, région, secteur, paroisse)", "Connexion par téléphone et mot de passe, ou par empreinte, visage et Windows Hello", "Rôles personnalisables et permissions par périmètre", "Journal d’audit inaltérable", "Devises : USD de base, autres devises et taux du jour", "PWA installable (téléphone et Windows), langues, libellés renommables", "Manuel illustré : 11 chapitres, captures ordinateur et téléphone", "Intégration continue GitHub et guide de déploiement LWS"],
+      items: ["Projet Laravel, structure multi-communautés et hiérarchie (siège, région, secteur, paroisse)", "Connexion par téléphone et mot de passe, ou par empreinte, visage et Windows Hello", "Rôles personnalisables et permissions par périmètre", "Journal d’audit inaltérable", "Devises : USD de base, autres devises et taux du jour", "PWA installable (téléphone et Windows), langues, libellés renommables", "Manuel illustré : 11 chapitres, captures ordinateur et téléphone", "Couleurs de l’espace personnalisables par chaque communauté (7 palettes ou couleurs libres)", "Intégration continue GitHub et guide de déploiement LWS"],
       demo: "Livré : communauté de démonstration, 54 tests automatiques, manuel illustré dans l’application (/aide)." },
     { status: "done", title: "Site public de Waumini",
       goal: "Présenter le produit et accueillir les nouvelles communautés.",
@@ -290,6 +290,10 @@ const BLOCKS = [
       goal: "Piloter la plateforme et accompagner les communautés.",
       items: ["Communautés clientes, packs, prix sur mesure, essais", "Abonnements : paiement déclaré puis validé, grâce d’un mois, puis lecture seule", "Accès support autorisé et révocable par la communauté", "Tickets de support, centre d’aide", "Rôles internes et statistiques"],
       demo: "Une communauté ouvre un ticket et l’agent l’aide avec son accord." },
+    { status: "todo", title: "Démo publique",
+      goal: "Laisser chacun essayer Waumini, sans engagement ni inscription.",
+      items: ["Un bouton « Essayer la démo » sur le site public", "Chaque visiteur reçoit sa propre copie de la communauté de démonstration, déjà remplie", "Toutes les fonctions utilisables, isolées des vraies communautés", "Données effacées automatiquement après 3 jours", "Identifiants affichés pour revenir depuis un autre appareil", "Déjà prêt : la communauté de démonstration réutilisable, le marquage et l’effacement des données de démo"],
+      demo: "Un pasteur essaie Waumini sur son téléphone pendant trois jours, puis crée son vrai compte." },
     { status: "todo", title: "Mise en production et églises pilotes",
       goal: "Lancer Waumini avec deux ou trois communautés pilotes.",
       items: ["Déploiement sur LWS et sauvegardes", "Fichier d’installation Windows (MSIX)", "Données de démonstration pour les présentations", "Formation et reprise des données des pilotes"],
@@ -371,7 +375,9 @@ const DECISIONS = [
     "Sites vitrines : thèmes existants, pages choisies par la communauté, un site par paroisse.",
     "Version Windows : la même application installée sur l’ordinateur de la communauté, Internet requis.",
     "Un manuel d’utilisation complet, avec captures ordinateur et téléphone, écrit au fil des étapes.",
-    "Les familles sont gérées comme des ménages : conjoints, enfants et personnes à charge à une même adresse."
+    "Les familles sont gérées comme des ménages : conjoints, enfants et personnes à charge à une même adresse.",
+    "Style « Chaleureux, inspiré du wax » choisi parmi quatre directions ; chaque communauté peut choisir ses couleurs.",
+    "Démo publique : une copie par visiteur, effacée après 3 jours ; réalisée en fin de projet."
   ]]
 ];
 

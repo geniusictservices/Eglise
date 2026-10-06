@@ -48,6 +48,8 @@ class OrganizationProvisioner
                 'trial_ends_at' => $parent->trial_ends_at,
                 'timezone' => $parent->timezone,
                 'locale' => $parent->locale,
+                'is_demo' => $parent->is_demo,
+                'demo_expires_at' => $parent->demo_expires_at,
                 'created_by' => auth()->id(),
             ]);
 

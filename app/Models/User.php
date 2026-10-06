@@ -31,6 +31,7 @@ class User extends Authenticatable implements PasskeyUser
         'locale' => 'fr',
         'is_active' => true,
         'is_platform_staff' => false,
+        'is_demo' => false,
         'must_change_password' => false,
         'current_organization_id' => null,
         'last_login_at' => null,
@@ -46,6 +47,7 @@ class User extends Authenticatable implements PasskeyUser
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'is_platform_staff' => 'boolean',
+            'is_demo' => 'boolean',
             'is_active' => 'boolean',
             'must_change_password' => 'boolean',
         ];

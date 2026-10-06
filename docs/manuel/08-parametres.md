@@ -1,8 +1,8 @@
-# 8. Paramètres, libellés et accès du support
+# 8. Paramètres, apparence, libellés et accès du support
 
 > Permission nécessaire : **Modifier les paramètres, le logo et les libellés** (rôle Administrateur par défaut).
 
-Les paramètres concernent **la communauté affichée**. Ils sont répartis en trois onglets ① : **Informations**, **Libellés** et **Support**.
+Les paramètres concernent **la communauté affichée**. Ils sont répartis en quatre onglets ① : **Informations**, **Apparence**, **Libellés** et **Support**.
 
 <table><tr>
 <td width="68%"><img src="captures/bureau/20-parametres.png" alt="Paramètres de la communauté sur ordinateur"></td>
@@ -18,6 +18,24 @@ Les paramètres concernent **la communauté affichée**. Ils sont répartis en t
 - **Fuseau horaire** : *Est de la RDC* pour Goma, Bukavu et Lubumbashi ; *Ouest de la RDC* pour Kinshasa et Matadi.
 
 Touchez **Enregistrer** en bas du formulaire.
+
+## Apparence : les couleurs de votre espace
+
+Chaque communauté peut habiller Waumini à ses couleurs. Le choix s'applique à **tous ses utilisateurs**, sur téléphone comme sur ordinateur, et à ses **niveaux inférieurs**, sauf si l'un d'eux choisit ses propres couleurs.
+
+<table><tr>
+<td width="68%"><img src="captures/bureau/21-apparence.png" alt="Apparence sur ordinateur"></td>
+<td width="32%"><img src="captures/mobile/21-apparence.png" alt="Apparence sur téléphone"></td>
+</tr></table>
+
+1. Touchez une **palette prête** ① : Wax indigo (par défaut), Lac Kivu, Forêt, Bordeaux, Royal, Terre ou Nuit.
+2. Ou choisissez vos propres couleurs ② :
+   - la **couleur principale** colore les en-têtes, le menu et les boutons. Elle doit être **foncée**, pour que le texte blanc posé dessus reste lisible : Waumini refuse une couleur trop claire ;
+   - la **couleur d'accent** marque l'élément actif, l'action principale et les points du motif.
+3. Cochez ou décochez **Afficher le motif wax**.
+4. Regardez l'**aperçu** ③ : il montre le résultat sur un téléphone. Touchez ensuite **Enregistrer l'apparence**.
+
+**Couleurs par défaut** revient aux couleurs de Waumini, ou à celles de votre niveau supérieur.
 
 ## Libellés : vos propres mots
 

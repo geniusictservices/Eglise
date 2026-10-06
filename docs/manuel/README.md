@@ -30,7 +30,7 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 6. [Gérer les utilisateurs](05-utilisateurs.md)
 7. [Rôles et permissions](06-roles.md)
 8. [Devises et taux du jour](07-devises.md)
-9. [Paramètres, libellés et accès du support](08-parametres.md)
+9. [Paramètres, apparence, libellés et accès du support](08-parametres.md)
 10. [Le journal d'audit](09-journal.md)
 11. [L'abonnement](11-abonnement.md)
 
