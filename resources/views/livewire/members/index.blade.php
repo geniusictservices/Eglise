@@ -6,6 +6,19 @@
             @can('members.settings')
                 <a href="{{ route('members.settings') }}" class="btn-secondary" aria-label="{{ __('Réglages du registre') }}"><x-icon name="settings" class="size-4" /><span class="hidden sm:inline">{{ __('Réglages') }}</span></a>
             @endcan
+            @canany(['members.import', 'members.export'])
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                    <button type="button" @click="open = ! open" class="btn-secondary" aria-label="{{ __('Excel') }}"><x-icon name="file-spreadsheet" class="size-4" /><span class="hidden sm:inline">{{ __('Excel') }}</span><x-icon name="chevron-down" class="size-4" /></button>
+                    <div x-cloak x-show="open" x-transition class="absolute right-0 z-20 mt-2 w-64 rounded-2xl border border-sand-200 bg-white p-1.5 shadow-xl">
+                        @can('members.import')
+                            <a href="{{ route('members.import') }}" class="flex items-center gap-2 rounded-xl px-3 py-2 text-sm text-ink-800 hover:bg-sand-50"><x-icon name="upload" class="size-4 text-ochre-600" /> {{ __('Importer depuis Excel') }}</a>
+                        @endcan
+                        @can('members.export')
+                            <button type="button" wire:click="export" @click="open = false" class="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-ink-800 hover:bg-sand-50"><x-icon name="download" class="size-4 text-ochre-600" /> {{ $filtered ? __('Exporter la sélection') : __('Exporter le registre') }}</button>
+                        @endcan
+                    </div>
+                </div>
+            @endcanany
             @if ($canManage)
                 <a href="{{ route('members.create') }}" class="btn-primary"><x-icon name="user-plus" class="size-4" /> {{ __('Ajouter un membre') }}</a>
             @endif
@@ -88,7 +101,10 @@
             <h2 class="mt-4 text-xl">{{ __('Le registre est encore vide') }}</h2>
             <p class="mt-1 max-w-md text-sand-700">{{ __('Ajoutez vos membres un par un, ou importez votre ancien registre depuis Excel avec l’aide de Genius ICT.') }}</p>
             @if ($canManage)
-                <a href="{{ route('members.create') }}" class="btn-primary mt-5"><x-icon name="user-plus" class="size-4" /> {{ __('Ajouter le premier membre') }}</a>
+                <div class="mt-5 flex flex-wrap justify-center gap-2">
+                    <a href="{{ route('members.create') }}" class="btn-primary"><x-icon name="user-plus" class="size-4" /> {{ __('Ajouter le premier membre') }}</a>
+                    @can('members.import')<a href="{{ route('members.import') }}" class="btn-secondary"><x-icon name="file-spreadsheet" class="size-4" /> {{ __('Importer depuis Excel') }}</a>@endcan
+                </div>
             @endif
         </div>
     @else

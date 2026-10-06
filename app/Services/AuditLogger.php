@@ -43,6 +43,22 @@ class AuditLogger
         return $this->demoOrganizations[$organizationId] ? 'demo' : 'main';
     }
 
+    /** Vrai pendant une opération de masse journalisée en une seule ligne (import). */
+    public static bool $muted = false;
+
+    /** Exécute sans journaliser chaque ligne : l'appelant inscrit lui-même un résumé. */
+    public static function quietly(callable $callback): mixed
+    {
+        $previous = self::$muted;
+        self::$muted = true;
+
+        try {
+            return $callback();
+        } finally {
+            self::$muted = $previous;
+        }
+    }
+
     public function record(string $event, ?Model $subject = null, array $old = [], array $new = [], ?string $description = null, ?int $organizationId = null): AuditLog
     {
         $request = app()->runningInConsole() ? null : request();

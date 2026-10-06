@@ -7,12 +7,15 @@ use App\Models\Household;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Services\MemberRegistry;
+use App\Services\MemberSpreadsheet;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 /** Registre des membres : recherche, filtres et effectifs. */
 #[Title('Membres')]
@@ -82,6 +85,31 @@ class Index extends Component
         return Member::withoutOrganizationScope()->whereIn('members.organization_id', $organizationIds);
     }
 
+    /** Les membres qui correspondent à la recherche et aux filtres. */
+    private function filteredQuery(array $organizationIds): Builder
+    {
+        return $this->baseQuery($organizationIds)
+            ->search($this->search)
+            ->when($this->status !== '', fn ($q) => $this->status === 'aucun' ? $q->whereNull('status_id') : $q->where('status_id', $this->status))
+            ->when($this->gender !== '', fn ($q) => $q->where('gender', $this->gender))
+            ->when($this->district !== '', fn ($q) => $q->where('district', $this->district))
+            ->when($this->department !== '', fn ($q) => $q->whereHas('departments', fn ($q) => $q->where('departments.id', $this->department)));
+    }
+
+    /** Export Excel des membres affichés (mêmes colonnes que le modèle d'import). */
+    public function export(MemberSpreadsheet $spreadsheet)
+    {
+        $this->authorize('members.export');
+        $organization = current_organization();
+        $book = $spreadsheet->export($organization, $this->filteredQuery($this->organizationIds($organization)), Gate::allows('members.sensitive'));
+
+        return response()->streamDownload(
+            fn () => (new Xlsx($book))->save('php://output'),
+            'registre-'.Str::slug($organization->displayName()).'-'.now()->format('Y-m-d').'.xlsx',
+            ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        );
+    }
+
     public function render(MemberRegistry $registry)
     {
         $organization = current_organization();
@@ -89,13 +117,8 @@ class Index extends Component
         $statuses = $registry->statuses($organization);
         $countingIds = $statuses->where('counts_as_member', true)->pluck('id');
 
-        $members = $this->baseQuery($ids)
-            ->search($this->search)
-            ->when($this->status !== '', fn ($q) => $this->status === 'aucun' ? $q->whereNull('status_id') : $q->where('status_id', $this->status))
-            ->when($this->gender !== '', fn ($q) => $q->where('gender', $this->gender))
-            ->when($this->district !== '', fn ($q) => $q->where('district', $this->district))
-            ->when($this->department !== '', fn ($q) => $q->whereHas('departments', fn ($q) => $q->withoutGlobalScope('organization')->where('departments.id', $this->department)))
-            ->with(['status', 'organization', 'household' => fn ($q) => $q->withoutGlobalScope('organization')])
+        $members = $this->filteredQuery($ids)
+            ->with(['status', 'organization', 'household'])
             ->orderBy('last_name')->orderBy('middle_name')->orderBy('first_name')
             ->paginate(25);
 

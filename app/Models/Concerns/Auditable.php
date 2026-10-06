@@ -12,7 +12,7 @@ trait Auditable
 {
     public static function bootAuditable(): void
     {
-        static::created(fn ($model) => app(AuditLogger::class)->record(
+        static::created(fn ($model) => AuditLogger::$muted ? null : app(AuditLogger::class)->record(
             'created', $model, [], $model->auditableValues($model->getAttributes())
         ));
 
@@ -20,7 +20,7 @@ trait Auditable
             $changes = $model->auditableValues($model->getChanges());
             unset($changes['updated_at']);
 
-            if ($changes === []) {
+            if ($changes === [] || AuditLogger::$muted) {
                 return;
             }
 
@@ -29,7 +29,7 @@ trait Auditable
             app(AuditLogger::class)->record('updated', $model, $before, $changes);
         });
 
-        static::deleted(fn ($model) => app(AuditLogger::class)->record(
+        static::deleted(fn ($model) => AuditLogger::$muted ? null : app(AuditLogger::class)->record(
             'deleted', $model, $model->auditableValues($model->getAttributes()), []
         ));
     }

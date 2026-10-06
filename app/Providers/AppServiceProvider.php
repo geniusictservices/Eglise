@@ -13,6 +13,7 @@ use App\Models\Member;
 use App\Models\MemberField;
 use App\Models\MemberFunction;
 use App\Models\MemberFunctionTerm;
+use App\Models\MemberImport;
 use App\Models\MemberStatus;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
@@ -60,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
             'member_function_term' => MemberFunctionTerm::class,
             'life_event' => LifeEvent::class,
             'department' => Department::class,
+            'member_import' => MemberImport::class,
         ]);
 
         // Toute permission du catalogue se vérifie dans l'organisation courante,
