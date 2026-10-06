@@ -79,6 +79,8 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
 
     Route::get('/departements', Livewire\Departments\Index::class)->name('departments.index');
     Route::get('/departements/{department}', Livewire\Departments\Show::class)->name('departments.show');
+    Route::get('/groupes', Livewire\Groups\Index::class)->name('groups.index');
+    Route::get('/groupes/{group}', Livewire\Groups\Show::class)->name('groups.show');
 
     Route::get('/finances', Livewire\Finances\Index::class)->name('finances.index');
     Route::get('/finances/operations', Livewire\Finances\Journal::class)->name('finances.journal');

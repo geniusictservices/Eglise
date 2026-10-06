@@ -18,6 +18,8 @@ use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
 use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
+use App\Models\Group;
+use App\Models\GroupMeeting;
 use App\Models\Household;
 use App\Models\LegalDocument;
 use App\Models\LifeEvent;
@@ -103,6 +105,8 @@ class AppServiceProvider extends ServiceProvider
             'plan_objective' => PlanObjective::class,
             'plan_action' => PlanAction::class,
             'meeting' => Meeting::class,
+            'group' => Group::class,
+            'group_meeting' => GroupMeeting::class,
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,

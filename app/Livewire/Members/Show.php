@@ -3,6 +3,7 @@
 namespace App\Livewire\Members;
 
 use App\Livewire\Members\Concerns\FindsMember;
+use App\Models\Group;
 use App\Models\Household;
 use App\Models\LifeEvent;
 use App\Models\Member;
@@ -282,6 +283,9 @@ class Show extends Component
             'events' => $member->lifeEvents()->get(),
             'statusChanges' => $member->statusChanges()->with(['from', 'to', 'user'])->get(),
             'departments' => $member->departments()->withoutGlobalScope('organization')->get(),
+            'groups' => Group::where('leader_member_id', $member->id)->get()
+                ->concat(Group::whereHas('members', fn ($q) => $q->where('members.id', $member->id))->with(['members' => fn ($q) => $q->where('members.id', $member->id)])->get()
+                    ->each(fn (Group $g) => $g->setRelation('pivot', $g->members->first()?->pivot))),
             'household' => $household,
             'households' => $households,
         ])->title($member->fullName());

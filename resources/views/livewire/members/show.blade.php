@@ -208,9 +208,39 @@
                 @endforelse
             </ul>
         </section>
+        <div class="mt-5 grid gap-5 lg:grid-cols-2">
+            <section class="card p-5 sm:p-6">
+                <h2 class="mb-4 text-lg">{{ __('Départements') }}</h2>
+                <ul class="space-y-2">
+                    @forelse ($departments as $d)
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="icon-tile size-9 bg-ink-50 text-ink-700"><x-icon name="users-round" class="size-4" /></span>
+                            <span class="flex-1 font-semibold text-ink-800">{{ $d->name }}</span>
+                            <span class="badge bg-sand-100 text-sand-700">{{ __(\App\Models\Department::ROLES[$d->pivot->role] ?? '') }}</span>
+                        </li>
+                    @empty
+                        <li class="text-sm text-sand-700">{{ __('Membre d’aucun département pour l’instant.') }}</li>
+                    @endforelse
+                </ul>
+            </section>
+            <section class="card p-5 sm:p-6">
+                <h2 class="mb-4 text-lg">{{ __('Groupes') }}</h2>
+                <ul class="space-y-2">
+                    @forelse ($groups as $g)
+                        <li><a href="{{ route('groups.show', $g) }}" class="flex items-center gap-3 rounded-xl text-sm hover:bg-sand-50">
+                            <span class="icon-tile size-9 bg-ink-50 text-ink-700"><x-icon name="handshake" class="size-4" /></span>
+                            <span class="flex-1 font-semibold text-ink-800">{{ $g->name }}</span>
+                            <span class="badge bg-sand-100 text-sand-700">{{ $g->leader_member_id === $member->id ? __('Responsable') : __(\App\Models\Group::ROLES[$g->pivot?->role] ?? 'Membre') }}</span>
+                        </a></li>
+                    @empty
+                        <li class="text-sm text-sand-700">{{ __('Membre d’aucun groupe pour l’instant.') }}</li>
+                    @endforelse
+                </ul>
+            </section>
+        </div>
 
     @else
-        <div class="grid gap-5 lg:grid-cols-2">
+        <div class="max-w-2xl">
             <section class="card p-5 sm:p-6">
                 <div class="mb-4 flex items-center justify-between gap-3">
                     <h2 class="text-lg">{{ __('Ménage') }}</h2>
@@ -239,20 +269,6 @@
                         </div>
                     @endif
                 @endif
-            </section>
-            <section class="card p-5 sm:p-6">
-                <h2 class="mb-4 text-lg">{{ __('Départements') }}</h2>
-                <ul class="space-y-2">
-                    @forelse ($departments as $d)
-                        <li class="flex items-center gap-3 text-sm">
-                            <span class="icon-tile size-9 bg-ink-50 text-ink-700"><x-icon name="users-round" class="size-4" /></span>
-                            <span class="flex-1 font-semibold text-ink-800">{{ $d->name }}</span>
-                            <span class="badge bg-sand-100 text-sand-700">{{ __(\App\Models\Department::ROLES[$d->pivot->role] ?? '') }}</span>
-                        </li>
-                    @empty
-                        <li class="text-sm text-sand-700">{{ __('Membre d’aucun département pour l’instant.') }}</li>
-                    @endforelse
-                </ul>
             </section>
         </div>
     @endif

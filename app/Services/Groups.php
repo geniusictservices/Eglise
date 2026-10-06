@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Group;
+use App\Models\GroupAttendance;
+use App\Models\GroupMeeting;
+use App\Models\Member;
+use App\Models\Organization;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+
+/** Les groupes : un responsable obligatoire, des adjoints, des membres, des rencontres et leurs présences. */
+class Groups
+{
+    public function __construct(private Notifier $notifier) {}
+
+    public function create(Organization $organization, array $data): Group
+    {
+        $leader = $this->member($organization, $data['leader_member_id'] ?? null);
+        $group = Group::create(['organization_id' => $organization->id, 'leader_member_id' => $leader->id] + $this->settings($data));
+        $this->announceLeader($group, $leader);
+
+        return $group;
+    }
+
+    public function update(Group $group, array $data): void
+    {
+        $group->update($this->settings($data));
+    }
+
+    /** Le nouveau responsable quitte la liste des membres ; l'ancien y reste comme simple membre. */
+    public function changeLeader(Group $group, int $memberId): void
+    {
+        $organization = $group->loadMissing('organization')->organization;
+        $leader = $this->member($organization, $memberId);
+        if ($leader->id === $group->leader_member_id) {
+            return;
+        }
+
+        DB::transaction(function () use ($group, $leader) {
+            $group->members()->detach($leader->id);
+            $group->members()->syncWithoutDetaching([$group->leader_member_id => ['role' => 'member', 'joined_on' => today()]]);
+            $group->update(['leader_member_id' => $leader->id]);
+        });
+        $this->announceLeader($group, $leader);
+    }
+
+    public function addMember(Group $group, int $memberId, string $role = 'member'): Member
+    {
+        $member = $this->member($group->loadMissing('organization')->organization, $memberId);
+        if ($member->id === $group->leader_member_id) {
+            throw new InvalidArgumentException(__(':name est déjà le responsable du groupe.', ['name' => $member->fullName()]));
+        }
+        $group->members()->syncWithoutDetaching([$member->id => ['role' => array_key_exists($role, Group::ROLES) ? $role : 'member', 'joined_on' => today()]]);
+        if ($role === 'deputy') {
+            $this->announceDeputy($group, $member);
+        }
+
+        return $member;
+    }
+
+    public function setRole(Group $group, int $memberId, string $role): void
+    {
+        if (! array_key_exists($role, Group::ROLES) || ! $group->members()->whereKey($memberId)->exists()) {
+            throw new InvalidArgumentException(__('Ce membre n’est pas dans le groupe.'));
+        }
+        $group->members()->updateExistingPivot($memberId, ['role' => $role]);
+        if ($role === 'deputy') {
+            $this->announceDeputy($group, Member::withoutOrganizationScope()->findOrFail($memberId));
+        }
+    }
+
+    public function removeMember(Group $group, int $memberId): void
+    {
+        if ($memberId === $group->leader_member_id) {
+            throw new InvalidArgumentException(__('Le groupe garde toujours un responsable : désignez-en un autre d’abord.'));
+        }
+        $group->members()->detach($memberId);
+    }
+
+    /** Le responsable d'abord, puis les adjoints et les membres. */
+    public function people(Group $group): Collection
+    {
+        $group->loadMissing('leader');
+        $others = $group->members()->orderByRaw("FIELD(group_members.role, 'deputy', 'member')")->orderBy('last_name')->get();
+
+        return collect([$group->leader])->filter()->concat($others)->values();
+    }
+
+    /**
+     * Note une rencontre et ses présences. Une seule rencontre par jour : la
+     * noter de nouveau la corrige.
+     *
+     * @param  array<int, string>  $attendance  member_id => present|excused|absent
+     */
+    public function recordMeeting(Group $group, array $data, array $attendance): GroupMeeting
+    {
+        $heldOn = Carbon::parse($data['held_on'])->startOfDay();
+        if ($heldOn->isFuture()) {
+            throw new InvalidArgumentException(__('On note les présences d’une rencontre déjà tenue.'));
+        }
+        $people = $this->people($group)->pluck('id')->all();
+
+        return DB::transaction(function () use ($group, $data, $attendance, $heldOn, $people) {
+            $meeting = GroupMeeting::withoutOrganizationScope()->updateOrCreate(['group_id' => $group->id, 'held_on' => $heldOn->toDateString()], [
+                'organization_id' => $group->organization_id, 'topic' => trim((string) ($data['topic'] ?? '')) ?: null,
+                'notes' => trim((string) ($data['notes'] ?? '')) ?: null, 'visitors' => max(0, (int) ($data['visitors'] ?? 0)), 'recorded_by' => auth()->id(),
+            ]);
+            $meeting->attendances()->delete();
+            foreach ($people as $memberId) {
+                $status = $attendance[$memberId] ?? 'absent';
+                GroupAttendance::create(['group_meeting_id' => $meeting->id, 'member_id' => $memberId,
+                    'status' => array_key_exists($status, GroupMeeting::STATUSES) ? $status : 'absent']);
+            }
+
+            return $meeting;
+        });
+    }
+
+    /**
+     * Ceux qui ont manqué les dernières rencontres sans s'excuser : à visiter.
+     *
+     * @return Collection<int, Member>
+     */
+    public function absentees(Group $group, int $times = 3): Collection
+    {
+        $meetings = $group->meetings()->with('attendances')->limit($times)->get();
+        if ($meetings->count() < $times) {
+            return collect();
+        }
+
+        return $this->people($group)->filter(fn (Member $m) => $meetings->every(
+            fn (GroupMeeting $meeting) => $meeting->attendances->firstWhere('member_id', $m->id)?->status === 'absent'))->values();
+    }
+
+    /** Taux de présence moyen des dernières rencontres, en pour cent. */
+    public function rate(Group $group, int $last = 8): ?int
+    {
+        $meetings = $group->meetings()->withCount(['attendances', 'attendances as present_count' => fn ($q) => $q->where('status', 'present')])->limit($last)->get();
+        $expected = $meetings->sum('attendances_count');
+
+        return $expected ? (int) round($meetings->sum('present_count') / $expected * 100) : null;
+    }
+
+    private function settings(array $data): array
+    {
+        return [
+            'name' => trim($data['name']), 'kind' => array_key_exists($data['kind'] ?? '', Group::KINDS) ? $data['kind'] : 'other',
+            'department_id' => ($data['department_id'] ?? null) ?: null,
+            'description' => trim((string) ($data['description'] ?? '')) ?: null,
+            'meeting_day' => ($data['meeting_day'] ?? '') === '' || ($data['meeting_day'] ?? null) === null ? null : (int) $data['meeting_day'],
+            'meeting_time' => ($data['meeting_time'] ?? null) ?: null,
+            'place' => trim((string) ($data['place'] ?? '')) ?: null,
+        ];
+    }
+
+    private function member(Organization $organization, mixed $id): Member
+    {
+        $member = $id ? Member::withoutOrganizationScope()->where('organization_id', $organization->id)->find($id) : null;
+
+        return $member ?? throw new InvalidArgumentException(__('Choisissez le responsable du groupe parmi les membres.'));
+    }
+
+    private function announceLeader(Group $group, Member $leader): void
+    {
+        $this->notifier->send($group->loadMissing('organization')->organization, $leader->user_id, "group.{$group->id}.leader", [
+            'title' => __('Vous êtes responsable du groupe :g', ['g' => $group->name]),
+            'body' => __('Notez ses rencontres et ses présences dans Waumini.'),
+            'url' => route('groups.show', $group), 'icon' => 'handshake']);
+    }
+
+    private function announceDeputy(Group $group, Member $member): void
+    {
+        $this->notifier->send($group->loadMissing('organization')->organization, $member->user_id, "group.{$group->id}.deputy.{$member->id}", [
+            'title' => __('Vous êtes adjoint du groupe :g', ['g' => $group->name]),
+            'url' => route('groups.show', $group), 'icon' => 'handshake']);
+    }
+}

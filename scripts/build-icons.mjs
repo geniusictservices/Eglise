@@ -15,6 +15,7 @@ const names = [
     'contact-round', 'id-card', 'house-plus', 'users-round', 'baby', 'cake', 'filter', 'sliders-horizontal',
     'upload', 'file-spreadsheet', 'archive', 'archive-restore', 'sparkles', 'droplets', 'briefcase',
     'graduation-cap', 'heart', 'user-check', 'user-x', 'qr-code', 'printer', 'hash', 'camera', 'milestone', 'award', 'message-circle',
+    'handshake', 'megaphone', 'calendar-check', 'calendar-plus', 'church', 'clipboard-check',
 ];
 
 const out = {};
