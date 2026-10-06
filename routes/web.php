@@ -100,6 +100,7 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/paie', Livewire\Payroll\Index::class)->name('payroll.index');
     Route::get('/paie/beneficiaires', Livewire\Payroll\Payees::class)->name('payroll.payees');
     Route::get('/paie/reglages', Livewire\Payroll\Settings::class)->name('payroll.settings');
+    Route::get('/paie/avances', Livewire\Payroll\Advances::class)->name('payroll.advances');
     Route::get('/paie/{run}', Livewire\Payroll\Run::class)->whereNumber('run')->name('payroll.run');
     Route::get('/paie/{run}/imprimer', [PayrollPrintController::class, 'run'])->whereNumber('run')->name('payroll.print');
     Route::get('/paie/bulletin/{slip}', [PayrollPrintController::class, 'slip'])->name('payroll.slip');

@@ -80,6 +80,14 @@ class DemoPayroll
             $as($pasteur, $year.'-09-29', fn () => $runs->approve($run->fresh(), $pasteur));
             $as($tresoriere, $year.'-09-30', fn () => $runs->pay($run->fresh(), 'CDF', $caisse, 'CDF'));
 
+            // Avances : la sentinelle a reçu la sienne début octobre ; celle de la secrétaire attend le pasteur.
+            $advances = app(SalaryAdvances::class);
+            $sentinel = Payee::where('position', 'Sentinelle')->firstOrFail();
+            $advance = $as($tresoriere, $year.'-10-02', fn () => $advances->request($sentinel, '84000', 2, 'Soins à l’hôpital pour son fils'));
+            $as($pasteur, $year.'-10-02', fn () => $advances->decide($advance, $pasteur, true, 'Que Dieu guérisse l’enfant.'));
+            $as($tresoriere, $year.'-10-03', fn () => $advances->pay($advance->fresh(), $caisse, 'CDF'));
+            $as($tresoriere, today()->toDateString(), fn () => $advances->request($secretary, '60', 3, 'Frais de scolarité des enfants'));
+
             // Octobre : présentée, avec la prime de la secrétaire pour la convention ; elle attend le pasteur.
             $october = $as($tresoriere, today()->toDateString(), fn () => $runs->prepare($himbi, $monthly, Carbon::parse($year.'-10-01')));
             $as($tresoriere, today()->toDateString(), function () use ($october, $runs, $secretary) {

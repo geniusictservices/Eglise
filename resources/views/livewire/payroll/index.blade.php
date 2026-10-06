@@ -4,9 +4,16 @@
         <x-slot:actions>
             @if ($canManage)<button type="button" wire:click="askPrepare" class="btn-primary"><x-icon name="plus" class="size-4" /> {{ __('Préparer une paie') }}</button>@endif
             <a href="{{ route('payroll.payees') }}" class="btn-secondary"><x-icon name="users" class="size-4" /> {{ __('Bénéficiaires') }}</a>
+            <a href="{{ route('payroll.advances') }}" class="btn-secondary"><x-icon name="hand-coins" class="size-4" /> {{ __('Avances') }}</a>
             <a href="{{ route('payroll.settings') }}" class="btn-secondary"><x-icon name="sliders-horizontal" class="size-4" /><span class="hidden sm:inline">{{ __('Réglages') }}</span></a>
         </x-slot:actions>
     </x-page-header>
+
+    @foreach ($alerts as $alert)
+        <a href="{{ $alert['url'] }}" class="mb-3 flex items-center gap-3 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800 hover:bg-ochre-100">
+            <x-icon name="clock" class="size-5 text-ochre-600" /><span class="flex-1 font-semibold">{{ $alert['text'] }}</span><x-icon name="chevron-right" class="size-4" />
+        </a>
+    @endforeach
 
     <section class="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         @foreach ($schedules as $s)

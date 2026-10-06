@@ -10,6 +10,7 @@ use App\Models\Organization;
 use App\Models\Payee;
 use App\Models\PayRun;
 use App\Models\PaySchedule;
+use App\Models\SalaryAdvance;
 use App\Models\User;
 use App\Services\ExchangeRateService;
 use App\Services\Ledger;
@@ -140,5 +141,55 @@ class PayRunTest extends TestCase
             ->set('note', 'Ajoutez la prime de la secrétaire')->call('sendBack')->assertHasNoErrors();
         $this->assertSame('draft', $run->fresh()->status);
         $this->assertSame('Ajoutez la prime de la secrétaire', $run->fresh()->return_note);
+    }
+
+    public function test_a_salary_advance_is_approved_paid_and_withheld_on_the_next_payrolls(): void
+    {
+        $sentinelle = Payee::where('name', 'Sentinelle')->sole();
+
+        LivewireTest::test(Livewire\Payroll\Advances::class)
+            ->call('create')
+            ->set('form.payee_id', (string) $sentinelle->id)
+            ->set('form.amount', '84000')
+            ->set('form.installments', '2')
+            ->set('form.reason', 'Soins à l’hôpital')
+            ->call('save')->assertHasNoErrors();
+        $advance = SalaryAdvance::sole();
+        $this->assertSame('requested', $advance->status);
+        $this->assertSame('CDF', $advance->currency);
+
+        // Le trésorier ne s'approuve pas ; le pasteur approuve.
+        LivewireTest::test(Livewire\Payroll\Advances::class)->call('decide', $advance->id, true)->assertForbidden();
+        $this->actingAs($this->pasteur);
+        LivewireTest::test(Livewire\Payroll\Advances::class)->call('decide', $advance->id, true)->assertHasNoErrors();
+        $this->assertSame('approved', $advance->fresh()->status);
+
+        $this->actingAs($this->tresorier);
+        LivewireTest::test(Livewire\Payroll\Advances::class)
+            ->call('askPay', $advance->id)
+            ->assertSet('payCurrency', 'CDF')
+            ->call('pay')->assertHasNoErrors();
+        $this->assertSame('paid', $advance->fresh()->status);
+        $this->assertTrue(app(Ledger::class)->balance($this->caisse, 'CDF')->isEqualTo(916000));
+
+        // Deux paies : 42 000 FC retenus à chaque fois, puis l'avance est remboursée.
+        $runs = app(PayRuns::class);
+        foreach (['2026-10-01', '2026-11-01'] as $start) {
+            $run = $runs->prepare($this->eglise, $this->monthly, Carbon::parse($start));
+            $slip = $run->slips()->where('currency', 'CDF')->sole();
+            $this->assertSame('42000.00', (string) $slip->advance_total);
+            $this->assertSame('126000.00', (string) $slip->net);
+            $runs->submit($run);
+            $runs->approve($run->fresh(), $this->pasteur);
+            $runs->pay($run->fresh(), 'CDF', $this->caisse, 'CDF');
+            $runs->pay($run->fresh(), 'USD', $this->caisse, 'USD');
+        }
+        $advance->refresh();
+        $this->assertSame('repaid', $advance->status);
+        $this->assertSame(0.0, $advance->load('repayments')->remaining());
+
+        // Décembre : plus rien à retenir.
+        $run = $runs->prepare($this->eglise, $this->monthly, Carbon::parse('2026-12-01'));
+        $this->assertSame('0.00', (string) $run->slips()->where('currency', 'CDF')->sole()->advance_total);
     }
 }

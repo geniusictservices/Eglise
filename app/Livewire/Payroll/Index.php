@@ -6,6 +6,7 @@ use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\Payee;
 use App\Models\PayRun;
 use App\Models\PaySchedule;
+use App\Models\SalaryAdvance;
 use App\Services\Payroll;
 use App\Services\PayRuns;
 use Illuminate\Support\Carbon;
@@ -72,9 +73,21 @@ class Index extends Component
 
         $preview = $this->scheduleId && $this->start ? PaySchedule::find($this->scheduleId)?->periodFrom(Carbon::parse($this->start)) : null;
 
+        // Ce qui attend la personne connectée.
+        $alerts = [];
+        $runsWaiting = PayRun::whereIn('status', array_merge(Gate::allows('payroll.approve') ? ['submitted'] : [], Gate::allows('payroll.manage') ? ['approved'] : []))->get();
+        foreach ($runsWaiting as $r) {
+            $alerts[] = ['url' => route('payroll.run', $r), 'text' => $r->status === 'submitted' ? __('La paie :p attend votre approbation.', ['p' => $r->label()]) : __('La paie :p est approuvée : elle peut être payée.', ['p' => $r->label()])];
+        }
+        $advances = SalaryAdvance::whereIn('status', array_merge(Gate::allows('payroll.approve') ? ['requested'] : [], Gate::allows('payroll.manage') ? ['approved'] : []))->count();
+        if ($advances) {
+            $alerts[] = ['url' => route('payroll.advances'), 'text' => trans_choice(':count avance sur salaire attend une action.|:count avances sur salaire attendent une action.', $advances)];
+        }
+
         return view('livewire.payroll.index', [
             'runs' => PayRun::with(['schedule', 'slips'])->latest('period_start')->latest('id')->limit(36)->get(),
             'preview' => $preview,
+            'alerts' => $alerts,
             'schedules' => $schedules,
             'payees' => $payees,
             'mass' => $mass,
