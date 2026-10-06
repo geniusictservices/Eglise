@@ -60,6 +60,13 @@
                 </div>
             </header>
 
+            @if ($organization?->is_demo)
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-ochre-300 bg-ochre-50 px-4 py-2 text-sm text-ink-800 sm:px-6 lg:px-8">
+                    <x-icon name="sparkles" class="size-4 shrink-0 text-ochre-600" />
+                    <span class="min-w-0 flex-1">{{ __('Démonstration : tout est fictif, et sera effacé le :d.', ['d' => $organization->root()->demo_expires_at?->translatedFormat('j F à H:i')]) }} <a href="{{ route('demo.welcome') }}" class="font-semibold underline underline-offset-4">{{ __('Les comptes de la démo') }}</a></span>
+                    <form method="POST" action="{{ route('demo.leave') }}">@csrf<button class="font-semibold text-ochre-700 underline underline-offset-4">{{ __('Créer le vrai compte de mon église') }}</button></form>
+                </div>
+            @endif
             @if ($support = app(\App\Support\SupportAccess::class)->organization())
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-ink-800 bg-ink-800 px-4 py-2.5 text-sm text-white sm:px-6 lg:px-8">
                     <x-icon name="shield-check" class="size-4 shrink-0 text-ochre-300" />

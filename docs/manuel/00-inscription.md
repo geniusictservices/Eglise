@@ -4,6 +4,14 @@ Toute communauté peut s'inscrire seule sur Waumini, depuis un téléphone ou un
 
 Ouvrez la page d'accueil de Waumini et touchez **Essai gratuit** (ou **Essayer gratuitement 30 jours**).
 
+## D'abord, essayer la démo
+
+Pour découvrir Waumini avant de vous inscrire, touchez **Essayer la démo** sur la page d'accueil, puis **Lancer ma démo**. En quelques secondes, vous recevez **votre propre copie** d'une communauté fictive déjà remplie : un siège, ses régions et ses paroisses, des membres, des finances, un budget, une paie, des groupes, des documents, un site vitrine. Tout est utilisable, et personne d'autre ne la voit.
+
+L'écran **Bienvenue dans la démo** donne le **mot de passe** et le **numéro de chaque rôle** : administrateur, pasteur, trésorière, secrétaire, responsable de région, membre. Déconnectez-vous et reconnectez-vous avec un autre numéro pour voir Waumini avec ses yeux. Notez ces identifiants pour revenir depuis un autre appareil.
+
+Un bandeau orange rappelle que tout est fictif. La démo est **effacée au bout de 3 jours**, avec tout ce que vous y avez saisi. Le lien **Créer le vrai compte de mon église**, dans le bandeau, vous ramène à l'inscription.
+
 ## Étape 1 : votre communauté
 
 <table><tr>

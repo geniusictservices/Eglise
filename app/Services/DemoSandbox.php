@@ -6,6 +6,7 @@ use App\Models\Organization;
 use App\Models\User;
 use App\Support\Phone;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
 /**
@@ -15,6 +16,15 @@ use RuntimeException;
  */
 class DemoSandbox
 {
+    /** Les fichiers d'une communauté : [table, colonne du chemin, colonne de la communauté]. */
+    private const FILES = [
+        ['organizations', 'logo_path', 'id'],
+        ['members', 'photo_path', 'organization_id'],
+        ['payment_declarations', 'screenshot_path', 'organization_id'],
+        ['websites', 'cover_path', 'organization_id'],
+        ['sermons', 'audio_path', 'organization_id'],
+    ];
+
     public function __construct(private DemoCommunityBuilder $builder) {}
 
     public function days(): int
@@ -88,9 +98,16 @@ class DemoSandbox
     {
         abort_unless($root->is_demo, 500, 'Seules les communautés de démonstration peuvent être purgées.');
 
-        DB::transaction(function () use ($root) {
+        $files = [];
+        DB::transaction(function () use ($root, &$files) {
             $organizations = Organization::withTrashed()->where('path', 'like', $root->path.'%')->get();
             $ids = $organizations->pluck('id');
+            // Les fichiers déposés par le visiteur (logo, photos, audios…) partent avec la démo.
+            foreach (self::FILES as [$table, $column, $owner]) {
+                $files = array_merge($files, DB::table($table)->whereIn($owner, $ids)->whereNotNull($column)->pluck($column)->all());
+            }
+            $files = array_merge($files, DB::table('expense_attachments')->join('expense_requests', 'expense_requests.id', '=', 'expense_attachments.expense_request_id')
+                ->whereIn('expense_requests.organization_id', $ids)->pluck('expense_attachments.path')->all());
             $userIds = User::where('is_demo', true)
                 ->whereHas('roleAssignments', fn ($q) => $q->whereIn('organization_id', $ids))
                 ->pluck('id');
@@ -107,8 +124,10 @@ class DemoSandbox
             // Des feuilles vers la racine : un niveau ne peut pas disparaître avant ses niveaux inférieurs.
             $organizations->sortByDesc('depth')->each(fn (Organization $o) => DB::table('organizations')->where('id', $o->id)->delete());
 
+            DB::table('notifications')->whereIn('notifiable_id', $userIds)->where('notifiable_type', 'user')->delete();
             DB::table('users')->whereIn('id', $userIds)->delete();
         });
+        Storage::disk('local')->delete(array_filter($files));
     }
 
     public static function isDemoPhone(?string $phone): bool

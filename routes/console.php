@@ -20,3 +20,6 @@ Schedule::command('waumini:abonnements')->dailyAt('05:00');
 
 // Chaque matin : les anniversaires du jour à l'équipe pastorale.
 Schedule::command('waumini:anniversaires')->dailyAt('06:30');
+
+// Chaque heure : les démos publiques arrivées à leur terme sont effacées.
+Schedule::command('waumini:demos')->hourly();

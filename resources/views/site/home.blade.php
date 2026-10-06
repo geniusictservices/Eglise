@@ -21,7 +21,7 @@
                 <p class="max-w-xl text-lg text-ink-100">{{ __('Waumini réunit en un seul outil tout ce que votre église tient aujourd’hui dans des cahiers, des fichiers Excel et des groupes WhatsApp. Sur le téléphone comme sur l’ordinateur de l’église.') }}</p>
                 <div class="flex flex-wrap gap-3">
                     <a href="{{ route('register') }}" class="btn-accent !px-6 !py-3 text-base">{{ __('Essayer gratuitement 30 jours') }}</a>
-                    <a href="#demonstration" class="btn border-[1.5px] border-white/50 !px-6 !py-3 text-base text-white hover:bg-white/10">{{ __('Demander une démonstration') }}</a>
+                    <a href="{{ route('demo.show') }}" class="btn border-[1.5px] border-white/50 !px-6 !py-3 text-base text-white hover:bg-white/10"><x-icon name="play" class="size-5" /> {{ __('Essayer la démo') }}</a>
                 </div>
                 <p class="text-sm text-ink-200">{{ __('Sans engagement · Vos données restent les vôtres · Fait à Goma par Genius ICT') }}</p>
             </div>

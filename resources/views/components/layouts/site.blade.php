@@ -19,6 +19,7 @@
                 <a href="{{ route('home') }}#denominations" class="text-ink-100 hover:text-white">{{ __('Dénominations') }}</a>
                 <a href="{{ route('home') }}#securite" class="text-ink-100 hover:text-white">{{ __('Sécurité') }}</a>
                 <a href="{{ route('help.index') }}" class="text-ink-100 hover:text-white">{{ __('Aide') }}</a>
+                @guest<a href="{{ route('demo.show') }}" class="text-ink-100 hover:text-white">{{ __('Démo') }}</a>@endguest
                 @auth
                     <a href="{{ route('dashboard') }}" class="btn-accent !min-h-0 !py-2">{{ __('Ouvrir Waumini') }}</a>
                 @else
@@ -37,6 +38,7 @@
                 <a href="{{ route('home') }}#denominations" @click="menu = false" class="rounded-xl px-3 py-2.5 hover:bg-white/10">{{ __('Dénominations') }}</a>
                 <a href="{{ route('home') }}#securite" @click="menu = false" class="rounded-xl px-3 py-2.5 hover:bg-white/10">{{ __('Sécurité') }}</a>
                 <a href="{{ route('help.index') }}" class="rounded-xl px-3 py-2.5 hover:bg-white/10">{{ __('Aide') }}</a>
+                @guest<a href="{{ route('demo.show') }}" class="rounded-xl px-3 py-2.5 hover:bg-white/10">{{ __('Essayer la démo') }}</a>@endguest
                 @auth
                     <a href="{{ route('dashboard') }}" class="btn-accent mt-2">{{ __('Ouvrir Waumini') }}</a>
                 @else

@@ -5,6 +5,7 @@ use App\Http\Controllers\BudgetPrintController;
 use App\Http\Controllers\CardVerificationController;
 use App\Http\Controllers\CollectionPrintController;
 use App\Http\Controllers\DeclarationScreenshotController;
+use App\Http\Controllers\DemoController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ExpenseAttachmentController;
 use App\Http\Controllers\FinanceReportController;
@@ -27,6 +28,7 @@ use App\Http\Middleware\SetCurrentOrganization;
 use App\Livewire;
 use App\Models\Website;
 use App\Support\SupportAccess;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Site public : les visiteurs voient la présentation, les connectés vont à leur tableau de bord.
@@ -55,6 +57,8 @@ Route::get('/aide/captures/{device}/{file}', [HelpController::class, 'capture'])
 Route::get('/aide/{chapter}', [HelpController::class, 'show'])->name('help.show');
 
 Route::middleware('guest')->group(function () {
+    Route::get('/demo', [DemoController::class, 'show'])->name('demo.show');
+    Route::post('/demo', [DemoController::class, 'start'])->middleware('throttle:3,60')->name('demo.start');
     Route::get('/connexion', Livewire\Auth\Login::class)->name('login');
     Route::get('/inscription', Livewire\Auth\Register::class)->name('register');
 });
@@ -70,6 +74,14 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::post('/communaute/{organization}/ouvrir', SwitchOrganizationController::class)->name('organizations.switch');
 
     Route::get('/tableau-de-bord', Livewire\Dashboard::class)->name('dashboard');
+    Route::get('/demo/bienvenue', Livewire\Demo\Welcome::class)->name('demo.welcome');
+    Route::post('/demo/quitter', function (Request $request) {
+        auth()->guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('register');
+    })->name('demo.leave');
     Route::get('/mon-espace', Livewire\Member\Space::class)->name('member.space');
     Route::get('/nouveautes', Livewire\Notifications\Index::class)->name('notifications.index');
     Route::get('/nouveautes/{id}/ouvrir', [NotificationController::class, 'open'])->whereUuid('id')->name('notifications.open');
