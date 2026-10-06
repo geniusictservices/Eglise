@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, consolidation multi-paroisses livrée</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, sites vitrines livrés</span>
   </header>
 
   <div class="hero">
@@ -282,10 +282,10 @@ const BLOCKS = [
       goal: "Le siège voit toutes ses paroisses sans ressaisie.",
       items: ["Consolidation à chaque niveau : membres et nouveaux membres, recettes, dépenses et solde en dollars, présence au culte, par mois ou par année", "Descente d’un niveau à l’autre, de la région au secteur puis à la paroisse, et retour par le fil", "Paroisses sans saisie depuis deux semaines repérées", "Quotes-parts propres à chaque niveau : pourcentage des recettes, montant fixe ou aucune, à partir d’un mois choisi", "Versement depuis la caisse de la paroisse, confirmation de réception par le niveau supérieur, chacun prévenu ; retirés des totaux pour ne rien compter deux fois", "Transferts de membres au sein de la dénomination : demandés par la paroisse de départ, acceptés ou refusés par celle d’arrivée ; nouveau numéro, ancien gardé ; l’espace membre suit", "1 nouveau chapitre du manuel"],
       demo: "Livré : la région Nord-Kivu voit ses quatre paroisses ; Himbi verse 10 % de ses recettes de septembre au secteur, qui confirme la réception ; un fidèle de Katindo déménage à Himbi avec sa fiche ; 212 tests automatiques." },
-    { status: "todo", title: "Sites vitrines",
+    { status: "done", title: "Sites vitrines",
       goal: "Chaque paroisse en ligne, sans rien saisir deux fois.",
-      items: ["Thèmes au choix, couleurs et logo de la communauté", "Pages activées par la communauté", "Horaires et événements alimentés par le calendrier", "Prédications : liens YouTube ou Facebook, audios légers, avec guide", "Déclaration de don par mobile money"],
-      demo: "Le site d’une paroisse mis à jour en changeant l’heure du culte." },
+      items: ["Un site par communauté, à son adresse (waumini.com/site/…), préparé en aperçu puis publié d’un geste", "Trois mises en page : Chaleureux (wax), Lumière (photo en grand), Solennel ; couleurs et logo de la communauté", "Pages choisies : programme, événements, annonces, prédications, qui sommes-nous, nos paroisses, dons, nous trouver", "Programme et événements tirés du calendrier, annonces choisies : une case « Sur le site vitrine » décide de ce qui est public", "Prédications : liens YouTube ou Facebook chargés seulement au toucher, audios légers jusqu’à 15 Mo, avec guide", "Dons par mobile money : numéros affichés, don déclaré avec l’ID de la transaction, vérifié par la trésorerie ; aussi depuis l’espace membre", "Bouton WhatsApp, itinéraire Google Maps, Facebook et YouTube ; 1 nouveau chapitre du manuel"],
+      demo: "Livré : la Paroisse de Himbi en ligne avec son programme, la convention des jeunes et trois prédications ; Katindo au pied du Nyiragongo ; le siège qui présente ses paroisses ; un don M-Pesa déclaré depuis un téléphone ; 221 tests automatiques." },
     { status: "doing", title: "Espace Genius ICT",
       goal: "Piloter la plateforme et accompagner les communautés.",
       items: ["Livré : vue d’ensemble, communautés, essais prolongés, suspension", "Livré : offres et tarifs datés ; nouveau prix pour les nouvelles souscriptions, et au renouvellement pour les abonnés", "Livré : paiements enregistrés (mobile money, référence), prix figé pour la période, délai de grâce puis lecture seule chaque matin", "Livré : coordonnées et numéro WhatsApp, conditions et confidentialité versionnées, équipe et rôles internes", "À venir : paiement déclaré par la communauté et validé, accès support autorisé et révocable, tickets de support"],
@@ -333,12 +333,16 @@ const DECISIONS = [
     "Un mois clôturé est verrouillé ; seul l’administrateur le rouvre, avec un motif conservé.",
     "La quote-part due au niveau supérieur dépend de chaque dénomination : pourcentage, montant fixe ou aucune (étape Consolidation)."
   ]],
-  ["Le réseau", [
+  ["Le réseau et les sites", [
     "Chaque niveau fixe la quote-part de ses niveaux directement en dessous ; elle vaut à partir du mois où elle est enregistrée.",
     "Les quotes-parts sont calculées sur les recettes propres du mois, hors quotes-parts reçues, et retirées des totaux consolidés.",
     "Le niveau supérieur consulte les chiffres de ses paroisses ; il ne modifie ni leur registre ni leur caisse.",
     "Un transfert de membre se fait au sein de la dénomination : la paroisse de départ le demande, celle d’arrivée l’accepte ; départements, groupes et ménage restent à la paroisse de départ.",
-    "Une paroisse est signalée en retard après deux semaines sans saisie."
+    "Une paroisse est signalée en retard après deux semaines sans saisie.",
+    "Sites vitrines : une adresse waumini.com/site/… pour chaque communauté ; un nom de domaine propre plus tard, selon l’offre LWS.",
+    "Ce qui paraît sur le site se décide activité par activité et annonce par annonce ; les activités de toute la communauté sont publiques d’office.",
+    "Les vidéos restent chez YouTube ou Facebook et ne se chargent qu’au toucher ; les audios sont limités à 15 Mo.",
+    "Un don déclaré sur le site n’entre en caisse qu’après vérification de l’ID de la transaction par la trésorerie."
   ]],
   ["Promesses", [
     "Une promesse peut porter sur un projet, une campagne, une contribution régulière ou une demande ponctuelle.",
