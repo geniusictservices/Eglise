@@ -21,17 +21,7 @@ class HelpController extends Controller
 
         $markdown = File::get($file);
         $title = Str::of($markdown)->match('/^# (.+)$/m')->replaceMatches('/^\d+\.\s*/', '')->toString() ?: __('Aide');
-
-        // Liens entre chapitres et images vers les routes de l'application.
-        $markdown = preg_replace_callback('/\]\(([a-z0-9-]+)\.md(#[^)]*)?\)/', fn ($m) => ']('.route('help.show', $m[1]).($m[2] ?? '').')', $markdown);
-        $markdown = preg_replace('/\]\(README\.md\)/', ']('.route('help.index').')', $markdown);
-        $markdown = preg_replace('/\]\(\.\.\/[^)]+\)/', '](#)', $markdown);
-        $markdown = preg_replace_callback('/src="captures\/(bureau|mobile)\/([a-z0-9-]+\.png)"/', fn ($m) => 'src="'.route('help.capture', [$m[1], $m[2]]).'" loading="lazy"', $markdown);
-
-        $html = Str::markdown($markdown, ['html_input' => 'allow', 'allow_unsafe_links' => false]);
-        // Chaque capture s'ouvre en grand quand on la touche.
-        $html = preg_replace('/<img src="([^"]+)"([^>]*)>/', '<a href="$1" target="_blank" rel="noopener" class="manuel-capture"><img src="$1"$2></a>', $html);
-        $html = preg_replace_callback('/<h([23])>(.+?)<\/h\1>/', fn ($m) => '<h'.$m[1].' id="'.self::anchor($m[2]).'">'.$m[2].'</h'.$m[1].'>', $html);
+        $html = $this->render($markdown, fn (string $slug, string $hash) => route('help.show', $slug).$hash);
 
         return view('help.show', [
             'title' => $title,
@@ -39,6 +29,39 @@ class HelpController extends Controller
             'chapter' => $chapter,
             'chapters' => $this->chapters(),
         ]);
+    }
+
+    /** Le manuel entier sur une page, dans l'ordre du sommaire : à imprimer ou à enregistrer en PDF. */
+    public function printable()
+    {
+        $readme = File::get(base_path(self::DIR.'/README.md'));
+        preg_match_all('/\]\(([a-z0-9-]+)\.md\)/', $readme, $m);
+        $order = collect($m[1])->unique()->filter(fn ($slug) => File::exists(base_path(self::DIR."/{$slug}.md")))->values();
+        $link = fn (string $slug, string $hash) => $hash !== '' ? $hash : '#chapitre-'.$slug;
+
+        return view('help.print', [
+            'intro' => $this->render(preg_replace('/^## Sommaire.*?(?=^## )/ms', '', $readme), $link),
+            'chapters' => $order->map(fn ($slug) => [
+                'slug' => $slug,
+                'title' => Str::of(File::get(base_path(self::DIR."/{$slug}.md")))->match('/^# (.+)$/m')->toString(),
+                'html' => str_replace(' loading="lazy"', '', $this->render(File::get(base_path(self::DIR."/{$slug}.md")), $link)),
+            ]),
+        ]);
+    }
+
+    /** Markdown du manuel vers HTML : liens entre chapitres, captures servies par l'application, ancres. */
+    private function render(string $markdown, \Closure $link): string
+    {
+        $markdown = preg_replace_callback('/\]\(([a-z0-9-]+)\.md(#[^)]*)?\)/', fn ($m) => ']('.$link($m[1], $m[2] ?? '').')', $markdown);
+        $markdown = preg_replace('/\]\(README\.md\)/', ']('.route('help.index').')', $markdown);
+        $markdown = preg_replace('/\]\(\.\.\/[^)]+\)/', '](#)', $markdown);
+        $markdown = preg_replace_callback('/src="captures\/(bureau|mobile)\/([a-z0-9-]+\.png)"/', fn ($m) => 'src="'.route('help.capture', [$m[1], $m[2]]).'" loading="lazy"', $markdown);
+
+        $html = Str::markdown($markdown, ['html_input' => 'allow', 'allow_unsafe_links' => false]);
+        // Chaque capture s'ouvre en grand quand on la touche.
+        $html = preg_replace('/<img src="([^"]+)"([^>]*)>/', '<a href="$1" target="_blank" rel="noopener" class="manuel-capture"><img src="$1"$2></a>', $html);
+
+        return preg_replace_callback('/<h([23])>(.+?)<\/h\1>/', fn ($m) => '<h'.$m[1].' id="'.self::anchor($m[2]).'">'.$m[2].'</h'.$m[1].'>', $html);
     }
 
     /** Ancre au format GitHub, pour que les liens du manuel marchent aux deux endroits. */

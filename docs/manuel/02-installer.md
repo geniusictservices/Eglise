@@ -41,7 +41,7 @@ La page **Installer Waumini** est accessible depuis la page de connexion, depuis
 3. Confirmez **Installer**. Waumini s'ouvre dans sa propre fenêtre et apparaît dans le menu Démarrer.
 4. Faites un clic droit sur l'icône Waumini dans la barre des tâches, puis **Épingler à la barre des tâches**, pour la retrouver chaque jour.
 
-Un **fichier d'installation Windows** (MSIX) sera aussi proposé au lancement, pour installer Waumini sans passer par le navigateur.
+Waumini sera aussi proposé dans le **Microsoft Store** : on pourra l'installer depuis le Store, sans passer par le navigateur. C'est la même application, et elle se met à jour toute seule.
 
 ## Désinstaller
 

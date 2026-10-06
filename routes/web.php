@@ -27,8 +27,10 @@ use App\Http\Middleware\MarkNotificationsOpened;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Livewire;
 use App\Models\Website;
+use App\Services\Backups;
 use App\Support\SupportAccess;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
 // Site public : les visiteurs voient la présentation, les connectés vont à leur tableau de bord.
@@ -54,6 +56,7 @@ Route::prefix('site/{site}')->where(['site' => '[a-z0-9-]+'])->name('website.')-
 });
 Route::get('/aide', [HelpController::class, 'show'])->name('help.index');
 Route::get('/aide/captures/{device}/{file}', [HelpController::class, 'capture'])->name('help.capture');
+Route::get('/aide/manuel-complet', [HelpController::class, 'printable'])->name('help.print');
 Route::get('/aide/{chapter}', [HelpController::class, 'show'])->name('help.show');
 
 Route::middleware('guest')->group(function () {
@@ -197,5 +200,11 @@ Route::middleware(['auth', EnsurePasswordChanged::class, EnsurePlatformStaff::cl
     Route::get('/reglages', Livewire\Admin\Settings::class)->name('settings');
     Route::get('/equipe', Livewire\Admin\Staff::class)->name('staff');
     Route::get('/tickets', Livewire\Admin\Tickets\Index::class)->name('tickets');
+    Route::get('/sauvegardes', Livewire\Admin\Backups::class)->name('backups');
+    Route::get('/sauvegardes/{name}', function (string $name, Backups $backups) {
+        abort_unless(Gate::allows('admin.staff'), 403);
+
+        return response()->download($backups->path($name) ?? abort(404));
+    })->name('backups.download');
     Route::get('/tickets/{ticket}', Livewire\Admin\Tickets\Show::class)->whereNumber('ticket')->name('tickets.show');
 });

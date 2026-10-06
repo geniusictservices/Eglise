@@ -23,3 +23,6 @@ Schedule::command('waumini:anniversaires')->dailyAt('06:30');
 
 // Chaque heure : les démos publiques arrivées à leur terme sont effacées.
 Schedule::command('waumini:demos')->hourly();
+
+// Chaque nuit : sauvegarde de la base et des fichiers (les 14 dernières sont gardées).
+Schedule::command('waumini:sauvegarde')->dailyAt('02:15')->withoutOverlapping();

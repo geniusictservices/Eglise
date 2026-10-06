@@ -31,9 +31,18 @@ class PublicSiteTest extends TestCase
 
     public function test_public_pages_open_without_an_account(): void
     {
-        foreach (['register', 'legal.terms', 'legal.privacy', 'login', 'install', 'help.index'] as $route) {
+        foreach (['register', 'legal.terms', 'legal.privacy', 'login', 'install', 'help.index', 'demo.show'] as $route) {
             $this->get(route($route))->assertOk();
         }
+    }
+
+    public function test_the_whole_manual_prints_in_the_order_of_its_contents(): void
+    {
+        $html = $this->get(route('help.print'))->assertOk()->assertSee('Imprimer ou enregistrer en PDF')->getContent();
+        $this->assertLessThan(strpos($html, 'id="chapitre-12-membres"'), strpos($html, 'id="chapitre-00-inscription"'));
+        $this->assertStringContainsString('id="chapitre-35-support"', $html);
+        // Les liens entre chapitres restent dans la page.
+        $this->assertStringContainsString('href="#chapitre-25-nouveautes"', $html);
     }
 
     public function test_the_public_site_never_shows_prices(): void

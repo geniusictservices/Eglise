@@ -11,6 +11,7 @@
                     <li><a href="{{ route('help.show', $slug) }}" @class(['block rounded-lg px-3 py-2 text-sm', 'bg-ink-700 font-semibold text-white' => $chapter === $slug, 'text-ink-700 hover:bg-sand-100' => $chapter !== $slug])>{{ $label }}</a></li>
                 @endforeach
             </ul>
+            <a href="{{ route('help.print') }}" class="mt-4 flex items-center gap-1 px-3 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="printer" class="size-4" /> {{ __('Manuel complet, à imprimer ou en PDF') }}</a>
             @auth
                 <a href="{{ route('dashboard') }}" class="mt-4 hidden items-center gap-1 px-3 text-sm font-semibold text-ink-600 hover:underline lg:flex"><x-icon name="chevron-left" class="size-4" /> {{ __('Retour à Waumini') }}</a>
             @endauth

@@ -17,6 +17,7 @@ class AdminNavigation
             ['route' => 'admin.legal', 'label' => __('Textes juridiques'), 'icon' => 'scroll-text', 'can' => 'admin.legal'],
             ['route' => 'admin.settings', 'label' => __('Coordonnées et réglages'), 'icon' => 'settings', 'can' => 'admin.settings'],
             ['route' => 'admin.staff', 'label' => __('Équipe Genius ICT'), 'icon' => 'users', 'can' => 'admin.staff'],
+            ['route' => 'admin.backups', 'label' => __('Sauvegardes'), 'icon' => 'archive', 'can' => 'admin.staff'],
         ], fn ($item) => Gate::allows($item['can'])));
     }
 

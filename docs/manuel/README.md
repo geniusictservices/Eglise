@@ -9,6 +9,7 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 - Chaque écran est montré **sur ordinateur** (à gauche) et **sur téléphone** (à droite).
 - Les **repères numérotés** orange (<b>①</b>, <b>②</b>…) sur les captures correspondent aux numéros du texte.
 - Les noms, numéros et montants des captures viennent de la **communauté de démonstration**, la *Communauté Évangélique de la Paix*. Ils sont fictifs.
+- Le manuel entier s'imprime, ou s'enregistre **en PDF** : *Aide › Manuel complet, à imprimer ou en PDF*.
 - Waumini utilise **vos propres mots**. Si votre communauté a renommé « Pasteur » en « Berger » ou « Département » en « Ministère », vous verrez vos mots à la place de ceux du manuel.
 
 ## Sommaire

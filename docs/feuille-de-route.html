@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, démo publique en ligne</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, prêt pour la mise en production</span>
   </header>
 
   <div class="hero">
@@ -294,14 +294,14 @@ const BLOCKS = [
       goal: "Laisser chacun essayer Waumini, sans engagement ni inscription.",
       items: ["Un bouton « Essayer la démo » sur le site public, une page qui explique, un seul geste pour lancer", "Chaque visiteur reçoit sa propre copie de la communauté de démonstration, déjà remplie, en quelques secondes", "Toutes les fonctions utilisables, isolées des vraies communautés et de leur journal d’audit", "Un compte par rôle (administrateur, pasteur, trésorière, secrétaire, responsable de région, membre) avec le même mot de passe", "Bandeau de démonstration, lien vers l’inscription ; données et fichiers effacés automatiquement après 3 jours", "Protection contre les robots et limite du nombre de démos simultanées"],
       demo: "Livré : un pasteur de Kolwezi lance sa démo depuis son téléphone, passe du rôle de trésorière à celui de secrétaire, puis crée le vrai compte de son église ; 230 tests automatiques." },
-    { status: "todo", title: "Mise en production et églises pilotes",
+    { status: "doing", title: "Mise en production et églises pilotes",
       goal: "Lancer Waumini avec deux ou trois communautés pilotes.",
-      items: ["Déploiement sur LWS et sauvegardes", "Fichier d’installation Windows (MSIX)", "Données de démonstration pour les présentations", "Formation et reprise des données des pilotes"],
+      items: ["Livré : guide de déploiement sur LWS (PHP, base, HTTPS, cron, notifications, fuseau horaire, vérifications, mises à jour)", "Livré : sauvegarde chaque nuit de la base et des fichiers, archive chiffrée, copie hors du serveur possible, écran Sauvegardes et procédure de restauration", "Livré : guide du fichier d’installation Windows (MSIX) avec PWABuilder, pour le Microsoft Store ou une installation directe", "Livré : données de démonstration et démo publique pour les présentations ; modèle Excel du registre", "Livré : guide de lancement des pilotes : reprise des données, sessions de formation par rôle, premier mois, liste de contrôle", "À faire par Genius ICT : mise en ligne sur LWS, compte Microsoft Store, choix des pilotes, formation et reprise de leurs données"],
       demo: "Une vraie communauté tient sa première collecte dans Waumini." },
-    { status: "todo", title: "Manuel d’utilisation complet",
+    { status: "done", title: "Manuel d’utilisation complet",
       goal: "Chaque communauté se débrouille seule, du premier jour au rapport annuel.",
-      items: ["Un chapitre écrit à la fin de chaque étape, pour chaque rôle : administrateur, secrétaire, trésorier, responsable de département, membre", "Captures d’écran en version ordinateur et en version téléphone, prises automatiquement sur la communauté de démonstration et refaites à chaque mise à jour", "Pas-à-pas illustrés : installer l’application sur Android, iPhone et Windows, tenir une collecte, préparer le budget…", "Disponible dans l’application (centre d’aide) et en PDF à imprimer", "Vidéos courtes en français et en swahili, plus tard"],
-      demo: "Le manuel complet remis aux communautés pilotes." }
+      items: ["36 chapitres et une foire aux questions, écrits à la fin de chaque étape, pour chaque rôle : administrateur, secrétaire, trésorier, pasteur, responsables, membre", "Plus de 110 écrans en version ordinateur et en version téléphone, pris automatiquement sur la communauté de démonstration et refaits à chaque mise à jour", "Pas-à-pas illustrés : installer l’application, tenir une collecte, préparer le budget, délivrer une attestation, publier le site…", "Disponible dans l’application (centre d’aide) et en PDF à imprimer ; questions fréquentes ; guide de l’équipe Genius ICT", "Plus tard : vidéos courtes en français et en swahili"],
+      demo: "Livré : le manuel complet, imprimé en PDF de 160 pages, prêt à remettre aux communautés pilotes." }
   ]}
 ];
 
@@ -421,7 +421,7 @@ const DECISIONS = [
 ];
 
 const OPEN = [
-  ["Genius ICT", "Offre LWS", "L’offre donne-t-elle un accès SSH, des sous-domaines « joker » et des certificats SSL pour les sites des paroisses ?"],
+  ["Genius ICT", "Offre LWS", "L’offre donne-t-elle un accès SSH (plus simple pour les mises à jour) ? Les sites vitrines n’ont pas besoin de sous-domaines : ils sont à waumini.com/site/…"],
   ["Genius ICT", "Traductions", "Trouver un relecteur pour le swahili, le lingala, le kikongo et le tshiluba."],
   ["Genius ICT", "Communautés pilotes", "Lesquelles accompagner ? Un registre ou une feuille de collecte réels, anonymisés, aideraient beaucoup."],
   ["Genius ICT", "Microsoft Store", "Publier sur le Store demande un compte développeur Microsoft. Le fichier MSIX peut aussi être distribué depuis le site, sans Store."],

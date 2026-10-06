@@ -31,6 +31,13 @@ return [
     ],
 
     // Démo publique : chaque visiteur a sa copie, effacée après ce nombre de jours.
+    // Sauvegarde quotidienne (base et fichiers) : combien en garder, mot de passe de l'archive, copie hors du serveur.
+    'backups' => [
+        'keep' => (int) env('BACKUP_KEEP', 14),
+        'password' => env('BACKUP_PASSWORD'),
+        'disk' => env('BACKUP_DISK'),
+    ],
+
     'demo' => [
         'days' => 3,
         'max_active' => 300,
