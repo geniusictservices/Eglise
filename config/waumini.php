@@ -270,6 +270,7 @@ return [
                 'finance.disburse' => 'Décaisser et enregistrer les justificatifs',
                 'finance.exchange' => 'Enregistrer les opérations de change',
                 'finance.close' => 'Clôturer une période',
+                'finance.reopen' => 'Rouvrir une période clôturée',
                 'finance.reports' => 'Produire les rapports financiers',
             ],
         ],

@@ -205,7 +205,13 @@ class Sheet extends Component
     {
         abort_unless($this->sheet->status === 'validated' && Gate::allows('finance.income') && ! $this->organization()->isReadOnly(), 403);
         $this->validate(['cancelReason' => 'required|string|min:5|max:255'], attributes: ['cancelReason' => __('motif')]);
-        $collections->cancel($this->sheet, trim($this->cancelReason));
+        try {
+            $collections->cancel($this->sheet, trim($this->cancelReason));
+        } catch (\InvalidArgumentException $e) {
+            $this->addError('cancelReason', $e->getMessage());
+
+            return;
+        }
         $this->sheet->refresh();
         $this->dispatch('close-modal', name: 'cancel');
         $this->notify(__('Feuille annulée : ses recettes sont annulées dans le journal.'));

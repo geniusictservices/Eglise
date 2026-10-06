@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\FinanceCategory;
+use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
@@ -97,6 +98,7 @@ class Ledger
 
         return DB::transaction(function () use ($account, $currency, $type, $data) {
             $on = Carbon::parse($data['occurred_on'] ?? today());
+            FinanceClosing::assertOpen($account->organization_id, $on);
             $amount = $this->amount($data['amount'], $currency);
 
             if ($type === 'expense' && $this->balance($account, $currency)->isLessThan($amount)) {
@@ -132,6 +134,7 @@ class Ledger
         $this->assertCurrency($to, $toCurrency);
 
         $on ??= today();
+        FinanceClosing::assertOpen($from->organization_id, $on);
         $out = $this->amount($amountOut, $fromCurrency);
         $in = $exchange ? $this->amount($amountIn ?? throw new InvalidArgumentException(__('Indiquez le montant reçu.')), $toCurrency) : $out;
 
@@ -157,6 +160,9 @@ class Ledger
     /** Annule une opération (et l'autre côté d'un virement). Rien n'est effacé. */
     public function cancel(FinanceTransaction $transaction, string $reason): void
     {
+        // Annuler une opération changerait les soldes d'une période clôturée.
+        FinanceClosing::assertOpen($transaction->organization_id, $transaction->occurred_on);
+
         DB::transaction(function () use ($transaction, $reason) {
             $legs = $transaction->group_uuid
                 ? FinanceTransaction::withoutOrganizationScope()->where('group_uuid', $transaction->group_uuid)->get()

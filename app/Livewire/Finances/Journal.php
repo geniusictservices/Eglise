@@ -6,6 +6,7 @@ use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\CashAccount;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
+use App\Services\Closings;
 use App\Services\Ledger;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -67,7 +68,16 @@ class Journal extends Component
             default => 'finance.exchange',
         };
 
-        return Gate::allows($permission) && ! $this->organization()->isReadOnly() && ! $t->cancelled_at;
+        return Gate::allows($permission) && ! $this->organization()->isReadOnly() && ! $t->cancelled_at && ! $this->monthClosed();
+    }
+
+    /** Le mois affiché est-il clôturé ? On n'y annule plus rien. */
+    private function monthClosed(): bool
+    {
+        $start = Carbon::createFromFormat('Y-m-d', $this->month.'-01');
+
+        return once(fn () => app(Closings::class)->isClosed($this->organization(), $start->year, $start->month)
+            || app(Closings::class)->isClosed($this->organization(), $start->year, 0));
     }
 
     public function askCancel(int $id): void
@@ -85,7 +95,13 @@ class Journal extends Component
         $t = FinanceTransaction::findOrFail($this->cancelId);
         abort_unless($this->canCancel($t), 403);
         $this->validate(['cancelReason' => 'required|string|min:5|max:255'], attributes: ['cancelReason' => __('motif')]);
-        $ledger->cancel($t, trim($this->cancelReason));
+        try {
+            $ledger->cancel($t, trim($this->cancelReason));
+        } catch (\InvalidArgumentException $e) {
+            $this->addError('cancelReason', $e->getMessage());
+
+            return;
+        }
 
         $this->dispatch('close-modal', name: 'cancel');
         $this->notify(__('Opération annulée. Elle reste visible, barrée, dans le journal.'));
@@ -130,6 +146,7 @@ class Journal extends Component
             'totals' => $totals,
             'monthLabel' => Carbon::createFromFormat('Y-m-d', $this->month.'-01')->translatedFormat('F Y'),
             'canSeeNames' => Gate::allows('finance.contributions.view'),
+            'closed' => $this->monthClosed(),
             'cancellable' => $transactions->getCollection()->mapWithKeys(fn ($t) => [$t->id => $this->canCancel($t)]),
             'pending' => $this->cancelId ? FinanceTransaction::find($this->cancelId) : null,
         ]);

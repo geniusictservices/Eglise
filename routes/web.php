@@ -5,6 +5,7 @@ use App\Http\Controllers\CardVerificationController;
 use App\Http\Controllers\CollectionPrintController;
 use App\Http\Controllers\DeclarationScreenshotController;
 use App\Http\Controllers\ExpenseAttachmentController;
+use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MemberCardController;
@@ -87,6 +88,10 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/finances/depenses/nouvelle', Livewire\Finances\Expenses\Form::class)->name('finances.expenses.create');
     Route::get('/finances/depenses/{expense}', Livewire\Finances\Expenses\Show::class)->whereNumber('expense')->name('finances.expenses.show');
     Route::get('/finances/depenses/piece/{attachment}', ExpenseAttachmentController::class)->name('finances.expenses.attachment');
+    Route::get('/finances/clotures', Livewire\Finances\Closings::class)->name('finances.closings');
+    Route::get('/finances/rapports', Livewire\Finances\Reports::class)->name('finances.reports');
+    Route::get('/finances/rapports/imprimer', [FinanceReportController::class, 'print'])->name('finances.reports.print');
+    Route::get('/finances/rapports/excel', [FinanceReportController::class, 'excel'])->name('finances.reports.excel');
     Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
     Route::get('/finances/recu/{transaction}', ReceiptController::class)->name('finances.receipt');
 

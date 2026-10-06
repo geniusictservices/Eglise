@@ -11,7 +11,7 @@
     <div class="mb-4 flex flex-wrap items-center gap-2">
         <div class="flex items-center rounded-2xl border border-sand-200 bg-white p-1">
             <button type="button" wire:click="shiftMonth(-1)" class="rounded-xl p-2 hover:bg-sand-50" aria-label="{{ __('Mois précédent') }}"><x-icon name="chevron-left" class="size-4" /></button>
-            <span class="min-w-32 px-2 text-center text-sm font-semibold capitalize text-ink-800">{{ $monthLabel }}</span>
+            <span class="min-w-32 px-2 text-center text-sm font-semibold capitalize text-ink-800">@if ($closed)<x-icon name="lock" class="mr-1 inline size-3.5 text-leaf-600" />@endif{{ $monthLabel }}</span>
             <button type="button" wire:click="shiftMonth(1)" class="rounded-xl p-2 hover:bg-sand-50" aria-label="{{ __('Mois suivant') }}"><x-icon name="chevron-right" class="size-4" /></button>
         </div>
         <select wire:model.live="account" class="input !w-auto" aria-label="{{ __('Compte') }}">

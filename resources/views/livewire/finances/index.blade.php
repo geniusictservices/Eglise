@@ -49,6 +49,7 @@
                 @can('finance.exchange')<a href="{{ route('finances.transfer') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="arrow-left-right" class="size-4" /> {{ __('Virement ou change') }}</a>@endcan
                 <a href="{{ route('finances.expenses') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="banknote" class="size-4" /> {{ __('Dépenses') }}</a>
                 <a href="{{ route('finances.journal') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="history" class="size-4" /> {{ __('Opérations') }}</a>
+                @can('finance.reports')<a href="{{ route('finances.reports') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="file-text" class="size-4" /> {{ __('Rapports') }}</a>@endcan
             </div>
         </section>
 

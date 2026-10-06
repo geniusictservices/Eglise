@@ -13,6 +13,7 @@ use App\Models\Department;
 use App\Models\ExchangeRate;
 use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
+use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
 use App\Models\Household;
 use App\Models\LegalDocument;
@@ -82,6 +83,7 @@ class AppServiceProvider extends ServiceProvider
             'pledge' => Pledge::class,
             'pledge_delivery' => PledgeDelivery::class,
             'expense_request' => ExpenseRequest::class,
+            'finance_closing' => FinanceClosing::class,
             'payment_declaration' => PaymentDeclaration::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,

@@ -88,6 +88,24 @@ class DemoFinances
                 }
             }
 
+            // Charges courantes des mois passés (l'électricité de septembre passe par le circuit des dépenses).
+            foreach ([3, 2, 1] as $back) {
+                $m = today()->subMonths($back)->startOfMonth();
+                $charges = [
+                    [8, 'CDF', '20000', 'Communication et téléphone', 'Crédit téléphone du pasteur'],
+                    [10, 'CDF', '35000', 'Électricité et eau', 'Eau REGIDESO'],
+                    [27, 'USD', '60', 'Rémunérations et motivations', 'Motivation de la sentinelle'],
+                ];
+                if ($back > 1) {
+                    $charges[] = [14, 'CDF', '110000', 'Électricité et eau', 'Facture SNEL'];
+                }
+                foreach ($charges as [$day, $currency, $amount, $category, $label]) {
+                    $ledger->record($caisse, $currency, 'expense', ['amount' => $amount, 'occurred_on' => $m->copy()->addDays($day - 1)->toDateString(),
+                        'category_id' => $cat[$category], 'department_id' => Department::where('is_system', true)->value('id'),
+                        'description' => $label.' · '.$m->translatedFormat('F'), 'payment_method' => 'cash']);
+                }
+            }
+
             $last = today()->copy()->subDays(10);
             $ledger->record($caisse, 'CDF', 'income', ['amount' => '150000', 'occurred_on' => $last->toDateString(), 'category_id' => $cat['Contribution d’un département'], 'department_id' => $chorale, 'description' => 'Concert de louange']);
             $ledger->record($caisse, 'USD', 'income', ['amount' => '100', 'occurred_on' => $last->toDateString(), 'category_id' => $cat['Don'], 'payer_name' => 'Famille Mbuyi (visiteurs de Kolwezi)']);
@@ -146,6 +164,17 @@ class DemoFinances
             $ledger->transfer($caisse, 'USD', $banque, 'USD', '300', null, 'Dépôt des offrandes du mois', today()->subDays(5));
 
             $this->expenses($caisse, $banque, $cat);
+
+            // Les mois passés sont clôturés par la trésorière ; le dernier reste à clôturer.
+            $admin = Auth::user();
+            Auth::setUser(User::where('name', 'Furaha Masika')->whereHas('roleAssignments', fn ($q) => $q->where('organization_id', current_organization()->id))->firstOrFail());
+            $lastOpen = today()->subMonth()->startOfMonth();
+            for ($month = today()->subMonths(3)->startOfMonth(); $month->lt($lastOpen); $month->addMonth()) {
+                Carbon::setTestNow($month->copy()->addMonth()->addDays(3)->setTime(18, 20));
+                app(Closings::class)->close(current_organization(), $month->year, $month->month);
+            }
+            Carbon::setTestNow();
+            Auth::setUser($admin);
         });
     }
 
