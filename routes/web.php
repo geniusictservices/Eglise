@@ -92,6 +92,9 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/documents', Livewire\Documents\Index::class)->name('documents.index');
     Route::get('/documents/delivrer', Livewire\Documents\Issue::class)->name('documents.issue');
     Route::get('/documents/{document}/imprimer', [DocumentController::class, 'print'])->whereNumber('document')->name('documents.print');
+    Route::get('/consolidation', Livewire\Consolidation\Index::class)->name('consolidation.index');
+    Route::get('/quotes-parts', Livewire\Quotas\Index::class)->name('quotas.index');
+    Route::get('/transferts', Livewire\Transfers\Index::class)->name('transfers.index');
     Route::get('/suivi-pastoral', Livewire\Pastoral\Index::class)->name('pastoral.index');
     Route::get('/suivi-pastoral/{case}', Livewire\Pastoral\Show::class)->whereNumber('case')->name('pastoral.show');
     Route::get('/registres', Livewire\Registers\Index::class)->name('registers.index');

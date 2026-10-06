@@ -9,9 +9,12 @@ use App\Models\LifeEvent;
 use App\Models\Member;
 use App\Models\MemberFunctionTerm;
 use App\Models\MemberStatusChange;
+use App\Models\MemberTransfer;
+use App\Models\Organization;
 use App\Models\PastoralCase;
 use App\Services\MemberAccounts;
 use App\Services\MemberRegistry;
+use App\Services\MemberTransfers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -259,6 +262,26 @@ class Show extends Component
         $this->redirectRoute('members.index');
     }
 
+    public string $transferTo = '';
+
+    public string $transferReason = '';
+
+    public function requestTransfer(MemberTransfers $transfers): void
+    {
+        abort_unless(Gate::any(['transfers.manage', 'members.manage'], $this->member->organization) && ! $this->member->organization->isReadOnly(), 403);
+        $this->validate(['transferTo' => 'required|integer', 'transferReason' => 'nullable|string|max:255'], attributes: ['transferTo' => __('communauté d’accueil')]);
+        try {
+            $transfers->request($this->member, Organization::findOrFail($this->transferTo), $this->transferReason);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('transferTo', $e->getMessage());
+
+            return;
+        }
+        $this->transferTo = '';
+        $this->transferReason = '';
+        $this->dispatch('notify', message: __('Demande de transfert envoyée : la communauté d’accueil doit l’accepter.'), type: 'success');
+    }
+
     public string $spacePhone = '';
 
     public ?string $spacePassword = null;
@@ -307,6 +330,8 @@ class Show extends Component
             'terms' => $member->functionTerms()->with('function')->get(),
             'events' => $member->lifeEvents()->get(),
             'statusChanges' => $member->statusChanges()->with(['from', 'to', 'user'])->get(),
+            'transferTargets' => Gate::any(['transfers.manage', 'members.manage']) ? Organization::query()->subtreeOf($organization->root())->whereKeyNot($this->member->organization_id)->orderBy('path')->get() : collect(),
+            'pendingTransfer' => MemberTransfer::with('to')->where('member_id', $this->member->id)->where('status', 'pending')->first(),
             'pastoralCases' => Gate::allows('pastoral.view') ? PastoralCase::where('member_id', $member->id)->latest('opened_on')->get() : collect(),
             'departments' => $member->departments()->withoutGlobalScope('organization')->get(),
             'groups' => Group::where('leader_member_id', $member->id)->get()

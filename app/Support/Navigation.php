@@ -86,6 +86,14 @@ class Navigation
                 ],
             ],
             [
+                'label' => __('Réseau'),
+                'items' => [
+                    ['route' => 'consolidation.index', 'label' => __('Consolidation'), 'icon' => 'network', 'can' => 'consolidation.view'],
+                    ['route' => 'quotas.index', 'label' => __('Quotes-parts'), 'icon' => 'hand-coins', 'can' => ['consolidation.view', 'finance.view']],
+                    ['route' => 'transfers.index', 'label' => __('Transferts de membres'), 'icon' => 'arrow-left-right', 'can' => ['transfers.manage', 'members.manage']],
+                ],
+            ],
+            [
                 'label' => __('Administration'),
                 'items' => [
                     ['route' => 'hierarchy.index', 'label' => __('Hiérarchie'), 'icon' => 'network', 'can' => 'organization.view'],

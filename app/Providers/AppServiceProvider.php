@@ -34,6 +34,7 @@ use App\Models\MemberFunction;
 use App\Models\MemberFunctionTerm;
 use App\Models\MemberImport;
 use App\Models\MemberStatus;
+use App\Models\MemberTransfer;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
 use App\Models\PastoralCase;
@@ -48,6 +49,7 @@ use App\Models\PlanObjective;
 use App\Models\PlanPrice;
 use App\Models\Pledge;
 use App\Models\PledgeDelivery;
+use App\Models\QuotaRule;
 use App\Models\Register;
 use App\Models\RegisterEntry;
 use App\Models\Role;
@@ -122,6 +124,8 @@ class AppServiceProvider extends ServiceProvider
             'register' => Register::class,
             'register_entry' => RegisterEntry::class,
             'pastoral_case' => PastoralCase::class,
+            'quota_rule' => QuotaRule::class,
+            'member_transfer' => MemberTransfer::class,
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,

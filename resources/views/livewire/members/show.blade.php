@@ -139,6 +139,21 @@
                     @endif
                 </section>
             @endcan
+            @if ($transferTargets->isNotEmpty())
+                <section class="card p-5 sm:p-6 lg:col-span-2">
+                    <h2 class="mb-2 flex items-center gap-2 text-lg"><x-icon name="arrow-left-right" class="size-5 text-ochre-600" /> {{ __('Transfert vers une autre communauté') }}</h2>
+                    @if ($pendingTransfer)
+                        <p class="text-sm text-ink-800">{{ __('Transfert demandé vers :t, en attente de leur réponse.', ['t' => $pendingTransfer->to->name]) }} <a href="{{ route('transfers.index') }}" class="font-semibold underline">{{ __('Voir les transferts') }}</a></p>
+                    @elseif (! $member->organization->isReadOnly())
+                        <form wire:submit="requestTransfer" class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+                            <select wire:model="transferTo" class="input" aria-label="{{ __('Communauté d’accueil') }}"><option value="">{{ __('Communauté d’accueil…') }}</option>@foreach ($transferTargets as $t)<option value="{{ $t->id }}">{{ str_repeat('· ', $t->depth) }}{{ $t->name }}</option>@endforeach</select>
+                            <input wire:model="transferReason" class="input" placeholder="{{ __('Motif : déménagement à Bukavu…') }}" aria-label="{{ __('Motif') }}">
+                            <button class="btn-secondary">{{ __('Transférer') }}</button>
+                            @error('transferTo') <p class="error sm:col-span-3">{{ $message }}</p> @enderror
+                        </form>
+                    @endif
+                </section>
+            @endif
             @can('pastoral.view')
                 <section class="card p-5 sm:p-6 lg:col-span-2">
                     <div class="mb-3 flex items-center justify-between gap-2">
