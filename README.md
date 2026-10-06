@@ -1,58 +1,72 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<p align="center"><img src="branding/logo/png/waumini-horizontal.png" alt="Waumini" width="360"></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Waumini
 
-## About Laravel
+**Waumini** (« les fidèles » en swahili) est la plateforme de gestion des communautés de foi en RDC, développée par **Genius ICT** (Goma, Nord-Kivu). Elle s'adresse aux églises indépendantes comme aux dénominations avec siège, régions, secteurs et paroisses, et elle est ouverte aux autres communautés de foi grâce à des libellés renommables.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Feuille de route** : [docs/feuille-de-route.html](docs/feuille-de-route.html), aussi publiée en ligne
+- **Identité visuelle** : [branding/](branding/README.md)
+- **Manuel d'utilisation** : [docs/manuel/](docs/manuel/README.md)
+- **Déploiement sur LWS** : [docs/deploiement-lws.md](docs/deploiement-lws.md)
+- **Traductions** : [lang/a-traduire/](lang/a-traduire/LISEZMOI.md)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Ce qui est disponible (étape « Fondations »)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Hiérarchie multi-niveaux (siège, région, secteur, paroisse, annexe…), rattachement d'une paroisse inscrite seule à son siège.
+- Connexion par numéro de téléphone et mot de passe ; mot de passe provisoire à changer à la première connexion.
+- Rôles personnalisables par cases à cocher, attribués à un niveau précis, avec ou sans les niveaux inférieurs.
+- Cloisonnement strict des données entre communautés.
+- Journal d'audit inaltérable (chaîne d'empreintes SHA-256) avec vérification d'intégrité.
+- Dollar comme devise de base, autres devises et taux du jour par communauté (hérité du niveau supérieur).
+- Libellés renommables (« Pasteur » → « Imam »…), interface en français, traduction prévue en kiswahili, lingála, kikongo et tshiluba.
+- Application installable (PWA) sur Android, iPhone et Windows.
 
-## Learning Laravel
+## Technique
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| | |
+|---|---|
+| Application | Laravel 13, Livewire 4, Alpine.js, Tailwind CSS 4 |
+| Base de données | MySQL ou MariaDB |
+| Hébergement | Mutualisé (LWS) : tâches de fond par cron, cache et sessions en base |
+| Tests | PHPUnit sur MariaDB ; Playwright pour les captures du manuel |
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Démarrer en local
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Prérequis : PHP 8.3, Composer, Node 22, MariaDB ou MySQL.
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+composer install
+npm install && npm run build
+cp .env.example .env && php artisan key:generate
+# Renseigner DB_DATABASE, DB_USERNAME, DB_PASSWORD dans .env
+php artisan migrate --seed      # crée la communauté de démonstration
+php artisan serve
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Ouvrez http://localhost:8000 et connectez-vous avec la communauté de démonstration (fictive) :
 
-## Contributing
+| Rôle | Téléphone | Mot de passe |
+|---|---|---|
+| Administrateur (siège) | 0990 000 001 | Waumini2026 |
+| Pasteur (siège et niveaux inférieurs) | 0990 000 002 | Waumini2026 |
+| Trésorier (paroisse de Himbi) | 0990 000 007 | Waumini2026 |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Tests
 
-## Code of Conduct
+```bash
+php artisan test        # base waumini_test (voir phpunit.xml)
+vendor/bin/pint         # style du code
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Organisation du code
 
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Dossier | Contenu |
+|---|---|
+| `app/Models` | Organisations (arbre à chemin matérialisé), utilisateurs, rôles, journal, devises |
+| `app/Models/Concerns` | `BelongsToOrganization` (cloisonnement), `Auditable` (journal automatique) |
+| `app/Services` | Création des communautés, journal d'audit, taux de change |
+| `app/Livewire` | Écrans de l'application |
+| `config/waumini.php` | Catalogue des permissions, rôles modèles, devises, langues |
+| `resources/views` | Vues Blade ; `layouts/app` (application), `layouts/guest` (connexion) |
+| `public/sw.js`, `public/manifest.webmanifest` | Application installable |
+| `docs/` | Feuille de route, manuel, guides |
