@@ -113,6 +113,8 @@ class DemoCommunityBuilder
 
         $this->rates->setRate($levels['himbi'], 'CDF', '2860', now()->subDay());
 
+        app(DemoMembers::class)->build($siege, $levels['himbi'], $levels['katindo']);
+
         // Une église inscrite seule qui demande à rejoindre la région.
         $bethel = $person('Pasteur Samuel Kitambala', 20);
         $independante = $this->provisioner->createRoot(['name' => 'Église Béthel de Ndosho', 'level_label' => 'Paroisse', 'city' => 'Goma'] + $orgFlags, $bethel);

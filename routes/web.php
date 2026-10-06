@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\MemberPhotoController;
 use App\Http\Controllers\SwitchOrganizationController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
@@ -42,6 +43,15 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/roles', Livewire\Roles\Index::class)->name('roles.index');
     Route::get('/roles/nouveau', Livewire\Roles\Form::class)->name('roles.create');
     Route::get('/roles/{role}', Livewire\Roles\Form::class)->name('roles.edit');
+
+    Route::get('/membres', Livewire\Members\Index::class)->name('members.index');
+    Route::get('/membres/nouveau', Livewire\Members\Form::class)->name('members.create');
+    Route::get('/membres/reglages', Livewire\Members\Settings::class)->name('members.settings');
+    Route::get('/membres/{id}', Livewire\Members\Show::class)->whereNumber('id')->name('members.show');
+    Route::get('/membres/{id}/modifier', Livewire\Members\Form::class)->whereNumber('id')->name('members.edit');
+    Route::get('/membres/{member}/photo', MemberPhotoController::class)->whereNumber('member')->name('members.photo');
+    Route::get('/menages', Livewire\Households\Index::class)->name('households.index');
+    Route::get('/menages/{id}', Livewire\Households\Show::class)->whereNumber('id')->name('households.show');
 
     Route::get('/devises', Livewire\Currencies\Index::class)->name('currencies.index');
     Route::get('/journal', Livewire\Audit\Index::class)->name('audit.index');

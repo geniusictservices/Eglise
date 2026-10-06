@@ -5,7 +5,15 @@ namespace App\Providers;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Models\AttachmentRequest;
+use App\Models\Department;
 use App\Models\ExchangeRate;
+use App\Models\Household;
+use App\Models\LifeEvent;
+use App\Models\Member;
+use App\Models\MemberField;
+use App\Models\MemberFunction;
+use App\Models\MemberFunctionTerm;
+use App\Models\MemberStatus;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
 use App\Models\Role;
@@ -44,6 +52,14 @@ class AppServiceProvider extends ServiceProvider
             'organization_currency' => OrganizationCurrency::class,
             'exchange_rate' => ExchangeRate::class,
             'attachment_request' => AttachmentRequest::class,
+            'member' => Member::class,
+            'household' => Household::class,
+            'member_status' => MemberStatus::class,
+            'member_function' => MemberFunction::class,
+            'member_field' => MemberField::class,
+            'member_function_term' => MemberFunctionTerm::class,
+            'life_event' => LifeEvent::class,
+            'department' => Department::class,
         ]);
 
         // Toute permission du catalogue se vérifie dans l'organisation courante,

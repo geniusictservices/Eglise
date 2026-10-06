@@ -12,6 +12,9 @@ const names = [
     'fingerprint', 'ellipsis', 'bell', 'circle-help', 'refresh-cw', 'arrow-right', 'book-open',
     'file-text', 'heart-handshake', 'link', 'circle-dollar-sign', 'badge-check', 'undo-2', 'tag',
     'type', 'globe', 'clock', 'square-plus', 'wifi-off', 'image', 'save', 'log-in',
+    'contact-round', 'id-card', 'house-plus', 'users-round', 'baby', 'cake', 'filter', 'sliders-horizontal',
+    'upload', 'file-spreadsheet', 'archive', 'archive-restore', 'sparkles', 'droplets', 'briefcase',
+    'graduation-cap', 'heart', 'user-check', 'user-x', 'qr-code', 'printer', 'hash', 'camera', 'milestone', 'award', 'message-circle',
 ];
 
 const out = {};

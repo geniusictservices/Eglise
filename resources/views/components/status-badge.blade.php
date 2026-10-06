@@ -1,0 +1,11 @@
+@props(['status'])
+@php
+    $classes = [
+        'ink' => 'bg-ink-50 text-ink-700',
+        'ochre' => 'bg-ochre-100 text-ochre-700',
+        'terra' => 'bg-terra-50 text-terra-600',
+        'leaf' => 'bg-leaf-50 text-leaf-600',
+        'sand' => 'bg-sand-100 text-sand-700',
+    ][$status?->color ?? 'sand'] ?? 'bg-sand-100 text-sand-700';
+@endphp
+<span {{ $attributes->merge(['class' => 'badge '.$classes]) }}>{{ $status?->name ?? __('Sans statut') }}</span>

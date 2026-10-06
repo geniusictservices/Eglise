@@ -31,6 +31,7 @@ class OrganizationProvisioner
 
             $this->installRoleTemplates($organization);
             $this->installDefaultCurrencies($organization);
+            app(MemberRegistry::class)->installDefaults($organization);
             $this->assign($administrator, $organization->roles()->where('key', 'administrateur')->firstOrFail(), $organization, includesDescendants: true);
 
             $administrator->forceFill(['current_organization_id' => $organization->id])->save();

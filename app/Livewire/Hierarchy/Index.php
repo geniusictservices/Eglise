@@ -6,6 +6,7 @@ use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\AttachmentRequest;
 use App\Models\Organization;
 use App\Services\AuditLogger;
+use App\Services\MemberRegistry;
 use App\Services\OrganizationProvisioner;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Title;
@@ -109,6 +110,7 @@ class Index extends Component
 
             if ($accept) {
                 $request->organization->moveUnder($request->target);
+                app(MemberRegistry::class)->harmonize($request->organization->fresh());
                 app(AuditLogger::class)->record('attached', $request->organization, [], ['parent_id' => $request->target_id],
                     __(':child a rejoint :parent', ['child' => $request->organization->name, 'parent' => $request->target->name]), $request->target_id);
             }

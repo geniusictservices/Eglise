@@ -115,6 +115,44 @@ return [
         'CAD' => ['name' => 'Dollar canadien', 'symbol' => 'CA$', 'decimals' => 2],
     ],
 
+    /*
+    | Registre des membres : valeurs proposées à une nouvelle communauté.
+    | Le siège (ou l'église indépendante) les adapte ; ses paroisses suivent.
+    */
+    'registry' => [
+        'number_format' => '{SIGLE}-{ANNEE}-{NUMERO}',
+        'number_padding' => 4,
+        'yearly_reset' => false,
+
+        // Champs facultatifs de la fiche, que la communauté peut masquer.
+        'optional_fields' => [
+            'birth_place' => 'Lieu de naissance',
+            'phone2' => 'Second téléphone',
+            'email' => 'E-mail',
+            'profession' => 'Profession',
+            'marital_status' => 'État civil',
+            'education_level' => 'Niveau d’études',
+            'origin_church' => 'Église d’origine',
+            'emergency_contact' => 'Personne à prévenir',
+            'preferred_language' => 'Langue préférée',
+            'joined_on' => 'Date d’adhésion',
+        ],
+
+        'statuses' => [
+            ['name' => 'Membre', 'color' => 'leaf', 'counts_as_member' => true, 'is_default' => true],
+            ['name' => 'Sympathisant', 'color' => 'ochre', 'counts_as_member' => false],
+            ['name' => 'Catéchumène', 'color' => 'ink', 'counts_as_member' => false],
+            ['name' => 'Enfant', 'color' => 'ochre', 'counts_as_member' => true],
+            ['name' => 'Inactif', 'color' => 'sand', 'counts_as_member' => false],
+            ['name' => 'Transféré', 'color' => 'sand', 'counts_as_member' => false],
+            ['name' => 'Décédé', 'color' => 'terra', 'counts_as_member' => false],
+        ],
+
+        'functions' => ['Pasteur', 'Évangéliste', 'Ancien', 'Diacre', 'Diaconesse', 'Choriste', 'Intercesseur', 'Moniteur d’école du dimanche', 'Protocole'],
+
+        'colors' => ['ink' => 'Couleur principale', 'ochre' => 'Ocre', 'terra' => 'Terre cuite', 'leaf' => 'Vert', 'sand' => 'Gris'],
+    ],
+
     // Niveaux proposés pour la hiérarchie ; chaque communauté peut les renommer.
     'level_suggestions' => ['Siège', 'Région', 'Secteur', 'District', 'Paroisse', 'Église locale', 'Annexe'],
 
@@ -150,6 +188,8 @@ return [
                 'members.manage' => 'Ajouter et modifier les membres et les ménages',
                 'members.export' => 'Exporter le registre',
                 'members.import' => 'Importer des données depuis Excel',
+                'members.sensitive' => 'Voir les informations sensibles des membres',
+                'members.settings' => 'Régler le registre : numéro, statuts, champs, fonctions',
                 'departments.manage' => 'Créer et gérer les départements',
             ],
         ],
@@ -243,7 +283,7 @@ return [
             'description' => 'Vue d’ensemble, suivi pastoral et notes confidentielles, validation des dépenses.',
             'permissions' => [
                 'organization.view', 'users.view', 'audit.view',
-                'members.view', 'members.manage',
+                'members.view', 'members.manage', 'members.sensitive',
                 'finance.view', 'finance.contributions.view', 'finance.expenses.approve', 'finance.reports',
                 'planning.view', 'planning.manage', 'budget.authorize', 'meetings.manage',
                 'activities.manage', 'communication.send',
@@ -257,7 +297,7 @@ return [
             'description' => 'Registre des membres, départements, activités, documents et communication. Ne voit pas les dîmes nominatives.',
             'permissions' => [
                 'organization.view', 'users.view',
-                'members.view', 'members.manage', 'members.export', 'members.import', 'departments.manage',
+                'members.view', 'members.manage', 'members.export', 'members.import', 'members.sensitive', 'members.settings', 'departments.manage',
                 'planning.view', 'meetings.manage',
                 'groups.manage', 'activities.manage', 'attendance.record', 'communication.send',
                 'documents.issue', 'documents.templates', 'registers.manage',
