@@ -18,7 +18,7 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 1. [Premiers pas : se connecter et se repérer](01-premiers-pas.md)
 2. [Installer Waumini sur son téléphone ou son ordinateur](02-installer.md)
 3. [Le tableau de bord](03-tableau-de-bord.md)
-4. [Mon profil : langue et mot de passe](10-profil.md)
+4. [Mon profil : langue, mot de passe et empreinte](10-profil.md)
 
 ### Pour l'administrateur et les responsables
 

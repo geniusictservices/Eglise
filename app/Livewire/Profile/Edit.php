@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Profile;
 
+use App\Services\AuditLogger;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -22,6 +23,11 @@ class Edit extends Component
     public string $password = '';
 
     public string $passwordConfirmation = '';
+
+    // Ajout d'une empreinte (passkey)
+    public string $passkeyPassword = '';
+
+    public string $passkeyName = '';
 
     public function mount(): void
     {
@@ -81,10 +87,47 @@ class Edit extends Component
         return null;
     }
 
+    /**
+     * Avant d'enregistrer une empreinte, l'utilisateur retape son mot de passe :
+     * la confirmation est valable quelques minutes pour les routes des passkeys.
+     */
+    public function confirmForPasskey(): void
+    {
+        $this->validate([
+            'passkeyName' => 'required|string|max:60',
+            'passkeyPassword' => ['required', function ($attribute, $value, $fail) {
+                if (! Hash::check($value, auth()->user()->password)) {
+                    $fail(__('Le mot de passe est incorrect.'));
+                }
+            }],
+        ], attributes: ['passkeyName' => __('nom de l’appareil'), 'passkeyPassword' => __('mot de passe')]);
+
+        session()->put('auth.password_confirmed_at', time());
+        $this->reset('passkeyPassword');
+        $this->dispatch('passkey-confirmed', name: $this->passkeyName);
+    }
+
+    public function passkeyAdded(): void
+    {
+        app(AuditLogger::class)->record('passkey_added', auth()->user(), description: __('a activé la connexion par empreinte sur « :device »', ['device' => $this->passkeyName]));
+        $this->reset('passkeyName');
+        $this->dispatch('close-modal', name: 'add-passkey');
+        $this->dispatch('notify', message: __('Empreinte activée sur cet appareil.'));
+    }
+
+    public function deletePasskey(int $id): void
+    {
+        $passkey = auth()->user()->passkeys()->findOrFail($id);
+        $passkey->delete();
+        app(AuditLogger::class)->record('passkey_removed', auth()->user(), description: __('a retiré la connexion par empreinte « :device »', ['device' => $passkey->name]));
+        $this->dispatch('notify', message: __('Appareil retiré.'));
+    }
+
     public function render()
     {
         return view('livewire.profile.edit', [
             'user' => auth()->user(),
+            'passkeys' => auth()->user()->passkeys()->latest()->get(),
             'locales' => config('waumini.locales'),
         ]);
     }

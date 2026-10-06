@@ -88,7 +88,7 @@ const SCENES = [
             await page.fill('#phone', '0990 000 001');
             await page.fill('#password', 'Waumini2026');
             await settle(page);
-            await mark(page, [{ selector: '#phone', label: '1' }, { selector: '#password', label: '2' }, { selector: 'form button[type=submit]', label: '3' }]);
+            await mark(page, [{ selector: '#phone', label: '1' }, { selector: '#password', label: '2' }, { selector: 'form button[type=submit]', label: '3' }, { selector: '[x-data=passkeyLogin] button', label: '4' }]);
         },
     },
     {
@@ -322,6 +322,19 @@ const SCENES = [
             await page.goto(`${BASE}/profil`);
             await settle(page);
             await mark(page, [{ selector: '#locale', label: '1' }]);
+        },
+    },
+    {
+        id: '25-empreinte', user: '0990000003',
+        run: async (page) => {
+            await page.goto(`${BASE}/profil`);
+            await settle(page);
+            await page.click('text=Activer sur cet appareil');
+            await page.waitForSelector('#passkeyName', { state: 'visible' });
+            await page.fill('#passkeyName', 'Téléphone de Neema');
+            await page.fill('#passkeyPassword', 'Waumini2026');
+            await page.waitForTimeout(300);
+            await mark(page, [{ selector: '#passkeyName', label: '1' }, { selector: '#passkeyPassword', label: '2' }]);
         },
     },
     {

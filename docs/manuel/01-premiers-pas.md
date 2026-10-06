@@ -13,6 +13,8 @@ Waumini s'ouvre dans le navigateur de votre téléphone ou de votre ordinateur, 
 2. Saisissez votre **mot de passe** ②. L'œil à droite du champ affiche ce que vous tapez, pour vérifier.
 3. Touchez **Se connecter** ③.
 
+Si vous avez activé l'**empreinte** sur cet appareil (voir [Mon profil](10-profil.md#se-connecter-avec-son-empreinte)), touchez simplement **Se connecter avec l'empreinte** ④ : plus besoin de taper le numéro ni le mot de passe.
+
 Laissez **« Rester connecté sur cet appareil »** coché sur votre téléphone personnel. Décochez-le sur un ordinateur partagé, par exemple celui du secrétariat.
 
 > **Mot de passe oublié ?** Demandez à l'administrateur de votre communauté de le réinitialiser. Il vous donnera un mot de passe provisoire (voir [Gérer les utilisateurs](05-utilisateurs.md#réinitialiser-un-mot-de-passe)).

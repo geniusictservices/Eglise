@@ -39,6 +39,16 @@
         </button>
     </form>
 
+    <div x-data="passkeyLogin" x-show="supported" x-cloak class="mt-4">
+        <div class="my-4 flex items-center gap-3 text-xs uppercase tracking-wider text-sand-500"><span class="h-px flex-1 bg-sand-200"></span>{{ __('ou') }}<span class="h-px flex-1 bg-sand-200"></span></div>
+        <button type="button" class="btn-secondary w-full !py-3 text-base" @click="login" :disabled="loading">
+            <x-icon name="fingerprint" class="size-5" />
+            <span x-text="loading ? '{{ __('Vérification…') }}' : '{{ __('Se connecter avec l’empreinte') }}'"></span>
+        </button>
+        <p class="error text-center" x-show="error" x-text="error"></p>
+        <p class="hint text-center">{{ __('Empreinte digitale, visage ou Windows Hello, si vous les avez activés dans votre profil.') }}</p>
+    </div>
+
     <div class="mt-8 rounded-2xl border border-sand-200 bg-white p-4 text-sm text-sand-700">
         <p class="flex gap-2"><x-icon name="info" class="size-5 text-ink-400" />
             <span>{{ __('Mot de passe oublié ? Demandez à l’administrateur de votre communauté de le réinitialiser.') }}</span></p>

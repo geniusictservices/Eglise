@@ -13,7 +13,8 @@
 ## Ce qui est disponible (étape « Fondations »)
 
 - Hiérarchie multi-niveaux (siège, région, secteur, paroisse, annexe…), rattachement d'une paroisse inscrite seule à son siège.
-- Connexion par numéro de téléphone et mot de passe ; mot de passe provisoire à changer à la première connexion.
+- Connexion par numéro de téléphone et mot de passe, ou par empreinte, visage et Windows Hello (passkeys) ; mot de passe provisoire à changer à la première connexion.
+- Centre d’aide intégré : le manuel d’utilisation sous `/aide`, avec captures ordinateur et téléphone.
 - Rôles personnalisables par cases à cocher, attribués à un niveau précis, avec ou sans les niveaux inférieurs.
 - Cloisonnement strict des données entre communautés.
 - Journal d'audit inaltérable (chaîne d'empreintes SHA-256) avec vérification d'intégrité.

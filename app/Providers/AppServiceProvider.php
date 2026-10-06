@@ -16,8 +16,12 @@ use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
+use Laravel\Passkeys\Events\PasskeyVerified;
+use Laravel\Passkeys\Passkeys;
 use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
@@ -60,6 +64,17 @@ class AppServiceProvider extends ServiceProvider
             SetCurrentOrganization::class,
             EnsurePasswordChanged::class,
         ]);
+
+        // Connexion par empreinte : refusée pour un compte désactivé, et datée comme une connexion classique.
+        Passkeys::authorizeLoginUsing(function ($request, $user) {
+            if (! $user->is_active) {
+                throw ValidationException::withMessages(['credential' => [__('Ce compte est désactivé. Contactez l’administrateur.')]]);
+            }
+
+            return true;
+        });
+
+        Event::listen(PasskeyVerified::class, fn (PasskeyVerified $event) => $event->user->forceFill(['last_login_at' => now()])->saveQuietly());
 
         // Libellé renommable par la communauté : @term('pasteur')
         Blade::directive('term', fn ($key) => "<?php echo e(term({$key})); ?>");

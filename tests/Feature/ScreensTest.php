@@ -266,4 +266,39 @@ class ScreensTest extends TestCase
         $this->get('/aide/inexistant')->assertNotFound();
         $this->get('/aide/captures/autre/x.png')->assertNotFound();
     }
+
+    public function test_adding_a_fingerprint_requires_the_password(): void
+    {
+        $user = User::factory()->create(['password' => 'secret123']);
+        $this->createCommunity('Église', $user);
+        $this->actingAs($user);
+
+        LivewireTest::test(Livewire\Profile\Edit::class)
+            ->set('passkeyName', 'Mon téléphone')
+            ->set('passkeyPassword', 'mauvais')
+            ->call('confirmForPasskey')
+            ->assertHasErrors('passkeyPassword')
+            ->assertNotDispatched('passkey-confirmed');
+
+        LivewireTest::test(Livewire\Profile\Edit::class)
+            ->set('passkeyName', 'Mon téléphone')
+            ->set('passkeyPassword', 'secret123')
+            ->call('confirmForPasskey')
+            ->assertHasNoErrors()
+            ->assertDispatched('passkey-confirmed');
+
+        $this->assertNotNull(session('auth.password_confirmed_at'));
+    }
+
+    public function test_a_user_can_only_remove_their_own_fingerprints(): void
+    {
+        $owner = User::factory()->create();
+        $this->createCommunity('Église', $owner);
+        $other = User::factory()->create();
+        $passkey = $owner->passkeys()->create(['name' => 'Téléphone', 'credential_id' => 'abc', 'credential' => ['aaguid' => null]]);
+        $this->actingAs($other);
+
+        LivewireTest::test(Livewire\Profile\Edit::class)->call('deletePasskey', $passkey->id)->assertNotFound();
+        $this->assertModelExists($passkey);
+    }
 }

@@ -12,11 +12,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
+use Laravel\Passkeys\Contracts\PasskeyUser;
+use Laravel\Passkeys\PasskeyAuthenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements PasskeyUser
 {
     /** @use HasFactory<UserFactory> */
-    use Auditable, HasFactory, Notifiable;
+    use Auditable, HasFactory, Notifiable, PasskeyAuthenticatable;
 
     protected $fillable = [
         'name', 'phone', 'email', 'password', 'locale',
@@ -140,6 +142,12 @@ class User extends Authenticatable
     public function formattedPhone(): string
     {
         return Phone::format($this->phone);
+    }
+
+    /** Nom affiché par le téléphone ou Windows Hello lors de l'enregistrement de l'empreinte. */
+    public function getPasskeyUsername(): string
+    {
+        return $this->formattedPhone();
     }
 
     public function auditOrganizationId(): ?int

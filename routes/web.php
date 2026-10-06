@@ -42,4 +42,6 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/journal', Livewire\Audit\Index::class)->name('audit.index');
     Route::get('/parametres', Livewire\Settings\Edit::class)->name('settings.edit');
     Route::get('/profil', Livewire\Profile\Edit::class)->name('profile.edit');
+    // Ajouter une empreinte demande de retaper son mot de passe : cela se fait dans le profil.
+    Route::redirect('/confirmer-mot-de-passe', '/profil#empreinte')->name('password.confirm');
 });
