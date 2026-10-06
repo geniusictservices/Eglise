@@ -1,10 +1,15 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "geniusict/waumini",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
-    "license": "MIT",
+    "description": "Waumini : la plateforme de gestion des communautés de foi.",
+    "keywords": [
+        "waumini",
+        "eglise",
+        "communaute",
+        "gestion"
+    ],
+    "license": "proprietary",
     "require": {
         "php": "^8.3",
         "brick/money": "^0.15.2",
@@ -26,7 +31,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
