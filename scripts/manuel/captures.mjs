@@ -31,7 +31,7 @@ async function mark(page, marks) {
     if (SITE) return;
     // Fait défiler pour que les éléments repérés soient visibles (au-dessus de la barre d'onglets sur téléphone).
     await page.evaluate((marks) => {
-        const els = marks.map(({ selector }) => [...document.querySelectorAll(selector)].find((e) => e.getClientRects().length)).filter(Boolean);
+        const els = marks.map(({ selector, text }) => [...document.querySelectorAll(selector)].find((e) => e.getClientRects().length && (!text || e.textContent.includes(text)))).filter(Boolean);
         if (!els.length || els.some((e) => e.closest('[role=dialog]') || getComputedStyle(e).position === 'fixed' || e.closest('nav[aria-label="Navigation principale"]'))) return;
         const rects = els.map((e) => e.getBoundingClientRect());
         const top = Math.min(...rects.map((r) => r.top)) + window.scrollY;
@@ -43,8 +43,8 @@ async function mark(page, marks) {
     await page.waitForTimeout(150);
     await page.evaluate((marks) => {
         document.querySelectorAll('.manuel-repere').forEach((el) => el.remove());
-        marks.forEach(({ selector, label, position = 'left' }) => {
-            const el = [...document.querySelectorAll(selector)].find((e) => e.offsetParent !== null || e.getClientRects().length);
+        marks.forEach(({ selector, label, position = 'left', text }) => {
+            const el = [...document.querySelectorAll(selector)].find((e) => (e.offsetParent !== null || e.getClientRects().length) && (!text || e.textContent.includes(text)));
             if (!el) return;
             const r = el.getBoundingClientRect();
             const ring = document.createElement('div');
@@ -749,6 +749,132 @@ const SCENES = [
             await mark(page, isMobile(page)
                 ? [{ selector: 'main form section:first-child', label: '1' }]
                 : [{ selector: 'main form section:first-child', label: '1' }, { selector: 'main form section:nth-child(2) h2', label: '2' }, { selector: 'main form aside section:first-child h2, main form > div:nth-child(2) section:first-child h2', label: '3' }]);
+        },
+    },
+    // ---------- Plan d'action et budget (paroisse de Himbi) ----------
+    {
+        id: '60-exercice', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/comptes?onglet=exercice`);
+            await settle(page);
+            await mark(page, [{ selector: '#fiscalStart', label: '1' }]);
+        },
+    },
+    {
+        id: '61-utilisateur-fiche', user: '0990000001',
+        run: async (page) => {
+            // L'administrateur du siège ouvre la paroisse de Himbi (cinquième communauté de la démo), puis le compte de Josué Kakule.
+            await page.goto(`${BASE}/tableau-de-bord`);
+            await page.evaluate(async () => {
+                const token = document.querySelector('meta[name=csrf-token]').content;
+                await fetch('/communaute/5/ouvrir', { method: 'POST', headers: { 'X-CSRF-TOKEN': token } });
+            });
+            await page.goto(`${BASE}/utilisateurs/9`);
+            await page.waitForURL(/\/utilisateurs\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main section:last-of-type .bg-ochre-50', label: '1' }]);
+        },
+    },
+    {
+        id: '62-budget', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/budget`);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.wax', label: '1' }, { selector: 'main section.card ul li:nth-child(2)', label: '2' }]);
+        },
+    },
+    {
+        id: '63-proposition', user: '0990000007',
+        run: async (page) => {
+            // La chorale prépare ses besoins de l'an prochain : une ligne en francs, avec sa justification.
+            await page.goto(`${BASE}/budget?exercice=${new Date().getFullYear() + 1}`);
+            await page.click('main li:has-text("Chorale") a');
+            await page.waitForURL(/\/departement\//);
+            await page.click('main button[wire\\:click^=editLine]');
+            await page.waitForSelector('[role=dialog] #ln-label');
+            await page.fill('#ln-label', 'Uniformes de la chorale');
+            await page.selectOption('#ln-cat', { label: 'Fournitures et matériel' });
+            await page.fill('#ln-amount', '1120000');
+            await page.selectOption('#ln-cur', 'CDF');
+            await page.fill('#ln-just', 'Vingt choristes ; les anciens uniformes datent de 2019.');
+            await settle(page);
+            await mark(page, [{ selector: '#ln-cur', label: '1' }, { selector: '#ln-just', label: '2' }]);
+        },
+    },
+    {
+        id: '64-budget-version', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/budget`);
+            await page.click('main a:has-text("Voir le budget adopté")');
+            await page.waitForURL(/\/budget\/version\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.wax .grid', label: '1' }, { selector: 'main p.border-leaf-100', label: '2' }, { selector: 'main li', text: 'Nouvelle sonorisation', label: '3' }]);
+        },
+    },
+    {
+        id: '65-suivi-budget', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/budget/suivi`);
+            await settle(page);
+            await mark(page, [{ selector: 'main tbody tr', text: 'Jeunesse · Fournitures', label: '1' }, { selector: 'main section:last-of-type ul li:first-child', label: '2' }]);
+        },
+    },
+    {
+        id: '66-depassement-demande', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/depenses?etape=all`);
+            await page.click('main a:has-text("Rafraîchissements")');
+            await page.waitForURL(/\/finances\/depenses\/\d+$/);
+            await page.click('main button[wire\\:click=askOverrun]');
+            await page.waitForSelector('[role=dialog] #ov-amount');
+            await page.click('[role=dialog] label:has(input[value=reserves])');
+            await page.waitForSelector('#ov-detail');
+            await page.fill('#ov-detail', 'Excédent de l’exercice 2025');
+            await page.fill('#ov-reason', 'Réunion des diacres de toute la paroisse, prévue après l’adoption du budget.');
+            await settle(page);
+            await mark(page, [{ selector: '[role=dialog] fieldset', label: '1' }]);
+        },
+    },
+    {
+        id: '67-depassement-decision', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/finances/depenses?etape=all`);
+            await page.click('main a:has-text("sonorisation pour la convention")');
+            await page.waitForURL(/\/finances\/depenses\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.border-terra-300 dl', label: '1' }, { selector: 'main section.border-ochre-300 p', label: '2' }, { selector: 'main button[wire\\:click="decideOverrun(true)"]', label: '3' }]);
+        },
+    },
+    {
+        id: '68-plan', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/plan`);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.wax .ring-progress', label: '1' }, { selector: 'main section.card .ring-progress', label: '2' }, { selector: 'main li.border-terra-200', label: '3' }]);
+        },
+    },
+    {
+        id: '69-avancement', user: '0990000009',
+        run: async (page) => {
+            await page.goto(`${BASE}/plan`);
+            await page.click('main li:has-text("Tournoi de la paix") button[wire\\:click^=editProgress]');
+            await page.waitForSelector('[role=dialog] #pg-value');
+            await page.fill('#pg-note', 'Terrain réservé, six équipes inscrites.');
+            await page.evaluate(() => { const r = document.querySelector('#pg-value'); r.value = 25; r.dispatchEvent(new Event('input', { bubbles: true })); });
+            await settle(page);
+            await mark(page, [{ selector: '#pg-value', label: '1' }]);
+        },
+    },
+    {
+        id: '70-reunion', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/reunions`);
+            await page.click('main a:has-text("Conseil de paroisse de juillet")');
+            await page.waitForURL(/\/reunions\/\d+$/);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: '#m-minutes', label: '1' }]
+                : [{ selector: '#m-minutes', label: '1' }, { selector: 'main aside ul', label: '2' }, { selector: 'main form[wire\\:submit=addDecision]', label: '3' }]);
         },
     },
 ];

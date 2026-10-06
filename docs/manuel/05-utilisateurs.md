@@ -64,6 +64,10 @@ Deux règles protègent la communauté :
 - seul un **administrateur** peut nommer un autre administrateur ;
 - il reste toujours **au moins un administrateur** : le dernier ne peut pas être retiré.
 
+## Relier un compte à sa fiche de membre
+
+En bas de l'écran d'un utilisateur, **Fiche de membre** relie son compte à sa fiche dans le registre de la communauté affichée. Waumini sait alors de quels départements il est responsable : un responsable de département ne prépare le budget et ne suit les actions que de ses départements. Voir [Le budget](21-budget.md#relier-le-compte-du-responsable-à-sa-fiche-de-membre).
+
 ## Bloquer un compte sans rien supprimer
 
 Quand une personne quitte sa fonction, décochez **Compte actif** puis **Enregistrer**. Elle ne peut plus se connecter, mais tout ce qu'elle a saisi reste dans Waumini, avec son nom dans le journal. Vous pouvez réactiver le compte à tout moment.

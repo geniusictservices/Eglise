@@ -39,15 +39,21 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 12. [Les dépenses et les avances](19-depenses.md)
 13. [Clôtures et rapports financiers](20-clotures-rapports.md)
 
+### Plan d'action et budget
+
+14. [Le budget : propositions, arbitrage, approbation, révisions](21-budget.md)
+15. [Le suivi du budget et les dépassements](22-suivi-budget.md)
+16. [Le plan d'action et les réunions](23-plan-action-reunions.md)
+
 ### Pour l'administrateur et les responsables
 
-14. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
-15. [Gérer les utilisateurs](05-utilisateurs.md)
-16. [Rôles et permissions](06-roles.md)
-17. [Devises et taux du jour](07-devises.md)
-18. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
-19. [Le journal d'audit](09-journal.md)
-20. [L'abonnement](11-abonnement.md)
+17. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
+18. [Gérer les utilisateurs](05-utilisateurs.md)
+19. [Rôles et permissions](06-roles.md)
+20. [Devises et taux du jour](07-devises.md)
+21. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
+22. [Le journal d'audit](09-journal.md)
+23. [L'abonnement](11-abonnement.md)
 
 ### Aide
 
@@ -60,10 +66,10 @@ Waumini fournit des **rôles modèles**. Votre administrateur peut les adapter o
 | Rôle | Ce qu'il fait dans Waumini |
 |---|---|
 | **Administrateur** | Tout. Attribué à la personne qui a créé le compte de la communauté. |
-| **Pasteur** | Vue d'ensemble, suivi pastoral, approbation des dépenses, rapports. |
+| **Pasteur** | Vue d'ensemble, plan d'action, approbation du budget, des dépenses et des dépassements, suivi pastoral, rapports. |
 | **Secrétaire** | Registre des membres, départements, activités, documents. Ne voit pas les dîmes nominatives. |
 | **Trésorier** | Caisses, recettes, promesses, dépenses, taux du jour, paie, rapports. |
-| **Responsable de département** | Son département seulement : membres, réunions, besoins budgétaires. |
+| **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, avancement de ses actions. |
 | **Conseil / comité** | Lecture des rapports, sans rien pouvoir modifier. |
 | **Responsable de niveau** | Secteur, région ou siège : consolidation des paroisses, transferts. |
 

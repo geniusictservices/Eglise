@@ -58,3 +58,11 @@ Personne ne signe sa propre demande. Il faut les signatures d'**autres** personn
 ### Nos offrandes sont en francs et en dollars. Comment lire le résultat ?
 
 Chaque compte garde ses devises : les francs restent des francs. Pour additionner, Waumini convertit chaque opération en dollars au **taux du jour où elle a été saisie**. Pensez donc à saisir le taux du jour régulièrement, dans [Devises et taux](07-devises.md).
+
+### Le responsable de la Jeunesse ne voit pas son département dans le budget.
+
+Son compte doit être relié à sa fiche de membre (écran **Utilisateurs**, bloc **Fiche de membre**), et sa fiche doit être **responsable** ou **adjointe** de la Jeunesse (écran du département). Voir [Le budget](21-budget.md).
+
+### Une dépense urgente n'est pas prévue au budget. Faut-il attendre la révision ?
+
+Non. La trésorière demande un **dépassement** depuis la dépense, en disant d'où viendra l'argent (une autre ligne, les réserves, un don) ; le pasteur l'autorise. La révision du budget peut venir plus tard. Voir [Le suivi du budget et les dépassements](22-suivi-budget.md).

@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : 7 octobre 2026, finances livrées</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, plan d’action et budget livrés</span>
   </header>
 
   <div class="hero">
@@ -254,10 +254,10 @@ const BLOCKS = [
       goal: "Chaque franc tracé, chaque rapport vérifiable.",
       items: ["Comptes : caisses physiques, mobile money et banques, chacun dans les devises choisies par l’église ; virements et change", "Recettes collectives, personnelles et de groupe ; reçus numérotés en A4 et en ticket 80 ou 58 mm, avec l’identité juridique choisie par l’église", "Feuille de collecte du culte : boîte, enveloppes, comptage des billets, procès-verbal", "Promesses et campagnes : échéancier, versements, dons en nature, relance WhatsApp préparée", "Paiements mobile money déclarés (ID et capture), doublons signalés, validés par la finance", "Dépenses : demande, contrôle, une à trois signatures (deux par défaut), décaissement, justification ; avances avec délai, reste rendu en caisse, blocage en option", "Clôtures mensuelles et annuelles, réouverture par l’administrateur avec motif", "Rapports du mois et de l’exercice : à l’écran, imprimés en PDF et en Excel ; 5 nouveaux chapitres du manuel"],
       demo: "Livré : un dimanche complet, de la collecte à la dépense approuvée, puis le mois clôturé et son rapport ; 140 tests automatiques." },
-    { status: "todo", title: "Plan d’action et budget",
+    { status: "done", title: "Plan d’action et budget",
       goal: "L’année de la communauté, préparée ensemble et suivie.",
-      items: ["Vision pluriannuelle, plan d’action annuel, objectifs et actions", "Avancement en pourcentage", "Propositions des départements (dépenses et recettes prévues)", "Arbitrage par la finance, budget adopté puis révisions versionnées", "Autorisation pour toute dépense hors budget", "Réunions : participants, procès-verbal, décisions", "Plan et budget à chaque niveau : paroisse, secteur, région, siège"],
-      demo: "Du dépôt des besoins de la chorale au budget adopté et à son suivi." },
+      items: ["Exercice choisi par chaque église (janvier à décembre, juillet à juin…) ; clôture et rapport annuel alignés", "Propositions des départements : besoins et recettes prévues, avec justification ; un responsable ne gère que ses départements, par sa fiche de membre reliée à son compte", "Arbitrage par la finance, présentation au pasteur, approbation par une autre personne ; budget imprimable", "Révisions : nouvelle version approuvée de la même façon, versions précédentes conservées", "Suivi : prévu, dépensé, engagé et disponible par ligne ; dépenses et recettes hors budget", "Contrôle de chaque dépense ; dépassement autorisé par le pasteur, avec la source de l’argent (autre ligne, réserves ou recette nouvelle)", "Vision pluriannuelle, objectifs avec indicateur, actions avec responsable, échéance, coût et avancement ; retards signalés", "Réunions : participants, ordre du jour, procès-verbal imprimable, décisions suivies ; 3 nouveaux chapitres du manuel"],
+      demo: "Livré : de la proposition de la Jeunesse au budget adopté puis révisé, une dépense au-delà du budget autorisée, et le conseil qui suit ses décisions ; 155 tests automatiques." },
     { status: "todo", title: "Paie",
       goal: "Rémunérer les serviteurs selon les règles de chaque communauté.",
       items: ["Bénéficiaires désignés par la finance : membres ou personnes extérieures", "Éléments de paie créés par la communauté : gains et retenues, fixes ou en pourcentage", "Devise de paie et paiement en équivalent selon la caisse disponible", "Cotisations légales optionnelles", "Bulletins de paie optionnels"],
@@ -344,6 +344,10 @@ const DECISIONS = [
     "Les départements proposent leurs besoins et leurs recettes prévues en début d’année.",
     "La finance arbitre librement ; Waumini produit le rapport.",
     "Le budget est révisable en cours d’année, chaque version est conservée.",
+    "Chaque église choisit le mois de début de son exercice ; sans choix, elle suit son niveau supérieur.",
+    "Le budget est arbitré et présenté par la finance, puis approuvé par le pasteur ; de même pour chaque révision.",
+    "Un dépassement n’est autorisé qu’en disant d’où vient l’argent : une autre ligne du budget, les réserves ou une recette nouvelle.",
+    "Le budget se tient en dollars ; un besoin chiffré en francs est converti au taux du jour.",
     "Toute dépense hors budget ou au-delà demande une autorisation.",
     "Le module s’appelle « Plan d’action » : vision pluriannuelle, objectifs, actions, avancement en pourcentage.",
     "Les réunions sont enregistrées avec participants, procès-verbal et décisions.",

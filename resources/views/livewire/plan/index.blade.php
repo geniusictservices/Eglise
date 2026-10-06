@@ -56,7 +56,7 @@
                     @forelse ($o->actions as $a)
                         <li wire:key="a-{{ $a->id }}" @class(['rounded-xl border p-3', 'border-terra-200 bg-terra-50/40' => $a->isLate(), 'border-sand-200' => ! $a->isLate(), 'opacity-60' => $a->status === 'cancelled'])>
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                <span class="min-w-0 flex-1">
+                                <span class="min-w-0 flex-1 basis-full sm:basis-auto">
                                     <span @class(['block font-semibold text-ink-800', 'line-through' => $a->status === 'cancelled'])>{{ $a->title }}</span>
                                     <span class="block text-xs text-sand-700">
                                         {{ collect([$a->department?->name, $a->responsibleName(), $a->due_on ? __('pour le :d', ['d' => $a->due_on->translatedFormat('j M Y')]) : null, $a->estimated_cost !== null ? Money::format($a->estimated_cost, 'USD') : null])->filter()->implode(' · ') }}

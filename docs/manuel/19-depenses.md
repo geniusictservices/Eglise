@@ -48,6 +48,8 @@ Ajoutez la date souhaitée et les **devis** (photo ou PDF). La demande reçoit u
 
 La trésorière vérifie le montant, les pièces et que la dépense est prévue, puis touche **Contrôlée, à approuver**, avec une remarque si besoin. Elle peut aussi **Refuser**, avec un motif que le demandeur verra.
 
+Quand un budget est adopté pour l'exercice, Waumini montre la ligne du budget de la dépense (prévu, dépensé, engagé, disponible). Une dépense qui dépasse le disponible, ou qui n'est pas prévue, demande d'abord une **autorisation de dépassement** du pasteur, qui dit d'où viendra l'argent. Voir [Le suivi du budget et les dépassements](22-suivi-budget.md).
+
 ## Approuver
 
 <table><tr>

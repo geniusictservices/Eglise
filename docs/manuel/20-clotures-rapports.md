@@ -34,7 +34,9 @@ Rouvrir un mois rouvre aussi **les mois suivants déjà clôturés** et l'exerci
 
 ## Clôturer l'exercice
 
-Quand l'année est terminée et que tous ses mois sont clôturés, **Clôturer l'exercice** arrête l'année entière. Le **rapport annuel** est alors définitif.
+Quand l'exercice est terminé et que tous ses mois sont clôturés, **Clôturer l'exercice** l'arrête en entier. Le **rapport annuel** est alors définitif.
+
+L'exercice suit le choix de votre église (de janvier à décembre, de juillet à juin…), réglé dans **Finances › Comptes et catégories**, onglet **Exercice** : voir [Le budget](21-budget.md#lexercice). Les mois, eux, se clôturent toujours un par un.
 
 ## Les rapports financiers
 
