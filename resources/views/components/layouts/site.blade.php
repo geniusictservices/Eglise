@@ -1,5 +1,5 @@
 @props(['title' => null, 'description' => null])
-@php $contact = config('waumini.contact'); @endphp
+@php $contact = \App\Support\Platform::contact(); @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>

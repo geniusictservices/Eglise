@@ -58,6 +58,13 @@
                 </div>
             </header>
 
+            @if ($organization?->status === 'grace')
+                <div class="border-b border-ochre-300 bg-ochre-50 px-4 py-2.5 text-sm text-ink-800 sm:px-6 lg:px-8">
+                    <x-icon name="clock" class="mr-1 inline size-4 text-ochre-600" />
+                    {{ __('L’abonnement est à renouveler : la communauté passera bientôt en lecture seule.') }}
+                    @can('organization.settings')<a href="{{ route('subscription') }}" class="font-semibold underline decoration-ochre-300 underline-offset-4">{{ __('Voir l’abonnement') }}</a>@endcan
+                </div>
+            @endif
             @if ($organization?->isReadOnly())
                 <div class="border-b border-terra-100 bg-terra-50 px-4 py-2.5 text-sm text-terra-700 sm:px-6 lg:px-8">
                     <x-icon name="lock" class="mr-1 inline size-4" />

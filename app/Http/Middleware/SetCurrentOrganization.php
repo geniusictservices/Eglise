@@ -33,6 +33,13 @@ class SetCurrentOrganization
             $user->forceFill(['current_organization_id' => $organization?->id])->saveQuietly();
         }
 
+        // L'équipe Genius ICT sans communauté travaille dans son espace d'administration.
+        if (! $organization && $user->isPlatformStaff()) {
+            return $request->routeIs('admin.*', 'livewire.*', 'profile.edit', 'logout')
+                ? $next($request)
+                : redirect()->route('admin.dashboard');
+        }
+
         if (! $organization) {
             return $request->routeIs('organizations.none', 'logout')
                 ? $next($request)

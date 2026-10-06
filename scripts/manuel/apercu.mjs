@@ -10,10 +10,10 @@ for (const [name, opts] of Object.entries({
 })) {
     const page = await (await browser.newContext(opts)).newPage();
     await page.goto(`${BASE}/connexion`);
-    await page.fill('#phone', '0990000001');
+    await page.fill('#phone', process.env.PHONE ?? '0990000001');
     await page.fill('#password', 'Waumini2026');
     await page.click('main form button[type=submit], form button[type=submit]');
-    await page.waitForURL('**/tableau-de-bord');
+    await page.waitForURL(/tableau-de-bord|admin/);
     for (const p of paths) {
         const [path, action] = p.split('#');
         await page.goto(BASE + path);

@@ -7,6 +7,7 @@ use App\Models\Organization;
 use App\Models\Role;
 use App\Models\RoleAssignment;
 use App\Models\User;
+use App\Support\Platform;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -25,7 +26,7 @@ class OrganizationProvisioner
             $organization = Organization::create($attributes + [
                 'level_label' => 'Église',
                 'status' => 'trial',
-                'trial_ends_at' => now()->addDays(config('waumini.trial_days')),
+                'trial_ends_at' => now()->addDays((int) Platform::get('trial_days')),
                 'timezone' => config('waumini.default_timezone'),
                 'created_by' => $administrator->id,
             ]);

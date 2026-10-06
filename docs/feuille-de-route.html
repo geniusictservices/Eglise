@@ -286,10 +286,10 @@ const BLOCKS = [
       goal: "Chaque paroisse en ligne, sans rien saisir deux fois.",
       items: ["Thèmes au choix, couleurs et logo de la communauté", "Pages activées par la communauté", "Horaires et événements alimentés par le calendrier", "Prédications : liens YouTube ou Facebook, audios légers, avec guide", "Déclaration de don par mobile money"],
       demo: "Le site d’une paroisse mis à jour en changeant l’heure du culte." },
-    { status: "todo", title: "Espace Genius ICT",
+    { status: "doing", title: "Espace Genius ICT",
       goal: "Piloter la plateforme et accompagner les communautés.",
-      items: ["Communautés clientes, packs, prix sur mesure, essais", "Abonnements : paiement déclaré puis validé, grâce d’un mois, puis lecture seule", "Accès support autorisé et révocable par la communauté", "Tickets de support, centre d’aide", "Rôles internes et statistiques"],
-      demo: "Une communauté ouvre un ticket et l’agent l’aide avec son accord." },
+      items: ["Livré : vue d’ensemble, communautés, essais prolongés, suspension", "Livré : offres et tarifs datés ; nouveau prix pour les nouvelles souscriptions, et au renouvellement pour les abonnés", "Livré : paiements enregistrés (mobile money, référence), prix figé pour la période, délai de grâce puis lecture seule chaque matin", "Livré : coordonnées et numéro WhatsApp, conditions et confidentialité versionnées, équipe et rôles internes", "À venir : paiement déclaré par la communauté et validé, accès support autorisé et révocable, tickets de support"],
+      demo: "Genius ICT change un tarif : les nouvelles églises le paient tout de suite, les abonnées à leur renouvellement." },
     { status: "todo", title: "Démo publique",
       goal: "Laisser chacun essayer Waumini, sans engagement ni inscription.",
       items: ["Un bouton « Essayer la démo » sur le site public", "Chaque visiteur reçoit sa propre copie de la communauté de démonstration, déjà remplie", "Toutes les fonctions utilisables, isolées des vraies communautés", "Données effacées automatiquement après 3 jours", "Identifiants affichés pour revenir depuis un autre appareil", "Déjà prêt : la communauté de démonstration réutilisable, le marquage et l’effacement des données de démo"],
@@ -380,19 +380,19 @@ const DECISIONS = [
     "Un manuel d’utilisation complet, avec captures ordinateur et téléphone, écrit au fil des étapes.",
     "Les familles sont gérées comme des ménages : conjoints, enfants et personnes à charge à une même adresse.",
     "Style « Chaleureux, inspiré du wax » choisi parmi quatre directions ; chaque communauté peut choisir ses couleurs.",
-    "Démo publique : une copie par visiteur, effacée après 3 jours ; réalisée en fin de projet."
+    "Démo publique : une copie par visiteur, effacée après 3 jours ; réalisée en fin de projet.",
+    "Adresse : waumini.com.",
+    "Prix, numéro WhatsApp et textes juridiques se règlent dans l’espace Genius ICT ; un nouveau prix s’applique aux nouvelles souscriptions et, pour les abonnés, au renouvellement."
   ]]
 ];
 
 const OPEN = [
-  ["Genius ICT", "Nom de domaine", "Quelle adresse pour Waumini (par exemple waumini.com ou waumini.cd) ? À vérifier puis réserver chez LWS."],
   ["Genius ICT", "Offre LWS", "L’offre donne-t-elle un accès SSH, des sous-domaines « joker » et des certificats SSL pour les sites des paroisses ?"],
   ["Genius ICT", "Traductions", "Trouver un relecteur pour le swahili, le lingala, le kikongo et le tshiluba."],
   ["Genius ICT", "Communautés pilotes", "Lesquelles accompagner ? Un registre ou une feuille de collecte réels, anonymisés, aideraient beaucoup."],
   ["Genius ICT", "Microsoft Store", "Publier sur le Store demande un compte développeur Microsoft. Le fichier MSIX peut aussi être distribué depuis le site, sans Store."],
-  ["Ensemble", "Textes légaux", "Brouillons des conditions d’utilisation et de la confidentialité rédigés : à faire relire par un juriste."],
-  ["Genius ICT", "Prix par taille", "Prix indicatifs saisis pour les tailles moyennes et grandes (15/35/55 $ et 20/50/75 $) : à confirmer."],
-  ["Genius ICT", "Numéro WhatsApp", "Numéro de contact à afficher sur le site et dans la page Abonnement."],
+  ["Genius ICT", "Textes légaux", "Textes proposés selon le droit congolais (Code du numérique 2023, protection du consommateur, OHADA) : à faire relire par un juriste, puis à publier depuis l’espace Genius ICT."],
+  ["Genius ICT", "Prix et numéro WhatsApp", "À saisir dans l’espace Genius ICT (Offres et tarifs, Coordonnées) dès la mise en ligne."],
   ["Ensemble", "Rythme et dates", "Fixer le rythme des démonstrations et une date cible pour les communautés pilotes."]
 ];
 

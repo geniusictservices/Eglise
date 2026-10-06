@@ -2,26 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\File;
+use App\Models\LegalDocument;
 use Illuminate\Support\Str;
 
-/** Conditions d'utilisation et confidentialité, rédigées dans docs/legal. */
+/** Conditions d'utilisation et confidentialité : la version publiée dans l'espace Genius ICT. */
 class LegalController extends Controller
 {
     public function terms()
     {
-        return $this->page('conditions', __('Conditions d’utilisation'));
+        return $this->page('terms');
     }
 
     public function privacy()
     {
-        return $this->page('confidentialite', __('Confidentialité'));
+        return $this->page('privacy');
     }
 
-    private function page(string $file, string $title)
+    private function page(string $key)
     {
-        $html = Str::markdown(File::get(base_path("docs/legal/{$file}.md")));
+        $document = LegalDocument::current($key);
+        abort_unless($document, 404);
 
-        return view('legal.page', compact('html', 'title'));
+        return view('legal.page', [
+            'title' => $document->title,
+            'html' => Str::markdown($document->body, ['html_input' => 'strip', 'allow_unsafe_links' => false]),
+            'document' => $document,
+        ]);
     }
 }

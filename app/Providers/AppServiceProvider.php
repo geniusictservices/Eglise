@@ -8,6 +8,7 @@ use App\Models\AttachmentRequest;
 use App\Models\Department;
 use App\Models\ExchangeRate;
 use App\Models\Household;
+use App\Models\LegalDocument;
 use App\Models\LifeEvent;
 use App\Models\Member;
 use App\Models\MemberField;
@@ -17,8 +18,11 @@ use App\Models\MemberImport;
 use App\Models\MemberStatus;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
+use App\Models\Plan;
+use App\Models\PlanPrice;
 use App\Models\Role;
 use App\Models\RoleAssignment;
+use App\Models\Subscription;
 use App\Models\User;
 use App\Support\CurrentOrganization;
 use App\Support\Permissions;
@@ -62,6 +66,10 @@ class AppServiceProvider extends ServiceProvider
             'life_event' => LifeEvent::class,
             'department' => Department::class,
             'member_import' => MemberImport::class,
+            'plan' => Plan::class,
+            'plan_price' => PlanPrice::class,
+            'subscription' => Subscription::class,
+            'legal_document' => LegalDocument::class,
         ]);
 
         // Toute permission du catalogue se vérifie dans l'organisation courante,
@@ -76,6 +84,12 @@ class AppServiceProvider extends ServiceProvider
 
             return $user->hasPermission($ability, $organization);
         });
+
+        // Espace Genius ICT : permissions de l'équipe, selon son rôle interne.
+        foreach (array_keys(config('waumini.platform_permissions')) as $permission) {
+            Gate::define($permission, fn (User $user) => $user->hasPlatformPermission($permission));
+        }
+        Gate::define('admin.access', fn (User $user) => $user->isPlatformStaff());
 
         // Les requêtes Livewire repassent par ces middlewares : organisation courante, langue, mot de passe.
         Livewire::addPersistentMiddleware([

@@ -9,6 +9,7 @@ use App\Http\Controllers\MemberPhotoController;
 use App\Http\Controllers\MemberTemplateController;
 use App\Http\Controllers\SwitchOrganizationController;
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsurePlatformStaff;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Livewire;
 use Illuminate\Support\Facades\Route;
@@ -70,4 +71,16 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/abonnement', Livewire\Subscription::class)->name('subscription');
     // Ajouter une empreinte demande de retaper son mot de passe : cela se fait dans le profil.
     Route::redirect('/confirmer-mot-de-passe', '/profil#empreinte')->name('password.confirm');
+});
+
+// Espace Genius ICT : administration de la plateforme, réservé à l'équipe.
+Route::middleware(['auth', EnsurePasswordChanged::class, EnsurePlatformStaff::class])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', Livewire\Admin\Dashboard::class)->name('dashboard');
+    Route::get('/communautes', Livewire\Admin\Communities\Index::class)->name('communities');
+    Route::get('/communautes/{organization}', Livewire\Admin\Communities\Show::class)->name('communities.show');
+    Route::get('/tarifs', Livewire\Admin\Pricing::class)->name('pricing');
+    Route::get('/textes-juridiques', Livewire\Admin\Legal\Index::class)->name('legal');
+    Route::get('/textes-juridiques/{key}', Livewire\Admin\Legal\Edit::class)->whereIn('key', ['terms', 'privacy'])->name('legal.edit');
+    Route::get('/reglages', Livewire\Admin\Settings::class)->name('settings');
+    Route::get('/equipe', Livewire\Admin\Staff::class)->name('staff');
 });

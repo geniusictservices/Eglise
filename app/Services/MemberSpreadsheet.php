@@ -10,6 +10,7 @@ use App\Models\MemberImport;
 use App\Models\MemberStatusChange;
 use App\Models\Organization;
 use App\Support\Phone;
+use App\Support\Platform;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -240,7 +241,7 @@ class MemberSpreadsheet
             [__('7. Ne changez pas les titres de la première ligne. Vous pouvez supprimer les colonnes inutiles.')],
             [__('8. Dans Waumini : Membres › Importer depuis Excel. Waumini vérifie chaque ligne avant d’importer, et l’import peut être annulé.')],
             [''],
-            [__('Besoin d’aide ? Genius ICT vous accompagne : :email', ['email' => config('waumini.contact.email')])],
+            [__('Besoin d’aide ? Genius ICT vous accompagne : :email', ['email' => Platform::get('contact.email')])],
         ];
         foreach ($lines as $r => $line) {
             $sheet->setCellValue('A'.($r + 1), $line[0]);

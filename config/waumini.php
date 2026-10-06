@@ -36,17 +36,20 @@ return [
         'city' => 'Goma, Nord-Kivu, RDC',
         'email' => env('WAUMINI_CONTACT_EMAIL', 'geniusictservices@gmail.com'),
         'phone' => env('WAUMINI_CONTACT_PHONE'), // numéro WhatsApp au format +243…, à renseigner
-        'website' => 'geniusict.com',
+        'website' => 'waumini.com',
     ],
+
+    // Adresse publique de Waumini (site, application, QR codes).
+    'domain' => env('WAUMINI_DOMAIN', 'waumini.com'),
 
     /*
     |--------------------------------------------------------------------------
     | Offres
     |--------------------------------------------------------------------------
     |
-    | Prix indicatifs mensuels en USD, affichés dans l'application pendant
-    | l'essai (jamais sur le site public). Ils seront modifiables depuis
-    | l'espace Genius ICT ; en attendant, ils se règlent ici.
+    | Valeurs de départ : les offres et les tarifs se règlent ensuite dans
+    | l'espace Genius ICT, avec leur historique. Un nouveau tarif s'applique
+    | aux nouvelles souscriptions et, pour les abonnés, au renouvellement.
     |
     */
 
@@ -89,6 +92,25 @@ return [
     ],
 
     'annual_discount_months' => 2, // payer 10 mois pour 12
+
+    /*
+    | Espace Genius ICT : les rôles de l'équipe et ce que chacun peut faire.
+    */
+    'platform_permissions' => [
+        'admin.communities' => 'Voir les communautés inscrites et les demandes de démonstration',
+        'admin.subscriptions' => 'Enregistrer les paiements et les abonnements, prolonger un essai',
+        'admin.pricing' => 'Fixer les offres et les tarifs',
+        'admin.settings' => 'Modifier les coordonnées et les réglages de la plateforme',
+        'admin.legal' => 'Modifier les conditions d’utilisation et la politique de confidentialité',
+        'admin.staff' => 'Gérer l’équipe Genius ICT',
+    ],
+
+    'platform_roles' => [
+        'direction' => ['name' => 'Direction', 'permissions' => ['*']],
+        'commercial' => ['name' => 'Commercial et facturation', 'permissions' => ['admin.communities', 'admin.subscriptions', 'admin.pricing']],
+        'support' => ['name' => 'Support', 'permissions' => ['admin.communities']],
+        'contenu' => ['name' => 'Contenus et juridique', 'permissions' => ['admin.legal', 'admin.settings']],
+    ],
 
     // Langues de l'interface : code => nom dans la langue elle-même.
     'locales' => [

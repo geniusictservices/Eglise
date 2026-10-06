@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Models\LegalDocument;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\OrganizationProvisioner;
@@ -126,7 +127,8 @@ class Register extends Component
 
         session()->regenerate();
         $user = Auth::user();
-        $user->forceFill(['last_login_at' => now()])->saveQuietly();
+        // Version des conditions acceptées à l'inscription.
+        $user->forceFill(['last_login_at' => now(), 'terms_version' => LegalDocument::current('terms')?->version, 'terms_accepted_at' => now()])->saveQuietly();
 
         if ($this->kind === 'parish') {
             session()->flash('status', __('Bienvenue ! Pour rejoindre votre siège, touchez « Rejoindre un siège » et saisissez son code de rattachement.'));

@@ -13,6 +13,11 @@
         <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-sand-50" role="menuitem">
             <x-icon name="user-round" class="size-4 text-ink-400" /> {{ __('Mon profil') }}
         </a>
+        @if ($user->isPlatformStaff())
+            <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-ochre-700 hover:bg-sand-50" role="menuitem">
+                <x-icon name="shield-check" class="size-4" /> {{ __('Espace Genius ICT') }}
+            </a>
+        @endif
         <a href="{{ route('help.index') }}" class="flex items-center gap-3 px-4 py-3 text-sm hover:bg-sand-50" role="menuitem">
             <x-icon name="circle-help" class="size-4 text-ink-400" /> {{ __('Aide et manuel') }}
         </a>

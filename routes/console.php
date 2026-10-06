@@ -14,3 +14,6 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
 
 // Ménage quotidien des sessions et jetons expirés.
 Schedule::command('model:prune')->daily();
+
+// Chaque matin : fin des essais, délais de grâce et passages en lecture seule.
+Schedule::command('waumini:abonnements')->dailyAt('05:00');

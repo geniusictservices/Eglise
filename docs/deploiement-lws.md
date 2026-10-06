@@ -1,6 +1,6 @@
 # Déployer Waumini sur LWS (hébergement mutualisé)
 
-Ce guide installe Waumini sur une offre mutualisée LWS (panneau cPanel). Il suppose un nom de domaine, par exemple `app.waumini.cd`, déjà pointé vers l'hébergement.
+Ce guide installe Waumini sur une offre mutualisée LWS (panneau cPanel). Il suppose le nom de domaine `waumini.com`, déjà pointé vers l'hébergement.
 
 ## 1. Préparer l'hébergement
 
@@ -17,7 +17,7 @@ Organisation recommandée :
 ```
 /home/lwsuser/
 ├── waumini/              ← tout le projet
-└── app.waumini.cd/       ← racine du domaine (document root)
+└── waumini.com/       ← racine du domaine (document root)
 ```
 
 - **Avec accès SSH** (recommandé) : `git clone` du dépôt dans `~/waumini`, puis `composer install --no-dev --optimize-autoloader`. Compiler les fichiers d'interface **sur votre ordinateur** (`npm ci && npm run build`) et envoyer le dossier `public/build`.
@@ -33,7 +33,7 @@ Créer `~/waumini/.env` à partir de `.env.example` :
 APP_NAME=Waumini
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://app.waumini.cd
+APP_URL=https://waumini.com
 APP_LOCALE=fr
 
 DB_CONNECTION=mysql
@@ -68,11 +68,25 @@ Dans cPanel, *Tâches Cron*, ajouter une tâche **toutes les minutes** :
 * * * * * /usr/local/bin/php /home/lwsuser/waumini/artisan schedule:run >> /dev/null 2>&1
 ```
 
-Le chemin de PHP peut varier ; cPanel l'indique dans la page *Tâches Cron*. Cette seule tâche suffit : elle traite la file d'attente (notifications, rapports) et le ménage quotidien.
+Le chemin de PHP peut varier ; cPanel l'indique dans la page *Tâches Cron*. Cette seule tâche suffit : elle traite la file d'attente (notifications, rapports), le ménage quotidien et, chaque matin, l'état des abonnements (fin d'essai, délai de grâce, lecture seule).
+
+## 4 bis. Premier compte de l'équipe Genius ICT
+
+L'espace d'administration (`https://waumini.com/admin`) est réservé à l'équipe Genius ICT. Créer le premier compte, avec le rôle Direction :
+
+```bash
+php artisan waumini:equipe 0812345678 "Prénom Nom"
+```
+
+La commande affiche un mot de passe provisoire, à changer à la première connexion. Ensuite, les autres membres de l'équipe s'ajoutent depuis l'écran **Équipe Genius ICT**. Dans l'espace d'administration, renseigner tout de suite :
+
+- **Coordonnées et réglages** : le numéro WhatsApp et l'e-mail de contact ;
+- **Offres et tarifs** : les prix définitifs ;
+- **Textes juridiques** : les conditions d'utilisation et la politique de confidentialité relues par le juriste.
 
 ## 5. Vérifier
 
-- `https://app.waumini.cd/up` répond « Application up ».
+- `https://waumini.com/up` répond « Application up ».
 - La page de connexion s'affiche, et le bouton « Installer » apparaît dans Chrome ou Edge.
 - Le journal `~/waumini/storage/logs/laravel.log` ne contient pas d'erreur.
 

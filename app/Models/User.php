@@ -31,6 +31,9 @@ class User extends Authenticatable implements PasskeyUser
         'locale' => 'fr',
         'is_active' => true,
         'is_platform_staff' => false,
+        'platform_role' => null,
+        'terms_version' => null,
+        'terms_accepted_at' => null,
         'is_demo' => false,
         'must_change_password' => false,
         'current_organization_id' => null,
@@ -47,6 +50,7 @@ class User extends Authenticatable implements PasskeyUser
             'last_login_at' => 'datetime',
             'password' => 'hashed',
             'is_platform_staff' => 'boolean',
+            'terms_accepted_at' => 'datetime',
             'is_demo' => 'boolean',
             'is_active' => 'boolean',
             'must_change_password' => 'boolean',
@@ -95,6 +99,23 @@ class User extends Authenticatable implements PasskeyUser
         }
 
         return $this->assignmentsCovering($organization)->contains(fn (RoleAssignment $a) => $a->role->grants($permission));
+    }
+
+    /** Membre de l'équipe Genius ICT ayant cette permission de l'espace d'administration. */
+    public function hasPlatformPermission(string $permission): bool
+    {
+        if (! $this->is_active || ! $this->is_platform_staff || ! $this->platform_role) {
+            return false;
+        }
+
+        $granted = config("waumini.platform_roles.{$this->platform_role}.permissions", []);
+
+        return in_array('*', $granted, true) || in_array($permission, $granted, true);
+    }
+
+    public function isPlatformStaff(): bool
+    {
+        return $this->is_active && $this->is_platform_staff && $this->platform_role !== null;
     }
 
     public function canAccess(Organization $organization): bool

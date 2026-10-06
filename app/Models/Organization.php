@@ -23,6 +23,15 @@ use InvalidArgumentException;
  */
 class Organization extends Model
 {
+    /** État de l'abonnement : libellé et couleur. */
+    public const STATUSES = [
+        'trial' => ['Essai gratuit', 'ochre'],
+        'active' => ['Abonné', 'leaf'],
+        'grace' => ['Délai de grâce', 'terra'],
+        'read_only' => ['Lecture seule', 'sand'],
+        'suspended' => ['Suspendu', 'terra'],
+    ];
+
     use Auditable, SoftDeletes;
 
     protected $guarded = ['id', 'path', 'depth'];

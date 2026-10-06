@@ -31,7 +31,7 @@
                 <label for="demo-members" class="label">{{ __('Nombre de membres environ') }}</label>
                 <select wire:model="members" id="demo-members" class="input">
                     <option value="">{{ __('Choisir…') }}</option>
-                    @foreach (config('waumini.size_tiers') as $tier => $label)<option value="{{ $tier }}">{{ $label }}</option>@endforeach
+                    @foreach (\App\Support\Platform::get('size_tiers') as $tier => $label)<option value="{{ $tier }}">{{ $label }}</option>@endforeach
                     <option value="denomination">{{ __('Dénomination avec plusieurs paroisses') }}</option>
                 </select>
             </div>
