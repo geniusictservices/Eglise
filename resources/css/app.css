@@ -259,3 +259,10 @@
         .manuel table:has(img) td:last-child img { @apply mx-auto max-w-[300px]; }
     }
 }
+
+/* Documents délivrés : paragraphes justifiés, pointillés à compléter à la main. */
+@layer components {
+    .document-body p { @apply mb-4; }
+    .document-body .blank { @apply text-sand-500; }
+    @media print { .document-body .blank { color: #000; } }
+}

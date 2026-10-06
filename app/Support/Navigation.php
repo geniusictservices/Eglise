@@ -52,6 +52,13 @@ class Navigation
                 ],
             ],
             [
+                'label' => __('Documents'),
+                'items' => [
+                    ['route' => 'documents.index', 'label' => __('Documents délivrés'), 'icon' => 'file-text', 'can' => ['documents.issue', 'registers.manage']],
+                    ['route' => 'documents.templates', 'label' => __('Modèles de documents'), 'icon' => 'pencil', 'can' => 'documents.templates'],
+                ],
+            ],
+            [
                 'label' => __('Finances'),
                 'items' => [
                     ['route' => 'finances.index', 'label' => __('Finances'), 'icon' => 'wallet', 'can' => 'finance.view', 'mobile' => true, 'short' => __('Finances')],

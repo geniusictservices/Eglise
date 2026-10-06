@@ -5,6 +5,7 @@ use App\Http\Controllers\BudgetPrintController;
 use App\Http\Controllers\CardVerificationController;
 use App\Http\Controllers\CollectionPrintController;
 use App\Http\Controllers\DeclarationScreenshotController;
+use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ExpenseAttachmentController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\HelpController;
@@ -34,6 +35,7 @@ Route::get('/confidentialite', [LegalController::class, 'privacy'])->name('legal
 Route::view('/installer', 'install')->name('install');
 Route::get('/logo/{organization}', OrganizationLogoController::class)->whereNumber('organization')->name('organizations.logo');
 Route::get('/verifier/carte/{token}', CardVerificationController::class)->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('cards.verify');
+Route::get('/verifier/document/{token}', [DocumentController::class, 'verify'])->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('documents.verify');
 Route::view('/hors-ligne', 'offline')->name('offline');
 Route::get('/aide', [HelpController::class, 'show'])->name('help.index');
 Route::get('/aide/captures/{device}/{file}', [HelpController::class, 'capture'])->name('help.capture');
@@ -86,6 +88,12 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/presences', Livewire\Attendance\Index::class)->name('attendance.index');
     Route::get('/annonces', Livewire\Announcements\Index::class)->name('announcements.index');
     Route::get('/annonces/{announcement}', Livewire\Announcements\Show::class)->name('announcements.show');
+    Route::get('/documents', Livewire\Documents\Index::class)->name('documents.index');
+    Route::get('/documents/delivrer', Livewire\Documents\Issue::class)->name('documents.issue');
+    Route::get('/documents/{document}/imprimer', [DocumentController::class, 'print'])->whereNumber('document')->name('documents.print');
+    Route::get('/documents/modeles', Livewire\Documents\Templates::class)->name('documents.templates');
+    Route::get('/documents/modeles/nouveau', Livewire\Documents\TemplateEditor::class)->name('documents.templates.create');
+    Route::get('/documents/modeles/{type}', Livewire\Documents\TemplateEditor::class)->whereNumber('type')->name('documents.templates.edit');
 
     Route::get('/finances', Livewire\Finances\Index::class)->name('finances.index');
     Route::get('/finances/operations', Livewire\Finances\Journal::class)->name('finances.journal');

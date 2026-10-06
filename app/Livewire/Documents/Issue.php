@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Livewire\Documents;
+
+use App\Livewire\Concerns\WritesInOrganization;
+use App\Models\DocumentType;
+use App\Models\Member;
+use App\Services\Documents;
+use App\Services\DocumentTypes;
+use App\Support\DocumentTemplate;
+use InvalidArgumentException;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
+use Livewire\Component;
+
+/** Délivrer un document : le modèle, la personne, les champs, l'aperçu, puis l'impression. */
+#[Title('Délivrer un document')]
+class Issue extends Component
+{
+    use WritesInOrganization;
+
+    #[Url(as: 'modele')]
+    public ?int $typeId = null;
+
+    #[Url(as: 'membre')]
+    public ?int $memberId = null;
+
+    public string $memberSearch = '';
+
+    public string $beneficiary = '';
+
+    public array $fields = [];
+
+    public string $signatory = '';
+
+    public string $signatoryTitle = '';
+
+    public string $issuedOn = '';
+
+    public function mount(Documents $documents): void
+    {
+        $this->authorizeWrite('documents.issue');
+        $this->signatory = (string) $documents->lastSignatory($this->organization());
+        $this->issuedOn = today()->toDateString();
+        if ($this->typeId) {
+            $this->chooseType($this->typeId);
+        }
+    }
+
+    private function type(): ?DocumentType
+    {
+        return $this->typeId ? app(DocumentTypes::class)->available($this->organization())->firstWhere('id', $this->typeId) : null;
+    }
+
+    public function chooseType(int $id): void
+    {
+        $type = app(DocumentTypes::class)->available($this->organization())->firstWhere('id', $id) ?? abort(404);
+        $this->typeId = $type->id;
+        $this->signatoryTitle = (string) $type->signatory_title;
+        $this->fields = collect($type->customFields())->mapWithKeys(fn ($f) => [$f['key'] => $this->fields[$f['key']] ?? ''])->all();
+        if ($type->subject === 'free') {
+            $this->memberId = null;
+        }
+        $this->resetValidation();
+    }
+
+    public function changeType(): void
+    {
+        $this->typeId = null;
+    }
+
+    public function chooseMember(int $id): void
+    {
+        $this->memberId = Member::findOrFail($id)->id;
+        $this->memberSearch = '';
+    }
+
+    public function issue(Documents $documents)
+    {
+        $this->authorizeWrite('documents.issue');
+        $type = $this->type() ?? abort(404);
+        $this->validate([
+            'signatory' => 'nullable|string|max:120', 'signatoryTitle' => 'nullable|string|max:80',
+            'issuedOn' => 'required|date|before_or_equal:today', 'beneficiary' => 'nullable|string|max:200', 'fields.*' => 'nullable|string|max:3000',
+        ], attributes: ['issuedOn' => __('date')]);
+
+        try {
+            $document = $documents->issue($this->organization(), $type, [
+                'member_id' => $this->memberId, 'beneficiary' => $this->beneficiary, 'fields' => $this->fields,
+                'signatory' => $this->signatory, 'signatory_title' => $this->signatoryTitle, 'issued_on' => $this->issuedOn,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('issue', $e->getMessage());
+
+            return null;
+        }
+
+        return $this->redirectRoute('documents.print', $document);
+    }
+
+    public function render(DocumentTypes $types)
+    {
+        $organization = $this->organization();
+        $type = $this->type();
+        $member = $this->memberId ? Member::find($this->memberId) : null;
+        $data = [];
+        if ($type) {
+            $values = $types->values($type, $organization, [
+                'member' => $member, 'person' => $member ? null : ($type->subject === 'free' ? ['official_name' => $this->beneficiary, 'full_name' => $this->beneficiary] : []),
+                'fields' => $this->fields, 'signatory' => $this->signatory ?: null, 'signatory_title' => $this->signatoryTitle ?: null,
+                'date' => $this->issuedOn ?: today(), 'number' => __('attribué à la délivrance'),
+            ]);
+            $labels = collect(DocumentTemplate::variables())->collapse()->merge(collect($type->customFields())->pluck('label', 'key'));
+            $data = [
+                'preview' => DocumentTemplate::render($type->body, $values),
+                'values' => $values,
+                // Ce que la fiche ne dit pas encore : à compléter dans la fiche, ou à la main sur le papier.
+                'missing' => collect(DocumentTemplate::used($type->body))->filter(fn ($k) => ($values[$k] ?? null) === null && ! in_array($k, ['numero_document', 'signataire'], true))
+                    ->map(fn ($k) => $labels[$k] ?? $k)->values()->all(),
+            ];
+        }
+
+        return view('livewire.documents.issue', $data + [
+            'types' => $types->available($organization),
+            'type' => $type,
+            'member' => $member,
+            'candidates' => trim($this->memberSearch) !== '' ? Member::search($this->memberSearch)->orderBy('last_name')->limit(6)->get() : collect(),
+            'identity' => $organization->documentIdentity(),
+            'organization' => $organization,
+        ]);
+    }
+}

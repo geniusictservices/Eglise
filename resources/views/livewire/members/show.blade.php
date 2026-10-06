@@ -35,6 +35,7 @@
                 <a href="{{ $wa }}" target="_blank" rel="noopener" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="message-circle" class="size-4" /> WhatsApp</a>
             @endif
             <a href="{{ route('members.card', $member) }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="id-card" class="size-4" /> {{ __('Carte') }}</a>
+            @can('documents.issue')<a href="{{ route('documents.issue', ['membre' => $member->id]) }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="file-text" class="size-4" /> {{ __('Document') }}</a>@endcan
             @if ($canManage)
                 <a href="{{ route('members.edit', $member) }}" class="btn-accent !min-h-0 !py-2 sm:ml-auto"><x-icon name="pencil" class="size-4" /> {{ __('Modifier') }}</a>
                 <button type="button" wire:click="openStatus" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="refresh-cw" class="size-4" /> {{ __('Statut') }}</button>

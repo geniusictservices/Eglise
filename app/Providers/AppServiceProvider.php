@@ -15,6 +15,7 @@ use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\CollectionSheet;
 use App\Models\Department;
+use App\Models\DocumentType;
 use App\Models\ExchangeRate;
 use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
@@ -23,6 +24,7 @@ use App\Models\FinanceTransaction;
 use App\Models\Group;
 use App\Models\GroupMeeting;
 use App\Models\Household;
+use App\Models\IssuedDocument;
 use App\Models\LegalDocument;
 use App\Models\LifeEvent;
 use App\Models\Meeting;
@@ -112,6 +114,8 @@ class AppServiceProvider extends ServiceProvider
             'event' => \App\Models\Event::class,
             'attendance_record' => AttendanceRecord::class,
             'announcement' => Announcement::class,
+            'document_type' => DocumentType::class,
+            'issued_document' => IssuedDocument::class,
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,
