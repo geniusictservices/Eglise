@@ -1,0 +1,417 @@
+<title>Feuille de route Waumini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Mise en page : un chemin vertical en quatre blocs, chaque étape est une borne sur le chemin,
+   suivi des décisions prises et des questions ouvertes. */
+:root {
+  --bg: #FBF8F2;
+  --surface: #FFFFFF;
+  --ink: #173F4E;
+  --text: #22333A;
+  --muted: #5E6E73;
+  --line: #E4DCCD;
+  --ochre: #E09A2D;
+  --ochre-ink: #8A5A0E;
+  --terra: #B5532F;
+  --done: #2F7A55;
+  --done-bg: #E3F1E8;
+  --doing-bg: #FBEBCF;
+  --todo-bg: #EEF1F1;
+  --font-display: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F2229; --surface: #15303A; --ink: #E7EEF0; --text: #D5E0E3; --muted: #93A7AD;
+    --line: #26444F; --ochre: #EBAA45; --ochre-ink: #F2C278; --terra: #D7744F;
+    --done: #6CC79A; --done-bg: #183B2E; --doing-bg: #3D3017; --todo-bg: #1B3741;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F2229; --surface: #15303A; --ink: #E7EEF0; --text: #D5E0E3; --muted: #93A7AD;
+  --line: #26444F; --ochre: #EBAA45; --ochre-ink: #F2C278; --terra: #D7744F;
+  --done: #6CC79A; --done-bg: #183B2E; --doing-bg: #3D3017; --todo-bg: #1B3741;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.55;
+  padding-inline: 16px; padding-block: 0 64px;
+}
+.wrap { max-width: 920px; margin: 0 auto; }
+h1, h2, h3 { font-family: var(--font-display); color: var(--ink); line-height: 1.15; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+a { color: var(--ink); }
+
+/* En-tête */
+header.top { display: flex; align-items: center; gap: 14px; padding-block: 28px 8px; }
+header.top svg { width: 44px; height: 44px; flex: none; }
+.brand { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: var(--ink); letter-spacing: .01em; }
+.brand .dot { color: var(--ochre); }
+.by { margin-left: auto; color: var(--muted); font-size: .85rem; text-align: right; }
+
+.hero { padding-block: 28px 8px; display: grid; gap: 14px; }
+.eyebrow { font-family: var(--font-display); font-weight: 600; text-transform: uppercase; letter-spacing: .12em; font-size: .78rem; color: var(--terra); }
+.hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; }
+.hero p.lead { max-width: 62ch; color: var(--muted); font-size: 1.08rem; }
+
+/* Progression */
+.progress { margin-top: 18px; display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 4px; }
+.bar span { height: 10px; border-radius: 3px; background: var(--todo-bg); border: 1px solid var(--line); }
+.bar span.done { background: var(--done); border-color: var(--done); }
+.bar span.doing { background: var(--ochre); border-color: var(--ochre); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .88rem; color: var(--muted); }
+.legend b { color: var(--text); font-variant-numeric: tabular-nums; }
+
+nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+nav.toc a { text-decoration: none; font-size: .9rem; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); }
+nav.toc a:hover, nav.toc a:focus-visible { border-color: var(--ink); outline: none; }
+
+section { margin-top: 56px; }
+section > h2 { font-size: 1.7rem; margin-bottom: 6px; }
+section > p.intro { color: var(--muted); max-width: 64ch; margin-bottom: 24px; }
+
+/* Chemin */
+.block { margin-top: 34px; }
+.block-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.block-head .letter { font-family: var(--font-display); font-weight: 700; color: var(--ochre-ink); font-size: .95rem; letter-spacing: .08em; text-transform: uppercase; }
+.block-head h3 { font-size: 1.25rem; }
+.path { list-style: none; margin: 0; padding: 0; position: relative; }
+.path::before { content: ""; position: absolute; left: 15px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+.step { position: relative; padding-left: 48px; padding-bottom: 18px; }
+.step:last-child { padding-bottom: 0; }
+.node {
+  position: absolute; left: 4px; top: 16px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--surface); border: 2px solid var(--line);
+  display: grid; place-items: center; font-family: var(--font-display); font-size: .72rem; font-weight: 700; color: var(--muted);
+}
+.step.done .node { background: var(--done); border-color: var(--done); color: var(--surface); }
+.step.doing .node { background: var(--ochre); border-color: var(--ochre); color: #1E1405; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; gap: 10px; min-width: 0; }
+.step.doing .card { border-color: var(--ochre); }
+.card-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.card h4 { font-family: var(--font-display); font-size: 1.12rem; color: var(--ink); margin: 0; font-weight: 600; }
+.pill { font-size: .75rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; letter-spacing: .02em; }
+.pill.done { background: var(--done-bg); color: var(--done); }
+.pill.doing { background: var(--doing-bg); color: var(--ochre-ink); }
+.pill.todo { background: var(--todo-bg); color: var(--muted); }
+.card .goal { color: var(--muted); }
+.card ul { margin: 0; padding-left: 1.1em; display: grid; gap: 3px; }
+.card ul li::marker { color: var(--ochre); }
+.demo { font-size: .92rem; border-top: 1px dashed var(--line); padding-top: 10px; }
+.demo strong { font-family: var(--font-display); font-weight: 600; color: var(--terra); margin-right: 4px; }
+
+/* Décisions */
+.decisions { display: grid; gap: 10px; }
+details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+details[open] { border-color: var(--ink); }
+summary {
+  cursor: pointer; list-style: none; padding: 14px 18px; display: flex; align-items: center; gap: 12px;
+  font-family: var(--font-display); font-weight: 600; color: var(--ink); font-size: 1.05rem;
+}
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; margin-left: auto; font-size: 1.3rem; color: var(--muted); line-height: 1; }
+details[open] summary::after { content: "–"; }
+summary:focus-visible { outline: 2px solid var(--ochre); outline-offset: 2px; border-radius: 12px; }
+summary .count { font-family: var(--font-body); font-weight: 400; font-size: .85rem; color: var(--muted); }
+details ul { margin: 0; padding: 0 18px 16px 36px; display: grid; gap: 6px; }
+details ul li::marker { color: var(--terra); }
+
+/* Questions ouvertes */
+.open { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; min-width: 0; }
+.q h4 { margin: 0; font-family: var(--font-display); font-weight: 600; color: var(--ink); font-size: 1rem; }
+.q p { color: var(--muted); font-size: .92rem; }
+.q .who { font-size: .78rem; font-weight: 700; color: var(--ochre-ink); text-transform: uppercase; letter-spacing: .08em; }
+
+/* Socle technique */
+.stack { width: 100%; border-collapse: collapse; font-size: .95rem; }
+.stack-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.stack th, .stack td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.stack tr:last-child td { border-bottom: none; }
+.stack th { font-family: var(--font-display); font-weight: 600; color: var(--ink); background: var(--todo-bg); }
+.stack td:first-child { font-weight: 700; color: var(--ink); white-space: nowrap; }
+
+footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: .88rem; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+
+@media (max-width: 520px) {
+  .by { display: none; }
+  .step { padding-left: 40px; }
+  .card { padding: 14px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  nav.toc a, details { transition: border-color .15s ease; }
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <svg viewBox="6 11 108 108" aria-hidden="true">
+      <path d="M16,30 C16,74 29,100 45,100 C55,100 60,91 60,78 C60,91 65,100 75,100 C91,100 104,74 104,30" fill="none" style="stroke: var(--ink)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="40" cy="56" r="9" style="fill: var(--terra)"/>
+      <circle cx="60" cy="44" r="10.5" style="fill: var(--ochre)"/>
+      <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
+    </svg>
+    <span class="brand">waumini</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : 6 octobre 2026</span>
+  </header>
+
+  <div class="hero">
+    <span class="eyebrow">Feuille de route du projet</span>
+    <h1>De la vision à la première communauté équipée</h1>
+    <p class="lead">Waumini — « les fidèles » en swahili — est la plateforme de gestion des communautés de foi en RDC : registre des membres, finances, budget et plan d’action, paie, promesses, documents, communication et sites web. Cette page suit chaque étape du projet, les décisions déjà prises et les questions qui restent à trancher ensemble.</p>
+    <div class="progress" aria-label="Progression du projet">
+      <div class="bar" id="bar"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <nav class="toc" aria-label="Sommaire">
+      <a href="#etapes">Les étapes</a>
+      <a href="#decisions">Décisions prises</a>
+      <a href="#questions">Questions ouvertes</a>
+      <a href="#socle">Socle technique</a>
+    </nav>
+  </div>
+
+  <section id="etapes">
+    <h2>Les étapes</h2>
+    <p class="intro">Chaque étape se termine par une démonstration utilisable. On ne passe à la suivante qu’après l’avoir testée ensemble. Les dates seront fixées au fil du projet, selon le rythme des validations.</p>
+    <div id="path"></div>
+  </section>
+
+  <section id="decisions">
+    <h2>Décisions prises</h2>
+    <p class="intro">Ce qui a été arrêté pendant le cadrage. Ces choix guident le développement ; on peut les revoir, mais toute modification se note ici.</p>
+    <div class="decisions" id="decisionList"></div>
+  </section>
+
+  <section id="questions">
+    <h2>Questions ouvertes</h2>
+    <p class="intro">Ce qu’il reste à fournir ou à décider. Aucune ne bloque le démarrage des fondations.</p>
+    <div class="open" id="openList"></div>
+  </section>
+
+  <section id="socle">
+    <h2>Socle technique</h2>
+    <p class="intro">Les choix d’outils, adaptés à un hébergement mutualisé pour commencer, et prêts à passer sur un serveur dédié quand les communautés seront nombreuses.</p>
+    <div class="stack-wrap">
+      <table class="stack">
+        <thead><tr><th>Sujet</th><th>Choix</th></tr></thead>
+        <tbody>
+          <tr><td>Application</td><td>Laravel (PHP), une seule base de code pour le site public, l’application de gestion, l’espace membre et les sites vitrines</td></tr>
+          <tr><td>Base de données</td><td>MySQL / MariaDB, isolation stricte entre communautés assurée par le code et vérifiée par des tests automatiques</td></tr>
+          <tr><td>Hébergement</td><td>LWS, offre mutualisée ; tâches de fond via une tâche cron chaque minute ; cache et sessions en base</td></tr>
+          <tr><td>Téléphone</td><td>Application web installable (PWA) sur Android et iPhone, notifications push, connexion par empreinte (passkeys)</td></tr>
+          <tr><td>Windows</td><td>La même application installée sur l’ordinateur de la communauté : depuis Edge ou Chrome, ou par un fichier d’installation MSIX. Connexion Internet requise</td></tr>
+          <tr><td>Hors connexion</td><td>Saisie du dimanche seulement (collecte, contributions, visiteurs, présences) puis synchronisation ; consultation de l’espace membre en cache</td></tr>
+          <tr><td>Langues</td><td>Français complet dès le départ ; swahili, lingala, kikongo et tshiluba ajoutés par fichiers de traduction</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <span>Waumini · Genius ICT</span>
+    <span>Contact : Fiston Ishara · geniusictservices@gmail.com</span>
+  </footer>
+</div>
+
+<script>
+const BLOCKS = [
+  { letter: "Bloc 1", title: "Poser les bases", steps: [
+    { status: "done", title: "Cadrage du projet",
+      goal: "Comprendre le besoin et fixer les règles du jeu.",
+      items: ["Lecture du dossier de présentation", "20 questions de cadrage avec Genius ICT", "Choix de Laravel, de l’hébergement LWS et de la PWA"],
+      demo: "Décisions consignées sur cette page." },
+    { status: "done", title: "Nom et identité visuelle",
+      goal: "Un nom africain ouvert à toutes les communautés de foi.",
+      items: ["Le projet devient Waumini (les fidèles)", "Logo « les mains en coupe » : prière, offrande, accueil", "Couleurs, typographie, icônes web, PWA et Windows"],
+      demo: "Dossier branding/ dans le dépôt." },
+    { status: "doing", title: "Feuille de route en ligne",
+      goal: "Un endroit unique pour suivre l’avancement.",
+      items: ["Étapes, décisions et questions ouvertes", "Mise à jour à chaque étape terminée"],
+      demo: "Cette page." },
+    { status: "todo", title: "Fondations techniques",
+      goal: "Le socle sur lequel tous les modules reposent.",
+      items: ["Projet Laravel, structure multi-communautés et hiérarchie (siège, région, secteur, paroisse)", "Connexion par téléphone et mot de passe, puis empreinte (passkeys)", "Rôles personnalisables et permissions par périmètre", "Journal d’audit inaltérable", "Devises : USD de base, autres devises et taux du jour", "PWA installable (téléphone et Windows), langues, libellés renommables"],
+      demo: "Une communauté fictive, ses utilisateurs et leurs rôles, installée sur téléphone et sur Windows." },
+    { status: "todo", title: "Site public de Waumini",
+      goal: "Présenter le produit et accueillir les nouvelles communautés.",
+      items: ["Présentation de Waumini et de ses modules", "Inscription d’une communauté et essai gratuit de 30 jours", "Demande de rattachement d’une paroisse à son siège", "Page de vérification des documents par QR code"],
+      demo: "Une église s’inscrit seule et arrive sur son tableau de bord vide." }
+  ]},
+  { letter: "Bloc 2", title: "Gérer la communauté", steps: [
+    { status: "todo", title: "Noyau : membres et départements",
+      goal: "Le registre complet, retrouvable en une seconde.",
+      items: ["Membres, ménages, statuts et historique", "Étapes de vie (baptême, mariage…) et anciens numéros de registre", "Départements créés par l’administrateur", "Tableau de bord par rôle", "Import Excel guidé : modèles Waumini, vérification, aperçu, annulation", "Carte de membre avec QR code"],
+      demo: "Import d’un registre Excel de 300 membres, doublons traités." },
+    { status: "todo", title: "Finances",
+      goal: "Chaque franc tracé, chaque rapport vérifiable.",
+      items: ["Caisses en USD, CDF et autres devises, change entre caisses", "Recettes collectives (la boîte : total seul), personnelles (au nom du membre) et de groupe", "Feuille de collecte du culte avec billets et compteurs", "Promesses : sur un projet, une campagne, une contribution régulière ; promis, versé, reste ; relance WhatsApp en un clic", "Déclarations de paiement mobile money (ID et capture) validées par la finance", "Dépenses : demande, contrôle budgétaire, approbation, décaissement, justification ; avances à justifier", "Reçus, clôtures mensuelles et annuelles, rapports PDF et Excel"],
+      demo: "Un dimanche complet : collecte, dîmes, une dépense approuvée et le rapport du mois." },
+    { status: "todo", title: "Plan d’action et budget",
+      goal: "L’année de la communauté, préparée ensemble et suivie.",
+      items: ["Vision pluriannuelle, plan d’action annuel, objectifs et actions", "Avancement en pourcentage", "Propositions des départements (dépenses et recettes prévues)", "Arbitrage par la finance, budget adopté puis révisions versionnées", "Autorisation pour toute dépense hors budget", "Réunions : participants, procès-verbal, décisions", "Plan et budget à chaque niveau : paroisse, secteur, région, siège"],
+      demo: "Du dépôt des besoins de la chorale au budget adopté et à son suivi." },
+    { status: "todo", title: "Paie",
+      goal: "Rémunérer les serviteurs selon les règles de chaque communauté.",
+      items: ["Bénéficiaires désignés par la finance : membres ou personnes extérieures", "Éléments de paie créés par la communauté : gains et retenues, fixes ou en pourcentage", "Devise de paie et paiement en équivalent selon la caisse disponible", "Cotisations légales optionnelles", "Bulletins de paie optionnels"],
+      demo: "La paie d’un mois pour cinq personnes, en USD et en CDF." }
+  ]},
+  { letter: "Bloc 3", title: "Faire vivre la communauté", steps: [
+    { status: "todo", title: "Groupes, activités et communication",
+      goal: "Chaque groupe a son espace, chaque fidèle est informé.",
+      items: ["Groupes : responsables, réunions, présences, cotisations", "Calendrier des cultes et événements, inscriptions", "Comptage des présences, en option", "Notifications push ciblées : annonces, programme, rappels, anniversaires", "Envoi manuel sur WhatsApp pour ceux qui n’ont pas l’application"],
+      demo: "Le programme du dimanche reçu sur les téléphones le samedi soir." },
+    { status: "todo", title: "Documents et registres",
+      goal: "Une attestation en une minute, vérifiable par QR code.",
+      items: ["Attestations, lettres, carte de service, ordre de mission, convocation…", "Modèles personnalisables (en-tête, couleurs) et types de documents créés par la communauté", "Numérotation paramétrable", "Imprimés, signés à la main, authentifiés par QR code", "Saisie des anciens registres papier et réédition moderne"],
+      demo: "Une attestation de baptême de 1998 rééditée avec son QR code." },
+    { status: "todo", title: "Suivi pastoral et espace membre",
+      goal: "Accompagner chacun ; donner à chaque membre sa part d’accès.",
+      items: ["Visites, malades, deuils, parcours des catéchumènes, demandes de prière", "Notes confidentielles : leur auteur seul, jamais exportées, même pas pour le support", "Espace membre : sa fiche, ses contributions et reçus, ses promesses, programme et annonces, demandes de prière et d’attestation", "Langue choisie par chaque membre"],
+      demo: "Un membre se connecte avec son empreinte et retrouve ses reçus." }
+  ]},
+  { letter: "Bloc 4", title: "Le réseau et la plateforme", steps: [
+    { status: "todo", title: "Consolidation multi-paroisses",
+      goal: "Le siège voit toutes ses paroisses sans ressaisie.",
+      items: ["Rapports consolidés à chaque niveau", "Transferts de membres entre paroisses", "Quotes-parts calculées et suivies", "Paroisses en retard de saisie repérées"],
+      demo: "Une dénomination de six paroisses, vue depuis la région." },
+    { status: "todo", title: "Sites vitrines",
+      goal: "Chaque paroisse en ligne, sans rien saisir deux fois.",
+      items: ["Thèmes au choix, couleurs et logo de la communauté", "Pages activées par la communauté", "Horaires et événements alimentés par le calendrier", "Prédications : liens YouTube ou Facebook, audios légers, avec guide", "Déclaration de don par mobile money"],
+      demo: "Le site d’une paroisse mis à jour en changeant l’heure du culte." },
+    { status: "todo", title: "Espace Genius ICT",
+      goal: "Piloter la plateforme et accompagner les communautés.",
+      items: ["Communautés clientes, packs, prix sur mesure, essais", "Abonnements : paiement déclaré puis validé, grâce d’un mois, puis lecture seule", "Accès support autorisé et révocable par la communauté", "Tickets de support, centre d’aide", "Rôles internes et statistiques"],
+      demo: "Une communauté ouvre un ticket et l’agent l’aide avec son accord." },
+    { status: "todo", title: "Mise en production et églises pilotes",
+      goal: "Lancer Waumini avec deux ou trois communautés pilotes.",
+      items: ["Déploiement sur LWS et sauvegardes", "Fichier d’installation Windows (MSIX)", "Données de démonstration pour les présentations", "Formation et reprise des données des pilotes"],
+      demo: "Une vraie communauté tient sa première collecte dans Waumini." }
+  ]}
+];
+
+const DECISIONS = [
+  ["Nom et marque", [
+    "Le projet s’appelle Waumini (« les fidèles » en swahili), ouvert aux églises comme aux mosquées.",
+    "Logo « les mains en coupe » ; couleurs bleu-vert profond, ocre et terre cuite ; police Outfit.",
+    "Le vocabulaire (pasteur, culte, dîme…) est fait de libellés que chaque communauté peut renommer.",
+    "Packs : Msingi, Kawaida, Kamili, Umoja. Les prix n’apparaissent pas sur le site public, seulement dans l’application pendant l’essai."
+  ]],
+  ["Comptes et structure", [
+    "L’administrateur est la personne qui a créé le compte de la communauté sur Waumini.",
+    "Une dénomination peut créer sa hiérarchie depuis le siège, ou une paroisse peut s’inscrire puis demander son rattachement.",
+    "Chaque dénomination choisit qui paie l’abonnement : le siège ou chaque paroisse.",
+    "Chaque paroisse garde ses propres départements, catégories, éléments de paie, budget et plan d’action.",
+    "Rôles personnalisables : l’administrateur crée ses rôles en cochant les permissions ; une personne peut cumuler plusieurs rôles."
+  ]],
+  ["Finances et devises", [
+    "Le dollar est la devise de base ; chaque communauté ajoute ses devises et saisit son propre taux du jour.",
+    "Chaque montant s’affiche dans sa devise avec son équivalent en dollars.",
+    "Les opérations de change entre caisses sont enregistrées avec le taux obtenu.",
+    "Trois modes de recette : collectif (la boîte, total seul), personnel (au nom du membre), mixte ; plus les contributions d’un groupe.",
+    "Circuit des dépenses : demande, contrôle budgétaire, approbation, décaissement, justification ; approbateurs et seuils réglables.",
+    "Avances à justifier avec échéance et relances ; blocage des nouvelles demandes en option.",
+    "Un département « Administration générale » pour les charges courantes."
+  ]],
+  ["Promesses", [
+    "Une promesse peut porter sur un projet, une campagne, une contribution régulière ou une demande ponctuelle.",
+    "Elle peut venir d’un membre, d’un ménage, d’un département ou d’une personne extérieure.",
+    "Paiement en une fois ou par échéances, en argent ou en nature ; suivi promis, versé, reste.",
+    "Recouvrement par WhatsApp, envoyé manuellement depuis un message préparé ; pas de SMS.",
+    "Montants confidentiels par défaut ; tableau public d’un projet possible, nominatif ou anonyme."
+  ]],
+  ["Budget et plan d’action", [
+    "Les départements proposent leurs besoins et leurs recettes prévues en début d’année.",
+    "La finance arbitre librement ; Waumini produit le rapport.",
+    "Le budget est révisable en cours d’année, chaque version est conservée.",
+    "Toute dépense hors budget ou au-delà demande une autorisation.",
+    "Le module s’appelle « Plan d’action » : vision pluriannuelle, objectifs, actions, avancement en pourcentage.",
+    "Les réunions sont enregistrées avec participants, procès-verbal et décisions.",
+    "Plan d’action et budget existent à chaque niveau, y compris au siège et dans les régions."
+  ]],
+  ["Paie", [
+    "La finance désigne les personnes payées.",
+    "Chaque communauté définit ses éléments de paie, sa devise et ses retenues ; le paiement peut se faire en équivalent dans une autre devise.",
+    "Les obligations légales et les bulletins de paie sont optionnels."
+  ]],
+  ["Paiements en ligne", [
+    "Pas de paiement automatique pour l’instant : le donateur paie par mobile money, déclare l’ID de transaction et une capture, la finance valide.",
+    "Même circuit pour l’abonnement des communautés, validé par Genius ICT.",
+    "Le code est prêt pour brancher plus tard un paiement automatique."
+  ]],
+  ["Membres et communication", [
+    "Les membres ont un accès limité : leur fiche, leurs contributions et reçus, leurs promesses, le programme, les annonces, les demandes de prière et d’attestation.",
+    "Connexion par téléphone et mot de passe, puis empreinte du téléphone.",
+    "Pas de paiement en ligne dans l’espace membre pour l’instant.",
+    "La communication passe par les notifications de l’application, avec envoi manuel sur WhatsApp en complément.",
+    "Chaque membre choisit sa langue parmi français, swahili, lingala, kikongo et tshiluba."
+  ]],
+  ["Documents", [
+    "Tous les documents courants, plus carte de service, ordre de mission, convocation, présentation d’enfant.",
+    "Modèles fournis et personnalisables ; la communauté peut créer ses propres types de documents.",
+    "Documents imprimés et signés à la main, authentifiés par QR code.",
+    "Numérotation paramétrable ; saisie des anciens registres et réédition moderne."
+  ]],
+  ["Plateforme et support", [
+    "Délai de grâce d’un mois avant le passage en lecture seule ; les données restent exportables.",
+    "Accès support « en tant que » la communauté, avec son accord et révocable.",
+    "Plusieurs rôles internes chez Genius ICT, tickets de support et centre d’aide.",
+    "Reprise des données par la communauté avec l’appui de Genius ICT, sur les modèles Excel de Waumini.",
+    "Sites vitrines : thèmes existants, pages choisies par la communauté, un site par paroisse.",
+    "Version Windows : la même application installée sur l’ordinateur de la communauté, Internet requis."
+  ]]
+];
+
+const OPEN = [
+  ["Genius ICT", "Nom de domaine", "Quelle adresse pour Waumini (par exemple waumini.com ou waumini.cd) ? À vérifier puis réserver chez LWS."],
+  ["Genius ICT", "Offre LWS", "L’offre donne-t-elle un accès SSH, des sous-domaines « joker » et des certificats SSL pour les sites des paroisses ?"],
+  ["Genius ICT", "Traductions", "Trouver un relecteur pour le swahili, le lingala, le kikongo et le tshiluba."],
+  ["Genius ICT", "Communautés pilotes", "Lesquelles accompagner ? Un registre ou une feuille de collecte réels, anonymisés, aideraient beaucoup."],
+  ["Genius ICT", "Microsoft Store", "Publier sur le Store demande un compte développeur Microsoft. Le fichier MSIX peut aussi être distribué depuis le site, sans Store."],
+  ["Ensemble", "Textes légaux", "Conditions d’utilisation et politique de confidentialité à rédiger avant le lancement."],
+  ["Ensemble", "Rythme et dates", "Fixer le rythme des démonstrations et une date cible pour les communautés pilotes."]
+];
+
+const LABEL = { done: "Terminé", doing: "En cours", todo: "À venir" };
+const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+let n = 0, counts = { done: 0, doing: 0, todo: 0 };
+const pathEl = document.getElementById("path");
+pathEl.innerHTML = BLOCKS.map(b => `
+  <div class="block">
+    <div class="block-head"><span class="letter">${b.letter}</span><h3>${esc(b.title)}</h3></div>
+    <ol class="path">${b.steps.map(s => { n++; counts[s.status]++; return `
+      <li class="step ${s.status}">
+        <span class="node" aria-hidden="true">${s.status === "done" ? "✓" : n}</span>
+        <div class="card">
+          <div class="card-top"><h4>${esc(s.title)}</h4><span class="pill ${s.status}">${LABEL[s.status]}</span></div>
+          <p class="goal">${esc(s.goal)}</p>
+          <ul>${s.items.map(i => `<li>${esc(i)}</li>`).join("")}</ul>
+          <p class="demo"><strong>Démonstration</strong>${esc(s.demo)}</p>
+        </div>
+      </li>`; }).join("")}
+    </ol>
+  </div>`).join("");
+
+const bar = document.getElementById("bar");
+bar.style.setProperty("--n", n);
+bar.innerHTML = BLOCKS.flatMap(b => b.steps).map(s => `<span class="${s.status}" title="${esc(s.title)} : ${LABEL[s.status]}"></span>`).join("");
+document.getElementById("legend").innerHTML =
+  `<span><b>${counts.done}</b> terminées</span><span><b>${counts.doing}</b> en cours</span><span><b>${counts.todo}</b> à venir</span><span><b>${n}</b> étapes au total</span>`;
+
+document.getElementById("decisionList").innerHTML = DECISIONS.map(([t, list], i) => `
+  <details${i === 0 ? " open" : ""}>
+    <summary>${esc(t)} <span class="count">${list.length} décisions</span></summary>
+    <ul>${list.map(d => `<li>${esc(d)}</li>`).join("")}</ul>
+  </details>`).join("");
+
+document.getElementById("openList").innerHTML = OPEN.map(([who, t, d]) => `
+  <div class="q"><span class="who">${who}</span><h4>${esc(t)}</h4><p>${esc(d)}</p></div>`).join("");
+</script>
