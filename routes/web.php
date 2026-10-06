@@ -7,6 +7,8 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\MemberCardController;
 use App\Http\Controllers\MemberPhotoController;
 use App\Http\Controllers\MemberTemplateController;
+use App\Http\Controllers\OrganizationLogoController;
+use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SwitchOrganizationController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformStaff;
@@ -21,6 +23,7 @@ Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : view
 Route::get('/conditions-utilisation', [LegalController::class, 'terms'])->name('legal.terms');
 Route::get('/confidentialite', [LegalController::class, 'privacy'])->name('legal.privacy');
 Route::view('/installer', 'install')->name('install');
+Route::get('/logo/{organization}', OrganizationLogoController::class)->whereNumber('organization')->name('organizations.logo');
 Route::get('/verifier/carte/{token}', CardVerificationController::class)->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('cards.verify');
 Route::view('/hors-ligne', 'offline')->name('offline');
 Route::get('/aide', [HelpController::class, 'show'])->name('help.index');
@@ -63,6 +66,13 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
 
     Route::get('/departements', Livewire\Departments\Index::class)->name('departments.index');
     Route::get('/departements/{department}', Livewire\Departments\Show::class)->name('departments.show');
+
+    Route::get('/finances', Livewire\Finances\Index::class)->name('finances.index');
+    Route::get('/finances/operations', Livewire\Finances\Journal::class)->name('finances.journal');
+    Route::get('/finances/recette', Livewire\Finances\IncomeForm::class)->name('finances.income');
+    Route::get('/finances/virement', Livewire\Finances\TransferForm::class)->name('finances.transfer');
+    Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
+    Route::get('/finances/recu/{transaction}', ReceiptController::class)->name('finances.receipt');
 
     Route::get('/devises', Livewire\Currencies\Index::class)->name('currencies.index');
     Route::get('/journal', Livewire\Audit\Index::class)->name('audit.index');

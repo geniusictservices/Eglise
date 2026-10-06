@@ -175,6 +175,33 @@ return [
         'colors' => ['ink' => 'Couleur principale', 'ochre' => 'Ocre', 'terra' => 'Terre cuite', 'leaf' => 'Vert', 'sand' => 'Gris'],
     ],
 
+    /*
+    | Finances : catégories proposées à chaque niveau (paroisse, région, siège),
+    | que la communauté adapte. Une recette collective (la boîte) n'a pas de nom
+    | de donateur ; une recette personnelle est rattachée au membre.
+    */
+    'finance' => [
+        'income_categories' => [
+            ['Offrande du culte', 'collective'],
+            ['Offrande spéciale', 'collective'],
+            ['Dîme', 'personal'],
+            ['Offrande d’action de grâce', 'personal'],
+            ['Don', 'personal'],
+            ['Contribution d’un département', 'group'],
+            ['Autres recettes', 'collective'],
+        ],
+        'expense_categories' => [
+            'Loyer et charges', 'Électricité et eau', 'Transport et déplacements', 'Entretien et réparations',
+            'Fournitures et matériel', 'Communication et téléphone', 'Évangélisation et missions', 'Œuvres sociales et entraide',
+            'Accueil et réceptions', 'Quote-part au niveau supérieur', 'Rémunérations et motivations', 'Autres dépenses',
+        ],
+        // Billets et pièces pour compter la collecte du culte.
+        'denominations' => [
+            'USD' => [100, 50, 20, 10, 5, 2, 1],
+            'CDF' => [20000, 10000, 5000, 1000, 500, 200, 100, 50],
+        ],
+    ],
+
     // Départements proposés à la création (chacun reste libre de les nommer).
     'department_suggestions' => [
         'ministry' => ['Chorale', 'Jeunesse', 'Mamans', 'Papas', 'École du dimanche', 'Évangélisation', 'Intercession', 'Protocole et accueil', 'Diaconie et social', 'Médias et sonorisation'],
@@ -225,6 +252,7 @@ return [
             'label' => 'Finances',
             'items' => [
                 'finance.view' => 'Voir les caisses et les opérations',
+                'finance.settings' => 'Gérer les caisses et les catégories',
                 'finance.income' => 'Saisir les recettes et la collecte du culte',
                 'finance.contributions.view' => 'Voir les contributions nominatives (dîmes)',
                 'finance.pledges' => 'Gérer les promesses',
@@ -338,7 +366,7 @@ return [
             'permissions' => [
                 'organization.view', 'currencies.manage',
                 'members.view',
-                'finance.view', 'finance.income', 'finance.contributions.view', 'finance.pledges',
+                'finance.view', 'finance.settings', 'finance.income', 'finance.contributions.view', 'finance.pledges',
                 'finance.payments.validate', 'finance.disburse', 'finance.exchange', 'finance.close', 'finance.reports',
                 'planning.view', 'budget.arbitrate',
                 'payroll.view', 'payroll.manage',

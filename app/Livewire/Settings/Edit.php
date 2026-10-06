@@ -3,17 +3,20 @@
 namespace App\Livewire\Settings;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Support\DocumentIdentity;
+use App\Support\OrganizationLogo;
 use App\Support\Phone;
 use App\Support\Theme;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Title('Paramètres')]
 class Edit extends Component
 {
-    use WritesInOrganization;
+    use WithFileUploads, WritesInOrganization;
 
     #[Url(as: 'onglet', except: 'general')]
     public string $tab = 'general';
@@ -54,6 +57,20 @@ class Edit extends Component
 
     public bool $hasOwnTheme = false;
 
+    // Identité juridique et documents
+    public array $legal = [];
+
+    public bool $legalInherit = true;
+
+    /** Ce qui s'affiche sur les documents : clé => oui/non. */
+    public array $display = [];
+
+    public string $footer = '';
+
+    public string $receiptFormat = 'a4';
+
+    public $logo = null;
+
     public function mount(): void
     {
         $this->authorize('organization.settings');
@@ -68,6 +85,63 @@ class Edit extends Component
         ]);
 
         $this->loadTheme();
+        $this->loadIdentity();
+    }
+
+    private function loadIdentity(): void
+    {
+        $o = $this->organization();
+        $identity = $o->documentIdentity();
+        $this->legal = collect(DocumentIdentity::LEGAL_FIELDS)->mapWithKeys(fn ($l, $k) => [$k => (string) ($o->legal[$k] ?? '')])->all();
+        $this->legalInherit = ! $o->isRoot() && ($o->legal['inherit'] ?? true);
+        $display = $identity->display();
+        $this->display = collect(DocumentIdentity::DISPLAY)->mapWithKeys(fn ($d, $k) => [$k => $display[$k]])->all();
+        $this->footer = $display['footer'];
+        $this->receiptFormat = $display['receipt_format'];
+    }
+
+    public function saveIdentity(): void
+    {
+        $this->authorizeWrite('organization.settings');
+        $this->validate([
+            'legal.*' => 'nullable|string|max:255',
+            'footer' => 'nullable|string|max:300',
+            'receiptFormat' => ['required', Rule::in(array_keys(DocumentIdentity::RECEIPT_FORMATS))],
+            'logo' => 'nullable|image|max:4096',
+        ], attributes: ['logo' => __('logo'), 'footer' => __('texte de pied de page')]);
+
+        $organization = $this->organization();
+        $legal = collect($this->legal)->only(array_keys(DocumentIdentity::LEGAL_FIELDS))->map(fn ($v) => trim((string) $v) ?: null)->filter()->all();
+        if (! $organization->isRoot()) {
+            $legal['inherit'] = $this->legalInherit;
+        }
+
+        $settings = $organization->settings ?? [];
+        $settings['documents'] = [
+            'show' => collect($this->display)->only(array_keys(DocumentIdentity::DISPLAY))->map(fn ($v) => (bool) $v)->all(),
+            'footer' => trim($this->footer) ?: null,
+            'receipt_format' => $this->receiptFormat,
+        ];
+
+        $attributes = ['legal' => $legal ?: null, 'settings' => $settings];
+        if ($this->logo) {
+            $old = $organization->logo_path;
+            $attributes['logo_path'] = OrganizationLogo::store($this->logo->getRealPath(), $organization);
+            OrganizationLogo::delete($old);
+        }
+        $organization->update($attributes);
+
+        $this->reset('logo');
+        $this->notify(__('Identité et documents enregistrés.'));
+    }
+
+    public function removeLogo(): void
+    {
+        $this->authorizeWrite('organization.settings');
+        $organization = $this->organization();
+        OrganizationLogo::delete($organization->logo_path);
+        $organization->update(['logo_path' => null]);
+        $this->notify(__('Logo retiré.'));
     }
 
     private function loadTheme(): void
@@ -205,6 +279,8 @@ class Edit extends Component
                 ->mapWithKeys(fn ($key) => [$key => $organization->parent ? $organization->parent->term($key) : __('terms.'.$key)]),
             'locales' => config('waumini.locales'),
             'presets' => Theme::PRESETS,
+            'identity' => $organization->documentIdentity(),
+            'root' => $organization->root(),
             'preview' => Theme::validHex($this->primaryColor) && Theme::validHex($this->accentColor)
                 ? new Theme($this->primaryColor, $this->accentColor, $this->showPattern)
                 : $organization->theme(),

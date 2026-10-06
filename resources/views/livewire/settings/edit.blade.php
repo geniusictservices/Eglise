@@ -2,7 +2,7 @@
     <x-page-header :title="__('Paramètres')" :eyebrow="$organization->level_label.' · '.$organization->name" />
 
     <div class="mb-6 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist">
-        @foreach (['general' => __('Informations'), 'apparence' => __('Apparence'), 'libelles' => __('Libellés'), 'support' => __('Support')] as $key => $label)
+        @foreach (['general' => __('Informations'), 'identite' => __('Identité et documents'), 'apparence' => __('Apparence'), 'libelles' => __('Libellés'), 'support' => __('Support')] as $key => $label)
             <button type="button" role="tab" wire:click="$set('tab', '{{ $key }}')" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
                     @class(['flex-1 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold', 'bg-ink-700 text-white' => $tab === $key, 'text-ink-600 hover:bg-sand-50' => $tab !== $key])>{{ $label }}</button>
         @endforeach
@@ -61,6 +61,76 @@
             </div>
             <div class="flex justify-end sm:col-span-2">
                 <button type="submit" class="btn-primary"><x-icon name="save" class="size-4" /> {{ __('Enregistrer') }}</button>
+            </div>
+        </form>
+    @elseif ($tab === 'identite')
+        <form wire:submit="saveIdentity" class="grid gap-5 lg:grid-cols-[1.3fr_1fr] lg:items-start">
+            <div class="space-y-5">
+                <section class="card space-y-4 p-5 sm:p-6">
+                    <h2 class="text-lg">{{ __('Logo') }}</h2>
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="grid size-24 shrink-0 place-items-center overflow-hidden rounded-2xl border border-sand-200 bg-white p-2">
+                            @if ($logo)
+                                <img src="{{ $logo->temporaryUrl() }}" alt="" class="max-h-full max-w-full object-contain">
+                            @elseif ($organization->logo_path)
+                                <img src="{{ route('organizations.logo', [$organization, 'v' => substr(md5($organization->logo_path), 0, 8)]) }}" alt="" class="max-h-full max-w-full object-contain">
+                            @elseif ($identity->logoOrganization())
+                                <img src="{{ route('organizations.logo', $identity->logoOrganization()) }}" alt="" class="max-h-full max-w-full object-contain opacity-60">
+                            @else
+                                <x-icon name="image" class="size-8 text-sand-300" />
+                            @endif
+                        </div>
+                        <div class="space-y-2">
+                            <label class="btn-secondary cursor-pointer !min-h-0 !py-2"><x-icon name="upload" class="size-4" /> {{ __('Choisir un logo') }}
+                                <input type="file" wire:model="logo" accept="image/png,image/jpeg,image/webp" class="sr-only"></label>
+                            @if ($organization->logo_path)<button type="button" wire:click="removeLogo" class="block text-sm font-semibold text-terra-600 hover:underline">{{ __('Retirer le logo') }}</button>@endif
+                            <p class="hint">{{ __('PNG à fond transparent de préférence.') }}@if (! $organization->logo_path && $identity->logoOrganization()) {{ __('Sans logo, celui de :name est utilisé.', ['name' => $identity->logoOrganization()->name]) }}@endif</p>
+                        </div>
+                    </div>
+                    @error('logo') <p class="error">{{ $message }}</p> @enderror
+                </section>
+
+                <section class="card space-y-4 p-5 sm:p-6">
+                    <h2 class="text-lg">{{ __('Statut juridique') }}</h2>
+                    @unless ($organization->isRoot())
+                        <label class="flex items-start gap-3 rounded-xl bg-sand-100 p-3 text-sm">
+                            <input type="checkbox" wire:model.live="legalInherit" class="mt-0.5 size-5">
+                            <span>{{ __('Reprendre l’identité juridique de :root (la paroisse n’a pas de personnalité juridique propre)', ['root' => $root->name]) }}</span>
+                        </label>
+                    @endunless
+                    @if ($organization->isRoot() || ! $legalInherit)
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div class="sm:col-span-2"><label for="lg-name" class="label">{{ __('Dénomination officielle') }}</label><input wire:model="legal.legal_name" id="lg-name" class="input" placeholder="{{ __('Exemple : Communauté Évangélique de la Paix (CEP)') }}"></div>
+                            <div><label for="lg-form" class="label">{{ __('Forme juridique') }}</label><input wire:model="legal.legal_form" id="lg-form" class="input" list="legal-forms">
+                                <datalist id="legal-forms">@foreach (\App\Support\DocumentIdentity::LEGAL_FORMS as $f)<option value="{{ $f }}">@endforeach</datalist></div>
+                            <div><label for="lg-rep" class="label">{{ __('Représentant légal') }}</label><input wire:model="legal.representative" id="lg-rep" class="input"></div>
+                            <div class="sm:col-span-2"><label for="lg-reg" class="label">{{ __('Personnalité juridique') }}</label><input wire:model="legal.legal_registration" id="lg-reg" class="input" placeholder="{{ __('Exemple : Arrêté ministériel n° 123/CAB/MIN/J&DH/2015 du 12 mars 2015') }}"></div>
+                            <div><label for="lg-idnat" class="label">{{ __('Id. Nat.') }}</label><input wire:model="legal.national_id" id="lg-idnat" class="input font-mono"></div>
+                            <div><label for="lg-nif" class="label">{{ __('NIF') }}</label><input wire:model="legal.tax_number" id="lg-nif" class="input font-mono"></div>
+                        </div>
+                    @else
+                        <p class="text-sm text-sand-700">{{ collect([$identity->legal()['legal_name'] ?? null, $identity->legal()['legal_registration'] ?? null])->filter()->implode(' · ') ?: __(':root n’a pas encore renseigné son statut juridique.', ['root' => $root->name]) }}</p>
+                    @endif
+                    <div><label for="lg-motto" class="label">{{ __('Devise ou verset (facultatif)') }}</label><input wire:model="legal.motto" id="lg-motto" class="input" placeholder="{{ __('Exemple : « Que tout se fasse avec bienséance et avec ordre » 1 Co 14.40') }}"></div>
+                    <p class="hint">{{ __('L’adresse, le téléphone et l’e-mail se règlent dans l’onglet Informations.') }}</p>
+                </section>
+            </div>
+
+            <div class="space-y-5">
+                <section class="card space-y-3 p-5 sm:p-6">
+                    <h2 class="text-lg">{{ __('Ce qui s’affiche sur les documents') }}</h2>
+                    <p class="text-sm text-sand-700">{{ __('Reçus, et plus tard attestations et lettres. Seules les informations renseignées s’affichent.') }}</p>
+                    @foreach (\App\Support\DocumentIdentity::DISPLAY as $key => [$label])
+                        @continue($key === 'parent' && $organization->isRoot())
+                        <label class="flex items-center gap-3 text-sm"><input type="checkbox" wire:model="display.{{ $key }}" class="size-5"> {{ __($label) }}</label>
+                    @endforeach
+                    <div class="pt-2"><label for="footer" class="label">{{ __('Texte en bas des reçus') }}</label>
+                        <textarea wire:model="footer" id="footer" rows="2" class="input" placeholder="{{ __('Exemple : Que Dieu bénisse le donateur joyeux. 2 Co 9.7') }}"></textarea></div>
+                    <div><label for="receiptFormat" class="label">{{ __('Format de reçu par défaut') }}</label>
+                        <select wire:model="receiptFormat" id="receiptFormat" class="input">@foreach (\App\Support\DocumentIdentity::RECEIPT_FORMATS as $k => $l)<option value="{{ $k }}">{{ __($l) }}</option>@endforeach</select>
+                        <p class="hint">{{ __('Les tickets 58 et 80 mm sont pour les imprimantes thermiques. Le format se change aussi au moment d’imprimer.') }}</p></div>
+                </section>
+                <button type="submit" class="btn-primary w-full"><x-icon name="save" class="size-4" /> {{ __('Enregistrer') }}</button>
             </div>
         </form>
     @elseif ($tab === 'apparence')

@@ -43,6 +43,14 @@ class Navigation
                 ],
             ],
             [
+                'label' => __('Finances'),
+                'items' => [
+                    ['route' => 'finances.index', 'label' => __('Finances'), 'icon' => 'wallet', 'can' => 'finance.view', 'mobile' => true, 'short' => __('Finances')],
+                    ['route' => 'finances.journal', 'label' => __('Opérations'), 'icon' => 'history', 'can' => 'finance.view'],
+                    ['route' => 'finances.settings', 'label' => __('Comptes et catégories'), 'icon' => 'landmark', 'can' => 'finance.settings'],
+                ],
+            ],
+            [
                 'label' => __('Administration'),
                 'items' => [
                     ['route' => 'hierarchy.index', 'label' => __('Hiérarchie'), 'icon' => 'network', 'can' => 'organization.view'],

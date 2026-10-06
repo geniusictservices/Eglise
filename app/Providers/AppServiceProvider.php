@@ -5,8 +5,12 @@ namespace App\Providers;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Models\AttachmentRequest;
+use App\Models\CashAccount;
+use App\Models\CashAccountCurrency;
 use App\Models\Department;
 use App\Models\ExchangeRate;
+use App\Models\FinanceCategory;
+use App\Models\FinanceTransaction;
 use App\Models\Household;
 use App\Models\LegalDocument;
 use App\Models\LifeEvent;
@@ -66,6 +70,10 @@ class AppServiceProvider extends ServiceProvider
             'life_event' => LifeEvent::class,
             'department' => Department::class,
             'member_import' => MemberImport::class,
+            'cash_account' => CashAccount::class,
+            'cash_account_currency' => CashAccountCurrency::class,
+            'finance_category' => FinanceCategory::class,
+            'finance_transaction' => FinanceTransaction::class,
             'plan' => Plan::class,
             'plan_price' => PlanPrice::class,
             'subscription' => Subscription::class,

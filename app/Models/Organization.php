@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Support\DocumentIdentity;
 use App\Support\Theme;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -44,11 +45,14 @@ class Organization extends Model
         'is_demo' => false,
         'path' => '',
         'depth' => 0,
+        'legal' => null,
+        'logo_path' => null,
     ];
 
     protected function casts(): array
     {
         return [
+            'legal' => 'array',
             'terminology' => 'array',
             'settings' => 'array',
             'trial_ends_at' => 'datetime',
@@ -244,6 +248,11 @@ class Organization extends Model
         }
 
         return $words->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
+    }
+
+    public function documentIdentity(): DocumentIdentity
+    {
+        return new DocumentIdentity($this);
     }
 
     public function displayName(): string

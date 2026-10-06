@@ -35,6 +35,7 @@ class OrganizationProvisioner
             $this->installDefaultCurrencies($organization);
             app(MemberRegistry::class)->installDefaults($organization);
             $this->installDefaultDepartments($organization);
+            app(Ledger::class)->installDefaultCategories($organization);
             $this->assign($administrator, $organization->roles()->where('key', 'administrateur')->firstOrFail(), $organization, includesDescendants: true);
 
             $administrator->forceFill(['current_organization_id' => $organization->id])->save();
@@ -59,6 +60,7 @@ class OrganizationProvisioner
 
             $this->installDefaultCurrencies($organization);
             $this->installDefaultDepartments($organization);
+            app(Ledger::class)->installDefaultCategories($organization);
 
             return $organization;
         });
