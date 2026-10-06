@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string('phone', 32)->nullable();
             $table->string('position')->nullable(); // « Pasteur titulaire », « Sentinelle »
             $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('pay_schedule_id')->constrained();
+            $table->foreignId('pay_schedule_id')->constrained()->cascadeOnDelete();
             $table->char('currency', 3)->default('USD');
             $table->decimal('base_amount', 14, 2); // par période, ou par prestation
             $table->string('payment_method', 8)->default('cash');

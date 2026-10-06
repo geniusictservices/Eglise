@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
             $table->unsignedSmallInteger('fiscal_year');
             $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('category_id')->constrained('finance_categories');
+            $table->foreignId('category_id')->constrained('finance_categories')->cascadeOnDelete();
             $table->decimal('amount', 14, 2); // en dollars
             $table->string('source', 16); // transfer, reserves, new_income
             $table->foreignId('source_department_id')->nullable()->constrained('departments')->nullOnDelete();

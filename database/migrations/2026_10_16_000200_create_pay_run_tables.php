@@ -12,7 +12,7 @@ return new class extends Migration
         Schema::create('pay_runs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('pay_schedule_id')->constrained();
+            $table->foreignId('pay_schedule_id')->constrained()->cascadeOnDelete();
             $table->date('period_start');
             $table->date('period_end');
             $table->string('status', 12)->default('draft'); // draft, submitted, approved, paid, cancelled
@@ -31,7 +31,7 @@ return new class extends Migration
         Schema::create('pay_slips', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pay_run_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('payee_id')->constrained();
+            $table->foreignId('payee_id')->constrained()->cascadeOnDelete();
             $table->char('currency', 3);
             $table->decimal('quantity', 8, 2)->default(1); // prestations, pour un rythme à la prestation
             $table->json('adjustments')->nullable(); // primes ou retenues ponctuelles
@@ -53,7 +53,7 @@ return new class extends Migration
         Schema::create('salary_advances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('organization_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('payee_id')->constrained();
+            $table->foreignId('payee_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 14, 2);
             $table->char('currency', 3);
             $table->unsignedTinyInteger('installments')->default(1);

@@ -27,7 +27,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('budget_proposal_id')->constrained()->cascadeOnDelete();
             $table->string('type', 8); // income, expense
-            $table->foreignId('category_id')->constrained('finance_categories');
+            $table->foreignId('category_id')->constrained('finance_categories')->cascadeOnDelete();
             $table->string('label');
             $table->decimal('amount', 14, 2); // en dollars
             $table->decimal('original_amount', 16, 2)->nullable();
@@ -60,7 +60,7 @@ return new class extends Migration
             $table->foreignId('budget_id')->constrained()->cascadeOnDelete();
             $table->string('type', 8);
             $table->foreignId('department_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('category_id')->constrained('finance_categories');
+            $table->foreignId('category_id')->constrained('finance_categories')->cascadeOnDelete();
             $table->string('label');
             $table->decimal('amount', 14, 2);
             $table->decimal('proposed_amount', 14, 2)->nullable();
