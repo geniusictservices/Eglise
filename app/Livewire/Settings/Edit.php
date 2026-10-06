@@ -3,9 +3,11 @@
 namespace App\Livewire\Settings;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Models\AuditLog;
 use App\Support\DocumentIdentity;
 use App\Support\OrganizationLogo;
 use App\Support\Phone;
+use App\Support\SupportAccess;
 use App\Support\Theme;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
@@ -45,6 +47,8 @@ class Edit extends Component
     public array $terms = [];
 
     public bool $supportAccess = false;
+
+    public int $supportDays = 7;
 
     // Apparence
     public string $preset = 'wax';
@@ -269,8 +273,9 @@ class Edit extends Component
     public function updatedSupportAccess(bool $value): void
     {
         $this->authorizeWrite('support.grant');
-        $this->organization()->update(['support_access_until' => $value ? now()->addDays(7) : null]);
-        $this->notify($value ? __('Le support Genius ICT peut accéder à votre communauté pendant 7 jours.') : __('Accès du support révoqué.'));
+        $days = in_array($this->supportDays, SupportAccess::DURATIONS, true) ? $this->supportDays : 7;
+        $this->organization()->update(['support_access_until' => $value ? now()->addDays($days) : null]);
+        $this->notify($value ? trans_choice('Le support Genius ICT peut voir votre communauté pendant :count jour.|Le support Genius ICT peut voir votre communauté pendant :count jours.', $days) : __('Accès du support retiré.'));
     }
 
     public function render()
@@ -278,6 +283,8 @@ class Edit extends Component
         $organization = $this->organization();
 
         return view('livewire.settings.edit', [
+            'supportVisits' => $this->tab === 'support' ? AuditLog::with('user')->where('organization_id', $organization->id)
+                ->whereIn('event', ['support_opened', 'support_closed'])->latest('id')->limit(10)->get() : collect(),
             'organization' => $organization,
             'defaults' => trans('terms', [], 'fr'),
             'inherited' => collect(array_keys(trans('terms', [], 'fr')))

@@ -21,6 +21,29 @@
         </div>
     </section>
 
+    @if ($declarations->isNotEmpty())
+        <section class="mb-5 rounded-[18px] border border-ochre-300 bg-ochre-50 p-5 sm:p-6">
+            <h2 class="mb-3 flex items-center gap-2 text-lg"><x-icon name="smartphone" class="size-5 text-ochre-600" /> {{ __('Paiements déclarés à vérifier') }}</h2>
+            <ul class="space-y-3">
+                @foreach ($declarations as $d)
+                    <li class="flex flex-wrap items-center gap-3 rounded-2xl bg-white p-4">
+                        <div class="min-w-0 flex-1 basis-64 text-sm">
+                            <p class="font-semibold text-ink-800">{{ $d->plan->name }} · {{ $tiers[$d->tier] ?? $d->tier }} · {{ __(\App\Models\Subscription::CYCLES[$d->cycle]) }}</p>
+                            <p class="text-sand-700">{{ __(':m envoyés par :op le :d', ['m' => $usd($d->amount), 'op' => $d->method, 'd' => $d->paid_on->translatedFormat('j M Y')]) }} · <span class="font-mono text-ink-800">{{ $d->reference }}</span></p>
+                            <p @class(['text-xs', 'text-terra-700 font-semibold' => (float) $d->amount < (float) $d->expected_usd, 'text-sand-700' => (float) $d->amount >= (float) $d->expected_usd])>{{ __('Attendu : :e', ['e' => $usd($d->expected_usd)]) }}@if ($d->declarer) · {{ __('déclaré par :n', ['n' => $d->declarer->name]) }}@endif @if ($d->message) · « {{ $d->message }} »@endif</p>
+                        </div>
+                        @if ($canBill)
+                            <div class="flex gap-2">
+                                <button type="button" wire:click="validateDeclaration({{ $d->id }})" wire:confirm="{{ __('L’argent est bien arrivé avec cet ID ? L’abonnement sera enregistré.') }}" class="btn-primary !min-h-0 !py-2 text-sm">{{ __('Valider') }}</button>
+                                <button type="button" wire:click="askReject({{ $d->id }})" class="btn-ghost !min-h-0 !py-2 text-sm text-terra-700">{{ __('Rejeter') }}</button>
+                            </div>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <div class="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
         <section class="card p-5 sm:p-6">
             <h2 class="mb-3 text-lg">{{ __('Abonnements et paiements') }}</h2>
@@ -60,6 +83,25 @@
                         </li>
                     @endforeach
                 </ul>
+            </section>
+            <section class="card p-5 sm:p-6">
+                <h2 class="mb-1 text-lg">{{ __('Accès du support') }}</h2>
+                @forelse ($supportGrants as $g)
+                    <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
+                        <span class="min-w-0 flex-1">{{ __(':n, jusqu’au :d', ['n' => $g->name, 'd' => $g->support_access_until->translatedFormat('j M à H:i')]) }}</span>
+                        @if ($canSupport)<button type="button" wire:click="openSupport({{ $g->id }})" class="btn-secondary !min-h-0 !py-1.5 text-sm"><x-icon name="eye" class="size-4" /> {{ __('Ouvrir') }}</button>@endif
+                    </div>
+                @empty
+                    <p class="text-sm text-sand-700">{{ __('La communauté n’a pas autorisé l’accès du support. Elle peut l’ouvrir dans Paramètres › Support.') }}</p>
+                @endforelse
+                @if ($tickets->isNotEmpty())
+                    <h3 class="mb-2 mt-5 text-sm font-semibold text-ink-700">{{ __('Tickets') }}</h3>
+                    <ul class="space-y-1.5 text-sm">
+                        @foreach ($tickets as $t)
+                            <li class="flex gap-2"><a href="{{ route('admin.tickets.show', $t) }}" class="min-w-0 flex-1 truncate font-semibold text-ink-700 hover:underline">{{ $t->number }} · {{ $t->subject }}</a><span class="text-sand-700">{{ __(\App\Models\SupportTicket::STATUSES[$t->status]) }}</span></li>
+                        @endforeach
+                    </ul>
+                @endif
             </section>
             @if ($canBill && in_array($organization->status, ['trial', 'grace', 'read_only'], true))
                 <section class="card p-5 sm:p-6">
@@ -130,6 +172,14 @@
                     <button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'payment' })">{{ __('Annuler') }}</button>
                     <button class="btn-primary">{{ __('Enregistrer') }}</button>
                 </div>
+            </form>
+        </x-modal>
+    @endif
+    @if ($canBill)
+        <x-modal name="reject-declaration" :title="__('Rejeter la déclaration')">
+            <form wire:submit="rejectDeclaration" class="space-y-4">
+                <div><label for="rj-reason" class="label">{{ __('Motif, envoyé à la communauté') }}</label><input wire:model="rejectReason" id="rj-reason" class="input" placeholder="{{ __('Aucun paiement reçu avec cet ID') }}">@error('rejectReason') <p class="error">{{ $message }}</p> @enderror</div>
+                <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'reject-declaration' })">{{ __('Annuler') }}</button><button class="btn-danger">{{ __('Rejeter') }}</button></div>
             </form>
         </x-modal>
     @endif

@@ -26,6 +26,7 @@ use App\Http\Middleware\MarkNotificationsOpened;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Livewire;
 use App\Models\Website;
+use App\Support\SupportAccess;
 use Illuminate\Support\Facades\Route;
 
 // Site public : les visiteurs voient la présentation, les connectés vont à leur tableau de bord.
@@ -60,6 +61,11 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged::class, MarkNotificationsOpened::class])->group(function () {
     Route::post('/deconnexion', LogoutController::class)->name('logout');
+    Route::post('/support/quitter', function () {
+        $organization = app(SupportAccess::class)->stop();
+
+        return $organization ? redirect()->route('admin.communities.show', $organization->root()) : redirect()->route('admin.dashboard');
+    })->name('support.leave');
     Route::view('/aucune-communaute', 'organizations.none')->name('organizations.none');
     Route::post('/communaute/{organization}/ouvrir', SwitchOrganizationController::class)->name('organizations.switch');
 
@@ -109,6 +115,8 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/transferts', Livewire\Transfers\Index::class)->name('transfers.index');
     Route::get('/site-vitrine', Livewire\Website\Edit::class)->name('website.edit');
     Route::get('/predications', Livewire\Sermons\Index::class)->name('sermons.index');
+    Route::get('/support', Livewire\Support\Index::class)->name('support.index');
+    Route::get('/support/{ticket}', Livewire\Support\Show::class)->whereNumber('ticket')->name('support.show');
     Route::get('/suivi-pastoral', Livewire\Pastoral\Index::class)->name('pastoral.index');
     Route::get('/suivi-pastoral/{case}', Livewire\Pastoral\Show::class)->whereNumber('case')->name('pastoral.show');
     Route::get('/registres', Livewire\Registers\Index::class)->name('registers.index');
@@ -167,7 +175,7 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
 });
 
 // Espace Genius ICT : administration de la plateforme, réservé à l'équipe.
-Route::middleware(['auth', EnsurePasswordChanged::class, EnsurePlatformStaff::class])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', EnsurePasswordChanged::class, EnsurePlatformStaff::class, MarkNotificationsOpened::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', Livewire\Admin\Dashboard::class)->name('dashboard');
     Route::get('/communautes', Livewire\Admin\Communities\Index::class)->name('communities');
     Route::get('/communautes/{organization}', Livewire\Admin\Communities\Show::class)->name('communities.show');
@@ -176,4 +184,6 @@ Route::middleware(['auth', EnsurePasswordChanged::class, EnsurePlatformStaff::cl
     Route::get('/textes-juridiques/{key}', Livewire\Admin\Legal\Edit::class)->whereIn('key', ['terms', 'privacy'])->name('legal.edit');
     Route::get('/reglages', Livewire\Admin\Settings::class)->name('settings');
     Route::get('/equipe', Livewire\Admin\Staff::class)->name('staff');
+    Route::get('/tickets', Livewire\Admin\Tickets\Index::class)->name('tickets');
+    Route::get('/tickets/{ticket}', Livewire\Admin\Tickets\Show::class)->whereNumber('ticket')->name('tickets.show');
 });

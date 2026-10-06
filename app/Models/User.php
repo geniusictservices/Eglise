@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Support\Phone;
+use App\Support\SupportAccess;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -97,6 +98,10 @@ class User extends Authenticatable implements PasskeyUser
         if (! $organization || ! $this->is_active) {
             return false;
         }
+        // Un agent Genius ICT dans une communauté qui l'a autorisé : lecture seule.
+        if ($this->is_platform_staff && app(SupportAccess::class)->covers($this, $organization)) {
+            return in_array($permission, SupportAccess::PERMISSIONS, true);
+        }
 
         return $this->assignmentsCovering($organization)->contains(fn (RoleAssignment $a) => $a->role->grants($permission));
     }
@@ -120,7 +125,8 @@ class User extends Authenticatable implements PasskeyUser
 
     public function canAccess(Organization $organization): bool
     {
-        return $this->is_active && $this->assignmentsCovering($organization)->isNotEmpty();
+        return $this->is_active && ($this->assignmentsCovering($organization)->isNotEmpty()
+            || ($this->is_platform_staff && app(SupportAccess::class)->covers($this, $organization)));
     }
 
     /** Organisations où l'utilisateur a reçu un rôle directement. */

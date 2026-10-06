@@ -115,12 +115,44 @@
     {{-- Souscrire --}}
     <section class="wax wax-veil wax-veil-strong mt-8 overflow-hidden rounded-[22px] p-6 text-white">
         <h2 class="text-xl text-white">{{ $latest ? __('Renouveler ou changer d’offre') : __('Souscrire') }}</h2>
-        <p class="mt-1 max-w-2xl text-ink-100">{{ __('Contactez Genius ICT pour choisir votre offre. Le paiement se fait par mobile money ; bientôt, vous pourrez déclarer votre paiement directement ici.') }}</p>
+        <p class="mt-1 max-w-2xl text-ink-100">{{ __('Payez par mobile money, puis déclarez votre paiement ici : Genius ICT le vérifie et enregistre votre abonnement. Une question ? Écrivez-nous.') }}</p>
+        @if ($contact['payment'])<p class="mt-3 rounded-xl bg-white/10 px-3 py-2 font-mono text-sm">{{ $contact['payment'] }}</p>@endif
+        @foreach ($declarations as $d)
+            <p @class(['mt-3 rounded-xl px-3 py-2 text-sm', 'bg-ochre-100 text-ochre-700' => $d->status === 'pending', 'bg-terra-50 text-terra-700' => $d->status === 'rejected'])>
+                {{ $d->plan->name }} · {{ $usd($d->amount) }} · {{ $d->method }} <span class="font-mono">{{ $d->reference }}</span> · {{ $d->status === 'pending' ? __('en cours de vérification') : __('non retrouvé : :r', ['r' => $d->reject_reason]) }}
+            </p>
+        @endforeach
         <div class="mt-4 flex flex-wrap items-center gap-3">
+            @if ($canDeclare)<button type="button" wire:click="openDeclare" class="btn-accent"><x-icon name="smartphone" class="size-4" /> {{ __('Déclarer un paiement') }}</button>@endif
             @if ($whatsapp)
-                <a href="{{ $whatsapp }}" target="_blank" rel="noopener" class="btn-accent"><x-icon name="message-circle" class="size-4" /> {{ __('Écrire sur WhatsApp') }}</a>
+                <a href="{{ $whatsapp }}" target="_blank" rel="noopener" class="btn bg-white/15 text-white hover:bg-white/25"><x-icon name="message-circle" class="size-4" /> {{ __('Écrire sur WhatsApp') }}</a>
             @endif
             <span class="rounded-xl bg-white/10 px-3 py-2 text-sm select-all">{{ $contact['email'] }}</span>
         </div>
     </section>
+
+    @if ($canDeclare)
+        <x-modal name="declare" :title="__('Déclarer un paiement')">
+            <form wire:submit="declare" class="space-y-4">
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div><label for="d-plan" class="label">{{ __('Offre') }}</label><select wire:model.live="payment.plan_id" id="d-plan" class="input"><option value="">{{ __('Choisir…') }}</option>@foreach ($plans->where('quote_only', false) as $p)<option value="{{ $p->id }}">{{ $p->name }}</option>@endforeach</select>@error('payment.plan_id') <p class="error">{{ $message }}</p> @enderror</div>
+                    <div><label for="d-tier" class="label">{{ __('Taille') }}</label><select wire:model.live="tier" id="d-tier" class="input">@foreach ($tiers as $k => $t)<option value="{{ $k }}">{{ $t }}</option>@endforeach</select></div>
+                </div>
+                <label class="flex items-center gap-3 text-sm"><input type="checkbox" wire:model.live="annual" class="size-4"> {{ __('Paiement annuel (:n mois offerts)', ['n' => $freeMonths]) }}</label>
+                @if ($expected)
+                    <p class="rounded-xl bg-ink-50 p-3 text-sm text-ink-800">{{ __('À payer : :m, pour la période du :from au :to.', ['m' => $usd($expected['amount']), 'from' => $expected['start']->translatedFormat('j F Y'), 'to' => $expected['end']->translatedFormat('j F Y')]) }}</p>
+                @endif
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div><label for="d-amount" class="label">{{ __('Montant envoyé (USD)') }}</label><input wire:model="payment.amount" id="d-amount" type="number" step="0.01" min="0" class="input tabular">@error('payment.amount') <p class="error">{{ $message }}</p> @enderror</div>
+                    <div><label for="d-method" class="label">{{ __('Envoyé par') }}</label><select wire:model="payment.method" id="d-method" class="input">@foreach (\App\Models\Subscription::PAYMENT_METHODS as $m)<option>{{ $m }}</option>@endforeach</select></div>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div><label for="d-ref" class="label">{{ __('ID de la transaction') }}</label><input wire:model="payment.reference" id="d-ref" class="input font-mono uppercase">@error('payment.reference') <p class="error">{{ $message }}</p> @enderror</div>
+                    <div><label for="d-date" class="label">{{ __('Le') }}</label><input wire:model="payment.paid_on" id="d-date" type="date" class="input">@error('payment.paid_on') <p class="error">{{ $message }}</p> @enderror</div>
+                </div>
+                <div><label for="d-msg" class="label">{{ __('Message') }} <span class="font-normal text-sand-700">{{ __('(facultatif)') }}</span></label><input wire:model="payment.message" id="d-msg" class="input"></div>
+                <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'declare' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Déclarer') }}</button></div>
+            </form>
+        </x-modal>
+    @endif
 </div>

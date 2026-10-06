@@ -17,6 +17,28 @@
         @endforeach
     </div>
 
+    @if ($declarations->isNotEmpty() || $openTickets->isNotEmpty())
+        <section class="rounded-[18px] border border-ochre-300 bg-ochre-50 p-5 sm:p-6">
+            <h2 class="mb-3 text-lg">{{ __('À traiter') }}</h2>
+            <ul class="divide-y divide-ochre-100">
+                @foreach ($declarations as $d)
+                    <li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5 text-sm">
+                        <x-icon name="smartphone" class="size-4 text-ochre-600" />
+                        <a href="{{ route('admin.communities.show', $d->organization) }}" class="min-w-0 flex-1 font-semibold text-ink-700 hover:underline">{{ __('Paiement déclaré : :c', ['c' => $d->organization->name]) }}</a>
+                        <span class="text-sand-700">{{ $d->plan->name }} · {{ number_format((float) $d->amount, 2, ',', ' ') }} $ · <span class="font-mono">{{ $d->reference }}</span></span>
+                    </li>
+                @endforeach
+                @foreach ($openTickets as $t)
+                    <li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5 text-sm">
+                        <x-icon name="circle-help" class="size-4 text-ochre-600" />
+                        <a href="{{ route('admin.tickets.show', $t) }}" class="min-w-0 flex-1 font-semibold text-ink-700 hover:underline">{{ $t->subject }}</a>
+                        <span class="text-sand-700">{{ $t->organization->name }} · {{ $t->last_activity_at?->diffForHumans() }}</span>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
+    @endif
+
     <div class="grid gap-5 lg:grid-cols-2">
         <section class="card p-5 sm:p-6">
             <h2 class="mb-3 text-lg">{{ __('Renouvellements des 30 prochains jours') }}</h2>

@@ -23,6 +23,12 @@ class Notifier
      *
      * @return Collection<int, User>
      */
+    /** L'équipe Genius ICT qui a cette permission de l'espace d'administration. */
+    public function staffWith(string $permission): Collection
+    {
+        return User::where('is_platform_staff', true)->where('is_active', true)->get()->filter(fn (User $u) => $u->hasPlatformPermission($permission))->values();
+    }
+
     public function withPermission(Organization $organization, string $permission): Collection
     {
         return RoleAssignment::with(['role', 'user'])->where('organization_id', $organization->id)->get()
@@ -34,7 +40,8 @@ class Notifier
      * @param  iterable<User|int|null>|User|int|null  $recipients
      * @param  array{title: string, body?: ?string, url: string, icon?: string}  $content
      */
-    public function send(Organization $organization, iterable|User|int|null $recipients, string $key, array $content): int
+    /** Sans organisation : une nouveauté de l'espace Genius ICT, pour son équipe. */
+    public function send(?Organization $organization, iterable|User|int|null $recipients, string $key, array $content): int
     {
         $ids = collect(is_iterable($recipients) ? $recipients : [$recipients])
             ->map(fn ($r) => $r instanceof User ? $r->id : $r)->filter()->unique()
@@ -52,7 +59,7 @@ class Notifier
                 ->where('key', $key)->whereNull('read_at')->delete();
             $notification = DatabaseNotification::create([
                 'id' => (string) Str::uuid(), 'type' => 'waumini', 'notifiable_type' => 'user', 'notifiable_id' => $userId,
-                'organization_id' => $organization->id, 'key' => $key, 'path' => $path, 'data' => $data,
+                'organization_id' => $organization?->id, 'key' => $key, 'path' => $path, 'data' => $data,
             ]);
             if (config('waumini.push.public_key')) {
                 SendPushNotification::dispatch($notification->id);

@@ -12,6 +12,7 @@ class AdminNavigation
         return array_values(array_filter([
             ['route' => 'admin.dashboard', 'label' => __('Vue d’ensemble'), 'icon' => 'layout-dashboard', 'can' => 'admin.access'],
             ['route' => 'admin.communities', 'label' => __('Communautés'), 'icon' => 'building-2', 'can' => 'admin.communities'],
+            ['route' => 'admin.tickets', 'label' => __('Tickets de support'), 'icon' => 'circle-help', 'can' => 'admin.support'],
             ['route' => 'admin.pricing', 'label' => __('Offres et tarifs'), 'icon' => 'tag', 'can' => 'admin.pricing'],
             ['route' => 'admin.legal', 'label' => __('Textes juridiques'), 'icon' => 'scroll-text', 'can' => 'admin.legal'],
             ['route' => 'admin.settings', 'label' => __('Coordonnées et réglages'), 'icon' => 'settings', 'can' => 'admin.settings'],

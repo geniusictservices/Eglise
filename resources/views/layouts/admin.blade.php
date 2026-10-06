@@ -54,12 +54,14 @@
                 <div class="flex h-14 items-center gap-2 px-3">
                     <button type="button" class="rounded-xl p-2 hover:bg-white/10" @click="drawer = true" aria-label="{{ __('Ouvrir le menu') }}"><x-icon name="menu" class="size-6" /></button>
                     <span class="min-w-0 flex-1 truncate font-semibold">{{ __('Espace Genius ICT') }}</span>
+                    <livewire:notifications.bell :on-dark="true" />
                     @include('partials.user-menu', ['onDark' => true])
                 </div>
             </header>
             <header class="sticky top-0 z-30 hidden border-b border-sand-200 bg-sand-50/95 backdrop-blur lg:block">
                 <div class="flex h-16 items-center gap-3 px-8">
                     <p class="min-w-0 flex-1 text-sm text-sand-700">{{ __('Administration de la plateforme') }} · <span class="font-semibold text-ink-800">{{ config('waumini.domain') }}</span></p>
+                    <livewire:notifications.bell :on-dark="false" />
                     @include('partials.user-menu', ['onDark' => false])
                 </div>
             </header>

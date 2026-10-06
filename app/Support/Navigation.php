@@ -110,6 +110,7 @@ class Navigation
                     ['route' => 'audit.index', 'label' => __('Journal d’audit'), 'icon' => 'history', 'can' => 'audit.view'],
                     ['route' => 'settings.edit', 'label' => __('Paramètres'), 'icon' => 'settings', 'can' => 'organization.settings'],
                     ['route' => 'subscription', 'label' => __('Abonnement'), 'icon' => 'badge-check', 'can' => 'organization.settings'],
+                    ['route' => 'support.index', 'label' => __('Support Genius ICT'), 'icon' => 'circle-help', 'can' => 'organization.view'],
                 ],
             ],
         ];

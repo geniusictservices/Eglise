@@ -44,6 +44,7 @@ return [
         'email' => env('WAUMINI_CONTACT_EMAIL', 'geniusictservices@gmail.com'),
         'phone' => env('WAUMINI_CONTACT_PHONE'), // numéro WhatsApp au format +243…, à renseigner
         'website' => 'waumini.com',
+        'payment' => null, // numéros où les communautés paient leur abonnement (M-Pesa, Airtel Money…)
     ],
 
     // Adresse publique de Waumini (site, application, QR codes).
@@ -110,12 +111,13 @@ return [
         'admin.settings' => 'Modifier les coordonnées et les réglages de la plateforme',
         'admin.legal' => 'Modifier les conditions d’utilisation et la politique de confidentialité',
         'admin.staff' => 'Gérer l’équipe Genius ICT',
+        'admin.support' => 'Répondre aux tickets et ouvrir une communauté avec son accord',
     ],
 
     'platform_roles' => [
         'direction' => ['name' => 'Direction', 'permissions' => ['*']],
         'commercial' => ['name' => 'Commercial et facturation', 'permissions' => ['admin.communities', 'admin.subscriptions', 'admin.pricing']],
-        'support' => ['name' => 'Support', 'permissions' => ['admin.communities']],
+        'support' => ['name' => 'Support', 'permissions' => ['admin.communities', 'admin.support']],
         'contenu' => ['name' => 'Contenus et juridique', 'permissions' => ['admin.legal', 'admin.settings']],
     ],
 

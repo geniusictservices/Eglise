@@ -38,6 +38,7 @@ class Settings extends Component
             'contact.email' => 'required|email|max:120',
             'contact.phone' => ['nullable', 'string', 'max:25', fn ($a, $v, $fail) => $v && ! Phone::normalize($v) ? $fail(__('Ce numéro de téléphone n’est pas valide.')) : null],
             'contact.website' => 'nullable|string|max:120',
+            'contact.payment' => 'nullable|string|max:300',
             'trialDays' => 'required|integer|min:7|max:90',
             'graceDays' => 'required|integer|min:0|max:90',
         ], attributes: ['contact.phone' => __('numéro WhatsApp'), 'contact.email' => __('e-mail'), 'trialDays' => __('durée de l’essai'), 'graceDays' => __('délai de grâce')]);

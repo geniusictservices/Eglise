@@ -6,6 +6,9 @@ use App\Models\DemoRequest;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Subscription;
+use App\Models\SubscriptionDeclaration;
+use App\Models\SupportTicket;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -29,6 +32,8 @@ class Dashboard extends Component
                 ->orderBy('ends_on')->get(),
             'recent' => (clone $roots)->latest()->limit(6)->get(),
             'demoRequests' => DemoRequest::latest()->limit(5)->get(),
+            'declarations' => Gate::allows('admin.subscriptions') ? SubscriptionDeclaration::with(['organization', 'plan'])->where('status', 'pending')->oldest()->get() : collect(),
+            'openTickets' => Gate::allows('admin.support') ? SupportTicket::with('organization')->where('status', 'open')->oldest('last_activity_at')->limit(6)->get() : collect(),
         ]);
     }
 }

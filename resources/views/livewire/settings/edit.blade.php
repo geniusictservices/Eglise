@@ -236,9 +236,13 @@
     @else
         <section class="card p-5 sm:p-6">
             <h2 class="text-lg font-semibold">{{ __('Accès du support Genius ICT') }}</h2>
-            <p class="mt-1 max-w-2xl text-sm text-sand-700">{{ __('Pour vous aider, un agent Genius ICT peut voir votre communauté comme vous la voyez. Il n’y accède qu’avec votre accord, pendant 7 jours au plus, et vous pouvez retirer cet accord à tout moment. Chaque accès est inscrit au journal. Les notes pastorales confidentielles ne lui sont jamais visibles.') }}</p>
+            <p class="mt-1 max-w-2xl text-sm text-sand-700">{{ __('Pour vous aider, un agent Genius ICT peut voir votre communauté, en lecture seule : il ne peut rien modifier. Il n’y accède qu’avec votre accord, pendant 7 jours au plus, et vous pouvez retirer cet accord à tout moment. Chaque visite est inscrite au journal. Le suivi pastoral et les données sensibles ne lui sont jamais visibles.') }}</p>
             @can('support.grant')
-                <label class="mt-5 flex items-center gap-3">
+                @unless ($organization->support_access_until?->isFuture())
+                    <div class="mt-5 flex flex-wrap items-center gap-2 text-sm"><label for="supportDays" class="text-sand-700">{{ __('Pour') }}</label>
+                        <select wire:model="supportDays" id="supportDays" class="input w-auto">@foreach (\App\Support\SupportAccess::DURATIONS as $d)<option value="{{ $d }}">{{ trans_choice(':count jour|:count jours', $d) }}</option>@endforeach</select></div>
+                @endunless
+                <label class="mt-4 flex items-center gap-3">
                     <input wire:model.live="supportAccess" type="checkbox" class="size-6 rounded border-sand-300 text-ink-700">
                     <span class="font-semibold text-ink-700">{{ __('Autoriser l’accès du support') }}</span>
                 </label>
@@ -246,6 +250,14 @@
                     <p class="mt-2 text-sm text-ochre-700">{{ __('Accès autorisé jusqu’au :date.', ['date' => $organization->support_access_until->timezone($organization->timezone)->translatedFormat('j F Y à H:i')]) }}</p>
                 @endif
             @endcan
+            @if ($supportVisits->isNotEmpty())
+                <h3 class="mb-2 mt-6 text-sm font-semibold text-ink-700">{{ __('Les visites du support') }}</h3>
+                <ul class="divide-y divide-sand-100 text-sm">
+                    @foreach ($supportVisits as $v)
+                        <li class="flex flex-wrap gap-x-2 py-2"><span class="w-40 shrink-0 text-sand-700">{{ $v->created_at->timezone($organization->timezone)->translatedFormat('j M Y, H:i') }}</span><span class="min-w-0 flex-1"><span class="font-semibold text-ink-800">{{ $v->user?->name }}</span> {{ $v->event === 'support_opened' ? __('a ouvert la communauté') : __('est reparti') }}</span></li>
+                    @endforeach
+                </ul>
+            @endif
         </section>
     @endif
 </div>

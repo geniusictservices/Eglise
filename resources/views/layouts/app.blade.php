@@ -60,6 +60,13 @@
                 </div>
             </header>
 
+            @if ($support = app(\App\Support\SupportAccess::class)->organization())
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-ink-800 bg-ink-800 px-4 py-2.5 text-sm text-white sm:px-6 lg:px-8">
+                    <x-icon name="shield-check" class="size-4 shrink-0 text-ochre-300" />
+                    <span class="min-w-0 flex-1">{{ __('Support Genius ICT : vous voyez :n en lecture seule, avec son accord, jusqu’au :d.', ['n' => $support->name, 'd' => $support->support_access_until->translatedFormat('j F à H:i')]) }}</span>
+                    <form method="POST" action="{{ route('support.leave') }}">@csrf<button class="font-semibold underline underline-offset-4">{{ __('Quitter') }}</button></form>
+                </div>
+            @endif
             @if ($organization?->status === 'grace')
                 <div class="border-b border-ochre-300 bg-ochre-50 px-4 py-2.5 text-sm text-ink-800 sm:px-6 lg:px-8">
                     <x-icon name="clock" class="mr-1 inline size-4 text-ochre-600" />

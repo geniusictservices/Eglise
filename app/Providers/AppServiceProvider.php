@@ -57,11 +57,13 @@ use App\Models\RoleAssignment;
 use App\Models\SalaryAdvance;
 use App\Models\Sermon;
 use App\Models\Subscription;
+use App\Models\SubscriptionDeclaration;
 use App\Models\User;
 use App\Models\Vision;
 use App\Models\Website;
 use App\Support\CurrentOrganization;
 use App\Support\Permissions;
+use App\Support\SupportAccess;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
@@ -78,6 +80,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->scoped(CurrentOrganization::class);
+        $this->app->scoped(SupportAccess::class);
     }
 
     public function boot(): void
@@ -130,6 +133,7 @@ class AppServiceProvider extends ServiceProvider
             'member_transfer' => MemberTransfer::class,
             'website' => Website::class,
             'sermon' => Sermon::class,
+            'subscription_declaration' => SubscriptionDeclaration::class,
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,

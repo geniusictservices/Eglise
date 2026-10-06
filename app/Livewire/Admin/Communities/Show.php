@@ -7,12 +7,17 @@ use App\Models\Organization;
 use App\Models\Plan;
 use App\Models\RoleAssignment;
 use App\Models\Subscription;
+use App\Models\SubscriptionDeclaration;
+use App\Models\SupportTicket;
 use App\Services\AuditLogger;
 use App\Services\Pricing;
+use App\Services\SubscriptionDeclarations;
 use App\Services\Subscriptions;
+use App\Support\SupportAccess;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -25,6 +30,10 @@ class Show extends Component
     public array $payment = [];
 
     public int $trialDays = 15;
+
+    public ?int $rejectingId = null;
+
+    public string $rejectReason = '';
 
     public function mount(Organization $organization): void
     {
@@ -86,6 +95,53 @@ class Show extends Component
         $this->dispatch('notify', message: __('Abonnement enregistré jusqu’au :date.', ['date' => $subscription->ends_on->translatedFormat('j F Y')]), type: 'success');
     }
 
+    public function validateDeclaration(SubscriptionDeclarations $declarations, int $id): void
+    {
+        $this->authorize('admin.subscriptions');
+        try {
+            $subscription = $declarations->validate(SubscriptionDeclaration::where('organization_id', $this->organization->id)->findOrFail($id), auth()->user());
+        } catch (InvalidArgumentException $e) {
+            $this->dispatch('notify', message: $e->getMessage(), type: 'error');
+
+            return;
+        }
+        $this->organization->refresh();
+        $this->dispatch('notify', message: __('Paiement validé : abonnement jusqu’au :date.', ['date' => $subscription->ends_on->translatedFormat('j F Y')]), type: 'success');
+    }
+
+    public function askReject(int $id): void
+    {
+        $this->authorize('admin.subscriptions');
+        $this->rejectingId = SubscriptionDeclaration::where('organization_id', $this->organization->id)->findOrFail($id)->id;
+        $this->rejectReason = '';
+        $this->dispatch('open-modal', name: 'reject-declaration');
+    }
+
+    public function rejectDeclaration(SubscriptionDeclarations $declarations): void
+    {
+        $this->authorize('admin.subscriptions');
+        $this->validate(['rejectReason' => 'required|string|max:255'], attributes: ['rejectReason' => __('motif')]);
+        $declarations->reject(SubscriptionDeclaration::where('organization_id', $this->organization->id)->findOrFail($this->rejectingId), auth()->user(), $this->rejectReason);
+        $this->dispatch('close-modal', name: 'reject-declaration');
+        $this->dispatch('notify', message: __('Déclaration rejetée ; la communauté est prévenue.'), type: 'success');
+    }
+
+    /** Entrer dans la communauté avec son accord, en lecture seule. */
+    public function openSupport(SupportAccess $support, int $id)
+    {
+        $this->authorize('admin.support');
+        $organization = Organization::query()->subtreeOf($this->organization)->findOrFail($id);
+        try {
+            $support->start(auth()->user(), $organization);
+        } catch (InvalidArgumentException $e) {
+            $this->dispatch('notify', message: $e->getMessage(), type: 'error');
+
+            return null;
+        }
+
+        return redirect()->route('dashboard');
+    }
+
     public function extendTrial(Subscriptions $subscriptions): void
     {
         $this->authorize('admin.subscriptions');
@@ -126,6 +182,10 @@ class Show extends Component
             'tiers' => $pricing->tiers(),
             'quote' => $monthly !== null ? ['start' => $start, 'monthly' => $monthly, 'amount' => $pricing->amount($monthly, $this->payment['cycle'])[1]] : null,
             'canBill' => Gate::allows('admin.subscriptions'),
+            'declarations' => SubscriptionDeclaration::with(['plan', 'declarer'])->where('organization_id', $org->id)->where('status', 'pending')->latest()->get(),
+            'supportGrants' => Organization::query()->subtreeOf($org)->where('support_access_until', '>', now())->orderBy('depth')->get(),
+            'canSupport' => Gate::allows('admin.support'),
+            'tickets' => SupportTicket::whereIn('organization_id', $ids)->latest('last_activity_at')->limit(5)->get(),
         ])->title($org->name);
     }
 }

@@ -43,7 +43,7 @@ class Platform
     /** Coordonnées de Genius ICT affichées sur le site et dans l'application. */
     public static function contact(): array
     {
-        return collect(['company', 'city', 'email', 'phone', 'website'])
+        return collect(['company', 'city', 'email', 'phone', 'website', 'payment'])
             ->mapWithKeys(fn ($k) => [$k => self::get("contact.$k")])->all();
     }
 

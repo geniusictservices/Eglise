@@ -18,6 +18,7 @@
                 <div><label for="email" class="label">{{ __('E-mail') }}</label><input wire:model="contact.email" id="email" type="email" class="input">@error('contact.email') <p class="error">{{ $message }}</p> @enderror</div>
                 <div><label for="website" class="label">{{ __('Site web') }}</label><input wire:model="contact.website" id="website" class="input"></div>
             </div>
+            <div><label for="payment" class="label">{{ __('Où payer l’abonnement') }}</label><textarea wire:model="contact.payment" id="payment" rows="2" class="input" placeholder="{{ __('M-Pesa 0812 345 678 · Airtel Money 0970 000 000 (Genius ICT)') }}"></textarea><p class="mt-1 text-xs text-sand-700">{{ __('Affiché aux communautés sur leur page Abonnement, au moment de déclarer leur paiement.') }}</p></div>
             @if ($whatsapp)
                 <a href="{{ $whatsapp }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-sm font-semibold text-leaf-600 hover:underline"><x-icon name="message-circle" class="size-4" /> {{ __('Tester le lien WhatsApp') }}</a>
             @endif

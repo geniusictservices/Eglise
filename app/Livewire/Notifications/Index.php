@@ -41,6 +41,6 @@ class Index extends Component
             'unread' => $unread,
             'organizations' => Organization::whereIn('id', $items->pluck('organization_id')->filter()->unique())->pluck('name', 'id'),
             'devices' => PushSubscription::where('user_id', auth()->id())->count(),
-        ]);
+        ])->layout(current_organization() ? 'layouts::app' : 'layouts::admin');
     }
 }
