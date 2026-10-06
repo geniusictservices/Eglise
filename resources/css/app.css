@@ -1,9 +1,167 @@
 @import 'tailwindcss';
+@import '@fontsource/outfit/500.css';
+@import '@fontsource/outfit/600.css';
+@import '@fontsource/outfit/700.css';
+@import '@fontsource/source-sans-3/400.css';
+@import '@fontsource/source-sans-3/400-italic.css';
+@import '@fontsource/source-sans-3/600.css';
+@import '@fontsource/source-sans-3/700.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/*
+ * Identité Waumini : bleu-vert profond (confiance), ocre (chaleur, action),
+ * terre cuite (accent), fond sable. Titres en Outfit, textes en Source Sans 3,
+ * très lisible sur les petits écrans et complet pour le lingala (ɛ, ɔ).
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif;
+    --font-display: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+
+    --color-ink-50: #EEF4F6;
+    --color-ink-100: #D7E5EA;
+    --color-ink-200: #AFCAD3;
+    --color-ink-300: #7FA6B3;
+    --color-ink-400: #4E7F8F;
+    --color-ink-500: #2D6070;
+    --color-ink-600: #1F4E5E;
+    --color-ink-700: #173F4E;
+    --color-ink-800: #12323E;
+    --color-ink-900: #0C232C;
+
+    --color-ochre-50: #FDF5E7;
+    --color-ochre-100: #FAE6C2;
+    --color-ochre-300: #EFC06E;
+    --color-ochre-500: #E09A2D;
+    --color-ochre-600: #C47F17;
+    --color-ochre-700: #8A5A0E;
+
+    --color-terra-50: #FBEEE8;
+    --color-terra-100: #F4D3C5;
+    --color-terra-500: #B5532F;
+    --color-terra-600: #9A4325;
+    --color-terra-700: #7A341C;
+
+    --color-sand-50: #FBF8F2;
+    --color-sand-100: #F4EFE5;
+    --color-sand-200: #E8E0D1;
+    --color-sand-300: #D6CBB7;
+    --color-sand-500: #8C8272;
+    --color-sand-700: #5A5246;
+}
+
+@layer base {
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply bg-sand-50 text-ink-900 antialiased;
+        font-size: 1.0625rem;
+    }
+
+    input[type='checkbox'],
+    input[type='radio'] {
+        accent-color: var(--color-ink-700);
+    }
+
+    h1, h2, h3, h4 {
+        @apply font-display text-ink-700;
+        text-wrap: balance;
+    }
+
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-ochre-500;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    .btn, .btn-primary, .btn-accent, .btn-secondary, .btn-danger, .btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition
+            disabled:cursor-not-allowed disabled:opacity-50;
+        min-height: 2.75rem;
+    }
+
+    .btn-primary {
+        @apply bg-ink-700 text-white hover:bg-ink-800;
+    }
+
+    .btn-accent {
+        @apply bg-ochre-500 text-ink-900 hover:bg-ochre-600 hover:text-white;
+    }
+
+    .btn-secondary {
+        @apply border border-sand-300 bg-white text-ink-700 hover:border-ink-300 hover:bg-ink-50;
+    }
+
+    .btn-danger {
+        @apply bg-terra-500 text-white hover:bg-terra-600;
+    }
+
+    .btn-ghost {
+        @apply text-ink-600 hover:bg-ink-50;
+    }
+
+    .card {
+        @apply rounded-2xl border border-sand-200 bg-white;
+    }
+
+    .label {
+        @apply mb-1.5 block text-sm font-bold text-ink-700;
+    }
+
+    .hint {
+        @apply mt-1 text-sm text-sand-700;
+    }
+
+    .input {
+        @apply block w-full rounded-xl border border-sand-300 bg-white px-3.5 py-2.5 text-base text-ink-900
+            placeholder:text-sand-500 focus:border-ink-500 focus:outline-none focus:ring-2 focus:ring-ink-100;
+        min-height: 2.75rem;
+    }
+
+    .input-error {
+        @apply border-terra-500 focus:border-terra-500 focus:ring-terra-100;
+    }
+
+    .error {
+        @apply mt-1 text-sm font-bold text-terra-600;
+    }
+
+    .badge {
+        @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-bold;
+    }
+
+    .page-title {
+        @apply font-display text-2xl font-bold text-ink-700 sm:text-3xl;
+    }
+
+    .eyebrow {
+        @apply font-display text-xs font-semibold uppercase tracking-[0.12em] text-terra-500;
+    }
+
+    .table {
+        @apply w-full text-left text-sm;
+    }
+
+    .table th {
+        @apply border-b border-sand-200 bg-sand-50 px-4 py-3 font-display text-xs font-semibold uppercase tracking-wider text-sand-700;
+    }
+
+    .table td {
+        @apply border-b border-sand-100 px-4 py-3 align-top;
+    }
+
+    .table tbody tr:last-child td {
+        @apply border-b-0;
+    }
+
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
 }

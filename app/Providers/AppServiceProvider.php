@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\SetCurrentOrganization;
 use App\Models\AttachmentRequest;
 use App\Models\ExchangeRate;
 use App\Models\Organization;
@@ -16,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -51,6 +54,12 @@ class AppServiceProvider extends ServiceProvider
 
             return $user->hasPermission($ability, $organization);
         });
+
+        // Les requêtes Livewire repassent par ces middlewares : organisation courante, langue, mot de passe.
+        Livewire::addPersistentMiddleware([
+            SetCurrentOrganization::class,
+            EnsurePasswordChanged::class,
+        ]);
 
         // Libellé renommable par la communauté : @term('pasteur')
         Blade::directive('term', fn ($key) => "<?php echo e(term({$key})); ?>");

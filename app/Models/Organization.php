@@ -207,6 +207,20 @@ class Organization extends Model
         return in_array($this->status, ['read_only', 'suspended'], true);
     }
 
+    /** Lettre(s) distinctive(s) : « Paroisse de Himbi » donne « H », « Région Nord-Kivu » donne « NK ». */
+    public function initials(): string
+    {
+        $skip = ['de', 'du', 'des', 'la', 'le', 'les', 'et', 'paroisse', 'région', 'region', 'secteur', 'annexe', 'district', 'siège', 'église', 'eglise', 'communauté', 'mosquée'];
+        $name = preg_replace("/\\b[dl]['’]/u", '', $this->name);
+        $words = collect(preg_split('/[\s\-]+/u', $name))->filter(fn ($w) => $w !== '' && ! in_array(mb_strtolower($w), $skip, true))->values();
+
+        if ($words->isEmpty()) {
+            $words = collect(preg_split('/\s+/', $this->name));
+        }
+
+        return $words->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
+    }
+
     public function displayName(): string
     {
         return $this->short_name ?: $this->name;

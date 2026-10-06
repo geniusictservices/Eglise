@@ -118,10 +118,14 @@ class User extends Authenticatable
         });
     }
 
+    /** Initiales sans les titres : « Pasteur Amani Bahati » donne « AB ». */
     public function initials(): string
     {
+        $titles = ['pasteur', 'pst', 'pst.', 'rév.', 'rev.', 'rév', 'révérend', 'evêque', 'évêque', 'abbé', 'imam', 'cheikh', 'frère', 'sœur', 'soeur', 'diacre', 'ancien', 'mama', 'papa', 'dr', 'dr.'];
+
         return collect(preg_split('/\s+/', trim($this->name)))
-            ->filter()->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('');
+            ->filter(fn ($part) => $part !== '' && ! in_array(mb_strtolower($part), $titles, true))
+            ->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('') ?: '?';
     }
 
     public function formattedPhone(): string
