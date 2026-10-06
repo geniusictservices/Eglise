@@ -53,20 +53,25 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 20. [Le calendrier, les inscriptions et les présences](27-calendrier-presences.md)
 21. [Les annonces et le partage sur WhatsApp](28-annonces.md)
 
+### Accompagner les personnes
+
+22. [Le suivi pastoral : visites, notes confidentielles, prière, anniversaires](31-suivi-pastoral.md)
+23. [L'espace membre](32-espace-membre.md)
+
 ### Documents et registres
 
-22. [Les documents : attestations, lettres, ordres de mission, avec QR code](29-documents.md)
-23. [Les registres officiels et les anciens cahiers](30-registres.md)
+24. [Les documents : attestations, lettres, ordres de mission, avec QR code](29-documents.md)
+25. [Les registres officiels et les anciens cahiers](30-registres.md)
 
 ### Pour l'administrateur et les responsables
 
-24. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
-25. [Gérer les utilisateurs](05-utilisateurs.md)
-26. [Rôles et permissions](06-roles.md)
-27. [Devises et taux du jour](07-devises.md)
-28. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
-29. [Le journal d'audit](09-journal.md)
-30. [L'abonnement](11-abonnement.md)
+26. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
+27. [Gérer les utilisateurs](05-utilisateurs.md)
+28. [Rôles et permissions](06-roles.md)
+29. [Devises et taux du jour](07-devises.md)
+30. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
+31. [Le journal d'audit](09-journal.md)
+32. [L'abonnement](11-abonnement.md)
 
 ### Aide
 
@@ -83,6 +88,7 @@ Waumini fournit des **rôles modèles**. Votre administrateur peut les adapter o
 | **Secrétaire** | Registre des membres, départements, groupes, calendrier, présences, annonces, documents et anciens registres. Ne voit pas les dîmes nominatives. |
 | **Trésorier** | Caisses, recettes, promesses, dépenses, taux du jour, paie, rapports. |
 | **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, avancement de ses actions, groupes, activités et annonces du département. |
+| **Membre** | Son espace seulement : sa carte, ses dons et reçus, ses promesses, le programme, les annonces, ses demandes de prière et d'attestation. |
 | **Conseil / comité** | Lecture des rapports, sans rien pouvoir modifier. |
 | **Responsable de niveau** | Secteur, région ou siège : consolidation des paroisses, transferts. |
 

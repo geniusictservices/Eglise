@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Department;
+use App\Models\Group;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Support\CurrentOrganization;
@@ -57,6 +58,19 @@ class DemoGroups
                     $service->recordMeeting($group, ['held_on' => $date->toDateString(), 'visitors' => mt_rand(0, 3),
                         'topic' => ['La prière', 'Marc 4 : la semence', 'Le pardon', 'Psaume 23', 'Servir les autres', 'La foi d’Abraham', 'Jean 15 : le cep', 'Témoignages'][$week]], $attendance);
                     Carbon::setTestNow();
+                }
+            }
+
+            // La prière des mamans cotise 2 $ par mois ; la plupart sont à jour.
+            $mamans = Group::where('name', 'Prière des mamans')->first();
+            if ($mamans) {
+                $mamans->update(['dues_amount' => 2, 'dues_currency' => 'USD']);
+                foreach ($service->people($mamans) as $i => $m) {
+                    foreach (range(3, 0) as $back) {
+                        if ($i % 4 !== 3 || $back > 1) {
+                            $service->toggleDue($mamans, $m->id, now()->startOfMonth()->subMonths($back)->format('Y-m'));
+                        }
+                    }
                 }
             }
         });

@@ -67,6 +67,8 @@ class Edit extends Component
 
     public string $footer = '';
 
+    public string $documentFooter = '';
+
     public string $receiptFormat = 'a4';
 
     public $logo = null;
@@ -97,6 +99,7 @@ class Edit extends Component
         $display = $identity->display();
         $this->display = collect(DocumentIdentity::DISPLAY)->mapWithKeys(fn ($d, $k) => [$k => $display[$k]])->all();
         $this->footer = $display['footer'];
+        $this->documentFooter = $display['document_footer'];
         $this->receiptFormat = $display['receipt_format'];
     }
 
@@ -106,6 +109,7 @@ class Edit extends Component
         $this->validate([
             'legal.*' => 'nullable|string|max:255',
             'footer' => 'nullable|string|max:300',
+            'documentFooter' => 'nullable|string|max:300',
             'receiptFormat' => ['required', Rule::in(array_keys(DocumentIdentity::RECEIPT_FORMATS))],
             'logo' => 'nullable|image|max:4096',
         ], attributes: ['logo' => __('logo'), 'footer' => __('texte de pied de page')]);
@@ -120,6 +124,7 @@ class Edit extends Component
         $settings['documents'] = [
             'show' => collect($this->display)->only(array_keys(DocumentIdentity::DISPLAY))->map(fn ($v) => (bool) $v)->all(),
             'footer' => trim($this->footer) ?: null,
+            'document_footer' => trim($this->documentFooter) ?: null,
             'receipt_format' => $this->receiptFormat,
         ];
 

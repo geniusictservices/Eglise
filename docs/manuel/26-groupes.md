@@ -63,6 +63,17 @@ Après chaque rencontre, le responsable (ou un adjoint) touche **Noter une renco
 
 Une seule rencontre par jour : noter de nouveau la même date **corrige** la rencontre. Pour la modifier plus tard, touchez-la dans la liste des rencontres ; **Supprimer** l'efface avec ses présences.
 
+## Les cotisations
+
+Un groupe peut avoir une **cotisation mensuelle** (facultative), réglée dans **Modifier** : son montant et sa devise.
+
+<table><tr>
+<td width="68%"><img src="captures/bureau/101-cotisations.png" alt="Cotisations sur ordinateur"></td>
+<td width="32%"><img src="captures/mobile/101-cotisations.png" alt="Cotisations sur téléphone"></td>
+</tr></table>
+
+① Le tableau montre les quatre derniers mois. Le responsable touche une case pour marquer la cotisation **payée** (coche verte), ou la touche de nouveau pour corriger. En bas, le **total reçu** chaque mois. Ces cotisations restent la caisse du groupe : elles ne passent pas dans les finances de la communauté.
+
 ## Les groupes d'un membre
 
 Sur la fiche d'un membre, l'onglet **Fonctions** montre ses mandats, ses **départements** et ses **groupes**, avec son rôle dans chacun.

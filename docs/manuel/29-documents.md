@@ -56,7 +56,7 @@ Le texte est **figé** dès la délivrance : corriger ensuite la fiche ne change
 <td width="32%"><img src="captures/mobile/90-document-imprime.png" alt="Document à imprimer sur téléphone"></td>
 </tr></table>
 
-Le document porte l'en-tête de la communauté (nom, identité juridique, adresse, devise, choisis dans [Paramètres › Identité et documents](08-parametres.md)), son numéro, son titre, le texte, le lieu et la date, la qualité et le nom du signataire, et, en bas, le **QR code**. Touchez **Imprimer**, en A4.
+Le document porte l'en-tête de la communauté (nom, identité juridique, adresse, devise, choisis dans [Paramètres › Identité et documents](08-parametres.md), avec le texte du bas propre aux documents), son numéro, son titre, le texte, le lieu et la date, la qualité et le nom du signataire, et, en bas, le **QR code**. Touchez **Imprimer**, en A4.
 
 ① **Page de vérification** montre ce que verra la personne qui scannera le QR code.
 

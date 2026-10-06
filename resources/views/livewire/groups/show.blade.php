@@ -51,6 +51,38 @@
                 </section>
             @endif
 
+            @if ($group->dues_amount)
+                <section class="card min-w-0 overflow-hidden">
+                    <div class="px-5 pb-2 pt-5 sm:px-6">
+                        <h2 class="text-lg">{{ __('Cotisations') }}</h2>
+                        <p class="text-sm text-sand-700">{{ __(':m par mois. Touchez une case pour marquer la cotisation payée.', ['m' => \App\Support\Money::format($group->dues_amount, $group->dues_currency)]) }}</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead><tr class="text-left text-xs text-sand-700"><th class="px-5 py-2 font-semibold sm:px-6">{{ __('Personne') }}</th>@foreach ($periods as $p)<th class="px-2 py-2 text-center font-semibold">{{ ucfirst($p->translatedFormat('M')) }}</th>@endforeach</tr></thead>
+                            <tbody class="divide-y divide-sand-100">
+                                @foreach ($people as $m)
+                                    <tr wire:key="due-{{ $m->id }}">
+                                        <td class="max-w-40 truncate px-5 py-2 font-semibold text-ink-700 sm:px-6">{{ $m->fullName() }}</td>
+                                        @foreach ($periods as $p)
+                                            @php $paid = isset($dues[$m->id.'|'.$p->format('Y-m')]); @endphp
+                                            <td class="px-2 py-1.5 text-center">
+                                                <button type="button" @if ($canManage) wire:click="toggleDue({{ $m->id }}, '{{ $p->format('Y-m') }}')" @else disabled @endif
+                                                    @class(['grid size-8 mx-auto place-items-center rounded-lg', 'bg-leaf-500 text-white' => $paid, 'bg-sand-100 text-sand-400' => ! $paid])
+                                                    aria-label="{{ $paid ? __(':p a payé :m', ['p' => $m->fullName(), 'm' => $p->translatedFormat('F')]) : __(':p n’a pas payé :m', ['p' => $m->fullName(), 'm' => $p->translatedFormat('F')]) }}">
+                                                    <x-icon :name="$paid ? 'check' : 'x'" class="size-4" />
+                                                </button>
+                                            </td>
+                                        @endforeach
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot><tr class="border-t-2 border-sand-200 text-xs text-sand-700"><td class="px-5 py-2 sm:px-6">{{ __('Reçu') }}</td>@foreach ($periods as $p)<td class="px-2 py-2 text-center font-semibold text-ink-700 tabular">{{ \App\Support\Money::format($dues->filter(fn ($d, $k) => str_ends_with($k, '|'.$p->format('Y-m')))->flatten()->sum('amount'), $group->dues_currency) }}</td>@endforeach</tr></tfoot>
+                        </table>
+                    </div>
+                </section>
+            @endif
+
             <section class="card p-5 sm:p-6">
                 <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h2 class="text-lg">{{ __('Rencontres') }}</h2>

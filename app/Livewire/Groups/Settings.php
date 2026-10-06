@@ -20,6 +20,8 @@ class Settings
             'form.meeting_time' => 'nullable|date_format:H:i',
             'form.place' => 'nullable|string|max:160',
             'form.description' => 'nullable|string|max:1000',
+            'form.dues_amount' => 'nullable|numeric|min:0|max:1000000',
+            'form.dues_currency' => 'nullable|string|size:3',
         ] + ($withLeader ? ['form.leader_member_id' => ['required', Rule::exists('members', 'id')->where('organization_id', $organization->id)]] : []);
     }
 

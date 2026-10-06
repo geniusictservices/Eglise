@@ -38,6 +38,10 @@
             <div><label for="g-time" class="label">{{ __('Heure') }}</label><input wire:model="form.meeting_time" id="g-time" type="time" class="input">@error('form.meeting_time') <p class="error">{{ $message }}</p> @enderror</div>
             <div><label for="g-place" class="label">{{ __('Lieu') }}</label><input wire:model="form.place" id="g-place" class="input" placeholder="{{ __('Chez…, salle…') }}"></div>
         </div>
+        <div class="grid grid-cols-[2fr_1fr] gap-4">
+            <div><label for="g-dues" class="label">{{ __('Cotisation mensuelle') }} <span class="font-normal text-sand-700">{{ __('(facultatif)') }}</span></label><input wire:model="form.dues_amount" id="g-dues" type="number" step="0.01" min="0" class="input tabular" placeholder="0"></div>
+            <div><label for="g-cur" class="label">{{ __('Devise') }}</label><select wire:model="form.dues_currency" id="g-cur" class="input"><option value="USD">USD</option><option value="CDF">CDF</option></select></div>
+        </div>
         <div><label for="g-desc" class="label">{{ __('Description') }}</label><textarea wire:model="form.description" id="g-desc" rows="2" class="input"></textarea></div>
         <div class="flex flex-wrap justify-end gap-2">
             <button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'group' })">{{ __('Annuler') }}</button>

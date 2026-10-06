@@ -126,6 +126,8 @@
                     @endforeach
                     <div class="pt-2"><label for="footer" class="label">{{ __('Texte en bas des reçus') }}</label>
                         <textarea wire:model="footer" id="footer" rows="2" class="input" placeholder="{{ __('Exemple : Que Dieu bénisse le donateur joyeux. 2 Co 9.7') }}"></textarea></div>
+                    <div class="pt-2"><label for="documentFooter" class="label">{{ __('Texte en bas des attestations et lettres') }}</label>
+                        <textarea wire:model="documentFooter" id="documentFooter" rows="2" class="input" placeholder="{{ __('Exemple : Toute surcharge ou rature rend ce document nul.') }}"></textarea></div>
                     <div><label for="receiptFormat" class="label">{{ __('Format de reçu par défaut') }}</label>
                         <select wire:model="receiptFormat" id="receiptFormat" class="input">@foreach (\App\Support\DocumentIdentity::RECEIPT_FORMATS as $k => $l)<option value="{{ $k }}">{{ __($l) }}</option>@endforeach</select>
                         <p class="hint">{{ __('Les tickets 58 et 80 mm sont pour les imprimantes thermiques. Le format se change aussi au moment d’imprimer.') }}</p></div>

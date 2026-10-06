@@ -1157,6 +1157,63 @@ const SCENES = [
                 : [{ selector: 'main form[wire\\:submit=save]', label: '1' }, { selector: 'main li a[href*="acte="]', label: '2' }]);
         },
     },
+    // ---------- Suivi pastoral et espace membre (paroisse de Himbi) ----------
+    {
+        id: '96-suivi-pastoral', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/suivi-pastoral`);
+            await settle(page);
+            await mark(page, [{ selector: 'main ul li a', label: '1' }, { selector: 'main button[wire\\:click="$set(\'kind\', \'\')"]', label: '2' }, { selector: 'main button[wire\\:click=create]', label: '3' }]);
+        },
+    },
+    {
+        id: '97-suivi', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/suivi-pastoral`);
+            await page.locator('main ul li a', { hasText: 'Rebecca' }).click();
+            await page.waitForURL(/\/suivi-pastoral\/\d+$/);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main form[wire\\:submit=addNote]', label: '1' }]
+                : [{ selector: 'main form[wire\\:submit=addNote]', label: '1' }, { selector: 'main ol li .badge', label: '2' }]);
+        },
+    },
+    {
+        id: '98-anniversaires', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/suivi-pastoral?onglet=anniversaires`);
+            await settle(page);
+            await mark(page, [{ selector: 'main ul li a[href^="https://wa.me"]', label: '1', position: 'right' }]);
+        },
+    },
+    {
+        id: '99-espace-membre', user: '0990000013',
+        run: async (page) => {
+            await page.goto(`${BASE}/mon-espace`);
+            await settle(page);
+            await mark(page, [{ selector: 'main a[href*="/carte"]', label: '1' }, { selector: 'main button', text: 'Demander la prière', label: '2' }, { selector: 'main button', text: 'Demander une attestation', label: '3' }]);
+        },
+    },
+    {
+        id: '100-ouvrir-espace', user: '0990000001',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres?q=Ruth`);
+            await page.click(isMobile(page) ? 'main ul a[href*="/membres/"]' : 'main table a[href*="/membres/"]');
+            await page.waitForURL(/\/membres\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main form[wire\\:submit=openSpace]', label: '1' }]);
+        },
+    },
+    {
+        id: '101-cotisations', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/groupes`);
+            await page.locator('main ul li a', { hasText: 'Prière des mamans' }).click();
+            await page.waitForURL(/\/groupes\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main table', label: '1' }]);
+        },
+    },
 ];
 
 const browser = await chromium.launch();

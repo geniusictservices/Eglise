@@ -38,7 +38,7 @@ class Index extends Component
     public function create(): void
     {
         $this->authorizeSetUp();
-        $this->form = ['name' => '', 'kind' => 'cell', 'department_id' => '', 'leader_member_id' => null, 'meeting_day' => '', 'meeting_time' => '', 'place' => '', 'description' => ''];
+        $this->form = ['name' => '', 'kind' => 'cell', 'department_id' => '', 'leader_member_id' => null, 'meeting_day' => '', 'meeting_time' => '', 'place' => '', 'description' => '', 'dues_amount' => '', 'dues_currency' => 'USD'];
         $this->leaderSearch = '';
         $this->resetValidation();
         $this->dispatch('open-modal', name: 'group');

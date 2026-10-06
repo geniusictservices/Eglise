@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Livewire;
 use App\Models\Department;
 use App\Models\Group;
+use App\Models\GroupDue;
 use App\Models\GroupMeeting;
 use App\Models\Member;
 use App\Models\Organization;
@@ -168,5 +169,20 @@ class GroupTest extends TestCase
 
         $this->expectException(InvalidArgumentException::class);
         $groups->recordMeeting($group, ['held_on' => today()->addDay()->toDateString()], []);
+    }
+
+    public function test_monthly_dues(): void
+    {
+        $group = $this->group(['dues_amount' => 2, 'dues_currency' => 'USD']);
+        $groups = app(Groups::class);
+        $groups->addMember($group, $this->ruth->id);
+
+        $this->assertTrue($groups->toggleDue($group, $this->ruth->id, '2026-10'));
+        $this->assertSame('2.00', GroupDue::sole()->amount);
+        $this->assertFalse($groups->toggleDue($group, $this->ruth->id, '2026-10'));
+        $this->assertSame(0, GroupDue::count());
+
+        $this->expectException(InvalidArgumentException::class);
+        $groups->toggleDue($group, $this->josue->id, '2026-10');
     }
 }

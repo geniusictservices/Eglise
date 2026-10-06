@@ -32,7 +32,7 @@ Une église est une personne morale : ses reçus, et plus tard ses attestations 
 
 ② **Le statut juridique** : dénomination officielle, forme juridique (ASBL, établissement d'utilité publique, confession religieuse reconnue…), arrêté ou décret de personnalité juridique, Id. Nat., NIF, représentant légal, et une devise ou un verset.
 
-③ **Ce qui s'affiche sur les documents** : cochez ou décochez chaque élément (logo, dénomination, forme juridique, personnalité juridique, Id. Nat., NIF, représentant, devise, adresse, téléphone, e-mail, nom du niveau supérieur). Seules les informations renseignées s'affichent. Choisissez aussi le **texte en bas des reçus** et le **format de reçu par défaut** (A4, ticket 80 mm ou 58 mm).
+③ **Ce qui s'affiche sur les documents** : cochez ou décochez chaque élément (logo, dénomination, forme juridique, personnalité juridique, Id. Nat., NIF, représentant, devise, adresse, téléphone, e-mail, nom du niveau supérieur). Seules les informations renseignées s'affichent. Choisissez aussi le **texte en bas des reçus**, celui **en bas des attestations et lettres** (voir [Les documents](29-documents.md)), et le **format de reçu par défaut** (A4, ticket 80 mm ou 58 mm).
 
 **Dans une dénomination**, l'identité juridique est celle du **siège** : les paroisses la reçoivent telle quelle, avec le logo du siège si elles n'ont pas le leur. Chaque paroisse garde son nom, son adresse et son téléphone, et peut régler ce qui s'affiche sur ses propres documents ; sinon, elle suit le réglage de son niveau supérieur.
 

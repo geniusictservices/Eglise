@@ -43,7 +43,7 @@ class DemoFinances
                 'representative' => 'Rév. Émmanuel Muhindo',
                 'motto' => '« Que tout se fasse avec bienséance et avec ordre » 1 Co 14.40',
             ],
-            'settings' => array_merge($siege->settings ?? [], ['documents' => ['show' => [], 'footer' => 'Que Dieu bénisse le donateur joyeux. 2 Co 9.7', 'receipt_format' => 'a4']]),
+            'settings' => array_merge($siege->settings ?? [], ['documents' => ['show' => [], 'footer' => 'Que Dieu bénisse le donateur joyeux. 2 Co 9.7', 'document_footer' => 'Toute surcharge ou rature rend ce document nul. Vérifiez-le en scannant son QR code.', 'receipt_format' => 'a4']]),
         ]);
         if ($withFiles) {
             $siege->update(['logo_path' => $this->emblem($siege)]);

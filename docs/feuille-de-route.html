@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, documents et registres livrés</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, suivi pastoral et espace membre livrés</span>
   </header>
 
   <div class="hero">
@@ -272,10 +272,10 @@ const BLOCKS = [
       goal: "Une attestation en une minute, vérifiable par QR code.",
       items: ["Neuf modèles fournis : attestations d’appartenance, de baptême, de présentation d’enfant, de service, certificat de mariage, lettre de recommandation, ordre de mission, convocation, lettre", "Modèles du siège valables pour toutes ses paroisses ; chacune les adapte ou crée les siens (attestation de choriste, carte de service…)", "Texte à variables avec accords (né ou née, il ou elle), champs propres au modèle, aperçu sur une vraie fiche", "Numérotation réglable par modèle (code, sigle, année, numéro), remise à 1 chaque année", "Document délivré : texte figé, imprimé sur l’en-tête de la communauté, signé à la main, avec QR code ; annulation avec motif", "Page publique de vérification : authentique, annulé ou inconnu, sans montrer le texte", "Anciens registres papier recopiés acte par acte avec une saisie rapide ; recherche dans tous les registres ; actes reliés aux fiches", "Réédition d’une attestation à partir d’un acte ancien, même pour qui n’est plus membre ; 2 nouveaux chapitres du manuel"],
       demo: "Livré : le baptême de Josias, inscrit en 1998 dans le vieux cahier de Himbi, réédité avec son QR code et vérifié depuis un téléphone ; 199 tests automatiques." },
-    { status: "todo", title: "Suivi pastoral et espace membre",
+    { status: "done", title: "Suivi pastoral et espace membre",
       goal: "Accompagner chacun ; donner à chaque membre sa part d’accès.",
-      items: ["Visites, malades, deuils, parcours des catéchumènes, demandes de prière", "Notes confidentielles : leur auteur seul, jamais exportées, même pas pour le support", "Espace membre : sa fiche, ses contributions et reçus, ses promesses, programme et annonces, demandes de prière et d’attestation", "Langue choisie par chaque membre", "Rappels d’anniversaires et cotisations des groupes (reportés du module Groupes)"],
-      demo: "Un membre se connecte avec son empreinte et retrouve ses reçus." }
+      items: ["Suivis : visites, malades, deuils, catéchumènes, accompagnement, nouveaux venus ; prochaine visite, visites en retard signalées, suivi confié à un membre de l’équipe", "Notes confidentielles chiffrées : leur auteur seul, jamais exportées, même pas pour le support", "Demandes de prière confidentielles à l’équipe ; un mot revient à la personne", "Anniversaires du mois avec vœux par WhatsApp, et rappel chaque matin des anniversaires du jour", "Espace membre ouvert par le secrétariat (mot de passe provisoire envoyé par WhatsApp) : carte, dons et reçus, promesses, programme et inscriptions, annonces", "Demandes de prière et d’attestation depuis l’espace membre, délivrées ou refusées avec motif, la personne prévenue", "Langue choisie par chaque membre ; cotisations mensuelles des groupes ; pied de page propre aux documents", "2 nouveaux chapitres du manuel"],
+      demo: "Livré : Grâce ouvre son espace sur son téléphone, retrouve ses reçus et demande son attestation ; le pasteur suit Maman Rebecca à l’hôpital avec une note que lui seul lit ; 205 tests automatiques." }
   ]},
   { letter: "Bloc 4", title: "Le réseau et la plateforme", steps: [
     { status: "todo", title: "Consolidation multi-paroisses",
@@ -369,6 +369,8 @@ const DECISIONS = [
   ]],
   ["Membres et communication", [
     "Les membres ont un accès limité : leur fiche, leurs contributions et reçus, leurs promesses, le programme, les annonces, les demandes de prière et d’attestation.",
+    "L’espace d’un membre est ouvert par le secrétariat ; un membre sans autre rôle arrive directement dans son espace.",
+    "Les notes pastorales confidentielles sont chiffrées et ne se lisent que par leur auteur ; les demandes de prière restent à l’équipe pastorale.",
     "Connexion par téléphone et mot de passe, puis empreinte du téléphone.",
     "Pas de paiement en ligne dans l’espace membre pour l’instant.",
     "La communication passe par les notifications de l’application, avec envoi manuel sur WhatsApp en complément.",

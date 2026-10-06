@@ -26,7 +26,7 @@
         </div>
     </div>
 
-    @if ($identity->footer())<p class="mt-6 border-t border-sand-200 pt-2 text-center text-[8pt] text-sand-700">{{ $identity->footer() }}</p>@endif
+    @if ($identity->documentFooter())<p class="mt-6 border-t border-sand-200 pt-2 text-center text-[8pt] text-sand-700">{{ $identity->documentFooter() }}</p>@endif
 
     @if ($cancelled ?? false)
         <div class="pointer-events-none absolute inset-0 grid place-items-center">

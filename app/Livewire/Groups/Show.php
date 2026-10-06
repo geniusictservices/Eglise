@@ -5,6 +5,7 @@ namespace App\Livewire\Groups;
 use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\Department;
 use App\Models\Group;
+use App\Models\GroupDue;
 use App\Models\GroupMeeting;
 use App\Models\Member;
 use App\Services\Groups;
@@ -47,6 +48,7 @@ class Show extends Component
         $this->form = $this->group->only(['name', 'kind', 'place']) + [
             'department_id' => $this->group->department_id ?? '', 'meeting_day' => $this->group->meeting_day ?? '',
             'meeting_time' => $this->group->meeting_time ? substr($this->group->meeting_time, 0, 5) : '', 'description' => (string) $this->group->description,
+            'dues_amount' => $this->group->dues_amount ?? '', 'dues_currency' => $this->group->dues_currency ?? 'USD',
         ];
         $this->resetValidation();
         $this->dispatch('open-modal', name: 'group');
@@ -164,6 +166,16 @@ class Show extends Component
         $this->notify(__('Rencontre notée : :p présents sur :t.', ['p' => $meeting->presentCount(), 't' => $meeting->attendances->count()]));
     }
 
+    public function toggleDue(Groups $groups, int $memberId, string $period): void
+    {
+        $this->authorizeManage();
+        try {
+            $groups->toggleDue($this->group, $memberId, $period);
+        } catch (InvalidArgumentException $e) {
+            $this->notify($e->getMessage(), 'error');
+        }
+    }
+
     public function deleteMeeting(int $id): void
     {
         $this->authorizeManage();
@@ -201,6 +213,9 @@ class Show extends Component
             'meetings' => $this->group->meetings()->with('attendances')->paginate(10),
             'absentees' => $groups->absentees($this->group),
             'rate' => $groups->rate($this->group),
+            'periods' => collect(range(3, 0))->map(fn ($i) => now()->startOfMonth()->subMonths($i)),
+            'dues' => $this->group->dues_amount ? GroupDue::where('group_id', $this->group->id)->where('period', '>=', now()->startOfMonth()->subMonths(3)->format('Y-m'))->get()
+                ->groupBy(fn ($d) => $d->member_id.'|'.$d->period) : collect(),
             'canManage' => $writable && GroupAccess::canManage($user, $organization, $this->group),
             'canSetUp' => $writable && GroupAccess::canSetUp($user, $organization, $this->group) && $user->can('groups.manage'),
             'departments' => Department::where('is_active', true)->when(! $full, fn ($q) => $q->whereIn('id', GroupAccess::departments($user, $organization)))->orderBy('name')->get(),

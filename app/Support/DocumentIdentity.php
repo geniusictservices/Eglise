@@ -68,7 +68,7 @@ class DocumentIdentity
         }
 
         return collect(self::DISPLAY)->mapWithKeys(fn ($d, $key) => [$key => (bool) ($saved['show'][$key] ?? $d[1])])->all()
-            + ['footer' => $saved['footer'] ?? '', 'receipt_format' => $saved['receipt_format'] ?? 'a4'];
+            + ['footer' => $saved['footer'] ?? '', 'document_footer' => $saved['document_footer'] ?? '', 'receipt_format' => $saved['receipt_format'] ?? 'a4'];
     }
 
     public function show(string $key): bool
@@ -148,6 +148,12 @@ class DocumentIdentity
         $legal = $this->legal();
 
         return $this->show('representative') ? ($legal['representative'] ?? null) : null;
+    }
+
+    /** Le texte en bas des attestations et lettres (celui des reçus est à part). */
+    public function documentFooter(): ?string
+    {
+        return trim((string) $this->display()['document_footer']) ?: null;
     }
 
     public function footer(): ?string

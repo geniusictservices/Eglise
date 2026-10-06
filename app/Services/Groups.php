@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Group;
 use App\Models\GroupAttendance;
+use App\Models\GroupDue;
 use App\Models\GroupMeeting;
 use App\Models\Member;
 use App\Models\Organization;
@@ -145,6 +146,27 @@ class Groups
         return $expected ? (int) round($meetings->sum('present_count') / $expected * 100) : null;
     }
 
+    /** Marque la cotisation d'un mois payée, ou l'annule si elle l'était. */
+    public function toggleDue(Group $group, int $memberId, string $period): bool
+    {
+        if (! $group->dues_amount || ! preg_match('/^\d{4}-\d{2}$/', $period)) {
+            throw new InvalidArgumentException(__('Ce groupe n’a pas de cotisation.'));
+        }
+        if (! $this->people($group)->contains('id', $memberId)) {
+            throw new InvalidArgumentException(__('Ce membre n’est pas dans le groupe.'));
+        }
+        $existing = GroupDue::where('group_id', $group->id)->where('member_id', $memberId)->where('period', $period)->first();
+        if ($existing) {
+            $existing->delete();
+
+            return false;
+        }
+        GroupDue::create(['group_id' => $group->id, 'member_id' => $memberId, 'period' => $period, 'amount' => $group->dues_amount,
+            'currency' => $group->dues_currency, 'paid_on' => today(), 'recorded_by' => auth()->id()]);
+
+        return true;
+    }
+
     private function settings(array $data): array
     {
         return [
@@ -154,6 +176,8 @@ class Groups
             'meeting_day' => ($data['meeting_day'] ?? '') === '' || ($data['meeting_day'] ?? null) === null ? null : (int) $data['meeting_day'],
             'meeting_time' => ($data['meeting_time'] ?? null) ?: null,
             'place' => trim((string) ($data['place'] ?? '')) ?: null,
+            'dues_amount' => (float) ($data['dues_amount'] ?? 0) > 0 ? $data['dues_amount'] : null,
+            'dues_currency' => (float) ($data['dues_amount'] ?? 0) > 0 ? ($data['dues_currency'] ?? 'USD') : null,
         ];
     }
 
