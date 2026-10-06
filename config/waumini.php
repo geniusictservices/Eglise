@@ -187,6 +187,7 @@ return [
             ['Dîme', 'personal'],
             ['Offrande d’action de grâce', 'personal'],
             ['Don', 'personal'],
+            ['Promesses et projets', 'personal'],
             ['Contribution d’un département', 'group'],
             ['Autres recettes', 'collective'],
         ],
@@ -195,6 +196,9 @@ return [
             'Fournitures et matériel', 'Communication et téléphone', 'Évangélisation et missions', 'Œuvres sociales et entraide',
             'Accueil et réceptions', 'Quote-part au niveau supérieur', 'Rémunérations et motivations', 'Autres dépenses',
         ],
+        // Message de relance d'une promesse, envoyé à la main sur WhatsApp ; chaque communauté peut l'adapter.
+        'pledge_reminder' => 'Bonjour :name, que la paix du Seigneur soit avec vous. Merci pour votre promesse de :promised pour « :campaign ». À ce jour, nous avons reçu :received ; il reste :remaining. Que Dieu vous bénisse ! — :church',
+
         // Billets et pièces pour compter la collecte du culte.
         'denominations' => [
             'USD' => [100, 50, 20, 10, 5, 2, 1],

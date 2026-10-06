@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Models\AttachmentRequest;
+use App\Models\Campaign;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\CollectionSheet;
@@ -25,6 +26,8 @@ use App\Models\Organization;
 use App\Models\OrganizationCurrency;
 use App\Models\Plan;
 use App\Models\PlanPrice;
+use App\Models\Pledge;
+use App\Models\PledgeDelivery;
 use App\Models\Role;
 use App\Models\RoleAssignment;
 use App\Models\Subscription;
@@ -73,6 +76,9 @@ class AppServiceProvider extends ServiceProvider
             'member_import' => MemberImport::class,
             'cash_account' => CashAccount::class,
             'collection' => CollectionSheet::class,
+            'campaign' => Campaign::class,
+            'pledge' => Pledge::class,
+            'pledge_delivery' => PledgeDelivery::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,
             'finance_transaction' => FinanceTransaction::class,

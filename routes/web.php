@@ -75,6 +75,10 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/finances/collecte', Livewire\Finances\Collections\Index::class)->name('finances.collections');
     Route::get('/finances/collecte/{sheet}', Livewire\Finances\Collections\Sheet::class)->name('finances.collections.show');
     Route::get('/finances/collecte/{sheet}/proces-verbal', CollectionPrintController::class)->name('finances.collections.print');
+    Route::get('/finances/promesses', Livewire\Finances\Pledges\Index::class)->name('finances.pledges');
+    Route::get('/finances/promesses/nouvelle', Livewire\Finances\Pledges\Form::class)->name('finances.pledges.create');
+    Route::get('/finances/promesses/{pledge}', Livewire\Finances\Pledges\Show::class)->whereNumber('pledge')->name('finances.pledges.show');
+    Route::get('/finances/promesses/{id}/modifier', Livewire\Finances\Pledges\Form::class)->whereNumber('id')->name('finances.pledges.edit');
     Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
     Route::get('/finances/recu/{transaction}', ReceiptController::class)->name('finances.receipt');
 

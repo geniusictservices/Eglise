@@ -46,7 +46,7 @@
             <section class="card p-5 sm:p-6">
                 <h2 class="text-lg">{{ __('Comptage des billets') }}</h2>
                 <p class="mb-4 text-sm text-sand-700">{{ __('Facultatif mais conseillé : le nombre de billets de chaque valeur. Le total doit correspondre aux offrandes et enveloppes.') }}</p>
-                <div class="grid gap-5 sm:grid-cols-2">
+                <div class="grid gap-6 2xl:grid-cols-2">
                     @foreach ($denominations as $currency => $values)
                         <div wire:key="count-{{ $currency }}">
                             <p class="mb-2 text-sm font-semibold text-ink-700">{{ $currency }}</p>
@@ -56,10 +56,10 @@
                                 <ul class="space-y-1.5">
                                     @foreach ($values as $value)
                                         @php $qty = (int) ($counts[$currency][$value] ?? 0); @endphp
-                                        <li class="grid grid-cols-[6.5rem_1fr_7rem] items-center gap-2 text-sm">
+                                        <li class="grid grid-cols-[6rem_minmax(0,9rem)_1fr] items-center gap-2 text-sm">
                                             <span class="font-semibold tabular text-ink-800">{{ Money::format($value, $currency) }}</span>
                                             @if ($editable)
-                                                <input wire:model.blur="counts.{{ $currency }}.{{ $value }}" type="number" min="0" inputmode="numeric" class="input !min-h-0 !py-1.5 text-right tabular" aria-label="{{ __('Nombre de billets de :v', ['v' => Money::format($value, $currency)]) }}">
+                                                <input wire:model.blur="counts.{{ $currency }}.{{ $value }}" type="number" min="0" inputmode="numeric" class="input !min-h-0 w-full !py-1.5 text-right tabular" aria-label="{{ __('Nombre de billets de :v', ['v' => Money::format($value, $currency)]) }}">
                                             @else
                                                 <span class="text-right tabular">× {{ $qty }}</span>
                                             @endif
