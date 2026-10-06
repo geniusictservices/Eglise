@@ -9,6 +9,7 @@ use App\Http\Controllers\ExpenseAttachmentController;
 use App\Http\Controllers\FinanceReportController;
 use App\Http\Controllers\HelpController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\MeetingPrintController;
 use App\Http\Controllers\MemberCardController;
 use App\Http\Controllers\MemberPhotoController;
 use App\Http\Controllers\MemberTemplateController;
@@ -94,6 +95,10 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/finances/rapports/imprimer', [FinanceReportController::class, 'print'])->name('finances.reports.print');
     Route::get('/finances/rapports/excel', [FinanceReportController::class, 'excel'])->name('finances.reports.excel');
     Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
+    Route::get('/plan', Livewire\Plan\Index::class)->name('plan.index');
+    Route::get('/reunions', Livewire\Meetings\Index::class)->name('meetings.index');
+    Route::get('/reunions/{meeting}', Livewire\Meetings\Show::class)->name('meetings.show');
+    Route::get('/reunions/{meeting}/proces-verbal', MeetingPrintController::class)->name('meetings.print');
     Route::get('/budget', Livewire\Budget\Index::class)->name('budget.index');
     Route::get('/budget/suivi', Livewire\Budget\Execution::class)->name('budget.execution');
     Route::get('/budget/{year}/departement/{department}', Livewire\Budget\Proposal::class)->whereNumber(['year', 'department'])->name('budget.proposal');

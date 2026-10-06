@@ -21,6 +21,7 @@ use App\Models\FinanceTransaction;
 use App\Models\Household;
 use App\Models\LegalDocument;
 use App\Models\LifeEvent;
+use App\Models\Meeting;
 use App\Models\Member;
 use App\Models\MemberField;
 use App\Models\MemberFunction;
@@ -31,6 +32,8 @@ use App\Models\Organization;
 use App\Models\OrganizationCurrency;
 use App\Models\PaymentDeclaration;
 use App\Models\Plan;
+use App\Models\PlanAction;
+use App\Models\PlanObjective;
 use App\Models\PlanPrice;
 use App\Models\Pledge;
 use App\Models\PledgeDelivery;
@@ -38,6 +41,7 @@ use App\Models\Role;
 use App\Models\RoleAssignment;
 use App\Models\Subscription;
 use App\Models\User;
+use App\Models\Vision;
 use App\Support\CurrentOrganization;
 use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Model;
@@ -90,6 +94,10 @@ class AppServiceProvider extends ServiceProvider
             'budget' => Budget::class,
             'budget_proposal' => BudgetProposal::class,
             'budget_overrun' => BudgetOverrun::class,
+            'vision' => Vision::class,
+            'plan_objective' => PlanObjective::class,
+            'plan_action' => PlanAction::class,
+            'meeting' => Meeting::class,
             'payment_declaration' => PaymentDeclaration::class,
             'cash_account_currency' => CashAccountCurrency::class,
             'finance_category' => FinanceCategory::class,
