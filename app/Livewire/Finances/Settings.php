@@ -7,6 +7,7 @@ use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
+use App\Services\Expenses;
 use App\Services\Ledger;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -31,9 +32,41 @@ class Settings extends Component
 
     public array $category = [];
 
-    public function mount(): void
+    // Circuit des dépenses
+    public int $approvalsRequired = 2;
+
+    public int $advanceDays = 14;
+
+    public bool $blockAdvances = false;
+
+    public function mount(Expenses $expenses): void
     {
         $this->authorize('finance.settings');
+        $circuit = $expenses->settings($this->organization());
+        $this->approvalsRequired = (int) $circuit['approvals_required'];
+        $this->advanceDays = (int) $circuit['advance_days'];
+        $this->blockAdvances = (bool) $circuit['block_unjustified_advances'];
+    }
+
+    /** Signatures demandées, délai des avances et blocage : valables pour les nouvelles demandes. */
+    public function saveCircuit(): void
+    {
+        $this->authorizeWrite('finance.settings');
+        $this->validate([
+            'approvalsRequired' => 'required|integer|between:1,3',
+            'advanceDays' => 'required|integer|between:1,180',
+            'blockAdvances' => 'boolean',
+        ], attributes: ['advanceDays' => __('délai')]);
+
+        $organization = $this->organization();
+        $settings = $organization->settings ?? [];
+        $settings['finance']['expenses'] = [
+            'approvals_required' => $this->approvalsRequired,
+            'advance_days' => $this->advanceDays,
+            'block_unjustified_advances' => $this->blockAdvances,
+        ];
+        $organization->update(['settings' => $settings]);
+        $this->notify(__('Circuit des dépenses enregistré. Il s’applique aux nouvelles demandes.'));
     }
 
     public function editAccount(Ledger $ledger, ?int $id = null): void

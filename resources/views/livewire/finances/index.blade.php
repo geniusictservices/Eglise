@@ -15,6 +15,17 @@
         </a>
     @endif
 
+    @if ($pendingExpenses || $overdueAdvances)
+        <a href="{{ route('finances.expenses') }}" class="mt-3 flex items-center gap-3 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800 hover:bg-ochre-100">
+            <x-icon name="banknote" class="size-5 text-ochre-600" />
+            <span class="flex-1 font-semibold">{{ collect([
+                $pendingExpenses ? trans_choice(':count demande de dépense attend votre action.|:count demandes de dépense attendent votre action.', $pendingExpenses) : null,
+                $overdueAdvances ? trans_choice(':count avance n’est pas justifiée à temps.|:count avances ne sont pas justifiées à temps.', $overdueAdvances) : null,
+            ])->filter()->implode(' ') }}</span>
+            <x-icon name="chevron-right" class="size-4" />
+        </a>
+    @endif
+
     @unless ($hasAccounts)
         <div class="card flex flex-col items-center px-6 py-12 text-center">
             <span class="icon-tile size-14 bg-leaf-50 text-leaf-600"><x-icon name="wallet" class="size-7" /></span>
@@ -36,6 +47,7 @@
                 @can('finance.income')<a href="{{ route('finances.collections') }}" class="btn-accent !min-h-0 !py-2"><x-icon name="hand-coins" class="size-4" /> {{ __('Collecte du culte') }}</a>
                 <a href="{{ route('finances.income') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="download" class="size-4" /> {{ __('Recette') }}</a>@endcan
                 @can('finance.exchange')<a href="{{ route('finances.transfer') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="arrow-left-right" class="size-4" /> {{ __('Virement ou change') }}</a>@endcan
+                <a href="{{ route('finances.expenses') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="banknote" class="size-4" /> {{ __('Dépenses') }}</a>
                 <a href="{{ route('finances.journal') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="history" class="size-4" /> {{ __('Opérations') }}</a>
             </div>
         </section>

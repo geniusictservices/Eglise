@@ -15,9 +15,12 @@ use App\Models\Member;
 use App\Models\Organization;
 use App\Models\PaymentDeclaration;
 use App\Models\Pledge;
+use App\Models\User;
 use App\Support\CurrentOrganization;
 use App\Support\OrganizationLogo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 /** Finances de démonstration : comptes, offrandes des dimanches, dîmes, change, dépôts. */
 class DemoFinances
@@ -141,7 +144,87 @@ class DemoFinances
             // Change et dépôt à la banque.
             $ledger->transfer($caisse, 'CDF', $caisse, 'USD', '570000', '200', 'Change au marché de Birere', today()->subDays(6));
             $ledger->transfer($caisse, 'USD', $banque, 'USD', '300', null, 'Dépôt des offrandes du mois', today()->subDays(5));
+
+            $this->expenses($caisse, $banque, $cat);
         });
+    }
+
+    /**
+     * Demandes de dépense à toutes les étapes du circuit. Chaque étape est
+     * jouée par la bonne personne, à la bonne date.
+     */
+    private function expenses(CashAccount $caisse, CashAccount $banque, Collection $cat): void
+    {
+        $service = app(Expenses::class);
+        $himbi = current_organization();
+        $user = fn (string $name) => User::where('name', $name)->whereHas('roleAssignments', fn ($q) => $q->where('organization_id', $himbi->id))->firstOrFail();
+        // L'administrateur du siège, connecté pendant la construction de la démo, fait la deuxième signature.
+        $admin = Auth::user();
+        [$josue, $furaha, $pasteur] = [$user('Josué Kakule'), $user('Furaha Masika'), $user('Pasteur Daniel Paluku')];
+        $dept = Department::pluck('id', 'name');
+        $general = Department::where('is_system', true)->value('id');
+        $beneficiary = Member::where('first_name', 'Josué')->value('id');
+        $grace = Member::where('first_name', 'Grâce')->value('id');
+
+        $step = 0;
+        $as = function (User $who, int $daysAgo, callable $action) use (&$step) {
+            // Les étapes d'une même journée se suivent dans l'ordre.
+            Carbon::setTestNow(now()->startOfDay()->subDays($daysAgo)->setTime(8 + $step++ % 9, mt_rand(0, 59)));
+            Auth::setUser($who);
+            $result = $action();
+            Carbon::setTestNow();
+
+            return $result;
+        };
+        $request = fn (int $daysAgo, array $data) => $as($josue, $daysAgo, fn () => $service->submit($himbi, $data + ['currency' => 'USD', 'is_advance' => false]));
+
+        // Avance de la chorale, pas encore justifiée et en retard.
+        $chorale = $request(30, ['department_id' => $dept['Chorale Les Messagers'], 'category_id' => $cat['Fournitures et matériel'], 'title' => 'Cordes de guitare et deux micros',
+            'amount' => 80, 'is_advance' => true, 'beneficiary_member_id' => $grace]);
+        $as($furaha, 29, fn () => $service->check($chorale));
+        $as($pasteur, 29, fn () => $service->approve($chorale, $pasteur));
+        $as($admin, 28, fn () => $service->approve($chorale, $admin));
+        $as($furaha, 28, fn () => $service->disburse($chorale->fresh(), $caisse));
+
+        // Facture d'électricité : circuit complet.
+        $snel = $request(24, ['department_id' => $general, 'category_id' => $cat['Électricité et eau'], 'title' => 'Facture SNEL de septembre', 'amount' => 120000, 'currency' => 'CDF']);
+        $as($furaha, 23, fn () => $service->check($snel, 'Facture jointe, conforme au compteur.'));
+        $as($pasteur, 23, fn () => $service->approve($snel, $pasteur));
+        $as($admin, 22, fn () => $service->approve($snel, $admin));
+        $as($furaha, 22, fn () => $service->disburse($snel->fresh(), $caisse));
+        $as($furaha, 21, fn () => $service->justify($snel->fresh(), '120000', 'Reçu SNEL n° 4471 classé.'));
+
+        // Avance pour l'évangélisation : justifiée, le reste revient en caisse.
+        $sake = $request(19, ['department_id' => $dept['Jeunesse'], 'category_id' => $cat['Évangélisation et missions'], 'title' => 'Transport et repas, évangélisation à Sake',
+            'amount' => 150, 'is_advance' => true, 'beneficiary_member_id' => $beneficiary, 'description' => 'Bus aller-retour pour 12 jeunes, eau et pain pour deux jours.']);
+        $as($furaha, 18, fn () => $service->check($sake));
+        $as($pasteur, 18, fn () => $service->approve($sake, $pasteur, 'Que Dieu bénisse la mission.'));
+        $as($admin, 17, fn () => $service->approve($sake, $admin));
+        $as($furaha, 17, fn () => $service->disburse($sake->fresh(), $caisse));
+        $as($furaha, 12, fn () => $service->justify($sake->fresh(), '128', 'Tickets de bus et factures du restaurant.'));
+
+        // Refusée.
+        $sono = $request(15, ['department_id' => $dept['Chorale Les Messagers'], 'category_id' => $cat['Fournitures et matériel'], 'title' => 'Nouvelle sonorisation complète', 'amount' => 2500]);
+        $as($furaha, 14, fn () => $service->reject($sono, $furaha, 'Pas prévue cette année : à proposer au plan d’action et budget de l’an prochain.'));
+
+        // Approuvée, à décaisser.
+        $toit = $request(6, ['department_id' => $general, 'category_id' => $cat['Entretien et réparations'], 'title' => 'Réparation de la toiture de la sacristie',
+            'amount' => 340, 'description' => 'Huit tôles, clous et main-d’œuvre (devis de Maître Kambale).']);
+        $as($furaha, 5, fn () => $service->check($toit, 'Deux devis comparés, le moins cher retenu.'));
+        $as($pasteur, 4, fn () => $service->approve($toit, $pasteur));
+        $as($admin, 3, fn () => $service->approve($toit, $admin));
+
+        // Une signature sur deux.
+        $chaises = $request(3, ['department_id' => $dept['Jeunesse'], 'category_id' => $cat['Fournitures et matériel'], 'title' => '50 chaises pour la salle des jeunes',
+            'amount' => 450, 'needed_on' => today()->addWeeks(2)->toDateString()]);
+        $as($furaha, 2, fn () => $service->check($chaises));
+        $as($pasteur, 1, fn () => $service->approve($chaises, $pasteur, 'D’accord, si possible avant la convention.'));
+
+        // À contrôler.
+        $request(1, ['department_id' => $general, 'category_id' => $cat['Accueil et réceptions'], 'title' => 'Rafraîchissements pour la réunion des diacres',
+            'amount' => 60000, 'currency' => 'CDF']);
+
+        Auth::setUser($admin);
     }
 
     /** Emblème de démonstration : un cercle indigo et trois points (pas un vrai logo d'église). */

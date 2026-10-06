@@ -3,8 +3,8 @@
     <a href="{{ route('finances.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Finances') }}</a>
     <x-page-header :title="__('Comptes et catégories')" :description="__('Les comptes de la communauté (caisses physiques, mobile money, banques), chacun dans les devises de votre choix. Les catégories classent les recettes et les dépenses dans les rapports.')" />
 
-    <div class="mb-6 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist">
-        @foreach (['caisses' => __('Comptes'), 'recettes' => __('Catégories de recettes'), 'depenses' => __('Catégories de dépenses')] as $key => $label)
+    <div class="mb-6 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist" x-init="$el.querySelector('[aria-selected=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' })">
+        @foreach (['caisses' => __('Comptes'), 'recettes' => __('Catégories de recettes'), 'depenses' => __('Catégories de dépenses'), 'circuit' => __('Circuit des dépenses')] as $key => $label)
             <button type="button" role="tab" wire:click="$set('tab', '{{ $key }}')" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
                     @class(['flex-1 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold', 'bg-ink-700 text-white' => $tab === $key, 'text-ink-600 hover:bg-sand-50' => $tab !== $key])>{{ $label }}</button>
         @endforeach
@@ -33,6 +33,29 @@
                 @endforelse
             </ul>
         @endforeach
+    @elseif ($tab === 'circuit')
+        <form wire:submit="saveCircuit" class="card max-w-2xl space-y-6 p-5 sm:p-6">
+            <div>
+                <p class="label">{{ __('Signatures pour approuver une dépense') }}</p>
+                <div class="grid grid-cols-3 gap-2">
+                    @foreach ([1 => __('Une'), 2 => __('Deux'), 3 => __('Trois')] as $n => $label)
+                        <label @class(['flex cursor-pointer flex-col items-center rounded-xl border p-3 text-center', 'border-ochre-400 bg-ochre-50' => $approvalsRequired === $n, 'border-sand-200' => $approvalsRequired !== $n])>
+                            <input type="radio" wire:model.live="approvalsRequired" value="{{ $n }}" class="sr-only">
+                            <span class="text-2xl font-semibold text-ink-800">{{ $n }}</span><span class="text-xs text-sand-700">{{ $label }}@if ($n === 2) · {{ __('conseillé') }}@endif</span>
+                        </label>
+                    @endforeach
+                </div>
+                <p class="hint">{{ __('Après le contrôle de la finance, la dépense doit être signée par ce nombre de personnes ayant la permission « Approuver les dépenses ». Le demandeur ne signe jamais sa propre demande.') }}</p>
+            </div>
+            <div>
+                <label for="advanceDays" class="label">{{ __('Délai pour justifier une avance (jours)') }}</label>
+                <input wire:model="advanceDays" id="advanceDays" type="number" min="1" max="180" class="input max-w-32">
+                @error('advanceDays') <p class="error">{{ $message }}</p> @enderror
+            </div>
+            <label class="flex items-start gap-3 text-sm"><input type="checkbox" wire:model="blockAdvances" class="mt-0.5 size-5">
+                <span><span class="font-semibold text-ink-800">{{ __('Bloquer les nouvelles avances') }}</span><span class="block text-sand-700">{{ __('Une personne qui n’a pas justifié une avance dans le délai ne peut pas en recevoir une autre.') }}</span></span></label>
+            <div class="flex justify-end"><button class="btn-primary"><x-icon name="save" class="size-4" /> {{ __('Enregistrer') }}</button></div>
+        </form>
     @else
         @php $type = $tab === 'recettes' ? 'income' : 'expense'; $list = $type === 'income' ? $income : $expense; @endphp
         <div class="mb-4 flex justify-end"><button type="button" wire:click="editCategory(null, '{{ $type }}')" class="btn-primary"><x-icon name="plus" class="size-4" /> {{ __('Nouvelle catégorie') }}</button></div>

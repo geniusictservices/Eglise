@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Finances;
 
+use App\Models\ExpenseRequest;
 use App\Models\FinanceTransaction;
 use App\Models\PaymentDeclaration;
 use App\Services\Ledger;
@@ -37,6 +38,12 @@ class Index extends Component
             'canSeeNames' => Gate::allows('finance.contributions.view'),
             'hasAccounts' => $balances->isNotEmpty(),
             'pendingDeclarations' => Gate::allows('finance.payments.validate') ? PaymentDeclaration::where('status', 'pending')->count() : 0,
+            // Ce qui attend la personne dans le circuit des dépenses.
+            'pendingExpenses' => ExpenseRequest::whereIn('status', array_merge(
+                Gate::allows('finance.disburse') ? ['submitted', 'approved'] : [],
+                Gate::allows('finance.expenses.approve') ? ['checked'] : [],
+            ))->count(),
+            'overdueAdvances' => ExpenseRequest::where('status', 'disbursed')->where('is_advance', true)->whereDate('justify_by', '<', today())->count(),
         ]);
     }
 }

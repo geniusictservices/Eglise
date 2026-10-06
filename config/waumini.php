@@ -188,6 +188,7 @@ return [
             ['Offrande d’action de grâce', 'personal'],
             ['Don', 'personal'],
             ['Promesses et projets', 'personal'],
+            ['Retour sur avance', 'collective'],
             ['Contribution d’un département', 'group'],
             ['Autres recettes', 'collective'],
         ],
@@ -196,6 +197,9 @@ return [
             'Fournitures et matériel', 'Communication et téléphone', 'Évangélisation et missions', 'Œuvres sociales et entraide',
             'Accueil et réceptions', 'Quote-part au niveau supérieur', 'Rémunérations et motivations', 'Autres dépenses',
         ],
+        // Circuit des dépenses : nombre de signatures (1 à 3), délai pour justifier une avance.
+        'expenses' => ['approvals_required' => 2, 'advance_days' => 14, 'block_unjustified_advances' => false],
+
         // Message de relance d'une promesse, envoyé à la main sur WhatsApp ; chaque communauté peut l'adapter.
         'pledge_reminder' => 'Bonjour :name, que la paix du Seigneur soit avec vous. Merci pour votre promesse de :promised pour « :campaign ». À ce jour, nous avons reçu :received ; il reste :remaining. Que Dieu vous bénisse ! — :church',
 

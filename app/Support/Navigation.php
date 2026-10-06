@@ -14,7 +14,7 @@ class Navigation
             ->map(function ($section) {
                 $section['items'] = array_values(array_filter(
                     $section['items'],
-                    fn ($item) => Route::has($item['route']) && Gate::allows($item['can'])
+                    fn ($item) => Route::has($item['route']) && Gate::any((array) $item['can'])
                 ));
 
                 return $section;
@@ -48,6 +48,7 @@ class Navigation
                     ['route' => 'finances.index', 'label' => __('Finances'), 'icon' => 'wallet', 'can' => 'finance.view', 'mobile' => true, 'short' => __('Finances')],
                     ['route' => 'finances.collections', 'label' => __('Collecte du culte'), 'icon' => 'hand-coins', 'can' => 'finance.view'],
                     ['route' => 'finances.pledges', 'label' => __('Promesses'), 'icon' => 'heart-handshake', 'can' => 'finance.pledges'],
+                    ['route' => 'finances.expenses', 'label' => __('Dépenses'), 'icon' => 'banknote', 'can' => ['finance.view', 'finance.expenses.request', 'finance.expenses.approve']],
                     ['route' => 'finances.declarations', 'label' => __('Paiements déclarés'), 'icon' => 'smartphone', 'can' => 'finance.payments.validate'],
                     ['route' => 'finances.journal', 'label' => __('Opérations'), 'icon' => 'history', 'can' => 'finance.view'],
                     ['route' => 'finances.settings', 'label' => __('Comptes et catégories'), 'icon' => 'landmark', 'can' => 'finance.settings'],
@@ -75,15 +76,23 @@ class Navigation
 
     public static function isActive(string $route): bool
     {
-        $prefix = str_contains($route, '.') ? substr($route, 0, strrpos($route, '.')) : $route;
-        $current = request()->route()?->getName();
+        $current = (string) request()->route()?->getName();
 
-        // Un écran qui a sa propre entrée de menu n'allume pas sa voisine (Réglages du registre ≠ Membres).
-        if ($current !== $route && collect(self::definitions())->flatMap(fn ($s) => $s['items'])->contains('route', $current)) {
-            return false;
-        }
+        // L'entrée la plus précise l'emporte : « Dépenses » couvre la fiche d'une dépense,
+        // « Finances » (une entrée « liste ») couvre les autres sous-écrans du module.
+        $covers = function (string $item) use ($current): int {
+            $prefix = str_contains($item, '.') ? substr($item, 0, strrpos($item, '.')) : $item;
 
-        // Seule l'entrée « liste » d'un module couvre ses sous-écrans (fiche, modification…).
-        return request()->routeIs($route) || (str_ends_with($route, '.index') && request()->routeIs($prefix.'.*'));
+            return match (true) {
+                $item === $current => PHP_INT_MAX,
+                str_starts_with($current, $item.'.') => strlen($item),
+                str_ends_with($item, '.index') && str_starts_with($current, $prefix.'.') => strlen($prefix),
+                default => 0,
+            };
+        };
+
+        $best = collect(self::definitions())->flatMap(fn ($s) => $s['items'])->pluck('route')->sortByDesc($covers)->first();
+
+        return $covers($route) > 0 && $best === $route;
     }
 }
