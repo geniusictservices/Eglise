@@ -85,7 +85,7 @@ class Index extends Component
             'canArbitrate' => Gate::allows('budget.arbitrate') && ! $organization->isReadOnly(),
             'canPropose' => Gate::any(['budget.propose', 'budget.arbitrate']) && ! $organization->isReadOnly(),
             'linked' => (bool) DepartmentScope::member(auth()->user(), $organization),
-            'pendingOverruns' => Gate::allows('budget.authorize') ? BudgetOverrun::where('status', 'pending')->with('expense')->get() : collect(),
+            'pendingOverruns' => Gate::allows('budget.authorize') ? BudgetOverrun::where('status', 'pending')->with(['expense', 'payRun'])->get() : collect(),
         ]);
     }
 }

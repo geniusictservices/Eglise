@@ -22,11 +22,23 @@ Waumini paie les serviteurs de la communauté selon **ses propres règles** : se
 <td width="32%"><img src="captures/mobile/71-paie.png" alt="Paie sur téléphone"></td>
 </tr></table>
 
-① **Ce qui vous attend** : une paie à approuver, une paie approuvée à payer, une avance à décider.
+En haut, **ce qui vous attend** : une paie à approuver, une paie approuvée à payer, une avance ou un dépassement à décider.
+
+① **Le budget des salaires** de l'exercice : prévu, payé, engagé et disponible.
 
 ② **Les rythmes** et, pour chacun, le nombre de personnes et la masse habituelle à payer, devise par devise.
 
 ③ **Préparer une paie**, puis plus bas, **les paies** : leur période, leur montant net et leur étape.
+
+## La paie dans le budget
+
+Les salaires font partie du [budget](21-budget.md), sur la ligne **« Rémunérations et motivations »** du département de chaque personne :
+
+- **Prévoir** : en préparant le budget, la finance touche **Reprendre la masse salariale**. Chaque bénéficiaire devient une ligne : son net habituel multiplié par le nombre de paies de l'exercice (12 pour un rythme mensuel, 52 pour un rythme hebdomadaire…), ou, à la prestation, la moyenne des douze derniers mois. Une deuxième reprise met les lignes à jour, sans les doubler.
+- **Contrôler** : une paie présentée est **engagée** dans le budget. Si elle dépasse le disponible des salaires de son département, ou si cette ligne n'existe pas, la finance ne peut pas la présenter : elle demande d'abord un **dépassement**, en disant d'où viendra l'argent, et le pasteur l'autorise (voir [Le suivi du budget et les dépassements](22-suivi-budget.md)).
+- **Suivre** : l'accueil de la paie montre le budget des salaires de l'exercice : prévu, payé, engagé et disponible.
+
+Sans budget adopté pour l'exercice, la paie n'est pas contrôlée.
 
 ## Les rythmes de paie
 
@@ -84,6 +96,7 @@ Dans la paie, la finance :
 - saisit le **nombre de prestations** de chacun, pour un rythme à la prestation ;
 - ajoute une **prime ou une retenue ponctuelle** sur un bulletin (le crayon), pour cette paie seulement ;
 - **met à jour les bulletins** après avoir changé la fiche d'un bénéficiaire ;
+- vérifie le **budget des salaires** : ce que la paie demande, département par département, face au disponible ; si elle dépasse, **Demander un dépassement** ;
 - puis **présente la paie** au pasteur.
 
 ## Approuver
@@ -97,9 +110,13 @@ Dans la paie, la finance :
 
 ② **Approuver la paie**, avec une remarque si besoin, ou **Renvoyer à la finance** avec ses remarques (« ajoutez la prime de la secrétaire »).
 
-③ **Chaque bulletin** : base, brut, retenues (avances comprises) et net.
+③ **Le budget des salaires** : ce que la paie demande à chaque département, face au disponible.
+
+Plus bas, **chaque bulletin** : base, brut, retenues (avances comprises) et net.
 
 ## Payer
+
+Le pasteur voit aussi le budget des salaires de la paie ; s'il y a une demande de dépassement, il l'autorise ou la refuse sur la même page.
 
 Une fois la paie approuvée, la finance choisit, pour chaque devise de bulletins, **le compte** et **la devise payée**. Si elle diffère (des bulletins en francs payés en dollars, faute de francs en caisse), Waumini calcule **l'équivalent au taux du jour**. Chaque bulletin devient une sortie « Rémunérations et motivations » du département de la personne, visible dans les opérations, les rapports et le suivi du budget.
 

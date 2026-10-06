@@ -65,6 +65,56 @@
         <p class="mb-5 rounded-2xl border border-leaf-100 bg-leaf-50 p-4 text-sm text-leaf-600"><x-icon name="badge-check" class="mr-1 inline size-4" /> {{ __('Présentée par :s, approuvée par :n le :d.', ['s' => $r->submitter?->name, 'n' => $r->approver?->name, 'd' => $r->approved_at->translatedFormat('j M Y')]) }}@if ($r->paid_at) {{ __('Payée le :d.', ['d' => $r->paid_at->translatedFormat('j M Y')]) }}@endif</p>
     @endif
 
+    {{-- Le budget des salaires --}}
+    @if ($budgetLines)
+        @php $short = collect($budgetLines)->sum('missing') > 0; @endphp
+        <section @class(['card mb-5 p-5 sm:p-6', 'border-terra-300' => $short])>
+            <h2 class="mb-1 text-lg">{{ __('Budget des salaires') }}</h2>
+            <p class="mb-3 text-sm text-sand-700">{{ __('Ce que la paie demande, face à ce qui reste sur la ligne « Rémunérations et motivations » de chaque département, en dollars.') }}</p>
+            <ul class="divide-y divide-sand-100 text-sm">
+                @foreach ($budgetLines as $key => $l)
+                    <li class="flex flex-wrap items-center gap-x-4 gap-y-1 py-2.5">
+                        <span class="min-w-0 flex-1 font-semibold text-ink-800">{{ $l['department'] }}@if ($l['unbudgeted'])<span class="block text-xs font-normal text-terra-600">{{ __('Pas de ligne des salaires au budget') }}</span>@endif</span>
+                        <span class="tabular">{{ __('Paie : :n', ['n' => Money::format($l['needed'], 'USD')]) }}</span>
+                        <span @class(['tabular', 'text-terra-600 font-semibold' => $l['missing'] > 0, 'text-ink-700' => $l['missing'] <= 0])>{{ __('Disponible : :a', ['a' => Money::format($l['available'], 'USD')]) }}</span>
+                        @if ($l['missing'] > 0 && $canAskOverrun && ! $overruns->where('department_id', $l['department_id'])->where('status', 'pending')->count())
+                            <button type="button" wire:click="askOverrun('{{ $key }}')" class="btn-primary !min-h-0 !py-1.5 text-sm"><x-icon name="triangle-alert" class="size-4" /> {{ __('Demander un dépassement de :m', ['m' => Money::format($l['missing'], 'USD')]) }}</button>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+            @if ($short)
+                <p class="mt-2 rounded-xl bg-terra-50 p-3 text-sm text-terra-700">{{ __('La paie dépasse le budget des salaires : elle ne peut être présentée qu’après un dépassement autorisé par le pasteur, qui dit d’où viendra l’argent.') }}</p>
+            @else
+                <p class="mt-2 text-sm text-leaf-600"><x-icon name="circle-check" class="mr-1 inline size-4" /> {{ __('La paie tient dans le budget des salaires.') }}</p>
+            @endif
+        </section>
+    @endif
+
+    @foreach ($overruns as $o)
+        <section @class(['card mb-5 p-5 sm:p-6', 'border-ochre-300' => $o->status === 'pending'])>
+            <div class="flex flex-wrap items-center gap-2">
+                <h2 class="flex-1 text-lg">{{ __('Dépassement de :m · :d', ['m' => Money::format($o->amount, 'USD'), 'd' => $o->department?->name]) }}</h2>
+                <span @class(['badge', 'bg-ochre-100 text-ochre-700' => $o->status === 'pending', 'bg-leaf-50 text-leaf-600' => $o->status === 'authorized', 'bg-terra-50 text-terra-600' => $o->status === 'refused'])>{{ __(\App\Models\BudgetOverrun::STATUSES[$o->status]) }}</span>
+            </div>
+            <p class="mt-1 text-sm text-ink-800"><span class="font-semibold">{{ __('D’où vient l’argent :') }}</span> {{ $o->sourceLabel() }}</p>
+            <p class="text-sm text-ink-700">{{ $o->reason }}</p>
+            <p class="mt-1 text-xs text-sand-700">{{ __('Demandé par :n le :d', ['n' => $o->requester?->name, 'd' => $o->created_at->translatedFormat('j M Y')]) }}@if ($o->decided_at) · {{ $o->status === 'authorized' ? __('autorisé') : __('refusé') }} {{ __('par :n le :d', ['n' => $o->decider?->name, 'd' => $o->decided_at->translatedFormat('j M Y')]) }}@endif @if ($o->decision_note) · « {{ $o->decision_note }} »@endif</p>
+            @if ($o->status === 'pending' && $canDecideOverrun && $o->requested_by !== auth()->id())
+                <div class="mt-3 space-y-2">
+                    <textarea wire:model="decisionNote" rows="2" class="input" placeholder="{{ __('Remarque (obligatoire pour refuser)') }}" aria-label="{{ __('Remarque') }}"></textarea>
+                    @error('decisionNote') <p class="error">{{ $message }}</p> @enderror
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" wire:click="decideOverrun({{ $o->id }}, true)" class="btn-primary"><x-icon name="badge-check" class="size-4" /> {{ __('Autoriser le dépassement') }}</button>
+                        <button type="button" wire:click="decideOverrun({{ $o->id }}, false)" class="btn-ghost text-terra-600">{{ __('Refuser') }}</button>
+                    </div>
+                </div>
+            @elseif ($o->status === 'pending')
+                <p class="mt-2 text-sm text-ochre-700"><x-icon name="clock" class="mr-1 inline size-4" /> {{ __('En attente de la décision du pasteur.') }}</p>
+            @endif
+        </section>
+    @endforeach
+
     {{-- Les bulletins --}}
     <section class="card p-5 sm:p-6">
         <h2 class="mb-3 text-lg">{{ __('Bulletins') }}</h2>
@@ -101,6 +151,16 @@
             </table>
         </div>
     </section>
+
+    <x-modal name="overrun" :title="__('Dépasser le budget des salaires')">
+        <form wire:submit="requestOverrun" class="space-y-4">
+            <p class="text-sm text-ink-800">{{ __('Le pasteur décide. Dites-lui combien il manque et d’où viendra l’argent.') }}</p>
+            <div><label for="ov-amount" class="label">{{ __('Montant du dépassement (USD)') }}</label><input wire:model="overrun.amount" id="ov-amount" type="number" step="0.01" min="0" class="input tabular">@error('overrun.amount') <p class="error">{{ $message }}</p> @enderror</div>
+            @include('partials.overrun-source')
+            <div><label for="ov-reason" class="label">{{ __('Pourquoi la paie dépasse le budget') }}</label><textarea wire:model="overrun.reason" id="ov-reason" rows="3" class="input" placeholder="{{ __('Exemple : recrutement d’une deuxième sentinelle en cours d’année') }}"></textarea>@error('overrun.reason') <p class="error">{{ $message }}</p> @enderror</div>
+            <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'overrun' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Envoyer au pasteur') }}</button></div>
+        </form>
+    </x-modal>
 
     <x-modal name="slip" :title="$slip ? $slip->payee->displayName() : ''">
         @if ($slip)

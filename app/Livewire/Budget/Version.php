@@ -114,6 +114,20 @@ class Version extends Component
         $this->notify($count ? trans_choice(':count ligne reprise des propositions.|:count lignes reprises des propositions.', $count) : __('Aucune nouvelle proposition à reprendre.'));
     }
 
+    public function importPayroll(Budgets $budgets): void
+    {
+        abort_unless($this->canArbitrate(), 403);
+        try {
+            $count = $budgets->importPayroll($this->budget);
+        } catch (InvalidArgumentException $e) {
+            $this->notify($e->getMessage(), 'error');
+
+            return;
+        }
+        $this->fillAmounts();
+        $this->notify($count ? trans_choice(':count ligne de salaires reprise de la paie.|:count lignes de salaires reprises de la paie.', $count) : __('Personne n’est payé par la paie pour le moment.'));
+    }
+
     public function submit(Budgets $budgets): void
     {
         $this->authorizeWrite('budget.arbitrate');

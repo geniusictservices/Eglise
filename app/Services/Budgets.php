@@ -5,7 +5,11 @@ namespace App\Services;
 use App\Models\Budget;
 use App\Models\BudgetLine;
 use App\Models\BudgetProposal;
+use App\Models\Department;
+use App\Models\FinanceCategory;
 use App\Models\Organization;
+use App\Models\Payee;
+use App\Models\PaySlip;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -94,6 +98,52 @@ class Budgets
         return $count;
     }
 
+    /**
+     * Reprend la masse salariale : une ligne « Rémunérations et motivations »
+     * par personne payée, dans son département. Le montant est son net
+     * habituel multiplié par le nombre de paies de l'exercice ; à la
+     * prestation, la moyenne des douze derniers mois payés. Une ligne déjà
+     * reprise est mise à jour.
+     *
+     * @return int lignes ajoutées ou mises à jour
+     */
+    public function importPayroll(Budget $budget): int
+    {
+        $this->expectDraft($budget);
+        $organization = $budget->organization()->firstOrFail();
+        $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(
+            ['organization_id' => $organization->id, 'type' => 'expense', 'name' => 'Rémunérations et motivations'], ['position' => 50])->id;
+        $general = Department::withoutGlobalScope('organization')->where('organization_id', $organization->id)->where('is_system', true)->value('id');
+        $payroll = app(Payroll::class);
+        $control = app(BudgetControl::class);
+        $count = 0;
+
+        $payees = Payee::withoutOrganizationScope()->with(['schedule', 'member'])->where('organization_id', $organization->id)->where('is_active', true)->get();
+        foreach ($payees as $payee) {
+            $schedule = $payee->schedule;
+            if ($schedule->isPerService()) {
+                $paid = PaySlip::where('payee_id', $payee->id)->whereNotNull('paid_at')->where('paid_at', '>=', now()->subYear())->get();
+                $months = $paid->isEmpty() ? 0 : max(1, (int) ceil($paid->min('paid_at')->diffInMonths(now()) + 1));
+                $annual = $months ? (float) $paid->sum('net') / $months * 12 : 0.0;
+                $label = __('Paie : :n (:s)', ['n' => $payee->displayName(), 's' => $schedule->describe()]);
+            } else {
+                $periods = $schedule->unit === 'week' ? intdiv(52, $schedule->every) : intdiv(12, $schedule->every);
+                $annual = $payroll->compute($payee)['net'] * $periods;
+                $label = collect([__('Paie'), $payee->position ? $payee->position.' ('.$payee->displayName().')' : $payee->displayName()])->implode(' : ');
+            }
+            if ($annual <= 0) {
+                continue;
+            }
+            $amount = round($control->usd($organization, (string) round($annual, 2), $payee->currency), 2);
+            $line = $budget->lines()->where('payee_id', $payee->id)->first();
+            $values = ['type' => 'expense', 'department_id' => $payee->department_id ?? $general, 'category_id' => $category, 'label' => $label, 'amount' => $amount, 'payee_id' => $payee->id];
+            $line ? $line->update($values) : BudgetLine::create($values + ['budget_id' => $budget->id]);
+            $count++;
+        }
+
+        return $count;
+    }
+
     /** Nouvelle version, copie du budget adopté, pour une révision en cours d'exercice. */
     public function revise(Organization $organization, int $year, string $reason): Budget
     {
@@ -107,7 +157,7 @@ class Budgets
             $budget = Budget::create(['organization_id' => $organization->id, 'fiscal_year' => $year, 'version' => $version, 'status' => 'draft',
                 'reason' => $reason, 'prepared_by' => auth()->id()]);
             foreach ($adopted->lines as $line) {
-                BudgetLine::create($line->only(['type', 'department_id', 'category_id', 'label', 'amount', 'proposed_amount', 'proposal_line_id']) + ['budget_id' => $budget->id]);
+                BudgetLine::create($line->only(['type', 'department_id', 'category_id', 'label', 'amount', 'proposed_amount', 'proposal_line_id', 'payee_id']) + ['budget_id' => $budget->id]);
             }
 
             return $budget;

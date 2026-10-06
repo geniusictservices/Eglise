@@ -6,8 +6,11 @@ use App\Models\Budget;
 use App\Models\BudgetOverrun;
 use App\Models\Department;
 use App\Models\ExpenseRequest;
+use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Organization;
+use App\Models\PayRun;
+use App\Models\PaySlip;
 use App\Models\User;
 use App\Support\FiscalYear;
 use Brick\Math\BigDecimal;
@@ -92,6 +95,11 @@ class BudgetControl
         foreach (ExpenseRequest::withoutOrganizationScope()->where('organization_id', $organization->id)->whereIn('status', ['checked', 'approved'])->get() as $r) {
             $key = self::key($r->department_id, (int) $r->category_id);
             $rows['expense'][$key]['committed'] = ($rows['expense'][$key]['committed'] ?? 0) + $this->usdOrZero($organization, $r);
+        }
+
+        // L'engagé de la paie : les paies présentées ou approuvées, pas encore payées.
+        foreach ($this->payrollCommitments($organization, $general) as $key => $usd) {
+            $rows['expense'][$key]['committed'] = ($rows['expense'][$key]['committed'] ?? 0) + $usd;
         }
 
         foreach (BudgetOverrun::withoutOrganizationScope()->where('organization_id', $organization->id)->where('fiscal_year', $year)->where('status', 'authorized')->get() as $o) {
@@ -181,23 +189,118 @@ class BudgetControl
         if (BudgetOverrun::where('expense_request_id', $request->id)->where('status', 'pending')->exists()) {
             throw new InvalidArgumentException(__('Une demande de dépassement attend déjà la décision du pasteur.'));
         }
-        $year = $this->yearOf($request);
+
+        return $this->createOverrun($request->organization, $this->yearOf($request),
+            ['department_id' => $request->department_id, 'category_id' => $request->category_id, 'expense_request_id' => $request->id], $data);
+    }
+
+    /** La catégorie des salaires : « Rémunérations et motivations ». */
+    public static function salaryCategoryId(Organization $organization): ?int
+    {
+        return FinanceCategory::withoutOrganizationScope()->where('organization_id', $organization->id)
+            ->where('type', 'expense')->where('name', 'Rémunérations et motivations')->value('id');
+    }
+
+    /** L'exercice d'une paie : celui de la fin de sa période. */
+    public function yearOfRun(PayRun $run): int
+    {
+        return FiscalYear::of($run->loadMissing('organization')->organization, $run->period_end);
+    }
+
+    /**
+     * Le budget d'une paie, département par département : ce qu'elle demande
+     * (bulletins pas encore payés, en dollars), le disponible de la ligne des
+     * salaires et ce qui manque. Vide sans budget adopté pour l'exercice.
+     *
+     * @return array<string, array{department: ?string, department_id: ?int, category_id: int, needed: float, available: float, missing: float, unbudgeted: bool}>
+     */
+    public function payrollLines(PayRun $run): array
+    {
+        $organization = $run->loadMissing('organization')->organization;
+        $execution = $this->execution($organization, $this->yearOfRun($run));
+        $category = self::salaryCategoryId($organization);
+        if (! $execution['budget'] || ! $category) {
+            return [];
+        }
+        $general = Department::withoutGlobalScope('organization')->where('organization_id', $organization->id)->where('is_system', true)->value('id');
+        $own = in_array($run->status, ['submitted', 'approved'], true);
+
+        $lines = [];
+        foreach ($run->slips()->with('payee.department')->whereNull('paid_at')->where('net', '>', 0)->get() as $slip) {
+            $department = $slip->payee->department_id ?? $general;
+            $key = self::key($department, $category);
+            $lines[$key] ??= ['department' => $slip->payee->department?->name, 'department_id' => $department, 'category_id' => $category, 'needed' => 0.0];
+            $lines[$key]['needed'] += $this->slipUsd($organization, $slip);
+        }
+        foreach ($lines as $key => $line) {
+            $row = $execution['expense'][$key] ?? null;
+            // La paie elle-même n'est pas encore engagée tant qu'elle n'est pas présentée.
+            $available = $row ? $row['available'] + ($own ? $line['needed'] : 0) : 0.0;
+            $needed = round($line['needed'], 2);
+            $lines[$key] = array_merge($line, [
+                'department' => $line['department'] ?? Department::withoutGlobalScope('organization')->find($line['department_id'])?->name,
+                'needed' => $needed, 'available' => round($available, 2), 'missing' => max(0, round($needed - $available, 2)), 'unbudgeted' => ! $row,
+            ]);
+        }
+
+        return $lines;
+    }
+
+    public function requestPayrollOverrun(PayRun $run, string $key, array $data): BudgetOverrun
+    {
+        $line = $this->payrollLines($run)[$key] ?? throw new InvalidArgumentException(__('Cette ligne ne concerne pas la paie.'));
+        if (BudgetOverrun::where('pay_run_id', $run->id)->where('department_id', $line['department_id'])->where('status', 'pending')->exists()) {
+            throw new InvalidArgumentException(__('Une demande de dépassement attend déjà la décision du pasteur.'));
+        }
+
+        return $this->createOverrun($run->organization, $this->yearOfRun($run),
+            ['department_id' => $line['department_id'], 'category_id' => $line['category_id'], 'pay_run_id' => $run->id], $data);
+    }
+
+    private function createOverrun(Organization $organization, int $year, array $target, array $data): BudgetOverrun
+    {
         if ($data['source'] === 'transfer') {
-            $source = $this->execution($request->organization, $year)['expense'][self::key($data['source_department_id'] ?? null, (int) ($data['source_category_id'] ?? 0))] ?? null;
+            $source = $this->execution($organization, $year)['expense'][self::key($data['source_department_id'] ?? null, (int) ($data['source_category_id'] ?? 0))] ?? null;
             if (! $source || (float) $data['amount'] > $source['available'] + 0.004) {
                 throw new InvalidArgumentException(__('La ligne choisie n’a pas assez de disponible.'));
             }
         }
 
-        return BudgetOverrun::create([
-            'organization_id' => $request->organization_id, 'fiscal_year' => $year,
-            'department_id' => $request->department_id, 'category_id' => $request->category_id,
+        return BudgetOverrun::create($target + [
+            'organization_id' => $organization->id, 'fiscal_year' => $year,
             'amount' => $data['amount'], 'source' => $data['source'],
             'source_department_id' => $data['source'] === 'transfer' ? ($data['source_department_id'] ?? null) : null,
             'source_category_id' => $data['source'] === 'transfer' ? ($data['source_category_id'] ?? null) : null,
             'source_detail' => $data['source_detail'] ?? null, 'reason' => $data['reason'],
-            'expense_request_id' => $request->id, 'requested_by' => auth()->id(),
+            'requested_by' => auth()->id(),
         ]);
+    }
+
+    /** @return array<string, float> clé de ligne => dollars engagés par la paie */
+    private function payrollCommitments(Organization $organization, ?int $general): array
+    {
+        $category = self::salaryCategoryId($organization);
+        if (! $category) {
+            return [];
+        }
+        $commitments = [];
+        $slips = PaySlip::with('payee')->whereNull('paid_at')->where('net', '>', 0)
+            ->whereHas('run', fn ($q) => $q->where('organization_id', $organization->id)->whereIn('status', ['submitted', 'approved']))->get();
+        foreach ($slips as $slip) {
+            $key = self::key($slip->payee->department_id ?? $general, $category);
+            $commitments[$key] = ($commitments[$key] ?? 0) + $this->slipUsd($organization, $slip);
+        }
+
+        return $commitments;
+    }
+
+    private function slipUsd(Organization $organization, PaySlip $slip): float
+    {
+        try {
+            return $this->usd($organization, (string) $slip->net, $slip->currency);
+        } catch (InvalidArgumentException) {
+            return 0.0;
+        }
     }
 
     public function decide(BudgetOverrun $overrun, User $user, bool $authorize, ?string $note = null): void

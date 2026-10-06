@@ -58,6 +58,11 @@ class BudgetOverrun extends Model
         return $this->belongsTo(ExpenseRequest::class, 'expense_request_id');
     }
 
+    public function payRun(): BelongsTo
+    {
+        return $this->belongsTo(PayRun::class);
+    }
+
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by');

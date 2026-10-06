@@ -3,9 +3,11 @@
 namespace App\Livewire\Payroll;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Models\BudgetOverrun;
 use App\Models\CashAccount;
 use App\Models\PayRun;
 use App\Models\PaySlip;
+use App\Services\BudgetControl;
 use App\Services\Ledger;
 use App\Services\PayRuns;
 use Illuminate\Support\Facades\Gate;
@@ -28,6 +30,13 @@ class Run extends Component
     public array $adjustment = ['label' => '', 'kind' => 'earning', 'amount' => ''];
 
     public string $note = '';
+
+    /** Demande de dépassement du budget des salaires, pour une ligne (département). */
+    public array $overrun = [];
+
+    public string $overrunKey = '';
+
+    public string $decisionNote = '';
 
     /** Paiement : [devise du bulletin => ['account' => id, 'currency' => devise payée]] */
     public array $payment = [];
@@ -131,6 +140,57 @@ class Run extends Component
         $this->attempt(fn () => $runs->pay($this->run, $currency, CashAccount::findOrFail($choice['account']), $choice['currency']), __('Paie payée : les sorties sont enregistrées dans le compte.'), "payment.$currency.account");
     }
 
+    public function askOverrun(BudgetControl $control, string $key): void
+    {
+        $this->authorizeWrite('payroll.manage');
+        $line = $control->payrollLines($this->run)[$key] ?? abort(404);
+        $this->overrunKey = $key;
+        $this->overrun = ['amount' => (string) ceil($line['missing']), 'source' => 'transfer', 'source_key' => '', 'source_detail' => '', 'reason' => ''];
+        $this->resetValidation();
+        $this->dispatch('open-modal', name: 'overrun');
+    }
+
+    public function requestOverrun(BudgetControl $control): void
+    {
+        $this->authorizeWrite('payroll.manage');
+        $data = $this->validate([
+            'overrun.amount' => 'required|numeric|gt:0',
+            'overrun.source' => ['required', Rule::in(array_keys(BudgetOverrun::SOURCES))],
+            'overrun.source_key' => [Rule::requiredIf(($this->overrun['source'] ?? '') === 'transfer'), 'nullable', 'regex:/^\d+-\d+$/'],
+            'overrun.source_detail' => [Rule::requiredIf(($this->overrun['source'] ?? '') !== 'transfer'), 'nullable', 'string', 'max:255'],
+            'overrun.reason' => 'required|string|min:10|max:1000',
+        ], [
+            'overrun.source_key.required' => __('Choisissez la ligne du budget qui cède l’argent.'),
+            'overrun.source_detail.required' => __('Précisez d’où vient l’argent (exemple : excédent 2025, don de la famille Mbuyi).'),
+        ], ['overrun.amount' => __('montant'), 'overrun.reason' => __('motif')])['overrun'];
+
+        [$department, $category] = $data['source'] === 'transfer' ? array_map('intval', explode('-', $data['source_key'])) : [null, null];
+        try {
+            $control->requestPayrollOverrun($this->run, $this->overrunKey, $data + ['source_department_id' => $department ?: null, 'source_category_id' => $category]);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('overrun.amount', $e->getMessage());
+
+            return;
+        }
+        $this->dispatch('close-modal', name: 'overrun');
+        $this->notify(__('Demande de dépassement envoyée au pasteur.'));
+    }
+
+    public function decideOverrun(BudgetControl $control, int $id, bool $authorize): void
+    {
+        $this->authorizeWrite('budget.authorize');
+        $overrun = BudgetOverrun::where('pay_run_id', $this->run->id)->findOrFail($id);
+        try {
+            $control->decide($overrun, auth()->user(), $authorize, trim($this->decisionNote) ?: null);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('decisionNote', $e->getMessage());
+
+            return;
+        }
+        $this->decisionNote = '';
+        $this->notify($authorize ? __('Dépassement autorisé : la paie peut être présentée.') : __('Dépassement refusé.'));
+    }
+
     private function attempt(callable $action, string $message, string $field = 'note'): void
     {
         try {
@@ -160,7 +220,22 @@ class Run extends Component
             }
         }
 
+        // Le budget des salaires pour cette paie, tant qu'elle n'est pas payée.
+        $control = app(BudgetControl::class);
+        $budgetLines = in_array($run->status, ['draft', 'submitted', 'approved'], true) ? $control->payrollLines($run) : [];
+        $overruns = BudgetOverrun::with(['requester', 'decider', 'department', 'sourceDepartment', 'sourceCategory'])->where('pay_run_id', $run->id)->latest()->get();
+        $sourceLines = [];
+        if (collect($budgetLines)->sum('missing') > 0) {
+            $sourceLines = collect($control->execution($organization, $control->yearOfRun($run))['expense'])
+                ->reject(fn ($l, $k) => isset($budgetLines[$k]) || $l['available'] <= 0)->sortByDesc('available')->all();
+        }
+
         return view('livewire.payroll.run', [
+            'budgetLines' => $budgetLines,
+            'overruns' => $overruns,
+            'sourceLines' => $sourceLines,
+            'canAskOverrun' => $writable && $run->status === 'draft' && Gate::allows('payroll.manage'),
+            'canDecideOverrun' => $writable && Gate::allows('budget.authorize'),
             'totals' => $run->totals(),
             'balances' => $balances,
             'slip' => $this->slipId ? PaySlip::with('payee')->find($this->slipId) : null,

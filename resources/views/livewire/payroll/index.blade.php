@@ -29,6 +29,22 @@
         @endforeach
     </section>
 
+    @if ($salaryBudget)
+        <section class="card mb-5 p-5">
+            <div class="mb-2 flex items-center gap-3"><h2 class="flex-1 text-base">{{ __('Budget des salaires :y', ['y' => $salaryBudget['year']]) }}</h2>
+                <a href="{{ route('budget.execution') }}" class="text-sm font-semibold text-ink-600 hover:underline">{{ __('Suivi du budget') }}</a></div>
+            <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                @foreach ([[__('Prévu'), $salaryBudget['planned']], [__('Payé'), $salaryBudget['actual']], [__('Engagé'), $salaryBudget['committed']], [__('Disponible'), $salaryBudget['available']]] as [$label, $value])
+                    <div><dt class="text-xs text-sand-700">{{ $label }}</dt><dd @class(['text-lg font-semibold tabular', 'text-terra-600' => $label === __('Disponible') && $value < 0, 'text-ink-800' => ! ($label === __('Disponible') && $value < 0)])>{{ Money::format($value, 'USD') }}</dd></div>
+                @endforeach
+            </dl>
+            @php $used = $salaryBudget['planned'] > 0 ? min(100, round(($salaryBudget['actual'] + $salaryBudget['committed']) / $salaryBudget['planned'] * 100)) : 100; @endphp
+            <span class="mt-3 block h-2 overflow-hidden rounded-full bg-sand-100"><span @class(['block h-full rounded-full', 'bg-terra-500' => $used >= 100, 'bg-leaf-500' => $used < 100]) style="width: {{ $used }}%"></span></span>
+        </section>
+    @elseif ($canManage)
+        <p class="mb-5 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800">{{ __('Pas de budget adopté pour cet exercice : la paie n’est pas contrôlée. Dans le budget, « Reprendre la masse salariale » prévoit les salaires de chacun.') }}</p>
+    @endif
+
     <h2 class="mb-2 text-base">{{ __('Les paies') }}</h2>
     <ul class="space-y-2.5">
         @forelse ($runs as $r)

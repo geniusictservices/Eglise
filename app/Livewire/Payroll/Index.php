@@ -3,12 +3,15 @@
 namespace App\Livewire\Payroll;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Models\BudgetOverrun;
 use App\Models\Payee;
 use App\Models\PayRun;
 use App\Models\PaySchedule;
 use App\Models\SalaryAdvance;
+use App\Services\BudgetControl;
 use App\Services\Payroll;
 use App\Services\PayRuns;
+use App\Support\FiscalYear;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -84,10 +87,31 @@ class Index extends Component
             $alerts[] = ['url' => route('payroll.advances'), 'text' => trans_choice(':count avance sur salaire attend une action.|:count avances sur salaire attendent une action.', $advances)];
         }
 
+        // Le budget des salaires de l'exercice : toutes les lignes « Rémunérations et motivations ».
+        $control = app(BudgetControl::class);
+        $category = BudgetControl::salaryCategoryId($this->organization());
+        $year = FiscalYear::current($this->organization());
+        $execution = $category ? $control->execution($this->organization(), $year) : null;
+        $salaryBudget = null;
+        if ($execution && $execution['budget']) {
+            $rows = collect($execution['expense'])->where('category_id', $category);
+            $salaryBudget = [
+                'planned' => round($rows->sum(fn ($r) => $r['budgeted'] + $r['overruns'] - $r['transfers']), 2),
+                'actual' => round($rows->sum('actual'), 2), 'committed' => round($rows->sum('committed'), 2), 'available' => round($rows->sum('available'), 2),
+                'year' => FiscalYear::label($this->organization(), $year),
+            ];
+        }
+        if (Gate::allows('budget.authorize') && ($overruns = BudgetOverrun::with('payRun')->whereNotNull('pay_run_id')->where('status', 'pending')->get())->isNotEmpty()) {
+            foreach ($overruns as $o) {
+                $alerts[] = ['url' => route('payroll.run', $o->payRun), 'text' => __('Un dépassement du budget des salaires (paie :p) attend votre décision.', ['p' => $o->payRun->label()])];
+            }
+        }
+
         return view('livewire.payroll.index', [
             'runs' => PayRun::with(['schedule', 'slips'])->latest('period_start')->latest('id')->limit(36)->get(),
             'preview' => $preview,
             'alerts' => $alerts,
+            'salaryBudget' => $salaryBudget,
             'schedules' => $schedules,
             'payees' => $payees,
             'mass' => $mass,

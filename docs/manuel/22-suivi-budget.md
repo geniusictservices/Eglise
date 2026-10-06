@@ -17,7 +17,7 @@ En haut, les dépenses et les recettes prévues et réalisées, et la part de l'
 
 - **Prévu** : le budget adopté, plus les dépassements autorisés, moins ce que la ligne a cédé à d'autres ;
 - **Dépensé** : les dépenses payées, moins ce qui est revenu des avances ;
-- **Engagé** : les dépenses contrôlées ou approuvées, pas encore payées ;
+- **Engagé** : les dépenses contrôlées ou approuvées, et les paies présentées ou approuvées, pas encore payées ;
 - **Disponible** : ce qui reste ;
 - la barre : verte tant que la ligne suit le rythme de l'année, orange quand elle va plus vite, rouge quand elle est épuisée.
 
@@ -31,6 +31,8 @@ Quand la finance contrôle une demande de dépense (voir [Les dépenses](19-depe
 - Si elle **dépasse** le disponible, ou si elle **n'est pas prévue** au budget, le bouton **Contrôlée** disparaît : la finance doit **demander un dépassement**.
 
 En demandant une dépense, le responsable voit déjà le disponible de la ligne qu'il choisit.
+
+**La paie** suit la même règle : une paie qui dépasse le budget des salaires ne peut être présentée qu'après un dépassement autorisé. Voir [La paie](24-paie.md#la-paie-dans-le-budget).
 
 Sans budget adopté pour l'exercice, il n'y a pas de contrôle.
 

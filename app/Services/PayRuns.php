@@ -12,6 +12,7 @@ use App\Models\PaySlip;
 use App\Models\SalaryAdvance;
 use App\Models\SalaryAdvanceRepayment;
 use App\Models\User;
+use App\Support\Money;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
@@ -91,6 +92,11 @@ class PayRuns
         $this->expect($run, 'draft');
         if (! $run->slips()->where('net', '>', 0)->exists()) {
             throw new InvalidArgumentException(__('Aucun montant à payer dans cette paie.'));
+        }
+        // Le contrôle budgétaire : au-delà du disponible des salaires, il faut un dépassement autorisé.
+        $missing = collect(app(BudgetControl::class)->payrollLines($run))->sum('missing');
+        if ($missing > 0.004) {
+            throw new InvalidArgumentException(__('La paie dépasse le budget des salaires de :m : demandez l’autorisation de dépassement, en disant d’où viendra l’argent.', ['m' => Money::format($missing, 'USD')]));
         }
         $run->update(['status' => 'submitted', 'submitted_by' => auth()->id(), 'submitted_at' => now(), 'return_note' => null]);
     }

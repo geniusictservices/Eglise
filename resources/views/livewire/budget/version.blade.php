@@ -16,6 +16,7 @@
         <div class="mt-4 flex flex-wrap gap-2">
             @if ($canArbitrate)
                 <button type="button" wire:click="importProposals" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="download" class="size-4" /> {{ __('Reprendre les propositions') }}</button>
+                <button type="button" wire:click="importPayroll" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="briefcase" class="size-4" /> {{ __('Reprendre la masse salariale') }}</button>
                 <button type="button" wire:click="editLine(null, 'expense')" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="plus" class="size-4" /> {{ __('Ajouter une ligne') }}</button>
             @endif
             @if ($b->status === 'adopted' || $b->status === 'superseded')

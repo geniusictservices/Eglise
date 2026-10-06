@@ -40,7 +40,7 @@ class Execution extends Component
             'elapsed' => $elapsed,
             'yearLabel' => FiscalYear::label($organization, $this->year),
             'years' => collect(range($current + 1, $current - 2))->mapWithKeys(fn ($y) => [$y => FiscalYear::label($organization, $y)])->all(),
-            'overruns' => BudgetOverrun::with(['department', 'category', 'expense', 'decider', 'sourceDepartment', 'sourceCategory'])->where('fiscal_year', $this->year)->latest()->get(),
+            'overruns' => BudgetOverrun::with(['department', 'category', 'expense', 'payRun', 'decider', 'sourceDepartment', 'sourceCategory'])->where('fiscal_year', $this->year)->latest()->get(),
             'names' => $names,
         ]);
     }

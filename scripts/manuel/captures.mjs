@@ -883,7 +883,7 @@ const SCENES = [
         run: async (page) => {
             await page.goto(`${BASE}/paie`);
             await settle(page);
-            await mark(page, [{ selector: 'main a[href*="/paie/"].mb-3', label: '1' }, { selector: 'main section.grid', label: '2' }, { selector: 'main button[wire\\:click=askPrepare]', label: '3' }]);
+            await mark(page, [{ selector: 'main section.card', text: 'Budget des salaires', label: '1' }, { selector: 'main section.grid', label: '2' }, { selector: 'main button[wire\\:click=askPrepare]', label: '3' }]);
         },
     },
     {
@@ -927,7 +927,7 @@ const SCENES = [
             await page.locator('main ul a', { hasText: 'Octobre' }).click();
             await page.waitForURL(/\/paie\/\d+$/);
             await settle(page);
-            await mark(page, [{ selector: 'main section.wax .flex-wrap', label: '1' }, { selector: 'main form[wire\\:submit=approve] button.btn-primary', label: '2' }, { selector: 'main tbody tr', text: 'Kambale', label: '3' }]);
+            await mark(page, [{ selector: 'main section.wax .flex-wrap', label: '1' }, { selector: 'main form[wire\\:submit=approve] button.btn-primary', label: '2' }, { selector: 'main section.card', text: 'Budget des salaires', label: '3' }]);
         },
     },
     {

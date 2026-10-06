@@ -7,9 +7,9 @@
     </x-page-header>
 
     @foreach ($pendingOverruns as $o)
-        <a href="{{ $o->expense ? route('finances.expenses.show', $o->expense) : route('budget.execution') }}" class="mb-3 flex items-center gap-3 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800 hover:bg-ochre-100">
+        <a href="{{ $o->expense ? route('finances.expenses.show', $o->expense) : ($o->payRun ? route('payroll.run', $o->payRun) : route('budget.execution')) }}" class="mb-3 flex items-center gap-3 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800 hover:bg-ochre-100">
             <x-icon name="triangle-alert" class="size-5 text-ochre-600" />
-            <span class="flex-1 font-semibold">{{ __('Dépassement de :m demandé :e : il attend votre décision.', ['m' => Money::format($o->amount, 'USD'), 'e' => $o->expense ? '('.$o->expense->number.')' : '']) }}</span>
+            <span class="flex-1 font-semibold">{{ __('Dépassement de :m demandé :e : il attend votre décision.', ['m' => Money::format($o->amount, 'USD'), 'e' => $o->expense ? '('.$o->expense->number.')' : ($o->payRun ? '('.__('paie :p', ['p' => $o->payRun->label()]).')' : '')]) }}</span>
             <x-icon name="chevron-right" class="size-4" />
         </a>
     @endforeach

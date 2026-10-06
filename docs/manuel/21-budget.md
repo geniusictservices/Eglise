@@ -85,6 +85,8 @@ La première fois, la finance touche **Préparer le budget** : Waumini crée la 
 
 ③ **Chaque ligne**, regroupée par département. Pendant l'arbitrage, la finance change le montant directement dans la ligne ; le **montant proposé** reste affiché quand il est différent, avec la remarque de l'arbitrage (« Reportée à l'an prochain »).
 
+**Reprendre la masse salariale** ajoute les salaires : une ligne « Rémunérations et motivations » par personne payée, dans son département, calculée d'après la [paie](24-paie.md#la-paie-dans-le-budget).
+
 La finance ajoute aussi les lignes communes avec **Ajouter une ligne** : les charges de l'Administration générale (électricité, sentinelle, entretien) et les recettes générales (offrandes, dîmes). Puis **Présenter le budget**.
 
 ## Approuver
