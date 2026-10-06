@@ -4,7 +4,7 @@
     $date = now()->timezone($organization->timezone)->translatedFormat('l j F');
     $done = collect($checklist)->where('done', true)->count();
     $percent = count($checklist) ? (int) round($done / count($checklist) * 100) : 100;
-    $tones = ['ink' => 'bg-ink-700 text-white', 'ochre' => 'bg-ochre-500 text-[#2A1B04]', 'terra' => 'bg-terra-500 text-white', 'leaf' => 'bg-leaf-500 text-white'];
+    $tones = ['ink' => 'bg-ink-700 text-white', 'ochre' => 'bg-ochre-500 text-on-accent', 'terra' => 'bg-terra-500 text-white', 'leaf' => 'bg-leaf-500 text-white'];
 @endphp
 <div class="space-y-5 lg:space-y-6">
     {{-- Salutation : bandeau wax sur téléphone, titre simple sur ordinateur --}}
@@ -12,7 +12,7 @@
         <p class="text-sm text-ink-100 first-letter:uppercase">{{ $date }}</p>
         <h1 class="mt-0.5 text-2xl font-semibold text-white">{{ __('Bonjour, :name', ['name' => $firstName]) }}</h1>
         @if ($trialDaysLeft !== null)
-            <a href="{{ route('subscription') }}" class="badge mt-3 bg-ochre-500 text-[#2A1B04]"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</a>
+            <a href="{{ route('subscription') }}" class="badge mt-3 bg-ochre-500 text-on-accent"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</a>
         @endif
     </div>
 
@@ -23,7 +23,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
             @if ($trialDaysLeft !== null)
-                <a href="{{ route('subscription') }}" class="badge bg-ochre-100 text-ochre-700 hover:bg-ochre-500 hover:text-[#2A1B04]"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</a>
+                <a href="{{ route('subscription') }}" class="badge bg-ochre-100 text-ochre-700 hover:bg-ochre-500 hover:text-on-accent"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</a>
             @endif
         </div>
     </div>

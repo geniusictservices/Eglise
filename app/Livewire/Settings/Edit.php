@@ -4,6 +4,7 @@ namespace App\Livewire\Settings;
 
 use App\Livewire\Concerns\WritesInOrganization;
 use App\Support\Phone;
+use App\Support\Theme;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
@@ -42,6 +43,17 @@ class Edit extends Component
 
     public bool $supportAccess = false;
 
+    // Apparence
+    public string $preset = 'wax';
+
+    public string $primaryColor = '';
+
+    public string $accentColor = '';
+
+    public bool $showPattern = true;
+
+    public bool $hasOwnTheme = false;
+
     public function mount(): void
     {
         $this->authorize('organization.settings');
@@ -54,6 +66,82 @@ class Edit extends Component
             'terms' => $o->terminology ?? [],
             'supportAccess' => $o->support_access_until?->isFuture() ?? false,
         ]);
+
+        $this->loadTheme();
+    }
+
+    private function loadTheme(): void
+    {
+        $o = $this->organization();
+        $own = $o->settings['theme'] ?? null;
+        $theme = $o->theme();
+
+        $this->hasOwnTheme = (bool) $own;
+        $this->preset = $own['preset'] ?? (array_search([$theme->primary, $theme->accent], array_map(fn ($p) => [$p['primary'], $p['accent']], Theme::PRESETS), true) ?: 'custom');
+        $this->primaryColor = $theme->primary;
+        $this->accentColor = $theme->accent;
+        $this->showPattern = $theme->pattern;
+    }
+
+    public function choosePreset(string $preset): void
+    {
+        abort_unless(isset(Theme::PRESETS[$preset]), 404);
+        $this->preset = $preset;
+        $this->primaryColor = Theme::PRESETS[$preset]['primary'];
+        $this->accentColor = Theme::PRESETS[$preset]['accent'];
+        $this->resetValidation();
+    }
+
+    public function updatedPrimaryColor(): void
+    {
+        $this->preset = 'custom';
+    }
+
+    public function updatedAccentColor(): void
+    {
+        $this->preset = 'custom';
+    }
+
+    public function saveTheme()
+    {
+        $this->authorizeWrite('organization.settings');
+
+        $this->validate([
+            'primaryColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/', function ($attribute, $value, $fail) {
+                if (! Theme::primaryIsReadable($value)) {
+                    $fail(__('Cette couleur est trop claire : le texte blanc posé dessus serait illisible. Choisissez une couleur plus foncée.'));
+                }
+            }],
+            'accentColor' => ['required', 'regex:/^#[0-9A-Fa-f]{6}$/'],
+        ], attributes: ['primaryColor' => __('couleur principale'), 'accentColor' => __('couleur d’accent')]);
+
+        $organization = $this->organization();
+        $organization->update(['settings' => array_merge($organization->settings ?? [], [
+            'theme' => [
+                'preset' => $this->preset,
+                'primary' => strtoupper($this->primaryColor),
+                'accent' => strtoupper($this->accentColor),
+                'pattern' => $this->showPattern,
+            ],
+        ])]);
+
+        session()->flash('status', __('Apparence enregistrée.'));
+
+        return $this->redirectRoute('settings.edit', ['onglet' => 'apparence']);
+    }
+
+    /** Revient aux couleurs du niveau supérieur (ou de Waumini). */
+    public function resetTheme()
+    {
+        $this->authorizeWrite('organization.settings');
+        $organization = $this->organization();
+        $settings = $organization->settings ?? [];
+        unset($settings['theme']);
+        $organization->update(['settings' => $settings ?: null]);
+
+        session()->flash('status', __('Couleurs par défaut rétablies.'));
+
+        return $this->redirectRoute('settings.edit', ['onglet' => 'apparence']);
     }
 
     public function saveGeneral(): void
@@ -116,6 +204,10 @@ class Edit extends Component
             'inherited' => collect(array_keys(trans('terms', [], 'fr')))
                 ->mapWithKeys(fn ($key) => [$key => $organization->parent ? $organization->parent->term($key) : __('terms.'.$key)]),
             'locales' => config('waumini.locales'),
+            'presets' => Theme::PRESETS,
+            'preview' => Theme::validHex($this->primaryColor) && Theme::validHex($this->accentColor)
+                ? new Theme($this->primaryColor, $this->accentColor, $this->showPattern)
+                : $organization->theme(),
         ]);
     }
 }

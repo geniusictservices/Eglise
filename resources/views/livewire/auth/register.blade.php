@@ -6,7 +6,7 @@
     <ol class="mt-6 flex items-center gap-3 text-sm" aria-label="{{ __('Étapes') }}">
         @foreach ([1 => __('Votre communauté'), 2 => __('Votre compte')] as $n => $label)
             <li class="flex items-center gap-2">
-                <span @class(['grid size-7 place-items-center rounded-full text-xs font-semibold', 'bg-ochre-500 text-[#2A1B04]' => $step >= $n, 'bg-sand-200 text-sand-700' => $step < $n])>{{ $n }}</span>
+                <span @class(['grid size-7 place-items-center rounded-full text-xs font-semibold', 'bg-ochre-500 text-on-accent' => $step >= $n, 'bg-sand-200 text-sand-700' => $step < $n])>{{ $n }}</span>
                 <span @class(['font-semibold text-ink-800' => $step === $n, 'text-sand-700' => $step !== $n])>{{ $label }}</span>
             </li>
             @if ($n === 1)<li class="h-px w-8 bg-sand-300" aria-hidden="true"></li>@endif

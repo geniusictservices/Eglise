@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use App\Support\Theme;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -195,6 +196,18 @@ class Organization extends Model
         }
 
         return $default ?? __('terms.'.$key);
+    }
+
+    /** Couleurs de l'espace : celles du nœud, sinon du niveau supérieur le plus proche. */
+    public function theme(): Theme
+    {
+        foreach (array_merge([$this], array_reverse($this->ancestors()->all())) as $organization) {
+            if (! empty($organization->settings['theme'])) {
+                return Theme::fromSettings($organization->settings['theme']);
+            }
+        }
+
+        return Theme::default();
     }
 
     public function auditOrganizationId(): ?int

@@ -39,7 +39,7 @@
             @endphp
             <article @class(['card relative flex flex-col p-5', 'ring-2 ring-ochre-500' => ! empty($pack['featured'])])>
                 @if (! empty($pack['featured']))
-                    <span class="badge absolute -top-3 left-5 bg-ochre-500 text-[#2A1B04]">{{ __('Le plus choisi') }}</span>
+                    <span class="badge absolute -top-3 left-5 bg-ochre-500 text-on-accent">{{ __('Le plus choisi') }}</span>
                 @endif
                 <h3 class="text-xl">{{ $pack['name'] }}</h3>
                 <p class="text-sm italic text-sand-700">{{ __($pack['meaning']) }}</p>

@@ -1,6 +1,6 @@
 <div x-data="{ open: false, q: '' }" @click.outside="open = false" @keydown.escape="open = false" class="relative">
     <button type="button" @click="open = !open" class="flex w-full items-center gap-3 rounded-2xl bg-white/10 px-3 py-2.5 text-left ring-1 ring-white/15 backdrop-blur-sm hover:bg-white/15" :aria-expanded="open">
-        <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-ochre-500 text-sm font-semibold text-[#2A1B04]">
+        <span class="grid size-9 shrink-0 place-items-center rounded-xl bg-ochre-500 text-sm font-semibold text-on-accent">
             {{ $current->initials() }}
         </span>
         <span class="min-w-0 flex-1">

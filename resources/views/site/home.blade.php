@@ -2,11 +2,11 @@
     @php
         $modules = [
             ['icon' => 'users', 'tone' => 'bg-ink-700 text-white', 'title' => __('Membres et ménages'), 'text' => __('Chaque fidèle a sa fiche, son numéro, ses étapes de vie (baptême, mariage…). Le registre papier est repris une fois pour toutes.')],
-            ['icon' => 'coins', 'tone' => 'bg-ochre-500 text-[#2A1B04]', 'title' => __('Finances'), 'text' => __('Caisses en dollars et en francs, collecte du culte, dîmes avec reçu, dépenses validées. Chaque franc a une caisse, une date et un auteur.')],
+            ['icon' => 'coins', 'tone' => 'bg-ochre-500 text-on-accent', 'title' => __('Finances'), 'text' => __('Caisses en dollars et en francs, collecte du culte, dîmes avec reçu, dépenses validées. Chaque franc a une caisse, une date et un auteur.')],
             ['icon' => 'hand-coins', 'tone' => 'bg-terra-500 text-white', 'title' => __('Promesses'), 'text' => __('Promis, versé, reste à verser, pour un projet, une campagne ou une contribution régulière. Relance en un clic sur WhatsApp.')],
             ['icon' => 'scroll-text', 'tone' => 'bg-leaf-500 text-white', 'title' => __('Plan d’action et budget'), 'text' => __('Les départements proposent leurs besoins, la finance arbitre, le budget est adopté puis suivi. Les objectifs avancent en pourcentage.')],
             ['icon' => 'wallet', 'tone' => 'bg-ink-700 text-white', 'title' => __('Paie'), 'text' => __('Chaque communauté définit qui elle paie et comment : gains, retenues, devise, bulletins si elle le souhaite.')],
-            ['icon' => 'calendar-days', 'tone' => 'bg-ochre-500 text-[#2A1B04]', 'title' => __('Groupes et activités'), 'text' => __('Chorales, jeunesse, mamans, cellules : réunions, présences, calendrier des cultes, notifications aux membres.')],
+            ['icon' => 'calendar-days', 'tone' => 'bg-ochre-500 text-on-accent', 'title' => __('Groupes et activités'), 'text' => __('Chorales, jeunesse, mamans, cellules : réunions, présences, calendrier des cultes, notifications aux membres.')],
             ['icon' => 'file-text', 'tone' => 'bg-terra-500 text-white', 'title' => __('Documents et registres'), 'text' => __('Attestations en une minute, imprimées et signées, authentifiées par QR code. Les anciens registres sont repris.')],
             ['icon' => 'heart-handshake', 'tone' => 'bg-leaf-500 text-white', 'title' => __('Suivi pastoral'), 'text' => __('Visites, malades, deuils, catéchumènes, demandes de prière. Les notes confidentielles restent au pasteur.')],
         ];
@@ -66,7 +66,7 @@
                 ] as $i => [$tone, $t, $d])
                     <div class="space-y-3">
                         <span @class(['grid size-12 place-items-center rounded-2xl text-xl font-semibold',
-                            'bg-ink-700 text-white' => $tone === 'ink', 'bg-ochre-500 text-[#2A1B04]' => $tone === 'ochre', 'bg-terra-500 text-white' => $tone === 'terra'])>{{ $i + 1 }}</span>
+                            'bg-ink-700 text-white' => $tone === 'ink', 'bg-ochre-500 text-on-accent' => $tone === 'ochre', 'bg-terra-500 text-white' => $tone === 'terra'])>{{ $i + 1 }}</span>
                         <h3 class="text-xl">{{ $t }}</h3>
                         <p class="text-sand-700">{{ $d }}</p>
                     </div>
@@ -169,7 +169,7 @@
                 [__('Formez l’équipe'), __('Un manuel illustré dans l’application, et Genius ICT à Goma pour vous accompagner.')],
             ] as $i => [$t, $d])
                 <li class="card p-5">
-                    <span class="grid size-9 place-items-center rounded-full bg-ochre-500 font-semibold text-[#2A1B04]">{{ $i + 1 }}</span>
+                    <span class="grid size-9 place-items-center rounded-full bg-ochre-500 font-semibold text-on-accent">{{ $i + 1 }}</span>
                     <h3 class="mt-3 text-lg">{{ $t }}</h3>
                     <p class="mt-1 text-sm text-sand-700">{{ $d }}</p>
                 </li>

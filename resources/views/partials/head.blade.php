@@ -3,7 +3,8 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>{{ $title ? $title.' · ' : '' }}Waumini</title>
 <meta name="description" content="Waumini, la plateforme de gestion des communautés de foi.">
-<meta name="theme-color" content="#2C2F6B">
+@php $theme = current_organization()?->theme() ?? \App\Support\Theme::default(); @endphp
+<meta name="theme-color" content="{{ $theme->primary }}">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -16,3 +17,7 @@
 <link rel="icon" href="{{ asset('icons/favicon.svg') }}" type="image/svg+xml">
 <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
 @vite(['resources/css/app.css', 'resources/js/app.js'])
+@unless ($theme->isDefault() && $theme->pattern)
+    {{-- Couleurs choisies par la communauté (Paramètres > Apparence) --}}
+    <style>{!! $theme->css() !!}@unless ($theme->pattern) .wax{background-image:none}@endunless</style>
+@endunless

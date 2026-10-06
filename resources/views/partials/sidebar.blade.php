@@ -20,10 +20,10 @@
                         <li>
                             <a href="{{ route($item['route']) }}" @class([
                                 'flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] transition',
-                                'bg-ochre-500 font-semibold text-[#2A1B04] shadow-sm' => $active,
+                                'bg-ochre-500 font-semibold text-on-accent shadow-sm' => $active,
                                 'text-ink-50/90 hover:bg-white/10 hover:text-white' => ! $active,
                             ]) @if($active) aria-current="page" @endif>
-                                <x-icon :name="$item['icon']" @class(['size-5', 'text-[#2A1B04]' => $active, 'text-ink-200' => ! $active]) />
+                                <x-icon :name="$item['icon']" @class(['size-5', 'text-on-accent' => $active, 'text-ink-200' => ! $active]) />
                                 {{ $item['label'] }}
                             </a>
                         </li>

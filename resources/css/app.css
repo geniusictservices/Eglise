@@ -49,6 +49,8 @@
     --color-leaf-600: #246349;
     --color-leaf-700: #1B4C38;
 
+    --color-on-accent: #2A1B04;
+
     --color-sand-50: #FFFAF3;
     --color-sand-100: #FBF2E5;
     --color-sand-200: #F0E6D6;
@@ -98,7 +100,7 @@
     }
 
     .btn-accent {
-        @apply bg-ochre-500 text-[#2A1B04] hover:bg-ochre-600;
+        @apply bg-ochre-500 text-on-accent hover:bg-ochre-600;
     }
 
     .btn-secondary {
@@ -148,11 +150,11 @@
         position: absolute;
         inset: 0;
         z-index: -1;
-        background: linear-gradient(180deg, rgb(44 47 107 / 0.55), rgb(44 47 107 / 0.92));
+        background: linear-gradient(180deg, color-mix(in srgb, var(--color-ink-700) 55%, transparent), color-mix(in srgb, var(--color-ink-700) 92%, transparent));
     }
 
     .wax-veil-strong::before {
-        background: linear-gradient(180deg, rgb(44 47 107 / 0.88), rgb(44 47 107 / 0.97));
+        background: linear-gradient(180deg, color-mix(in srgb, var(--color-ink-700) 88%, transparent), color-mix(in srgb, var(--color-ink-700) 97%, transparent));
     }
 
     /* Anneau de progression : style="--v: 62" */

@@ -1,7 +1,7 @@
 @php $user = auth()->user(); @endphp
 <div class="relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape="open = false">
     <button type="button" @click="open = !open" @class(['flex items-center gap-2 rounded-full p-1 sm:pr-3', 'hover:bg-white/10' => $onDark, 'hover:bg-sand-100' => ! $onDark]) aria-haspopup="menu" :aria-expanded="open" aria-label="{{ __('Mon compte') }}">
-        <span class="grid size-9 place-items-center rounded-full bg-ochre-500 text-sm font-semibold text-[#2A1B04]">{{ $user->initials() }}</span>
+        <span class="grid size-9 place-items-center rounded-full bg-ochre-500 text-sm font-semibold text-on-accent">{{ $user->initials() }}</span>
         <span @class(['hidden max-w-40 truncate text-left text-sm font-semibold sm:block', 'text-white' => $onDark, 'text-ink-800' => ! $onDark])>{{ $user->name }}</span>
         <x-icon name="chevron-down" @class(['hidden size-4 sm:block', 'text-ink-200' => $onDark, 'text-sand-500' => ! $onDark]) />
     </button>
