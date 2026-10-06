@@ -85,8 +85,18 @@
                     </div>
                 </section>
             @endif
-            <section class="rounded-[18px] border border-dashed border-sand-300 p-5 text-sm text-sand-700">
-                <p class="flex items-start gap-2"><x-icon name="info" class="mt-0.5 size-4 shrink-0 text-ochre-600" /> {{ __('Bientôt : les besoins budgétaires du département, ses réunions et ses demandes de dépense.') }}</p>
+            <section class="card p-5 sm:p-6">
+                <h2 class="mb-3 text-lg">{{ __('Groupes du département') }}</h2>
+                <ul class="space-y-2">
+                    @forelse ($groups as $g)
+                        <li><a href="{{ route('groups.show', $g) }}" class="flex items-center gap-3 rounded-xl px-2 py-1.5 text-sm hover:bg-sand-50">
+                            <span class="icon-tile size-9 bg-ink-50 text-ink-700"><x-icon name="handshake" class="size-4" /></span>
+                            <span class="min-w-0 flex-1"><span class="block truncate font-semibold text-ink-800">{{ $g->name }}</span><span class="block truncate text-xs text-sand-700">{{ $g->leader?->fullName() }} · {{ trans_choice(':count personne|:count personnes', $g->members_count + 1) }}</span></span>
+                        </a></li>
+                    @empty
+                        <li class="text-sm text-sand-700">{{ __('Aucun groupe rattaché à ce département.') }}</li>
+                    @endforelse
+                </ul>
             </section>
         </div>
     </div>

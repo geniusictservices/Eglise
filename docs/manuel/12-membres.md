@@ -59,8 +59,8 @@ Les onglets ③ :
 |---|---|
 | **Profil** | Identité, contact, vie dans la communauté, informations propres à la communauté, notes confidentielles. |
 | **Parcours** | Les étapes de vie et l'historique du statut. |
-| **Fonctions** | Les fonctions et mandats : diacre depuis 2021, ancien de 2016 à 2020… |
-| **Ménage** | Les personnes du même ménage, et les départements de la personne. |
+| **Fonctions** | Les fonctions et mandats (diacre depuis 2021, ancien de 2016 à 2020…), les départements et les groupes de la personne. |
+| **Ménage** | Les personnes du même ménage. |
 
 ### Changer le statut
 

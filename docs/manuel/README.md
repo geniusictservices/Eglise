@@ -46,15 +46,22 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 16. [Le plan d'action et les réunions](23-plan-action-reunions.md)
 17. [La paie : rythmes, bénéficiaires, paies et avances sur salaire](24-paie.md)
 
+### Vie de la communauté
+
+18. [Les nouveautés et les notifications sur le téléphone](25-nouveautes.md)
+19. [Les groupes : cellules, chorales, groupes de prière](26-groupes.md)
+20. [Le calendrier, les inscriptions et les présences](27-calendrier-presences.md)
+21. [Les annonces et le partage sur WhatsApp](28-annonces.md)
+
 ### Pour l'administrateur et les responsables
 
-18. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
-19. [Gérer les utilisateurs](05-utilisateurs.md)
-20. [Rôles et permissions](06-roles.md)
-21. [Devises et taux du jour](07-devises.md)
-22. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
-23. [Le journal d'audit](09-journal.md)
-24. [L'abonnement](11-abonnement.md)
+22. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
+23. [Gérer les utilisateurs](05-utilisateurs.md)
+24. [Rôles et permissions](06-roles.md)
+25. [Devises et taux du jour](07-devises.md)
+26. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
+27. [Le journal d'audit](09-journal.md)
+28. [L'abonnement](11-abonnement.md)
 
 ### Aide
 
@@ -68,9 +75,9 @@ Waumini fournit des **rôles modèles**. Votre administrateur peut les adapter o
 |---|---|
 | **Administrateur** | Tout. Attribué à la personne qui a créé le compte de la communauté. |
 | **Pasteur** | Vue d'ensemble, plan d'action, approbation du budget, des dépenses, des dépassements, de la paie et des avances sur salaire, suivi pastoral, rapports. |
-| **Secrétaire** | Registre des membres, départements, activités, documents. Ne voit pas les dîmes nominatives. |
+| **Secrétaire** | Registre des membres, départements, groupes, calendrier, présences, annonces, documents. Ne voit pas les dîmes nominatives. |
 | **Trésorier** | Caisses, recettes, promesses, dépenses, taux du jour, paie, rapports. |
-| **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, avancement de ses actions. |
+| **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, avancement de ses actions, groupes, activités et annonces du département. |
 | **Conseil / comité** | Lecture des rapports, sans rien pouvoir modifier. |
 | **Responsable de niveau** | Secteur, région ou siège : consolidation des paroisses, transferts. |
 

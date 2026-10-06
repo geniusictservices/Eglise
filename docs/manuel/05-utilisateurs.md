@@ -66,7 +66,7 @@ Deux règles protègent la communauté :
 
 ## Relier un compte à sa fiche de membre
 
-En bas de l'écran d'un utilisateur, **Fiche de membre** relie son compte à sa fiche dans le registre de la communauté affichée. Waumini sait alors de quels départements il est responsable : un responsable de département ne prépare le budget et ne suit les actions que de ses départements. Voir [Le budget](21-budget.md#relier-le-compte-du-responsable-à-sa-fiche-de-membre).
+En bas de l'écran d'un utilisateur, **Fiche de membre** relie son compte à sa fiche dans le registre de la communauté affichée. Waumini sait alors de quels départements et de quels groupes il est responsable : un responsable de département ne prépare le budget, ne suit les actions et ne programme les activités que de ses départements ; un responsable de cellule gère son groupe sans autre droit ([Les groupes](26-groupes.md)) ; et la personne peut s'inscrire elle-même aux événements. Voir [Le budget](21-budget.md#relier-le-compte-du-responsable-à-sa-fiche-de-membre).
 
 ## Bloquer un compte sans rien supprimer
 

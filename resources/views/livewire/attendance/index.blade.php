@@ -33,18 +33,18 @@
             <h2 class="mb-4 text-lg">{{ __('Fréquentation') }} <span class="font-normal text-sand-700">· {{ $chartTitle }}</span></h2>
             <div class="flex h-40 items-end gap-1 overflow-x-auto" role="img" aria-label="{{ __('Présents à chaque date') }}">
                 @foreach ($chart as $r)
-                    <div class="flex min-w-6 flex-1 flex-col items-center justify-end gap-1" title="{{ $r->occurs_on->translatedFormat('j M') }} · {{ $r->event?->title }} : {{ $r->headcount }}">
-                        <span class="text-[10px] text-sand-700 tabular">{{ $r->headcount }}</span>
+                    <div class="flex min-w-4 flex-1 flex-col items-center sm:min-w-6 justify-end gap-1" title="{{ $r->occurs_on->translatedFormat('j M') }} · {{ $r->event?->title }} : {{ $r->headcount }}">
+                        <span @class(['text-[10px] text-sand-700 tabular', 'max-sm:invisible' => $loop->index % 3 !== 0 && ! $loop->last])>{{ $r->headcount }}</span>
                         <span class="w-full rounded-t-md bg-ink-600" style="height: {{ max(4, round($r->headcount / $peak * 120)) }}px"></span>
-                        <span class="text-[10px] text-sand-600">{{ $r->occurs_on->format('d/m') }}</span>
+                        <span @class(['text-[10px] text-sand-600', 'max-sm:invisible' => $loop->index % 3 !== 0 && ! $loop->last])>{{ $r->occurs_on->format('d/m') }}</span>
                     </div>
                 @endforeach
             </div>
         </section>
     @endif
 
-    <div class="grid gap-5 lg:grid-cols-[1.5fr_1fr]">
-        <section class="card overflow-hidden">
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-[1.5fr_1fr]">
+        <section class="card min-w-0 overflow-hidden">
             <h2 class="px-5 pb-2 pt-5 text-lg sm:px-6">{{ __('Dates notées') }}</h2>
             <ul class="divide-y divide-sand-100">
                 @forelse ($records as $r)
@@ -68,7 +68,7 @@
             </ul>
         </section>
 
-        <div class="space-y-5">
+        <div class="min-w-0 space-y-5">
             <section class="card p-5 sm:p-6">
                 <h2 class="mb-1 text-lg">{{ __('Visiteurs à revoir') }}</h2>
                 <p class="mb-3 text-sm text-sand-700">{{ __('Venus ces 30 derniers jours, pas encore revus.') }}</p>

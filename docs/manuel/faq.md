@@ -66,3 +66,15 @@ Son compte doit être relié à sa fiche de membre (écran **Utilisateurs**, blo
 ### Une dépense urgente n'est pas prévue au budget. Faut-il attendre la révision ?
 
 Non. La trésorière demande un **dépassement** depuis la dépense, en disant d'où viendra l'argent (une autre ligne, les réserves, un don) ; le pasteur l'autorise. La révision du budget peut venir plus tard. Voir [Le suivi du budget et les dépassements](22-suivi-budget.md).
+
+### Je ne reçois pas les notifications sur mon téléphone.
+
+Sur la page **Nouveautés** (la cloche), regardez le cadre **Sur cet appareil**. S'il propose **Activer**, touchez-le et acceptez. S'il dit que les notifications sont bloquées, autorisez-les pour Waumini dans les réglages du navigateur. Sur iPhone, installez d'abord Waumini sur l'écran d'accueil. L'activation se fait sur **chaque** appareil (voir [Les nouveautés](25-nouveautes.md)).
+
+### Le responsable d'une cellule ne voit pas son groupe.
+
+Son compte doit être **lié à sa fiche de membre** : c'est par sa fiche que Waumini le reconnaît comme responsable ou adjoint. L'administrateur fait ce lien dans **Utilisateurs**, sur la fiche de l'utilisateur, section « Fiche de membre » (voir [Les groupes](26-groupes.md)).
+
+### Nous ne comptons pas les hommes et les femmes séparément. Faut-il le faire ?
+
+Non. Rien n'est obligatoire dans les présences : donnez seulement le **total**, ou pointez les membres, ou les deux (voir [Le calendrier et les présences](27-calendrier-presences.md)).

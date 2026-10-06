@@ -949,6 +949,114 @@ const SCENES = [
             await mark(page, [{ selector: 'main li.border-ochre-300 button[wire\\:click$="true)"]', label: '1' }, { selector: 'main li .rounded-full.bg-sand-100', label: '2' }]);
         },
     },
+    // ---------- Nouveautés, groupes, calendrier, présences, annonces (paroisse de Himbi) ----------
+    {
+        id: '78-nouveautes', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/nouveautes`);
+            await settle(page);
+            const bell = isMobile(page) ? 'header.wax a[href$="/nouveautes"]' : 'header.hidden a[href$="/nouveautes"]';
+            await mark(page, [{ selector: bell, label: '1' }, { selector: 'main [x-data^=pushToggle]', label: '2' }, { selector: 'main ul li a', label: '3' }]);
+        },
+    },
+    {
+        id: '79-groupes', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/groupes`);
+            await settle(page);
+            await mark(page, [{ selector: 'main ul li a', label: '1' }, { selector: 'main button[wire\\:click=create]', label: '2' }]);
+        },
+    },
+    {
+        id: '80-groupe', user: '0990000009',
+        run: async (page) => {
+            await page.goto(`${BASE}/groupes`);
+            await page.locator('main ul li a', { hasText: 'Jeunes en mission' }).click();
+            await page.waitForURL(/\/groupes\/\d+$/);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main section.border-ochre-300', label: '1' }, { selector: 'main button[wire\\:click=openMeeting]', label: '2' }]
+                : [{ selector: 'main section.border-ochre-300', label: '1' }, { selector: 'main button[wire\\:click=openMeeting]', label: '2' }, { selector: 'main section.card', text: 'personnes', label: '3' }]);
+        },
+    },
+    {
+        id: '81-groupe-presences', user: '0990000009',
+        run: async (page) => {
+            await page.goto(`${BASE}/groupes`);
+            await page.locator('main ul li a', { hasText: 'Jeunes en mission' }).click();
+            await page.waitForURL(/\/groupes\/\d+$/);
+            await page.click('main button[wire\\:click=openMeeting]');
+            await page.waitForSelector('[role=dialog] #m-topic');
+            await page.fill('#m-topic', 'Néhémie : bâtir ensemble');
+            await page.click('[role=dialog] button[wire\\:click=allPresent]');
+            await settle(page);
+            await mark(page, [{ selector: '[role=dialog] button[wire\\:click=allPresent]', label: '1', position: 'right' }, { selector: '[role=dialog] [role=radiogroup]', label: '2' }]);
+        },
+    },
+    {
+        id: '82-calendrier', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/calendrier`);
+            await settle(page);
+            await mark(page, [{ selector: 'main h2.text-lg', label: '1' }, { selector: 'main ul li a', text: 'Culte du dimanche', label: '2' }, { selector: 'main button[wire\\:click=openEventForm]', label: '3' }]);
+        },
+    },
+    {
+        id: '83-activite', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/calendrier`);
+            await page.click('main button[wire\\:click=openEventForm]');
+            await page.waitForSelector('[role=dialog] #e-title');
+            await page.fill('#e-title', 'Culte de sainte cène');
+            await page.selectOption('#e-repeats', 'monthly_weekday');
+            await page.waitForSelector('#e-until');
+            await page.locator('[role=dialog] label', { hasText: 'Sur inscription' }).scrollIntoViewIfNeeded();
+            await settle(page);
+            await mark(page, [{ selector: '#e-repeats', label: '1' }, { selector: '#e-aud', label: '2' }, { selector: '[role=dialog] .rounded-xl.border', label: '3' }]);
+        },
+    },
+    {
+        id: '84-presences-culte', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/presences`);
+            await page.locator('main a', { hasText: 'Culte du dimanche' }).first().click();
+            await page.waitForURL(/\/calendrier\/\d+\//);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main form[wire\\:submit=saveCounts] .grid-cols-3', label: '1' }, { selector: '#c-total', label: '2' }]
+                : [{ selector: 'main form[wire\\:submit=saveCounts]', label: '1' }, { selector: 'main section.card', text: 'Pointage', label: '2' }, { selector: 'main section.card', text: 'Visiteurs', label: '3' }]);
+        },
+    },
+    {
+        id: '85-presences', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/presences`);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main [role=img]', label: '1' }]
+                : [{ selector: 'main [role=img]', label: '1' }, { selector: 'main section.card', text: 'Visiteurs à revoir', label: '2' }, { selector: 'main section.border-ochre-300', label: '3' }]);
+        },
+    },
+    {
+        id: '86-annonces', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/annonces`);
+            await settle(page);
+            await mark(page, [{ selector: 'main a[href^="https://wa.me"]', label: '1' }, { selector: 'main button[wire\\:click=create]', label: '2' }]);
+        },
+    },
+    {
+        id: '87-annoncer-activite', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/annonces`);
+            await page.locator('main a', { hasText: 'Convention des jeunes' }).first().click();
+            await page.waitForURL(/\/annonces\/\d+$/);
+            await page.click('main a[href*="/calendrier/"]');
+            await page.waitForURL(/\/calendrier\/\d+\//);
+            await settle(page);
+            await mark(page, [{ selector: 'main a[href^="https://wa.me"]', label: '1' }, { selector: 'main section.card', text: 'Inscriptions', label: '2' }]);
+        },
+    },
 ];
 
 const browser = await chromium.launch();

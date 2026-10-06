@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, paie livrée</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, groupes, calendrier et annonces livrés</span>
   </header>
 
   <div class="hero">
@@ -264,17 +264,17 @@ const BLOCKS = [
       demo: "Livré : la paie d’octobre de quatre personnes, en dollars et en francs, avec un prédicateur payé à la prestation et l’avance de la sentinelle retenue ; 163 tests automatiques." }
   ]},
   { letter: "Bloc 3", title: "Faire vivre la communauté", steps: [
-    { status: "todo", title: "Groupes, activités et communication",
+    { status: "done", title: "Groupes, activités et communication",
       goal: "Chaque groupe a son espace, chaque fidèle est informé.",
-      items: ["Groupes : responsables, réunions, présences, cotisations", "Calendrier des cultes et événements, inscriptions", "Comptage des présences, en option", "Notifications push ciblées : annonces, programme, rappels, anniversaires", "Envoi manuel sur WhatsApp pour ceux qui n’ont pas l’application"],
-      demo: "Le programme du dimanche reçu sur les téléphones le samedi soir." },
+      items: ["Nouveautés : une cloche compte ce qui n’a pas encore été ouvert ; ouvrir la page concernée la range, et ce qui est réglé par un autre se range chez tous", "Notifications sur le téléphone et l’ordinateur, même l’application fermée, avec le nombre sur l’icône", "Chaque étape des circuits prévient ceux qui doivent agir : dépenses, budget, dépassements, paie, avances, paiements déclarés", "Groupes (cellules, chorales, prière…) avec un responsable obligatoire, des adjoints et des membres ; rencontres et présences ; absents à visiter", "Calendrier : cultes chaque semaine, « 1er dimanche » ou « dernier vendredi » du mois, événements sur plusieurs jours ; une date s’annule seule", "Inscriptions facultatives, avec ou sans limite de places ; un membre s’inscrit lui-même", "Présences facultatives : effectifs (hommes, femmes, enfants, dont visiteurs, ou le total seul), pointage des membres, visiteurs nommés à revoir ; fidèles qu’on ne voit plus", "Annonces à toute la communauté, à un département ou à un groupe, partagées sur WhatsApp en un geste ; la semaine et les annonces sur le tableau de bord ; 4 nouveaux chapitres du manuel"],
+      demo: "Livré : la convention des jeunes annoncée, partagée sur WhatsApp et remplie à 26 inscrits ; le culte du dimanche compté et pointé ; la cellule qui repère ses absents ; 189 tests automatiques." },
     { status: "todo", title: "Documents et registres",
       goal: "Une attestation en une minute, vérifiable par QR code.",
       items: ["Attestations, lettres, carte de service, ordre de mission, convocation…", "Modèles personnalisables (en-tête, couleurs) et types de documents créés par la communauté", "Numérotation paramétrable", "Imprimés, signés à la main, authentifiés par QR code", "Saisie des anciens registres papier et réédition moderne"],
       demo: "Une attestation de baptême de 1998 rééditée avec son QR code." },
     { status: "todo", title: "Suivi pastoral et espace membre",
       goal: "Accompagner chacun ; donner à chaque membre sa part d’accès.",
-      items: ["Visites, malades, deuils, parcours des catéchumènes, demandes de prière", "Notes confidentielles : leur auteur seul, jamais exportées, même pas pour le support", "Espace membre : sa fiche, ses contributions et reçus, ses promesses, programme et annonces, demandes de prière et d’attestation", "Langue choisie par chaque membre"],
+      items: ["Visites, malades, deuils, parcours des catéchumènes, demandes de prière", "Notes confidentielles : leur auteur seul, jamais exportées, même pas pour le support", "Espace membre : sa fiche, ses contributions et reçus, ses promesses, programme et annonces, demandes de prière et d’attestation", "Langue choisie par chaque membre", "Rappels d’anniversaires et cotisations des groupes (reportés du module Groupes)"],
       demo: "Un membre se connecte avec son empreinte et retrouve ses reçus." }
   ]},
   { letter: "Bloc 4", title: "Le réseau et la plateforme", steps: [
@@ -372,6 +372,9 @@ const DECISIONS = [
     "Connexion par téléphone et mot de passe, puis empreinte du téléphone.",
     "Pas de paiement en ligne dans l’espace membre pour l’instant.",
     "La communication passe par les notifications de l’application, avec envoi manuel sur WhatsApp en complément.",
+    "Une notification reste tant que la nouveauté n’a pas été ouverte ; ce qu’un autre a réglé se range chez tous.",
+    "Chaque groupe a obligatoirement un responsable, choisi parmi les membres ; on le remplace, on ne le retire pas.",
+    "Les présences au culte se notent par effectifs, par pointage nominatif, ou les deux ; rien n’est obligatoire.",
     "Chaque membre choisit sa langue parmi français, swahili, lingala, kikongo et tshiluba.",
     "Le registre est réglé par le siège : une église qui le rejoint s’adapte à son format de numéro et à ses statuts ; elle peut ajouter ses propres champs et fonctions.",
     "Les familles sont gérées par ménage : chef de ménage, conjoint(e), enfants et personnes à charge.",

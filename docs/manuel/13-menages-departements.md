@@ -58,4 +58,4 @@ Un département qui ne sert plus peut être **mis en sommeil** (menu **⋯**) : 
 
 Dans le registre, le filtre **Département** montre les membres d'un département.
 
-> Bientôt : chaque département présentera ses **besoins pour le budget de l'année**, tiendra ses réunions et fera ses demandes de dépense (voir la [feuille de route](../feuille-de-route.html)).
+La fiche du département liste aussi **ses groupes** (cellules, chorales, équipes) : voir [Les groupes](26-groupes.md). Le département présente ses **besoins pour le budget** ([Le budget](21-budget.md)), fait ses demandes de dépense ([Les dépenses](19-depenses.md)) et programme ses activités ([Le calendrier](27-calendrier-presences.md)).

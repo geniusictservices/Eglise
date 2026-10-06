@@ -4,6 +4,7 @@ namespace App\Livewire\Departments;
 
 use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\Department;
+use App\Models\Group;
 use App\Models\Member;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -114,6 +115,7 @@ class Show extends Component
 
         return view('livewire.departments.show', [
             'members' => $members,
+            'groups' => Group::with('leader')->withCount('members')->where('department_id', $this->department->id)->orderBy('name')->get(),
             'candidates' => $candidates,
             'canManage' => Gate::allows('departments.manage') && ! $this->organization()->isReadOnly(),
             'colors' => config('waumini.registry.colors'),

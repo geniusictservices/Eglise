@@ -184,7 +184,7 @@
         <h2 class="text-lg">{{ __('Bientôt dans Waumini') }}</h2>
         <p class="mt-1 text-sm text-sand-700">{{ __('Les modules arrivent étape par étape. Suivez l’avancement sur la feuille de route.') }}</p>
         <div class="mt-4 flex flex-wrap gap-2">
-            @foreach ([__('Finances et promesses'), __('Plan d’action et budget'), __('Paie'), __('Groupes et activités'), __('Documents et attestations'), __('Suivi pastoral'), __('Espace membre'), __('Site vitrine')] as $module)
+            @foreach ([__('Documents et attestations'), __('Suivi pastoral'), __('Espace membre'), __('Consolidation des paroisses'), __('Site vitrine')] as $module)
                 <span class="badge bg-sand-100 font-medium text-sand-700">{{ $module }}</span>
             @endforeach
         </div>
