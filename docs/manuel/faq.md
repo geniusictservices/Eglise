@@ -41,7 +41,9 @@ Dans une dénomination, c'est le **siège** qui fixe le format du numéro, les s
 
 ### Une personne a quitté la paroisse pour une autre. Que faire ?
 
-Ne supprimez pas sa fiche : changez son **statut** en « Transféré », avec le motif (« Transférée à la CEP Kadutu »). Son histoire reste dans le registre, et sa carte de membre n'est plus valide.
+Ne supprimez pas sa fiche. Si la nouvelle paroisse fait partie de **la même dénomination** dans Waumini, demandez un **transfert** depuis sa fiche : la paroisse d'accueil l'accepte, et la fiche part avec son parcours et un nouveau numéro. Voir [Le réseau : transferts de membres](33-consolidation.md#les-transferts-de-membres).
+
+Si elle part dans une autre église, changez son **statut** en « Transféré », avec le motif (« Partie à l'Église Béthel de Bukavu »). Son histoire reste dans le registre, et sa carte de membre n'est plus valide.
 
 ### Notre ancien registre est sur papier. Faut-il tout ressaisir à la main ?
 
@@ -86,3 +88,7 @@ Scannez son **QR code** avec n'importe quel téléphone. La page qui s'ouvre dit
 ### Un ancien fidèle demande l'attestation de son baptême de 1998, mais il n'est pas dans Waumini.
 
 Cherchez-le dans **Registres** : si le cahier des baptêmes a été recopié, son acte y est. Touchez **Rééditer** : l'attestation est préparée à partir de l'acte, avec un QR code. Sinon, recopiez d'abord l'acte depuis le cahier papier. Voir [Les registres](30-registres.md).
+
+### Le secteur voit nos chiffres. Peut-il modifier notre caisse ?
+
+Non. La [consolidation](33-consolidation.md) montre aux niveaux supérieurs les **totaux** de chaque paroisse : membres, recettes, dépenses, présence. Ils ne modifient ni votre registre ni votre caisse. Les quotes-parts versées au secteur sont retirées des totaux, pour ne pas compter deux fois le même argent.

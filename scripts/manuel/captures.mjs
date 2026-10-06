@@ -1214,6 +1214,44 @@ const SCENES = [
             await mark(page, [{ selector: 'main table', label: '1' }]);
         },
     },
+    // ---------- Consolidation multi-paroisses (région Nord-Kivu, paroisse de Himbi) ----------
+    {
+        id: '102-consolidation', user: '0990000005',
+        run: async (page) => {
+            await page.goto(`${BASE}/consolidation`);
+            await settle(page);
+            await mark(page, [
+                { selector: 'main button[wire\\:click="shift(1)"]', label: '1', position: 'right' },
+                { selector: isMobile(page) ? 'main ul.md\\:hidden button' : 'main table button', label: '2' },
+                { selector: 'main section h2', text: 'Saisies en retard', label: '3' },
+            ]);
+        },
+    },
+    {
+        id: '103-quotes-parts', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/quotes-parts`);
+            await settle(page);
+            await mark(page, [{ selector: 'main button[wire\\:click^=askSend]', label: '1', position: 'right' }, { selector: 'main form[wire\\:submit=saveRule]', label: '2' }]);
+        },
+    },
+    {
+        id: '104-transferts', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/transferts`);
+            await settle(page);
+            await mark(page, [{ selector: 'main button[wire\\:click^=accept]', label: '1' }]);
+        },
+    },    {
+        id: '105-transfert-membre', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/membres?q=Ruth`);
+            await page.click(isMobile(page) ? 'main ul a[href*="/membres/"]' : 'main table a[href*="/membres/"]');
+            await page.waitForURL(/\/membres\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main form[wire\\:submit=requestTransfer]', label: '1' }]);
+        },
+    },
 ];
 
 const browser = await chromium.launch();

@@ -34,7 +34,29 @@
 
     <div class="grid gap-5 xl:grid-cols-[1fr_20rem]">
         <section class="card min-w-0 overflow-hidden">
-            <div class="overflow-x-auto">
+            {{-- Sur téléphone : une carte par niveau. --}}
+            <ul class="divide-y divide-sand-100 md:hidden">
+                @foreach ($units as $u)
+                    <li wire:key="m-{{ $u['organization']->id }}-{{ $u['own'] ? 'own' : 'all' }}" @class(['px-4 py-3', 'bg-sand-50' => $u['own']])>
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                @if (! $u['own'] && $u['count'] > 1)
+                                    <button type="button" wire:click="$set('unitId', {{ $u['organization']->id }})" class="text-left font-semibold text-ink-800 underline decoration-sand-300 underline-offset-4">{{ $u['organization']->name }}</button>
+                                    <span class="block text-xs text-sand-600">{{ trans_choice(':count niveau|:count niveaux', $u['count']) }}</span>
+                                @else
+                                    <span class="font-semibold text-ink-800">{{ $u['own'] ? __(':n (lui-même)', ['n' => $u['organization']->name]) : $u['organization']->name }}</span>
+                                    <span class="block text-xs text-sand-600">{{ $u['organization']->level_label }}</span>
+                                @endif
+                            </div>
+                            <span @class(['shrink-0 font-semibold tabular', 'text-terra-700' => $u['result'] < 0, 'text-ink-800' => $u['result'] >= 0])>{{ $usd($u['result']) }}</span>
+                        </div>
+                        <p class="mt-1 text-sm text-sand-700 tabular">{{ trans_choice(':count membre|:count membres', $u['members']) }} · {{ __('recettes :r · dépenses :d', ['r' => $usd($u['income']), 'd' => $usd($u['expense'])]) }}@if ($u['attendance']) · {{ __('culte :n', ['n' => $u['attendance']]) }}@endif</p>
+                        @if ($u['late'])<span class="badge mt-1 bg-terra-50 text-terra-700">{{ __('En retard') }}</span>@endif
+                    </li>
+                @endforeach
+                <li class="flex justify-between gap-3 px-4 py-3 font-semibold"><span>{{ __('Total') }}</span><span class="tabular">{{ $usd($totals['result']) }}</span></li>
+            </ul>
+            <div class="hidden overflow-x-auto md:block">
                 <table class="w-full min-w-[640px] text-sm">
                     <thead><tr class="border-b border-sand-200 text-left text-xs text-sand-700">
                         <th class="px-4 py-3 font-semibold">{{ __('Niveau') }}</th><th class="px-3 py-3 text-right font-semibold">{{ __('Membres') }}</th>

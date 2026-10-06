@@ -63,15 +63,19 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 24. [Les documents : attestations, lettres, ordres de mission, avec QR code](29-documents.md)
 25. [Les registres officiels et les anciens cahiers](30-registres.md)
 
+### Le réseau des paroisses
+
+26. [Consolidation, quotes-parts et transferts de membres](33-consolidation.md)
+
 ### Pour l'administrateur et les responsables
 
-26. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
-27. [Gérer les utilisateurs](05-utilisateurs.md)
-28. [Rôles et permissions](06-roles.md)
-29. [Devises et taux du jour](07-devises.md)
-30. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
-31. [Le journal d'audit](09-journal.md)
-32. [L'abonnement](11-abonnement.md)
+27. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
+28. [Gérer les utilisateurs](05-utilisateurs.md)
+29. [Rôles et permissions](06-roles.md)
+30. [Devises et taux du jour](07-devises.md)
+31. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
+32. [Le journal d'audit](09-journal.md)
+33. [L'abonnement](11-abonnement.md)
 
 ### Aide
 
@@ -90,7 +94,7 @@ Waumini fournit des **rôles modèles**. Votre administrateur peut les adapter o
 | **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, avancement de ses actions, groupes, activités et annonces du département. |
 | **Membre** | Son espace seulement : sa carte, ses dons et reçus, ses promesses, le programme, les annonces, ses demandes de prière et d'attestation. |
 | **Conseil / comité** | Lecture des rapports, sans rien pouvoir modifier. |
-| **Responsable de niveau** | Secteur, région ou siège : consolidation des paroisses, transferts. |
+| **Responsable de niveau** | Secteur, région ou siège : consolidation des chiffres de ses paroisses, quotes-parts, transferts de membres. |
 
 ## Besoin d'aide ?
 
