@@ -55,9 +55,11 @@ use App\Models\RegisterEntry;
 use App\Models\Role;
 use App\Models\RoleAssignment;
 use App\Models\SalaryAdvance;
+use App\Models\Sermon;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Models\Vision;
+use App\Models\Website;
 use App\Support\CurrentOrganization;
 use App\Support\Permissions;
 use Illuminate\Database\Eloquent\Model;
@@ -126,6 +128,8 @@ class AppServiceProvider extends ServiceProvider
             'pastoral_case' => PastoralCase::class,
             'quota_rule' => QuotaRule::class,
             'member_transfer' => MemberTransfer::class,
+            'website' => Website::class,
+            'sermon' => Sermon::class,
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,

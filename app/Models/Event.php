@@ -35,12 +35,12 @@ class Event extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['kind' => 'service', 'audience' => 'all', 'repeats' => 'none', 'registration' => false, 'tracks_attendance' => false];
+    protected $attributes = ['kind' => 'service', 'audience' => 'all', 'is_public' => false, 'repeats' => 'none', 'registration' => false, 'tracks_attendance' => false];
 
     protected function casts(): array
     {
         return ['starts_on' => 'date', 'ends_on' => 'date', 'repeat_until' => 'date', 'skipped_dates' => 'array',
-            'registration' => 'boolean', 'tracks_attendance' => 'boolean', 'capacity' => 'integer'];
+            'registration' => 'boolean', 'tracks_attendance' => 'boolean', 'is_public' => 'boolean', 'capacity' => 'integer'];
     }
 
     public function department(): BelongsTo

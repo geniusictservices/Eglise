@@ -19,6 +19,7 @@ class Announcements
     {
         $values = [
             'title' => trim($data['title']), 'body' => trim($data['body']), 'audience' => $data['audience'] ?? 'all',
+            'is_public' => (bool) ($data['is_public'] ?? false),
             'department_id' => ($data['audience'] ?? '') === 'department' ? (int) $data['department_id'] : null,
             'group_id' => ($data['audience'] ?? '') === 'group' ? (int) $data['group_id'] : null,
             'event_id' => ($data['event_id'] ?? null) ?: null, 'event_date' => ($data['event_id'] ?? null) ? (($data['event_date'] ?? null) ?: null) : null,

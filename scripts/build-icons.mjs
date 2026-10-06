@@ -16,6 +16,7 @@ const names = [
     'upload', 'file-spreadsheet', 'archive', 'archive-restore', 'sparkles', 'droplets', 'briefcase',
     'graduation-cap', 'heart', 'user-check', 'user-x', 'qr-code', 'printer', 'hash', 'camera', 'milestone', 'award', 'message-circle',
     'handshake', 'megaphone', 'calendar-check', 'calendar-plus', 'church', 'clipboard-check',
+    'mic', 'play', 'video', 'external-link', 'navigation', 'send',
 ];
 
 const out = {};

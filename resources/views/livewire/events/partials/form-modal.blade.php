@@ -36,6 +36,7 @@
             @endif
         </div>
         <div class="space-y-2 rounded-xl border border-sand-200 p-3">
+            <label class="flex items-start gap-3 text-sm"><input type="checkbox" wire:model="eventForm.is_public" class="mt-0.5 size-4"><span><span class="font-semibold text-ink-800">{{ __('Sur le site vitrine') }}</span><br><span class="text-sand-700">{{ __('Visible par tous sur le site de la communauté, s’il est publié.') }}</span></span></label>
             <label class="flex items-start gap-3 text-sm"><input type="checkbox" wire:model="eventForm.tracks_attendance" class="mt-0.5 size-4"><span><span class="font-semibold text-ink-800">{{ __('Noter les présences') }}</span><br><span class="text-sand-700">{{ __('Effectifs, pointage des membres ou visiteurs : chacun facultatif.') }}</span></span></label>
             <label class="flex items-start gap-3 text-sm"><input type="checkbox" wire:model.live="eventForm.registration" class="mt-0.5 size-4"><span><span class="font-semibold text-ink-800">{{ __('Sur inscription') }}</span><br><span class="text-sand-700">{{ __('Pour une convention, une retraite, un séminaire…') }}</span></span></label>
             @if ($eventForm['registration'] ?? false)

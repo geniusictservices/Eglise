@@ -19,7 +19,7 @@
                 <span class="icon-tile bg-leaf-50 text-leaf-600"><x-icon name="smartphone" class="size-5" /></span>
                 <div class="min-w-0 flex-1">
                     <p class="font-semibold text-ink-800">{{ $d->declarantName() }} <span class="font-normal text-sand-700">· {{ $d->pledge ? __('Promesse : :c', ['c' => $d->pledge->campaign?->name ?? __('générale')]) : $d->category?->name }}</span></p>
-                    <p class="text-sm text-sand-700">{{ $d->operator }} · <span class="font-mono">{{ $d->transaction_reference }}</span> · {{ __('payé le :d', ['d' => $d->paid_on->translatedFormat('j M Y')]) }}@if ($d->source === 'member') · {{ __('déclaré par le membre') }}@endif</p>
+                    <p class="text-sm text-sand-700">{{ $d->operator }} · <span class="font-mono">{{ $d->transaction_reference }}</span> · {{ __('payé le :d', ['d' => $d->paid_on->translatedFormat('j M Y')]) }}@if ($d->source === 'member') · {{ __('déclaré par le membre') }}@elseif ($d->source === 'website') · {{ __('déclaré sur le site') }}@endif</p>
                     @if ($d->status === 'rejected')<p class="text-sm text-terra-600">{{ __('Rejeté : :r', ['r' => $d->reject_reason]) }}</p>@endif
                     @if ($d->status === 'validated')<p class="text-xs text-sand-700">{{ __('Validé le :d par :n', ['d' => $d->reviewed_at->translatedFormat('j M'), 'n' => $d->reviewer?->name]) }}</p>@endif
                 </div>

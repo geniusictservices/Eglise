@@ -16,11 +16,11 @@ class Announcement extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['audience' => 'all', 'pinned' => false, 'recipients' => 0];
+    protected $attributes = ['audience' => 'all', 'is_public' => false, 'pinned' => false, 'recipients' => 0];
 
     protected function casts(): array
     {
-        return ['pinned' => 'boolean', 'expires_on' => 'date', 'event_date' => 'date', 'published_at' => 'datetime'];
+        return ['pinned' => 'boolean', 'is_public' => 'boolean', 'expires_on' => 'date', 'event_date' => 'date', 'published_at' => 'datetime'];
     }
 
     public function department(): BelongsTo

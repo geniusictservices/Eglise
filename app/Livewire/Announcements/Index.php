@@ -56,7 +56,7 @@ class Index extends Component
             'title' => $event ? $event->title : '', 'body' => $event ? (string) $event->description : '',
             'audience' => $event && ($full || $event->audience !== 'all') ? $event->audience : ($full ? 'all' : ($scopes['departments'] ? 'department' : 'group')),
             'department_id' => $event?->department_id ?? ($scopes['departments'][0] ?? ''), 'group_id' => $event?->group_id ?? ($scopes['groups'][0] ?? ''),
-            'event_id' => $event?->id, 'event_date' => $date?->toDateString(), 'pinned' => false,
+            'event_id' => $event?->id, 'event_date' => $date?->toDateString(), 'pinned' => false, 'is_public' => false,
             'expires_on' => $date ? $date->copy()->addDay()->toDateString() : today()->addWeeks(2)->toDateString(),
         ];
         $this->resetValidation();
@@ -68,7 +68,7 @@ class Index extends Component
         $announcement = Announcement::findOrFail($id);
         $this->authorizeEdit($announcement);
         $this->editingId = $announcement->id;
-        $this->form = $announcement->only(['title', 'body', 'audience', 'event_id', 'pinned']) + [
+        $this->form = $announcement->only(['title', 'body', 'audience', 'event_id', 'pinned', 'is_public']) + [
             'department_id' => $announcement->department_id ?? '', 'group_id' => $announcement->group_id ?? '',
             'event_date' => $announcement->event_date?->toDateString(), 'expires_on' => $announcement->expires_on?->toDateString() ?? '',
         ];

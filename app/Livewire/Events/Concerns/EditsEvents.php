@@ -31,12 +31,12 @@ trait EditsEvents
             'place' => (string) $event->place, 'description' => (string) $event->description, 'audience' => $event->audience,
             'department_id' => $event->department_id ?? '', 'group_id' => $event->group_id ?? '', 'repeats' => $event->repeats,
             'repeat_until' => $event->repeat_until?->toDateString() ?? '', 'registration' => $event->registration, 'capacity' => $event->capacity ?? '',
-            'tracks_attendance' => $event->tracks_attendance,
+            'tracks_attendance' => $event->tracks_attendance, 'is_public' => $event->is_public,
         ] : [
             'title' => '', 'kind' => 'service', 'starts_on' => $date ?? today()->toDateString(), 'ends_on' => '', 'start_time' => '09:00', 'end_time' => '',
             'place' => '', 'description' => '', 'audience' => $full ? 'all' : ($scopes['departments'] ? 'department' : 'group'),
             'department_id' => $scopes['departments'][0] ?? '', 'group_id' => $scopes['groups'][0] ?? '', 'repeats' => 'none', 'repeat_until' => '',
-            'registration' => false, 'capacity' => '', 'tracks_attendance' => true,
+            'registration' => false, 'capacity' => '', 'tracks_attendance' => true, 'is_public' => $full,
         ];
         $this->resetValidation();
         $this->dispatch('open-modal', name: 'event');

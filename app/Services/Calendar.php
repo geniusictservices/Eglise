@@ -42,6 +42,7 @@ class Calendar
             'start_time' => ($data['start_time'] ?? null) ?: null, 'end_time' => ($data['end_time'] ?? null) ?: null,
             'place' => trim((string) ($data['place'] ?? '')) ?: null, 'description' => trim((string) ($data['description'] ?? '')) ?: null,
             'audience' => $data['audience'] ?? 'all',
+            'is_public' => (bool) ($data['is_public'] ?? ($data['audience'] ?? 'all') === 'all'),
             'department_id' => ($data['audience'] ?? '') === 'department' ? (int) $data['department_id'] : null,
             'group_id' => ($data['audience'] ?? '') === 'group' ? (int) $data['group_id'] : null,
             'repeats' => array_key_exists($data['repeats'] ?? '', Event::REPEATS) ? $data['repeats'] : 'none',

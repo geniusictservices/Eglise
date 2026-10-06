@@ -67,6 +67,7 @@
                     <div><label for="an-exp" class="label">{{ __('Visible jusqu’au') }}</label><input wire:model="form.expires_on" id="an-exp" type="date" class="input">@error('form.expires_on') <p class="error">{{ $message }}</p> @enderror</div>
                     @if ($full)<label class="flex items-center gap-3 self-end pb-3 text-sm"><input type="checkbox" wire:model="form.pinned" class="size-4"> {{ __('Épingler en haut') }}</label>@endif
                 </div>
+                <label class="flex items-start gap-3 text-sm"><input type="checkbox" wire:model="form.is_public" class="mt-0.5 size-4"><span><span class="font-semibold text-ink-800">{{ __('Publier aussi sur le site vitrine') }}</span><br><span class="text-sand-700">{{ __('Visible par tous, pas seulement par les personnes concernées.') }}</span></span></label>
                 <div class="flex flex-wrap justify-end gap-2">
                     <button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'announcement' })">{{ __('Annuler') }}</button>
                     <button class="btn-primary">{{ $editingId ? __('Enregistrer') : __('Publier') }}</button>

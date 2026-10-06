@@ -9,11 +9,14 @@ for (const [name, opts] of Object.entries({
     mobile: { viewport: { width: 390, height: 780 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
 })) {
     const page = await (await browser.newContext(opts)).newPage();
-    await page.goto(`${BASE}/connexion`);
-    await page.fill('#phone', process.env.PHONE ?? '0990000001');
-    await page.fill('#password', 'Waumini2026');
-    await page.click('main form button[type=submit], form button[type=submit]');
-    await page.waitForURL(/tableau-de-bord|admin|mon-espace/);
+    // PHONE=aucun : pages publiques, sans connexion.
+    if (process.env.PHONE !== 'aucun') {
+        await page.goto(`${BASE}/connexion`);
+        await page.fill('#phone', process.env.PHONE ?? '0990000001');
+        await page.fill('#password', 'Waumini2026');
+        await page.click('main form button[type=submit], form button[type=submit]');
+        await page.waitForURL(/tableau-de-bord|admin|mon-espace/);
+    }
     for (const p of paths) {
         const [path, action] = p.split('#');
         await page.goto(BASE + path);

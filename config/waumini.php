@@ -332,6 +332,7 @@ return [
                 'consolidation.view' => 'Voir les rapports consolidés des niveaux inférieurs',
                 'transfers.manage' => 'Gérer les transferts de membres',
                 'website.manage' => 'Gérer le site vitrine',
+                'sermons.manage' => 'Publier les prédications sur le site',
             ],
         ],
     ],
@@ -371,7 +372,7 @@ return [
                 'activities.manage', 'communication.send',
                 'documents.issue',
                 'pastoral.view', 'pastoral.confidential',
-                'consolidation.view',
+                'consolidation.view', 'sermons.manage',
             ],
         ],
         'secretaire' => [
@@ -384,7 +385,7 @@ return [
                 'planning.view', 'meetings.manage',
                 'groups.manage', 'activities.manage', 'attendance.record', 'communication.send',
                 'documents.issue', 'documents.templates', 'registers.manage',
-                'transfers.manage',
+                'transfers.manage', 'website.manage', 'sermons.manage',
             ],
         ],
         'tresorier' => [

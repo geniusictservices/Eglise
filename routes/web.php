@@ -19,11 +19,13 @@ use App\Http\Controllers\OrganizationLogoController;
 use App\Http\Controllers\PayrollPrintController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SwitchOrganizationController;
+use App\Http\Controllers\WebsiteController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformStaff;
 use App\Http\Middleware\MarkNotificationsOpened;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Livewire;
+use App\Models\Website;
 use Illuminate\Support\Facades\Route;
 
 // Site public : les visiteurs voient la présentation, les connectés vont à leur tableau de bord.
@@ -37,6 +39,16 @@ Route::get('/logo/{organization}', OrganizationLogoController::class)->whereNumb
 Route::get('/verifier/carte/{token}', CardVerificationController::class)->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('cards.verify');
 Route::get('/verifier/document/{token}', [DocumentController::class, 'verify'])->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('documents.verify');
 Route::view('/hors-ligne', 'offline')->name('offline');
+
+// Les sites vitrines des communautés.
+Route::prefix('site/{site}')->where(['site' => '[a-z0-9-]+'])->name('website.')->controller(WebsiteController::class)->group(function () {
+    Route::get('/', 'home')->name('home');
+    Route::get('/couverture', 'cover')->name('cover');
+    Route::get('/predications/{sermon}', 'sermon')->whereNumber('sermon')->name('sermon');
+    Route::get('/audio/{sermon}', 'audio')->whereNumber('sermon')->name('audio');
+    Route::post('/don', 'give')->middleware('throttle:6,1')->name('give');
+    Route::get('/{page}', 'page')->whereIn('page', array_keys(Website::PAGES))->name('page');
+});
 Route::get('/aide', [HelpController::class, 'show'])->name('help.index');
 Route::get('/aide/captures/{device}/{file}', [HelpController::class, 'capture'])->name('help.capture');
 Route::get('/aide/{chapter}', [HelpController::class, 'show'])->name('help.show');
@@ -95,6 +107,8 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/consolidation', Livewire\Consolidation\Index::class)->name('consolidation.index');
     Route::get('/quotes-parts', Livewire\Quotas\Index::class)->name('quotas.index');
     Route::get('/transferts', Livewire\Transfers\Index::class)->name('transfers.index');
+    Route::get('/site-vitrine', Livewire\Website\Edit::class)->name('website.edit');
+    Route::get('/predications', Livewire\Sermons\Index::class)->name('sermons.index');
     Route::get('/suivi-pastoral', Livewire\Pastoral\Index::class)->name('pastoral.index');
     Route::get('/suivi-pastoral/{case}', Livewire\Pastoral\Show::class)->whereNumber('case')->name('pastoral.show');
     Route::get('/registres', Livewire\Registers\Index::class)->name('registers.index');

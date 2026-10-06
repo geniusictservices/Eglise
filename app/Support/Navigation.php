@@ -94,6 +94,13 @@ class Navigation
                 ],
             ],
             [
+                'label' => __('Site vitrine'),
+                'items' => [
+                    ['route' => 'website.edit', 'label' => __('Site vitrine'), 'icon' => 'globe', 'can' => 'website.manage'],
+                    ['route' => 'sermons.index', 'label' => __('Prédications'), 'icon' => 'mic', 'can' => ['sermons.manage', 'website.manage']],
+                ],
+            ],
+            [
                 'label' => __('Administration'),
                 'items' => [
                     ['route' => 'hierarchy.index', 'label' => __('Hiérarchie'), 'icon' => 'network', 'can' => 'organization.view'],

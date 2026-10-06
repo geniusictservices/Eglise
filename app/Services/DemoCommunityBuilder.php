@@ -126,6 +126,7 @@ class DemoCommunityBuilder
         app(DemoRegisters::class)->build($levels['himbi']);
         app(DemoPastoral::class)->build($levels['himbi'], $phone(13), $hash, $userFlags);
         app(DemoNetwork::class)->build($levels['himbi'], $levels['katindo']);
+        app(DemoWebsites::class)->build($siege, $levels['himbi'], $levels['katindo'], withFiles: ! isset($flags['is_demo']));
         // Les nouveautés de plus de trois jours ont été ouvertes depuis longtemps.
         DatabaseNotification::where('organization_id', $levels['himbi']->id)->whereNull('read_at')
             ->where('created_at', '<', now()->subDays(3))->update(['read_at' => DB::raw('created_at')]);
