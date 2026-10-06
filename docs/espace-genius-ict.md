@@ -66,6 +66,15 @@ Une communauté peut autoriser le support à **voir** son espace, pour 1, 3 ou 7
 - Chaque ouverture et chaque fermeture sont inscrites au **journal d'audit** de la communauté, avec le nom de l'agent ; la communauté les voit aussi dans Paramètres › Support.
 - Si la communauté retire son accord, ou s'il expire, l'agent est renvoyé à l'espace Genius ICT dès son prochain clic.
 
+## Sauvegardes
+
+**Sauvegardes** (rôle Direction). Chaque nuit à 2 h 15, Waumini sauvegarde toute la base et les fichiers envoyés dans une archive chiffrée ; les 14 dernières sont gardées. L'écran montre les archives, avec leur date et leur taille :
+
+- **Télécharger** une archive : à faire **chaque semaine**, pour en garder une copie hors du serveur (sauf si une copie distante automatique est réglée) ;
+- **Sauvegarder maintenant** : avant une mise à jour, une reprise de données, une manipulation délicate.
+
+Deux cadres rappellent si les archives sont **chiffrées** (mot de passe `BACKUP_PASSWORD`, à garder précieusement hors du serveur : sans lui, une archive est illisible) et si elles sont **copiées hors du serveur**. La restauration est décrite dans le [guide de déploiement](deploiement-lws.md#restaurer).
+
 ## Textes juridiques
 
 Les conditions d'utilisation et la politique de confidentialité publiées sur waumini.com. Les textes de départ citent le droit congolais (Constitution, Code du numérique du 13 mars 2023, loi du 9 juillet 2018 sur la protection du consommateur, droit OHADA) : **faites-les relire par un juriste**.
