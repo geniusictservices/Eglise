@@ -30,4 +30,4 @@ Sur téléphone, la **barre d'onglets** ④ flotte toujours en bas de l'écran.
 - **Taux du jour** : le taux de chaque devise par rapport au dollar. La mention **« Pas encore saisi aujourd'hui »** rappelle au trésorier de le mettre à jour. Le lien **Mettre à jour** ouvre l'écran des taux.
 - **Activité récente** : les dernières actions dans la communauté (qui a fait quoi, et quand). Le lien **Tout le journal** ouvre le [journal d'audit](09-journal.md).
 - **Essai gratuit** : pendant les 30 jours d'essai, un badge indique les jours restants.
-- **Bientôt dans Waumini** : les modules qui arrivent étape par étape (documents, suivi pastoral, espace membre…).
+- **Bientôt dans Waumini** : les modules qui arrivent étape par étape (suivi pastoral, espace membre, consolidation…).

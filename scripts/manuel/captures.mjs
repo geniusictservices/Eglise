@@ -1057,6 +1057,106 @@ const SCENES = [
             await mark(page, [{ selector: 'main a[href^="https://wa.me"]', label: '1' }, { selector: 'main section.card', text: 'Inscriptions', label: '2' }]);
         },
     },
+    // ---------- Documents et registres (paroisse de Himbi) ----------
+    {
+        id: '88-documents', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/documents`);
+            await settle(page);
+            await mark(page, [{ selector: 'main ul li a[href*="/imprimer"]', label: '1' }, { selector: 'main a[href$="/documents/delivrer"]', label: '2' }]);
+        },
+    },
+    {
+        id: '89-delivrer', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/documents/delivrer`);
+            await page.locator('main button', { hasText: 'Ordre de mission' }).click();
+            await page.waitForSelector('main input[type=search]');
+            await page.fill('main input[type=search]', 'Paluku Samuel');
+            await page.locator('main button[wire\\:click^=chooseMember]').first().click();
+            await page.waitForSelector('#d-destination');
+            await page.fill('#d-destination', 'Bukavu');
+            await page.fill('#d-objet', 'représenter la paroisse au synode régional');
+            await page.fill('#d-du', '2026-11-02');
+            await page.fill('#d-au', '2026-11-05');
+            await page.fill('#d-sign', 'Daniel Paluku');
+            await page.waitForTimeout(900);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: '#d-destination', label: '1' }]
+                : [{ selector: '#d-destination', label: '1' }, { selector: 'main aside article', label: '2' }, { selector: 'main form button.btn-primary', label: '3' }]);
+        },
+    },
+    {
+        id: '90-document-imprime', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/documents?q=Josias`);
+            await page.click('main ul li a[href*="/imprimer"]');
+            await page.waitForURL(/\/imprimer$/);
+            await settle(page);
+            await mark(page, [{ selector: 'a[href*="/verifier/document/"]', label: '1' }]);
+        },
+    },
+    {
+        id: '91-verification',
+        run: async (page) => {
+            const staff = await page.context().newPage();
+            await login(staff, '0990000008');
+            await staff.goto(`${BASE}/documents?q=Josias`);
+            await staff.click('main ul li a[href*="/imprimer"]');
+            const href = await staff.locator('a[href*="/verifier/document/"]').getAttribute('href');
+            await staff.close();
+            await page.context().clearCookies();
+            await page.goto(href);
+            await settle(page);
+        },
+    },
+    {
+        id: '92-modeles', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/documents/modeles`);
+            await settle(page);
+            await mark(page, [{ selector: 'main li button[wire\\:click^=adapt]', label: '1' }, { selector: 'main a[href$="/documents/modeles/nouveau"]', label: '2' }]);
+        },
+    },
+    {
+        id: '93-modele-editeur', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/documents/modeles/nouveau`);
+            await page.fill('#t-name', 'Attestation de choriste');
+            await page.fill('#t-code', 'ACH');
+            await page.fill('#t-title', 'Attestation de choriste');
+            await page.click('main button[wire\\:click=addField]');
+            await page.waitForSelector('input[wire\\:model\\.live\\.debounce\\.500ms="form.fields.0.label"]');
+            await page.fill('input[wire\\:model\\.live\\.debounce\\.500ms="form.fields.0.label"]', 'Voix');
+            await page.fill('main textarea', "Je soussigné(e), **{signataire}**, {qualite_signataire} de {communaute}, atteste que **{civilite} {nom_officiel}**, {né} le {date_naissance}, chante à la chorale Les Messagers depuis le {date_adhesion}, à la voix de **{voix}**.\n\nEn foi de quoi, la présente attestation lui est délivrée pour servir et valoir ce que de droit.");
+            await page.waitForTimeout(1200);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main textarea', label: '1' }]
+                : [{ selector: 'main section.card', text: 'Champs à remplir', label: '1' }, { selector: 'main textarea', label: '2' }, { selector: 'main aside article', label: '3' }]);
+        },
+    },
+    {
+        id: '94-registres', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/registres?q=Kahindo`);
+            await settle(page);
+            await mark(page, [{ selector: 'main input[type=search]', label: '1' }, { selector: 'main section.card ul li a', label: '2' }]);
+        },
+    },
+    {
+        id: '95-registre', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/registres`);
+            await page.locator('main ul li a', { hasText: 'Registre des baptêmes' }).click();
+            await page.waitForURL(/\/registres\/\d+/);
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main form[wire\\:submit=save] button.btn-primary', label: '1', position: 'right' }]
+                : [{ selector: 'main form[wire\\:submit=save]', label: '1' }, { selector: 'main li a[href*="acte="]', label: '2' }]);
+        },
+    },
 ];
 
 const browser = await chromium.launch();

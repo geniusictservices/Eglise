@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, groupes, calendrier et annonces livrés</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, documents et registres livrés</span>
   </header>
 
   <div class="hero">
@@ -268,10 +268,10 @@ const BLOCKS = [
       goal: "Chaque groupe a son espace, chaque fidèle est informé.",
       items: ["Nouveautés : une cloche compte ce qui n’a pas encore été ouvert ; ouvrir la page concernée la range, et ce qui est réglé par un autre se range chez tous", "Notifications sur le téléphone et l’ordinateur, même l’application fermée, avec le nombre sur l’icône", "Chaque étape des circuits prévient ceux qui doivent agir : dépenses, budget, dépassements, paie, avances, paiements déclarés", "Groupes (cellules, chorales, prière…) avec un responsable obligatoire, des adjoints et des membres ; rencontres et présences ; absents à visiter", "Calendrier : cultes chaque semaine, « 1er dimanche » ou « dernier vendredi » du mois, événements sur plusieurs jours ; une date s’annule seule", "Inscriptions facultatives, avec ou sans limite de places ; un membre s’inscrit lui-même", "Présences facultatives : effectifs (hommes, femmes, enfants, dont visiteurs, ou le total seul), pointage des membres, visiteurs nommés à revoir ; fidèles qu’on ne voit plus", "Annonces à toute la communauté, à un département ou à un groupe, partagées sur WhatsApp en un geste ; la semaine et les annonces sur le tableau de bord ; 4 nouveaux chapitres du manuel"],
       demo: "Livré : la convention des jeunes annoncée, partagée sur WhatsApp et remplie à 26 inscrits ; le culte du dimanche compté et pointé ; la cellule qui repère ses absents ; 189 tests automatiques." },
-    { status: "todo", title: "Documents et registres",
+    { status: "done", title: "Documents et registres",
       goal: "Une attestation en une minute, vérifiable par QR code.",
-      items: ["Attestations, lettres, carte de service, ordre de mission, convocation…", "Modèles personnalisables (en-tête, couleurs) et types de documents créés par la communauté", "Numérotation paramétrable", "Imprimés, signés à la main, authentifiés par QR code", "Saisie des anciens registres papier et réédition moderne"],
-      demo: "Une attestation de baptême de 1998 rééditée avec son QR code." },
+      items: ["Neuf modèles fournis : attestations d’appartenance, de baptême, de présentation d’enfant, de service, certificat de mariage, lettre de recommandation, ordre de mission, convocation, lettre", "Modèles du siège valables pour toutes ses paroisses ; chacune les adapte ou crée les siens (attestation de choriste, carte de service…)", "Texte à variables avec accords (né ou née, il ou elle), champs propres au modèle, aperçu sur une vraie fiche", "Numérotation réglable par modèle (code, sigle, année, numéro), remise à 1 chaque année", "Document délivré : texte figé, imprimé sur l’en-tête de la communauté, signé à la main, avec QR code ; annulation avec motif", "Page publique de vérification : authentique, annulé ou inconnu, sans montrer le texte", "Anciens registres papier recopiés acte par acte avec une saisie rapide ; recherche dans tous les registres ; actes reliés aux fiches", "Réédition d’une attestation à partir d’un acte ancien, même pour qui n’est plus membre ; 2 nouveaux chapitres du manuel"],
+      demo: "Livré : le baptême de Josias, inscrit en 1998 dans le vieux cahier de Himbi, réédité avec son QR code et vérifié depuis un téléphone ; 199 tests automatiques." },
     { status: "todo", title: "Suivi pastoral et espace membre",
       goal: "Accompagner chacun ; donner à chaque membre sa part d’accès.",
       items: ["Visites, malades, deuils, parcours des catéchumènes, demandes de prière", "Notes confidentielles : leur auteur seul, jamais exportées, même pas pour le support", "Espace membre : sa fiche, ses contributions et reçus, ses promesses, programme et annonces, demandes de prière et d’attestation", "Langue choisie par chaque membre", "Rappels d’anniversaires et cotisations des groupes (reportés du module Groupes)"],
@@ -384,7 +384,10 @@ const DECISIONS = [
     "Tous les documents courants, plus carte de service, ordre de mission, convocation, présentation d’enfant.",
     "Modèles fournis et personnalisables ; la communauté peut créer ses propres types de documents.",
     "Documents imprimés et signés à la main, authentifiés par QR code.",
-    "Numérotation paramétrable ; saisie des anciens registres et réédition moderne."
+    "Numérotation paramétrable ; saisie des anciens registres et réédition moderne.",
+    "Un document est délivré directement par la personne autorisée, sans circuit d’approbation ; il se signe à la main.",
+    "Un document annulé reste au registre avec son motif ; son QR code indique qu’il est annulé.",
+    "Les modèles du siège valent pour ses paroisses ; une paroisse qui adapte un modèle en garde sa propre copie."
   ]],
   ["Plateforme et support", [
     "Délai de grâce d’un mois avant le passage en lecture seule ; les données restent exportables.",

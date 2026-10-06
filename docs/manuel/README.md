@@ -53,15 +53,20 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 20. [Le calendrier, les inscriptions et les présences](27-calendrier-presences.md)
 21. [Les annonces et le partage sur WhatsApp](28-annonces.md)
 
+### Documents et registres
+
+22. [Les documents : attestations, lettres, ordres de mission, avec QR code](29-documents.md)
+23. [Les registres officiels et les anciens cahiers](30-registres.md)
+
 ### Pour l'administrateur et les responsables
 
-22. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
-23. [Gérer les utilisateurs](05-utilisateurs.md)
-24. [Rôles et permissions](06-roles.md)
-25. [Devises et taux du jour](07-devises.md)
-26. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
-27. [Le journal d'audit](09-journal.md)
-28. [L'abonnement](11-abonnement.md)
+24. [Organiser la hiérarchie : régions, secteurs, paroisses](04-hierarchie.md)
+25. [Gérer les utilisateurs](05-utilisateurs.md)
+26. [Rôles et permissions](06-roles.md)
+27. [Devises et taux du jour](07-devises.md)
+28. [Paramètres, identité et documents, apparence, libellés et accès du support](08-parametres.md)
+29. [Le journal d'audit](09-journal.md)
+30. [L'abonnement](11-abonnement.md)
 
 ### Aide
 
@@ -75,7 +80,7 @@ Waumini fournit des **rôles modèles**. Votre administrateur peut les adapter o
 |---|---|
 | **Administrateur** | Tout. Attribué à la personne qui a créé le compte de la communauté. |
 | **Pasteur** | Vue d'ensemble, plan d'action, approbation du budget, des dépenses, des dépassements, de la paie et des avances sur salaire, suivi pastoral, rapports. |
-| **Secrétaire** | Registre des membres, départements, groupes, calendrier, présences, annonces, documents. Ne voit pas les dîmes nominatives. |
+| **Secrétaire** | Registre des membres, départements, groupes, calendrier, présences, annonces, documents et anciens registres. Ne voit pas les dîmes nominatives. |
 | **Trésorier** | Caisses, recettes, promesses, dépenses, taux du jour, paie, rapports. |
 | **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, avancement de ses actions, groupes, activités et annonces du département. |
 | **Conseil / comité** | Lecture des rapports, sans rien pouvoir modifier. |

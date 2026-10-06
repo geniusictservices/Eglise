@@ -50,6 +50,7 @@ Le **registre** rassemble les fidèles de la communauté : identité, contacts, 
 En haut de la fiche : la photo, le numéro, le nom officiel (NOM Post-nom Prénom), l'âge et le statut. Les boutons **Appeler** et **WhatsApp** ouvrent directement l'application du téléphone.
 
 - **Carte** ① prépare la [carte de membre](#la-carte-de-membre) à imprimer.
+- **Document** délivre une attestation, une lettre ou un ordre de mission à cette personne (voir [Les documents](29-documents.md)).
 - **Statut** ② change le statut de la personne (voir ci-dessous).
 - **Modifier** ouvre le formulaire de la fiche. Le menu **⋯** permet de supprimer la fiche ; elle reste visible dans le [journal d'audit](09-journal.md).
 
@@ -73,7 +74,7 @@ Le statut indique où en est chaque personne : Membre, Sympathisant, Catéchumè
 <td width="32%"><img src="captures/mobile/30-membre-parcours.png" alt="Parcours d'un membre sur téléphone"></td>
 </tr></table>
 
-Dans l'onglet **Parcours**, touchez **Ajouter** ① pour enregistrer un baptême, une confirmation, une présentation d'enfant, un mariage religieux, une consécration ou toute autre étape. Indiquez la date, le lieu, l'officiant, les témoins et le **numéro dans le registre**, même celui d'un ancien registre papier.
+Dans l'onglet **Parcours**, touchez **Ajouter** ① pour enregistrer un baptême, une confirmation, une présentation d'enfant, un mariage religieux, une consécration ou toute autre étape. Indiquez la date, le lieu, l'officiant, les témoins et le **numéro dans le registre**, même celui d'un ancien registre papier. Si le cahier a été recopié dans Waumini, il suffit de **relier** l'acte à la fiche depuis le registre : l'étape de vie se remplit seule (voir [Les registres](30-registres.md)).
 
 L'**historique du statut** ② montre chaque changement, avec la date, le motif et la personne qui l'a fait.
 

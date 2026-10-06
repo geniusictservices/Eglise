@@ -78,3 +78,11 @@ Son compte doit être **lié à sa fiche de membre** : c'est par sa fiche que Wa
 ### Nous ne comptons pas les hommes et les femmes séparément. Faut-il le faire ?
 
 Non. Rien n'est obligatoire dans les présences : donnez seulement le **total**, ou pointez les membres, ou les deux (voir [Le calendrier et les présences](27-calendrier-presences.md)).
+
+### Quelqu'un présente une attestation de notre église. Est-elle vraie ?
+
+Scannez son **QR code** avec n'importe quel téléphone. La page qui s'ouvre dit si le document est **authentique**, **annulé** ou **inconnu**, avec le nom, le numéro et la date : comparez avec le papier. Voir [Les documents](29-documents.md).
+
+### Un ancien fidèle demande l'attestation de son baptême de 1998, mais il n'est pas dans Waumini.
+
+Cherchez-le dans **Registres** : si le cahier des baptêmes a été recopié, son acte y est. Touchez **Rééditer** : l'attestation est préparée à partir de l'acte, avec un QR code. Sinon, recopiez d'abord l'acte depuis le cahier papier. Voir [Les registres](30-registres.md).

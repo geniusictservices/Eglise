@@ -16,6 +16,7 @@
         <div class="mx-auto flex max-w-4xl flex-wrap items-center gap-3 px-4 py-3">
             <a href="{{ route('documents.index') }}" class="inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Documents délivrés') }}</a>
             <span class="flex-1"></span>
+            <a href="{{ $document->verifyUrl() }}" target="_blank" rel="noopener" class="btn-ghost text-sm"><x-icon name="qr-code" class="size-4" /> {{ __('Page de vérification') }}</a>
             @if ($document->isCancelled())<span class="badge bg-terra-50 text-terra-700">{{ __('Annulé le :d', ['d' => $document->cancelled_at->translatedFormat('j F Y')]) }}</span>@endif
             <button type="button" onclick="window.print()" class="btn-primary"><x-icon name="printer" class="size-4" /> {{ __('Imprimer') }}</button>
         </div>
