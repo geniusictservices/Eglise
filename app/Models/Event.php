@@ -166,6 +166,14 @@ class Event extends Model
         return substr($this->start_time, 0, 5).($this->end_time ? ' – '.substr($this->end_time, 0, 5) : '');
     }
 
+    /** Le texte prêt à partager sur WhatsApp pour une date de l'activité. */
+    public function shareText(Carbon $date, Organization $organization): string
+    {
+        return collect(['*'.trim($this->title).'*', '📅 '.collect([ucfirst($date->translatedFormat('l j F Y')), $this->hours(), $this->place])->filter()->implode(' · '),
+            $this->description ? "\n".trim($this->description) : null, '', '— '.$organization->displayName()])
+            ->reject(fn ($line) => $line === null)->implode("\n");
+    }
+
     public function audienceLabel(): string
     {
         return match ($this->audience) {

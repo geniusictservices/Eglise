@@ -2,13 +2,16 @@
 
 namespace App\Livewire;
 
+use App\Models\Announcement;
 use App\Models\AuditLog;
 use App\Models\ExchangeRate;
 use App\Models\Household;
 use App\Models\Member;
 use App\Models\OrganizationCurrency;
 use App\Models\RoleAssignment;
+use App\Services\Calendar;
 use App\Services\ExchangeRateService;
+use App\Support\AnnouncementAccess;
 use App\Support\Money;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -71,6 +74,9 @@ class Dashboard extends Component
                 ['label' => __('Aide'), 'icon' => 'circle-help', 'url' => route('help.index'), 'color' => 'text-ochre-600'],
             ])),
             'rates' => $todayRates,
+            'week' => app(Calendar::class)->agenda($organization, today(), today()->addDays(6))->take(6),
+            'announcements' => Announcement::current()->where(AnnouncementAccess::visibleQuery(auth()->user(), $organization))
+                ->orderByDesc('pinned')->latest('published_at')->limit(3)->get(),
             'checklist' => array_values(array_filter($checklist, fn ($item) => auth()->user()->can($item['can']))),
             'activity' => AuditLog::with('user')->where('organization_id', $organization->id)->latest('id')->limit(6)->get(),
             'trialDaysLeft' => $organization->status === 'trial' && $organization->root()->trial_ends_at

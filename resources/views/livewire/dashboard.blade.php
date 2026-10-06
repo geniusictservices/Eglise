@@ -49,6 +49,43 @@
         </div>
     @endif
 
+    @if ($week->isNotEmpty() || $announcements->isNotEmpty())
+        <div class="mb-5 grid grid-cols-1 gap-5 lg:mb-6 lg:grid-cols-2 lg:gap-6">
+            <section class="card min-w-0 p-5 sm:p-6">
+                <div class="mb-3 flex items-center justify-between gap-2">
+                    <h2 class="text-lg">{{ __('Cette semaine') }}</h2>
+                    <a href="{{ route('events.index') }}" class="text-sm font-semibold text-ink-600 hover:underline">{{ __('Calendrier') }}</a>
+                </div>
+                <ul class="divide-y divide-sand-100">
+                    @forelse ($week as $o)
+                        <li><a href="{{ route('events.show', ['event' => $o['event'], 'date' => $o['date']->toDateString()]) }}" class="flex items-center gap-3 py-2.5 hover:bg-sand-50">
+                            <span class="grid size-11 shrink-0 place-items-center rounded-xl bg-ink-50 text-center leading-none text-ink-700"><span><span class="block text-[10px] uppercase">{{ $o['date']->translatedFormat('D') }}</span><span class="text-base font-semibold">{{ $o['date']->format('d') }}</span></span></span>
+                            <span class="min-w-0 flex-1"><span class="block truncate font-semibold text-ink-800">{{ $o['event']->title }}</span><span class="block truncate text-sm text-sand-700">{{ collect([$o['event']->hours(), $o['event']->place])->filter()->implode(' · ') }}</span></span>
+                        </a></li>
+                    @empty
+                        <li class="py-2 text-sm text-sand-700">{{ __('Rien au calendrier cette semaine.') }}</li>
+                    @endforelse
+                </ul>
+            </section>
+            <section class="card min-w-0 p-5 sm:p-6">
+                <div class="mb-3 flex items-center justify-between gap-2">
+                    <h2 class="text-lg">{{ __('Annonces') }}</h2>
+                    <a href="{{ route('announcements.index') }}" class="text-sm font-semibold text-ink-600 hover:underline">{{ __('Toutes') }}</a>
+                </div>
+                <ul class="space-y-3">
+                    @forelse ($announcements as $a)
+                        <li><a href="{{ route('announcements.show', $a) }}" class="flex gap-3 rounded-xl hover:bg-sand-50">
+                            <x-icon name="megaphone" @class(['mt-0.5 size-5 shrink-0', 'text-ochre-600' => $a->pinned, 'text-ink-400' => ! $a->pinned]) />
+                            <span class="min-w-0"><span class="block font-semibold text-ink-800">{{ $a->title }}</span><span class="line-clamp-2 text-sm text-sand-700">{{ $a->body }}</span></span>
+                        </a></li>
+                    @empty
+                        <li class="text-sm text-sand-700">{{ __('Aucune annonce en cours.') }}</li>
+                    @endforelse
+                </ul>
+            </section>
+        </div>
+    @endif
+
     <div class="grid gap-5 lg:grid-cols-[1.2fr_1fr] lg:gap-6">
         {{-- Premiers pas --}}
         @if (count($checklist))

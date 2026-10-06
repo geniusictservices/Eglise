@@ -11,6 +11,7 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Member;
 use App\Services\Calendar;
+use App\Support\AnnouncementAccess;
 use App\Support\DepartmentScope;
 use App\Support\EventAccess;
 use Illuminate\Support\Carbon;
@@ -232,6 +233,7 @@ class Show extends Component
             'canEdit' => ! $organization->isReadOnly() && EventAccess::canEdit($user, $organization, $this->event),
             'canRecord' => $canRecord,
             'canRegisterOthers' => $this->canRegisterOthers(),
+            'canAnnounce' => ! $organization->isReadOnly() && AnnouncementAccess::canCreate($user, $organization),
         ] + $this->eventFormOptions())->title($this->event->title);
     }
 }

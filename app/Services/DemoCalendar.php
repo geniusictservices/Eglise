@@ -89,6 +89,21 @@ class DemoCalendar
             $earlier = $calendar->record($culte, $sunday->copy()->subWeek());
             $calendar->addVisitor($earlier, ['name' => 'Moïse Kasereka', 'phone' => '+243 997 110 220'])->update(['followed_up_at' => now()->subDays(3)]);
 
+            // Annonces : la convention (épinglée), un changement d'horaire, une collecte, un message de cellule.
+            $announce = app(Announcements::class);
+            $soon = today()->addDays(4)->toDateString();
+            Carbon::setTestNow(now()->subDays(6));
+            $announce->save($himbi, ['title' => 'Collecte pour les familles sinistrées de Kanyaruchinya', 'audience' => 'all', 'expires_on' => $soon,
+                'body' => "Dimanche prochain, une seconde collecte sera faite pour les familles déplacées accueillies à Kanyaruchinya.\nVous pouvez aussi apporter des habits et des vivres au bureau de la paroisse avant samedi."]);
+            Carbon::setTestNow();
+            Carbon::setTestNow(now()->subDays(2));
+            $announce->save($himbi, ['title' => 'Cellule de Himbi II : rencontre chez la famille Kahindo', 'audience' => 'group', 'group_id' => Group::where('name', 'Cellule de Himbi II')->value('id'),
+                'expires_on' => $soon, 'body' => 'Ce mercredi, la cellule se réunit exceptionnellement chez la famille Kahindo, avenue du Lac. Même heure : 17 h.']);
+            Carbon::setTestNow();
+            $announce->save($himbi, ['title' => 'Convention des jeunes : inscriptions ouvertes', 'audience' => 'all', 'pinned' => true,
+                'event_id' => $conv->id, 'event_date' => $convention->toDateString(), 'expires_on' => $convention->toDateString(),
+                'body' => "Trois jours de louange, d’enseignements et de sport au stade de l’Unité. Thème : « Lève-toi et brille ».\nParticipation : 10 $, repas compris. Inscrivez-vous auprès de la jeunesse ou dans Waumini : 150 places."]);
+
             $previous ? Auth::setUser($previous) : Auth::logout();
         });
     }

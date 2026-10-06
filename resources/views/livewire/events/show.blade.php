@@ -40,6 +40,13 @@
         </div>
     </section>
 
+    @unless ($skipped)
+        @php $shareText = $event->shareText($day, current_organization()); @endphp
+        <div class="mb-5 flex flex-wrap gap-2" x-data="{ copied: false }">
+            <a href="https://wa.me/?text={{ rawurlencode($shareText) }}" target="_blank" rel="noopener" class="btn !min-h-0 bg-[#25D366] !py-2 text-white hover:bg-[#1EBE5A]"><x-icon name="message-circle" class="size-4" /> {{ __('Partager sur WhatsApp') }}</a>
+            @if ($canAnnounce && $day->gte(today()))<a href="{{ route('announcements.index', ['activite' => $event->id, 'date' => $date]) }}" class="btn-secondary !min-h-0 !py-2"><x-icon name="megaphone" class="size-4" /> {{ __('Annoncer') }}</a>@endif
+        </div>
+    @endunless
     @if ($skipped)
         <p class="mb-5 rounded-2xl border border-terra-100 bg-terra-50 p-4 text-sm font-semibold text-terra-700"><x-icon name="x" class="mr-1 inline size-4" /> {{ __('Cette date est annulée. Les autres dates restent prévues.') }}</p>
     @endif

@@ -47,6 +47,7 @@ class Navigation
                 'items' => [
                     ['route' => 'events.index', 'label' => __('Calendrier'), 'icon' => 'calendar-days', 'can' => 'organization.view'],
                     ['route' => 'attendance.index', 'label' => __('Présences'), 'icon' => 'clipboard-check', 'can' => ['attendance.record', 'activities.manage']],
+                    ['route' => 'announcements.index', 'label' => __('Annonces'), 'icon' => 'megaphone', 'can' => 'organization.view'],
                     ['route' => 'groups.index', 'label' => __('Groupes'), 'icon' => 'handshake', 'can' => ['groups.manage', 'members.view', 'attendance.record']],
                 ],
             ],
