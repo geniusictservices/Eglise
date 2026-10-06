@@ -36,6 +36,7 @@ class Budgets
             throw new InvalidArgumentException(__('Ajoutez au moins un besoin ou une recette prévue.'));
         }
         $proposal->update(['status' => 'submitted', 'submitted_by' => auth()->id(), 'submitted_at' => now(), 'return_note' => null]);
+        app(CircuitNotices::class)->proposalSubmitted($proposal);
     }
 
     /** La finance renvoie une proposition au département, pour correction. */
@@ -45,6 +46,7 @@ class Budgets
             throw new InvalidArgumentException(__('Cette proposition n’est pas envoyée.'));
         }
         $proposal->update(['status' => 'draft', 'return_note' => $note]);
+        app(CircuitNotices::class)->proposalReturned($proposal, $note);
     }
 
     public function adopted(Organization $organization, int $year): ?Budget
@@ -93,6 +95,8 @@ class Budgets
                     'proposed_amount' => $line->amount, 'proposal_line_id' => $line->id]);
                 $count++;
             }
+            // Reprise dans le budget : la proposition n'attend plus la finance.
+            app(Notifier::class)->settle("proposal.{$proposal->id}.arbitrate");
         }
 
         return $count;
@@ -172,6 +176,7 @@ class Budgets
             throw new InvalidArgumentException(__('Le budget est vide.'));
         }
         $budget->update(['status' => 'submitted', 'submitted_by' => auth()->id(), 'submitted_at' => now(), 'return_note' => null]);
+        app(CircuitNotices::class)->budgetSubmitted($budget);
     }
 
     /** Le pasteur approuve : la version est adoptée et remplace la précédente. */
@@ -189,6 +194,7 @@ class Budgets
                 ->adopted()->get()->each(fn (Budget $b) => $b->update(['status' => 'superseded']));
             $budget->update(['status' => 'adopted', 'approved_by' => $user->id, 'approved_at' => now(), 'approval_note' => $note]);
         });
+        app(CircuitNotices::class)->budgetDecided($budget, true, $note);
     }
 
     /** Le pasteur renvoie la version à la finance, avec ses remarques. */
@@ -198,6 +204,7 @@ class Budgets
             throw new InvalidArgumentException(__('Ce budget n’attend pas d’approbation.'));
         }
         $budget->update(['status' => 'draft', 'return_note' => $note]);
+        app(CircuitNotices::class)->budgetDecided($budget, false, $note);
     }
 
     /** Abandonner une version en préparation (jamais une version adoptée). */

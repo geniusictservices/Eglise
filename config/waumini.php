@@ -23,6 +23,13 @@ return [
 
     'trial_days' => 30,
 
+    // Notifications sur le téléphone (Web Push) : clés créées par « php artisan waumini:vapid ».
+    'push' => [
+        'public_key' => env('VAPID_PUBLIC_KEY'),
+        'private_key' => env('VAPID_PRIVATE_KEY'),
+        'subject' => env('VAPID_SUBJECT', 'mailto:contact@waumini.com'),
+    ],
+
     // Démo publique : chaque visiteur a sa copie, effacée après ce nombre de jours.
     'demo' => [
         'days' => 3,

@@ -25,8 +25,11 @@ class SalaryAdvances
             throw new InvalidArgumentException(__('Cette personne n’est plus payée par la communauté.'));
         }
 
-        return SalaryAdvance::create(['organization_id' => $payee->organization_id, 'payee_id' => $payee->id, 'amount' => $amount,
+        $advance = SalaryAdvance::create(['organization_id' => $payee->organization_id, 'payee_id' => $payee->id, 'amount' => $amount,
             'currency' => $payee->currency, 'installments' => max(1, min(12, $installments)), 'reason' => $reason, 'requested_by' => auth()->id()]);
+        app(CircuitNotices::class)->advanceRequested($advance);
+
+        return $advance;
     }
 
     public function decide(SalaryAdvance $advance, User $user, bool $approve, ?string $note = null): void
@@ -41,6 +44,7 @@ class SalaryAdvances
             throw new InvalidArgumentException(__('Indiquez le motif du refus.'));
         }
         $advance->update(['status' => $approve ? 'approved' : 'refused', 'approved_by' => $user->id, 'approved_at' => now(), 'decision_note' => $note]);
+        app(CircuitNotices::class)->advanceDecided($advance);
     }
 
     /** Le paiement de l'avance : une sortie de la caisse, comptée dans les rémunérations. */
@@ -63,6 +67,7 @@ class SalaryAdvances
             ]);
             $advance->update(['status' => 'paid', 'cash_account_id' => $account->id, 'finance_transaction_id' => $transaction->id, 'paid_at' => now()]);
         });
+        app(CircuitNotices::class)->advanceClosed($advance);
     }
 
     public function cancel(SalaryAdvance $advance): void
@@ -71,5 +76,6 @@ class SalaryAdvances
             throw new InvalidArgumentException(__('Une avance déjà payée ne s’annule pas : elle se rembourse par les retenues.'));
         }
         $advance->update(['status' => 'cancelled']);
+        app(CircuitNotices::class)->advanceClosed($advance);
     }
 }

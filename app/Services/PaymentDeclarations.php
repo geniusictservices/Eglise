@@ -49,6 +49,7 @@ class PaymentDeclarations
                 'reviewed_by' => auth()->id(), 'reviewed_at' => now(),
             ]);
         });
+        app(CircuitNotices::class)->declarationReviewed($declaration);
     }
 
     public function reject(PaymentDeclaration $declaration, string $reason): void
@@ -57,5 +58,6 @@ class PaymentDeclarations
             throw new InvalidArgumentException(__('Cette déclaration a déjà été traitée.'));
         }
         $declaration->update(['status' => 'rejected', 'reject_reason' => $reason, 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
+        app(CircuitNotices::class)->declarationReviewed($declaration);
     }
 }

@@ -8,6 +8,7 @@ use App\Models\FinanceCategory;
 use App\Models\Member;
 use App\Models\PaymentDeclaration;
 use App\Models\Pledge;
+use App\Services\CircuitNotices;
 use App\Services\Ledger;
 use App\Services\PaymentDeclarations;
 use App\Support\Phone;
@@ -102,6 +103,8 @@ class Index extends Component
             $declaration->update(['screenshot_path' => $this->screenshot->storeAs('declarations/'.$declaration->organization_id,
                 $declaration->id.'-'.Str::random(8).'.'.$this->screenshot->extension(), 'local')]);
         }
+
+        app(CircuitNotices::class)->declarationReceived($declaration);
 
         $this->dispatch('close-modal', name: 'declaration');
         $this->notify(__('Paiement déclaré : il attend la vérification de la finance.'));

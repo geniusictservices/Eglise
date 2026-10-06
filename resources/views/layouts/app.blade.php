@@ -39,6 +39,7 @@
                         <span class="block text-[11px] leading-tight text-ink-100">{{ $organization?->level_label }}</span>
                         <span class="block truncate font-semibold leading-tight">{{ $organization?->displayName() }}</span>
                     </a>
+                    <livewire:notifications.bell :on-dark="true" />
                     @include('partials.user-menu', ['onDark' => true])
                 </div>
             </header>
@@ -54,6 +55,7 @@
                         @endisset
                     </div>
                     <x-install-button />
+                    <livewire:notifications.bell :on-dark="false" />
                     @include('partials.user-menu', ['onDark' => false])
                 </div>
             </header>

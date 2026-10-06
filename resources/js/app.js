@@ -1,4 +1,5 @@
 import './passkeys';
+import './push';
 
 // Installation de l'application (PWA) : Android, Windows et ordinateurs.
 // Livewire charge Alpine ; on y déclare un « store » partagé avant son démarrage.

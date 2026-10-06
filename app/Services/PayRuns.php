@@ -99,6 +99,7 @@ class PayRuns
             throw new InvalidArgumentException(__('La paie dépasse le budget des salaires de :m : demandez l’autorisation de dépassement, en disant d’où viendra l’argent.', ['m' => Money::format($missing, 'USD')]));
         }
         $run->update(['status' => 'submitted', 'submitted_by' => auth()->id(), 'submitted_at' => now(), 'return_note' => null]);
+        app(CircuitNotices::class)->payRunSubmitted($run);
     }
 
     public function approve(PayRun $run, User $user, ?string $note = null): void
@@ -108,12 +109,14 @@ class PayRuns
             throw new InvalidArgumentException(__('La paie est approuvée par une autre personne que celle qui l’a présentée.'));
         }
         $run->update(['status' => 'approved', 'approved_by' => $user->id, 'approved_at' => now(), 'approval_note' => $note]);
+        app(CircuitNotices::class)->payRunDecided($run, true, $note);
     }
 
     public function sendBack(PayRun $run, string $note): void
     {
         $this->expect($run, 'submitted');
         $run->update(['status' => 'draft', 'return_note' => $note]);
+        app(CircuitNotices::class)->payRunDecided($run, false, $note);
     }
 
     public function cancel(PayRun $run): void
@@ -122,6 +125,7 @@ class PayRuns
             throw new InvalidArgumentException(__('Une paie déjà payée ne s’annule pas : annulez les opérations dans le journal.'));
         }
         $run->update(['status' => 'cancelled']);
+        app(CircuitNotices::class)->payRunClosed($run);
     }
 
     /** Montant d'un bulletin dans une autre devise, au taux du jour. */
@@ -175,6 +179,7 @@ class PayRuns
 
             if (! $run->slips()->whereNull('paid_at')->where('net', '>', 0)->exists()) {
                 $run->update(['status' => 'paid', 'paid_at' => now()]);
+                app(CircuitNotices::class)->payRunClosed($run);
             }
 
             return $slips->count();

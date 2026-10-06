@@ -13,12 +13,14 @@ use App\Http\Controllers\MeetingPrintController;
 use App\Http\Controllers\MemberCardController;
 use App\Http\Controllers\MemberPhotoController;
 use App\Http\Controllers\MemberTemplateController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OrganizationLogoController;
 use App\Http\Controllers\PayrollPrintController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SwitchOrganizationController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformStaff;
+use App\Http\Middleware\MarkNotificationsOpened;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Livewire;
 use Illuminate\Support\Facades\Route;
@@ -42,12 +44,16 @@ Route::middleware('guest')->group(function () {
     Route::get('/inscription', Livewire\Auth\Register::class)->name('register');
 });
 
-Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged::class])->group(function () {
+Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged::class, MarkNotificationsOpened::class])->group(function () {
     Route::post('/deconnexion', LogoutController::class)->name('logout');
     Route::view('/aucune-communaute', 'organizations.none')->name('organizations.none');
     Route::post('/communaute/{organization}/ouvrir', SwitchOrganizationController::class)->name('organizations.switch');
 
     Route::get('/tableau-de-bord', Livewire\Dashboard::class)->name('dashboard');
+    Route::get('/nouveautes', Livewire\Notifications\Index::class)->name('notifications.index');
+    Route::get('/nouveautes/{id}/ouvrir', [NotificationController::class, 'open'])->whereUuid('id')->name('notifications.open');
+    Route::post('/nouveautes/telephone', [NotificationController::class, 'subscribe'])->name('notifications.subscribe');
+    Route::delete('/nouveautes/telephone', [NotificationController::class, 'unsubscribe'])->name('notifications.unsubscribe');
 
     Route::get('/hierarchie', Livewire\Hierarchy\Index::class)->name('hierarchy.index');
 

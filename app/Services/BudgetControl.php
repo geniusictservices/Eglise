@@ -266,7 +266,7 @@ class BudgetControl
             }
         }
 
-        return BudgetOverrun::create($target + [
+        $overrun = BudgetOverrun::create($target + [
             'organization_id' => $organization->id, 'fiscal_year' => $year,
             'amount' => $data['amount'], 'source' => $data['source'],
             'source_department_id' => $data['source'] === 'transfer' ? ($data['source_department_id'] ?? null) : null,
@@ -274,6 +274,9 @@ class BudgetControl
             'source_detail' => $data['source_detail'] ?? null, 'reason' => $data['reason'],
             'requested_by' => auth()->id(),
         ]);
+        app(CircuitNotices::class)->overrunRequested($overrun);
+
+        return $overrun;
     }
 
     /** @return array<string, float> clé de ligne => dollars engagés par la paie */
@@ -315,6 +318,7 @@ class BudgetControl
             throw new InvalidArgumentException(__('Indiquez le motif du refus.'));
         }
         $overrun->update(['status' => $authorize ? 'authorized' : 'refused', 'decided_by' => $user->id, 'decided_at' => now(), 'decision_note' => $note]);
+        app(CircuitNotices::class)->overrunDecided($overrun);
     }
 
     private function usdOrZero(Organization $organization, ExpenseRequest $request): float

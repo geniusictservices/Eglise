@@ -57,13 +57,16 @@ class Expenses
             throw new InvalidArgumentException(__('Une avance précédente (:n) n’a pas été justifiée à temps : elle doit l’être avant une nouvelle avance.', ['n' => $blocking->number]));
         }
 
-        return DB::transaction(fn () => ExpenseRequest::create($data + [
+        $request = DB::transaction(fn () => ExpenseRequest::create($data + [
             'organization_id' => $organization->id,
             'number' => $this->nextNumber($organization),
             'approvals_required' => (int) $this->settings($organization)['approvals_required'],
             'requested_by' => auth()->id(),
             'status' => 'submitted',
         ]));
+        app(CircuitNotices::class)->expenseSubmitted($request);
+
+        return $request;
     }
 
     public function check(ExpenseRequest $request, ?string $note = null): void
@@ -74,6 +77,7 @@ class Expenses
             throw new InvalidArgumentException(__('Cette dépense dépasse le budget de :m : demandez l’autorisation de dépassement, en disant d’où viendra l’argent.', ['m' => Money::format($missing, 'USD')]));
         }
         $request->update(['status' => 'checked', 'checked_by' => auth()->id(), 'checked_at' => now(), 'check_note' => $note]);
+        app(CircuitNotices::class)->expenseChecked($request);
     }
 
     public function approve(ExpenseRequest $request, User $user, ?string $note = null): void
@@ -90,6 +94,7 @@ class Expenses
             ExpenseApproval::create(['expense_request_id' => $request->id, 'user_id' => $user->id, 'decision' => 'approved', 'note' => $note]);
             if ($request->approvals()->where('decision', 'approved')->count() >= $request->approvals_required) {
                 $request->update(['status' => 'approved']);
+                app(CircuitNotices::class)->expenseApproved($request);
             }
         });
     }
@@ -103,6 +108,7 @@ class Expenses
             ExpenseApproval::create(['expense_request_id' => $request->id, 'user_id' => $user->id, 'decision' => 'rejected', 'note' => $reason]);
             $request->update(['status' => 'rejected', 'reject_reason' => $reason]);
         });
+        app(CircuitNotices::class)->expenseRejected($request, $reason);
     }
 
     /** Le décaissement crée la dépense dans le compte choisi. */
@@ -129,6 +135,7 @@ class Expenses
                 'justify_by' => $request->is_advance ? today()->addDays((int) $this->settings($request->organization)['advance_days']) : null,
             ]);
         });
+        app(CircuitNotices::class)->expenseDisbursed($request);
     }
 
     /** Justification : le montant réellement dépensé ; le reste d'une avance revient au compte. */
@@ -168,6 +175,7 @@ class Expenses
             throw new InvalidArgumentException(__('Une dépense décaissée ne s’annule pas : annulez l’opération dans le journal.'));
         }
         $request->update(['status' => 'cancelled']);
+        app(CircuitNotices::class)->expenseClosed($request);
     }
 
     private function expect(ExpenseRequest $request, string $status): void
