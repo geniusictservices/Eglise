@@ -1,0 +1,322 @@
+﻿francais;traduction
+":child a rejoint :parent";
+":count niveau inférieur|:count niveaux inférieurs";
+":count niveau|:count niveaux";
+":level « :name » ajouté.";
+":name (copie)";
+":name fait maintenant partie de votre hiérarchie.";
+Accepter;Kubali
+"Accepter : :name et ses niveaux rejoindront votre hiérarchie.";
+Acceptée;
+Accueil;Mwanzo
+"Accès autorisé jusqu’au :date.";
+"Accès du support Genius ICT";
+"Accès du support révoqué.";
+Action;
+Actions;
+"Activité récente";"Shughuli za hivi karibuni"
+Administration;Utawala
+Adresse;
+"Afficher le mot de passe";
+Ajouter;Ongeza
+"Ajouter un niveau";"Ongeza ngazi"
+"Ajouter un niveau inférieur";
+"Ajouter un niveau sous :name";
+"Ajouter un utilisateur";"Ongeza mtumiaji"
+"Ajouter une devise";"Ongeza sarafu"
+Annexe;
+Annuler;Ghairi
+Annulée;
+Application;
+Après;
+"Attention : le journal a été altéré en dehors de Waumini. Contactez le support Genius ICT.";
+Attribuer;
+"Attribuer un rôle";
+"Attributions de rôles";
+"Au moins 8 caractères, avec des lettres et des chiffres.";
+"Aucun rôle.";
+"Aucun taux";"Hakuna kiwango"
+"Aucun taux enregistré à ce niveau.";
+"Aucun taux saisi";
+"Aucun utilisateur ne correspond à cette recherche.";
+"Aucune activité pour le moment.";"Hakuna shughuli kwa sasa."
+"Aucune communauté";
+"Aucune communauté ne correspond à ce code.";
+"Aucune ligne pour ces critères.";
+"Autoriser l’accès du support";
+Avant;
+"Bientôt dans Waumini";"Inakuja hivi karibuni kwenye Waumini"
+Bienvenue;Karibu
+"Bonjour, :name";"Habari, :name"
+"Ce numéro de téléphone n’est pas valide.";
+"Ce numéro est déjà utilisé par un autre compte.";
+"Ce que fait cette personne";
+"Ce rôle est défini par un niveau supérieur. Dupliquez-le pour l’adapter à votre communauté.";
+"Ce rôle est encore attribué. Retirez-le d’abord aux utilisateurs concernés.";
+"Cette communauté est en lecture seule.";
+"Cette communauté est en lecture seule. Vos données restent consultables et exportables.";
+Champ;
+"Changer le mot de passe";"Badilisha nenosiri"
+"Choisir un rôle…";
+Choisir…;
+"Choisissez au moins un rôle pour ce nouvel utilisateur.";
+"Choisissez votre mot de passe.";
+"Choisissez « Installer l’application » (ou « Ajouter à l’écran d’accueil »).";
+"Clic droit sur l’icône dans la barre des tâches, puis « Épingler à la barre des tâches », pour la retrouver chaque jour.";
+"Cliquez sur l’icône d’installation à droite de la barre d’adresse (un écran avec une flèche), ou sur le bouton « Installer » de Waumini.";
+"Cochez au moins une permission.";
+"Code de rattachement :";
+"Code de rattachement du niveau à rejoindre";
+Communauté;
+"Communiquez-le à :name, de vive voix ou par WhatsApp. Il ne sera plus affiché.";
+Complet;
+"Compléter les informations de la communauté";
+"Compte actif (décochez pour bloquer l’accès sans rien supprimer)";
+"Compte créé. Communiquez le mot de passe provisoire à :name.";
+"Confirmer le nouveau mot de passe";
+"Confirmez : l’icône Waumini apparaît sur votre écran d’accueil.";
+"Confirmez « Installer ». Waumini s’ouvre dans sa propre fenêtre.";
+"Connectez-vous avec votre numéro de téléphone.";"Ingia kwa kutumia namba yako ya simu."
+Connexion…;Inaingia…
+Copier;
+Copié;
+Créations;
+"Créer le compte";
+"Créer un nouveau mot de passe provisoire pour :name ?";
+"Créer un rôle";"Unda jukumu"
+"Créer un rôle à partir de celui-ci";
+"C’est son identifiant de connexion.";
+Date;Tarehe
+"Date des taux";
+"Demande envoyée à :name.";
+"Demande refusée.";
+"Demandes de rattachement";
+"Demandée par :name, :date";
+"Dernière connexion";"Kuingia kwa mwisho"
+Description;
+Devise;
+"Devise :currency ajoutée. Saisissez son taux du jour.";
+"Devise de base : tous les totaux sont convertis en dollars.";
+"Devise désactivée. Son historique est conservé.";
+"Devise réactivée.";
+Devises;
+"Devises et taux";"Sarafu na viwango"
+"Devises suivies";"Sarafu zinazofuatiliwa"
+"Documents et attestations";
+"Dollar américain";
+Dupliquer;
+"Défini par :name";
+Désactiver;
+Désactivé;
+Détails;
+E-mail;"Barua pepe"
+"En attente";
+Enregistrer;Hifadhi
+"Enregistrer le rôle";
+"Enregistrer les libellés";
+"Envoyer la demande";
+"Envoyer sur WhatsApp";
+"Espace membre";
+"Essai gratuit : :count jour restant|Essai gratuit : :count jours restants";
+"Est de la RDC (Goma, Bukavu, Lubumbashi)";
+"Faites défiler et choisissez « Sur l’écran d’accueil ».";
+Fermer;Funga
+"Fermer le menu";"Funga menyu"
+"Finances et promesses";
+"Fuseau horaire";
+"Groupes et activités";
+"Historique des taux · :currency";
+Hiérarchie;Ngazi
+"Hors connexion";
+Identité;
+"Il doit rester au moins un administrateur.";
+Informations;Taarifa
+Installer;Sakinisha
+"Installer Waumini";"Sakinisha Waumini"
+"Installer Waumini sur les téléphones et l’ordinateur";
+"Installer Waumini sur votre téléphone ou ordinateur";
+"Installer l’application";"Sakinisha programu"
+"Installer maintenant";"Sakinisha sasa"
+"Inviter le secrétaire et le trésorier";
+Jamais;Haijawahi
+"Journal d’audit";"Kumbukumbu za ukaguzi"
+"La mémoire de votre communauté";
+"La personne se connectera avec son numéro de téléphone et un mot de passe provisoire, qu’elle changera à la première connexion.";
+Langue;Lugha
+"Langue de l’application";"Lugha ya programu"
+"Langue par défaut";
+"Le dollar est la devise de base de Waumini. Pour chaque autre devise, saisissez le taux du jour : chaque montant sera affiché avec son équivalent en dollars.";
+"Le journal est intact : aucune ligne n’a été modifiée ni supprimée.";
+"Le mot de passe actuel est incorrect.";
+"Le registre de vos fidèles, vos finances en toute transparence, votre année préparée ensemble.";
+"Le responsable du niveau le trouve sur sa page Hiérarchie.";
+"Le rôle Administrateur donne toujours accès à tout ; il ne peut pas être modifié.";
+"Le support Genius ICT peut accéder à votre communauté pendant 7 jours.";
+"Les deux mots de passe ne correspondent pas.";
+"Les modules arrivent étape par étape. Suivez l’avancement sur la feuille de route.";
+"Les niveaux de votre communauté : régions, secteurs, paroisses, annexes. Chaque niveau tient ses propres registres ; les niveaux supérieurs les consolident.";
+"Les personnes qui se connectent à Waumini pour :name et ses niveaux inférieurs, avec leurs rôles.";
+Libellés;Majina
+"Libellés enregistrés.";
+"Masquer le mot de passe";
+"Membres et ménages";
+Menu;Menyu
+Message;
+"Mettre à jour";Sasisha
+Modifications;
+"Modifications enregistrées.";"Mabadiliko yamehifadhiwa."
+Modifier;Badilisha
+"Mon profil";"Wasifu wangu"
+"Mot de passe";Nenosiri
+"Mot de passe actuel";"Nenosiri la sasa"
+"Mot de passe changé.";
+"Mot de passe changé. Bienvenue dans Waumini !";
+"Mot de passe oublié ? Demandez à l’administrateur de votre communauté de le réinitialiser.";"Umesahau nenosiri? Mwombe msimamizi wa jumuiya yako aliweke upya."
+"Mot de passe provisoire";
+"Navigation principale";"Urambazaji mkuu"
+Niveau;
+"Niveaux inférieurs";"Ngazi za chini"
+Nom;Jina
+"Nom complet";"Jina kamili"
+"Nom court";
+"Nom du rôle";
+"Nom ou téléphone";"Jina au simu"
+"Nouveau mot de passe";"Nenosiri jipya"
+"Nouveau rôle";
+"Nouvel utilisateur";
+"Numéro de téléphone";"Namba ya simu"
+"Numéro de téléphone ou mot de passe incorrect.";"Namba ya simu au nenosiri si sahihi."
+"Ordinateur de l’église";
+"Ouest de la RDC (Kinshasa, Matadi)";
+"Ouvrez Waumini dans Chrome.";
+"Ouvrez Waumini dans Microsoft Edge ou Google Chrome.";
+"Ouvrez Waumini dans Safari (l’installation ne fonctionne qu’avec Safari).";
+Ouvrir;Fungua
+"Ouvrir le menu";"Fungua menyu"
+Paie;
+"Par défaut aujourd’hui. Choisissez une date passée pour corriger un oubli.";
+Paramètres;Mipangilio
+"Paramètres enregistrés.";
+Paroisse;
+"Paroisse de Himbi";
+"Pas de connexion";"Hakuna mtandao"
+"Pas encore saisi aujourd’hui";"Bado hakijaingizwa leo"
+Permissions;Ruhusa
+"Plan d’action et budget";
+Plus;Zaidi
+"Pour changer de numéro, demandez à l’administrateur.";
+"Pour vous aider, un agent Genius ICT peut voir votre communauté comme vous la voyez. Il n’y accède qu’avec votre accord, pendant 7 jours au plus, et vous pouvez retirer cet accord à tout moment. Chaque accès est inscrit au journal. Les notes pastorales confidentielles ne lui sont jamais visibles.";
+"Premier rôle";
+"Premiers pas";"Hatua za kwanza"
+"Profil enregistré.";"Wasifu umehifadhiwa."
+Province;
+"Quartier, avenue, numéro";
+"Quatre étapes pour bien démarrer avec Waumini.";
+"Qui a fait quoi, quand, avec les valeurs avant et après. Personne ne peut modifier ni effacer une ligne de ce journal.";
+Rattachements;
+Rechercher;
+"Rechercher une communauté";
+Rechercher…;Tafuta…
+Refuser;Kataa
+"Refuser cette demande ?";
+Refusée;
+"Rejoindre un siège";
+"Rester connecté sur cet appareil";"Endelea kuingia kwenye kifaa hiki"
+Retirer;
+"Retirer le rôle :role ?";
+"Retour au tableau de bord";
+Réactiver;
+Réessayer;"Jaribu tena"
+"Réinitialiser le mot de passe";
+Rôle;
+"Rôle attribué.";
+"Rôle retiré.";
+"Rôle supprimé.";
+"Rôle « :name » enregistré.";
+Rôles;Majukumu
+"Rôles et permissions";"Majukumu na ruhusa"
+"Saisi par";
+"Saisir le taux du jour";"Ingiza kiwango cha leo"
+"Se connecter";Ingia
+"Se déconnecter";Toka
+"Seul le dollar est utilisé.";
+"Seul un administrateur peut attribuer le rôle Administrateur.";
+"Si votre église fait partie d’une dénomination déjà inscrite sur Waumini, demandez à rejoindre sa hiérarchie. Le siège, la région ou le secteur concerné doit accepter. Vos données restent les vôtres.";
+"Site vitrine";
+"Suivi pastoral";
+Support;Msaada
+Suppressions;
+Supprimer;Futa
+"Supprimer ce rôle ?";
+Système;Mfumo
+"S’applique aussi aux niveaux inférieurs";
+"Tableau de bord";Dashibodi
+Taux;Viwango
+"Taux de change";
+"Taux du :currency enregistré.";
+"Taux du jour";"Kiwango cha leo"
+"Taux pour 1 dollar";
+"Touchez le bouton Partager, le carré avec une flèche vers le haut, en bas de l’écran.";
+"Touchez le bouton « Installer » qui apparaît, ou le menu ⋮ en haut à droite.";
+"Touchez « Ajouter ». Ouvrez ensuite Waumini depuis cette icône pour recevoir les notifications.";
+"Tous les éléments";
+"Tout cocher";
+"Tout décocher";
+"Tout le journal";"Kumbukumbu zote"
+"Toutes les actions";
+"Trop de tentatives. Réessayez dans :seconds secondes.";
+"Trésorier adjoint";
+"Type de niveau";
+"Type d’élément";
+Téléphone;Simu
+"Un fichier d’installation Windows (MSIX) sera aussi proposé au lancement, pour installer Waumini sans passer par le navigateur.";
+"Un rôle regroupe des permissions. Waumini propose des rôles modèles ; modifiez-les ou créez les vôtres, par exemple « Trésorier adjoint ».";
+"Un rôle s’applique à un niveau précis. Cochez « niveaux inférieurs » pour qu’il couvre aussi les régions, secteurs ou paroisses en dessous.";
+Utilisateurs;Watumiaji
+"Utilisez vos propres mots : Région, Secteur, Paroisse, Doyenné, Annexe…";
+"Utilisé dans les menus";
+Ville;
+"Ville ou quartier";
+Voir;
+"Voir l’historique";"Ona historia"
+"Vos demandes envoyées";
+"Votre compte n’a encore de rôle dans aucune communauté. Demandez à l’administrateur de votre église de vous en attribuer un.";
+"Vous ne pouvez pas désactiver votre propre compte.";
+"Vous travaillez maintenant dans : :name";
+"Vous vous êtes connecté avec un mot de passe provisoire : remplacez-le par un mot de passe que vous seul connaissez.";
+"Vérifier l’intégrité";
+"Waumini a besoin d’Internet pour afficher cette page. Vérifiez vos données mobiles ou le Wi-Fi, puis réessayez.";
+"Waumini est déjà installé sur cet appareil.";
+"Waumini signifie « les fidèles » en swahili.";
+"Waumini s’installe comme une application, sans passer par un magasin d’applications : une icône sur l’écran d’accueil ou dans le menu Démarrer, sa propre fenêtre, et les notifications. Une connexion Internet reste nécessaire.";
+"Waumini utilise vos propres mots. Renommez un libellé et il change partout dans l’application, pour votre communauté et ses niveaux inférieurs. Laissez vide pour garder le libellé par défaut.";
+"Windows et ordinateur";"Windows na kompyuta"
+"a ajouté la devise :currency";
+"a attribué le rôle :role à :user";
+"a créé :subject";
+"a enregistré le taux :currency : :rate";
+"a modifié :subject";
+"a retiré le rôle :role à :user";
+"a réinitialisé le mot de passe de :name";
+"a supprimé :subject";
+attribution|attributions;
+cochées;
+code;
+date;
+devise;
+"du :date";
+"et niveaux inférieurs";
+facultatif;"si lazima"
+"mot de passe actuel";
+niveau;
+nom;
+non;
+"nouveau mot de passe";
+oui;
+permissions;
+rôle;
+taux;
+"taux du niveau supérieur";
+téléphone;
+"à jour";
+…;
