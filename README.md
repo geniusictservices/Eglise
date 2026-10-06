@@ -10,7 +10,11 @@
 - **Déploiement sur LWS** : [docs/deploiement-lws.md](docs/deploiement-lws.md)
 - **Traductions** : [lang/a-traduire/](lang/a-traduire/LISEZMOI.md)
 
-## Ce qui est disponible (étape « Fondations »)
+## Ce qui est disponible
+
+**Site public** : page de présentation, inscription d’une communauté avec essai gratuit de 30 jours, demande de démonstration, page Abonnement (prix visibles seulement dans l’application), conditions d’utilisation et confidentialité.
+
+**Fondations** :
 
 - Hiérarchie multi-niveaux (siège, région, secteur, paroisse, annexe…), rattachement d'une paroisse inscrite seule à son siège.
 - Connexion par numéro de téléphone et mot de passe, ou par empreinte, visage et Windows Hello (passkeys) ; mot de passe provisoire à changer à la première connexion.

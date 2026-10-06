@@ -2,15 +2,19 @@
 
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\HelpController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\SwitchOrganizationController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\SetCurrentOrganization;
 use App\Livewire;
 use Illuminate\Support\Facades\Route;
 
-Route::redirect('/', '/tableau-de-bord');
+// Site public : les visiteurs voient la présentation, les connectés vont à leur tableau de bord.
+Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : view('site.home'))->name('home');
 
 // Pages publiques
+Route::get('/conditions-utilisation', [LegalController::class, 'terms'])->name('legal.terms');
+Route::get('/confidentialite', [LegalController::class, 'privacy'])->name('legal.privacy');
 Route::view('/installer', 'install')->name('install');
 Route::view('/hors-ligne', 'offline')->name('offline');
 Route::get('/aide', [HelpController::class, 'show'])->name('help.index');
@@ -19,6 +23,7 @@ Route::get('/aide/{chapter}', [HelpController::class, 'show'])->name('help.show'
 
 Route::middleware('guest')->group(function () {
     Route::get('/connexion', Livewire\Auth\Login::class)->name('login');
+    Route::get('/inscription', Livewire\Auth\Register::class)->name('register');
 });
 
 Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged::class])->group(function () {
@@ -42,6 +47,7 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/journal', Livewire\Audit\Index::class)->name('audit.index');
     Route::get('/parametres', Livewire\Settings\Edit::class)->name('settings.edit');
     Route::get('/profil', Livewire\Profile\Edit::class)->name('profile.edit');
+    Route::get('/abonnement', Livewire\Subscription::class)->name('subscription');
     // Ajouter une empreinte demande de retaper son mot de passe : cela se fait dans le profil.
     Route::redirect('/confirmer-mot-de-passe', '/profil#empreinte')->name('password.confirm');
 });

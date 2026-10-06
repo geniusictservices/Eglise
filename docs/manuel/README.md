@@ -13,6 +13,10 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 
 ## Sommaire
 
+### Pour démarrer
+
+0. [Créer le compte de son église](00-inscription.md)
+
 ### Pour tout le monde
 
 1. [Premiers pas : se connecter et se repérer](01-premiers-pas.md)
@@ -28,6 +32,7 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 8. [Devises et taux du jour](07-devises.md)
 9. [Paramètres, libellés et accès du support](08-parametres.md)
 10. [Le journal d'audit](09-journal.md)
+11. [L'abonnement](11-abonnement.md)
 
 ### Aide
 

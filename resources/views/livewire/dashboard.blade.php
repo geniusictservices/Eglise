@@ -12,7 +12,7 @@
         <p class="text-sm text-ink-100 first-letter:uppercase">{{ $date }}</p>
         <h1 class="mt-0.5 text-2xl font-semibold text-white">{{ __('Bonjour, :name', ['name' => $firstName]) }}</h1>
         @if ($trialDaysLeft !== null)
-            <span class="badge mt-3 bg-ochre-500 text-[#2A1B04]"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</span>
+            <a href="{{ route('subscription') }}" class="badge mt-3 bg-ochre-500 text-[#2A1B04]"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</a>
         @endif
     </div>
 
@@ -23,7 +23,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
             @if ($trialDaysLeft !== null)
-                <span class="badge bg-ochre-100 text-ochre-700"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</span>
+                <a href="{{ route('subscription') }}" class="badge bg-ochre-100 text-ochre-700 hover:bg-ochre-500 hover:text-[#2A1B04]"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</a>
             @endif
         </div>
     </div>

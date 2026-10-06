@@ -15,7 +15,11 @@ import { mkdirSync } from 'node:fs';
 const BASE = process.env.WAUMINI_URL ?? 'http://127.0.0.1:8000';
 const OUT = new URL('../../docs/manuel/captures/', import.meta.url).pathname;
 const PASSWORD = 'Waumini2026';
-const only = process.argv.slice(2);
+// --site : captures propres (sans repères) pour le site public, dans public/images/site/.
+const SITE = process.argv.includes('--site');
+const SITE_SCENES = ['03-tableau-de-bord', '09-hierarchie', '13-utilisateurs', '19-devises'];
+const SITE_OUT = new URL('../../public/images/site/', import.meta.url).pathname;
+const only = SITE ? SITE_SCENES : process.argv.slice(2).filter((a) => !a.startsWith('--'));
 
 const VIEWPORTS = {
     bureau: { viewport: { width: 1366, height: 820 }, deviceScaleFactor: 1, isMobile: false },
@@ -24,6 +28,7 @@ const VIEWPORTS = {
 
 // Repères numérotés posés au-dessus des éléments décrits dans le texte.
 async function mark(page, marks) {
+    if (SITE) return;
     // Fait défiler pour que les éléments repérés soient visibles (au-dessus de la barre d'onglets sur téléphone).
     await page.evaluate((marks) => {
         const els = marks.map(({ selector }) => [...document.querySelectorAll(selector)].find((e) => e.getClientRects().length)).filter(Boolean);
@@ -325,6 +330,45 @@ const SCENES = [
         },
     },
     {
+        id: '00-inscription-communaute', user: null,
+        run: async (page) => {
+            await page.goto(`${BASE}/inscription`);
+            await settle(page);
+            await page.click('label:has-text("Le siège")');
+            await page.fill('#communityName', 'Communauté des Églises du Lac');
+            await page.fill('#city', 'Goma');
+            await page.fill('#province', 'Nord-Kivu');
+            await page.waitForTimeout(250);
+            await mark(page, [{ selector: 'fieldset', label: '1' }, { selector: '#communityName', label: '2' }]);
+        },
+    },
+    {
+        id: '00-inscription-compte', user: null,
+        run: async (page) => {
+            await page.goto(`${BASE}/inscription`);
+            await settle(page);
+            await page.fill('#communityName', 'Église Béthel de Ndosho');
+            await page.fill('#city', 'Goma');
+            await page.click('main form button[type=submit]');
+            await page.waitForSelector('#name');
+            await page.fill('#name', 'Samuel Kitambala');
+            await page.fill('#phone', '0997 222 333');
+            await page.fill('#password', 'Bethel2026');
+            await page.fill('#passwordConfirmation', 'Bethel2026');
+            await page.check('input[wire\\:model="accept"]');
+            await page.waitForTimeout(250);
+            await mark(page, [{ selector: '#phone', label: '1' }, { selector: 'main form button[type=submit]', label: '2' }]);
+        },
+    },
+    {
+        id: '26-abonnement', user: '0990000001',
+        run: async (page) => {
+            await page.goto(`${BASE}/abonnement`);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.card', label: '1' }, { selector: '#tier', label: '2' }]);
+        },
+    },
+    {
         id: '25-empreinte', user: '0990000003',
         run: async (page) => {
             await page.goto(`${BASE}/profil`);
@@ -359,6 +403,7 @@ let count = 0;
 
 // Scène par scène (ordinateur puis téléphone), pour que les deux versions montrent les mêmes données.
 for (const name of Object.keys(VIEWPORTS)) mkdirSync(`${OUT}${name}`, { recursive: true });
+mkdirSync(SITE_OUT, { recursive: true });
 
 for (const scene of SCENES) {
     if (only.length && !only.includes(scene.id)) continue;
@@ -373,7 +418,7 @@ for (const scene of SCENES) {
         try {
             if (scene.user) await login(page, scene.user);
             await scene.run(page, name);
-            await page.screenshot({ path: `${OUT}${name}/${scene.id}.png` });
+            await page.screenshot({ path: SITE ? `${SITE_OUT}${name}-${scene.id}.png` : `${OUT}${name}/${scene.id}.png` });
             count++;
             console.log(`✓ ${name}/${scene.id}`);
         } catch (error) {

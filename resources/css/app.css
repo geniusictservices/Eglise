@@ -152,7 +152,7 @@
     }
 
     .wax-veil-strong::before {
-        background: linear-gradient(180deg, rgb(44 47 107 / 0.86), rgb(44 47 107 / 0.96));
+        background: linear-gradient(180deg, rgb(44 47 107 / 0.88), rgb(44 47 107 / 0.97));
     }
 
     /* Anneau de progression : style="--v: 62" */

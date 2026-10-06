@@ -24,6 +24,66 @@ return [
     'trial_days' => 30,
     'grace_days' => 30,
 
+    // Coordonnées de Genius ICT affichées sur le site public et dans l'application.
+    'contact' => [
+        'company' => 'Genius ICT',
+        'city' => 'Goma, Nord-Kivu, RDC',
+        'email' => env('WAUMINI_CONTACT_EMAIL', 'geniusictservices@gmail.com'),
+        'phone' => env('WAUMINI_CONTACT_PHONE'), // numéro WhatsApp au format +243…, à renseigner
+        'website' => 'geniusict.com',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Offres
+    |--------------------------------------------------------------------------
+    |
+    | Prix indicatifs mensuels en USD, affichés dans l'application pendant
+    | l'essai (jamais sur le site public). Ils seront modifiables depuis
+    | l'espace Genius ICT ; en attendant, ils se règlent ici.
+    |
+    */
+
+    'size_tiers' => [
+        'small' => 'Jusqu’à 300 membres',
+        'medium' => 'De 301 à 1 500 membres',
+        'large' => 'Plus de 1 500 membres',
+    ],
+
+    'packs' => [
+        'msingi' => [
+            'name' => 'Msingi',
+            'meaning' => 'la base',
+            'for' => 'La petite église qui veut d’abord un registre fiable.',
+            'modules' => ['Registre des membres et des ménages', 'Tableau de bord', 'Utilisateurs et rôles', 'Exports'],
+            'prices' => ['small' => 10, 'medium' => 15, 'large' => 20],
+        ],
+        'kawaida' => [
+            'name' => 'Kawaida',
+            'meaning' => 'le standard',
+            'for' => 'L’église locale structurée : le pack de référence.',
+            'modules' => ['Tout Msingi', 'Finances et promesses', 'Plan d’action et budget', 'Groupes, activités et présences'],
+            'prices' => ['small' => 25, 'medium' => 35, 'large' => 50],
+            'featured' => true,
+        ],
+        'kamili' => [
+            'name' => 'Kamili',
+            'meaning' => 'le complet',
+            'for' => 'La grande paroisse ou l’église exigeante.',
+            'modules' => ['Tout Kawaida', 'Paie', 'Communication', 'Suivi pastoral', 'Documents et registres', 'Site vitrine'],
+            'prices' => ['small' => 40, 'medium' => 55, 'large' => 75],
+        ],
+        'umoja' => [
+            'name' => 'Umoja',
+            'meaning' => 'l’unité',
+            'for' => 'Communautés, diocèses, églises à annexes.',
+            'modules' => ['Tout Kamili, pour toutes les paroisses', 'Consolidation et quotes-parts', 'Accompagnement au déploiement'],
+            'prices' => null, // sur devis
+        ],
+    ],
+
+    'annual_discount_months' => 2, // payer 10 mois pour 12
+
     // Langues de l'interface : code => nom dans la langue elle-même.
     'locales' => [
         'fr' => 'Français',

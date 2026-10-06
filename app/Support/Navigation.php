@@ -26,6 +26,7 @@ class Navigation
                     ['route' => 'currencies.index', 'label' => __('Devises et taux'), 'icon' => 'arrow-left-right', 'can' => 'currencies.manage', 'mobile' => true, 'short' => __('Taux')],
                     ['route' => 'audit.index', 'label' => __('Journal d’audit'), 'icon' => 'history', 'can' => 'audit.view'],
                     ['route' => 'settings.edit', 'label' => __('Paramètres'), 'icon' => 'settings', 'can' => 'organization.settings'],
+                    ['route' => 'subscription', 'label' => __('Abonnement'), 'icon' => 'badge-check', 'can' => 'organization.settings'],
                 ],
             ],
         ];
