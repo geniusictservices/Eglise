@@ -9,6 +9,7 @@ use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
 use App\Models\Organization;
 use App\Models\PaymentDeclaration;
+use App\Support\FiscalYear;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +72,7 @@ class Closings
     /** Points à vérifier avant de clôturer : ils n'empêchent pas la clôture. */
     public function checklist(Organization $organization, int $year, int $month): array
     {
-        [$from, $to] = $this->reports->bounds($year, $month);
+        [$from, $to] = $this->reports->bounds($organization, $year, $month);
         $in = fn ($q, string $column) => $q->withoutGlobalScope('organization')->where('organization_id', $organization->id)
             ->whereBetween($column, [$from->toDateString(), $to->toDateString()]);
 
@@ -98,13 +99,14 @@ class Closings
         if ($this->isClosed($organization, $year, 0)) {
             return __('Cet exercice est déjà clôturé.');
         }
-        if (Carbon::create($year)->endOfYear()->isFuture()) {
-            return __('L’exercice se clôture une fois l’année terminée.');
+        if (FiscalYear::bounds($organization, $year)[1]->gte(today())) {
+            return __('L’exercice se clôture une fois terminé.');
         }
         $first = $this->firstMonth($organization);
-        $open = collect(range(1, 12))->first(fn ($m) => (! $first || Carbon::create($year, $m)->gte($first)) && ! $this->isClosed($organization, $year, $m));
+        $open = collect(FiscalYear::months($organization, $year))
+            ->first(fn (Carbon $m) => (! $first || $m->gte($first)) && ! $this->isClosed($organization, $m->year, $m->month));
 
-        return $open ? __('Clôturez d’abord :m.', ['m' => Carbon::create($year, $open)->translatedFormat('F Y')]) : null;
+        return $open ? __('Clôturez d’abord :m.', ['m' => $open->translatedFormat('F Y')]) : null;
     }
 
     public function closeYear(Organization $organization, int $year): FinanceClosing
@@ -130,12 +132,15 @@ class Closings
 
         return DB::transaction(function () use ($organization, $year, $month, $reason) {
             $query = FinanceClosing::withoutOrganizationScope()->where('organization_id', $organization->id)->where('status', 'closed');
-            $affected = $month === 0
-                ? (clone $query)->where('year', $year)->where('month', 0)->get()
-                : (clone $query)->where(fn ($q) => $q
-                    ->where(fn ($q) => $q->where('year', $year)->where('month', '>=', $month))
-                    ->orWhere('year', '>', $year)
-                    ->orWhere(fn ($q) => $q->where('year', $year)->where('month', 0)))->get();
+            if ($month === 0) {
+                $affected = (clone $query)->where('year', $year)->where('month', 0)->get();
+            } else {
+                // Les mois suivants, et les exercices à partir de celui qui contient ce mois.
+                $fiscal = FiscalYear::of($organization, Carbon::create($year, $month, 1));
+                $affected = (clone $query)->where(fn ($q) => $q
+                    ->where(fn ($q) => $q->where('month', '>', 0)->where(fn ($q) => $q->where('year', '>', $year)->orWhere(fn ($q) => $q->where('year', $year)->where('month', '>=', $month))))
+                    ->orWhere(fn ($q) => $q->where('month', 0)->where('year', '>=', $fiscal)))->get();
+            }
 
             foreach ($affected as $closing) {
                 $closing->update(['status' => 'reopened', 'reopened_by' => auth()->id(), 'reopened_at' => now(), 'reopen_reason' => $reason]);
@@ -147,7 +152,7 @@ class Closings
 
     private function store(Organization $organization, int $year, int $month): FinanceClosing
     {
-        [$from, $to] = $this->reports->bounds($year, $month);
+        [$from, $to] = $this->reports->bounds($organization, $year, $month);
         $report = $this->reports->period($organization, $from, $to);
 
         // L'instantané garde les soldes et les totaux tels qu'ils étaient à la clôture.

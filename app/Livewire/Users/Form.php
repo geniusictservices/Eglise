@@ -3,6 +3,7 @@
 namespace App\Livewire\Users;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Models\Member;
 use App\Models\Organization;
 use App\Models\Role;
 use App\Models\RoleAssignment;
@@ -37,6 +38,8 @@ class Form extends Component
     public ?int $scopeId = null;
 
     public bool $includesDescendants = false;
+
+    public string $memberSearch = '';
 
     // Mot de passe provisoire, affiché une seule fois
     public ?string $temporaryPassword = null;
@@ -183,6 +186,31 @@ class Form extends Component
         $this->temporaryPassword = $password;
     }
 
+    /** Relie le compte à sa fiche de membre dans la communauté affichée. */
+    public function linkMember(int $id): void
+    {
+        abort_unless($this->user, 404);
+        $this->authorize('users.manage');
+        abort_if($this->organization()->isReadOnly(), 403);
+        $member = Member::findOrFail($id);
+        abort_if($member->user_id && $member->user_id !== $this->user->id, 422);
+
+        DB::transaction(function () use ($member) {
+            Member::where('user_id', $this->user->id)->whereKeyNot($member->id)->get()->each(fn ($m) => $m->forceFill(['user_id' => null])->save());
+            $member->forceFill(['user_id' => $this->user->id])->save();
+        });
+        $this->memberSearch = '';
+        $this->dispatch('notify', message: __('Compte relié à la fiche de :n.', ['n' => $member->fullName()]), type: 'success');
+    }
+
+    public function unlinkMember(): void
+    {
+        abort_unless($this->user, 404);
+        $this->authorize('users.manage');
+        abort_if($this->organization()->isReadOnly(), 403);
+        Member::where('user_id', $this->user->id)->get()->each(fn ($m) => $m->forceFill(['user_id' => null])->save());
+    }
+
     private function makePassword(): string
     {
         // Facile à dicter au téléphone : pas de caractères ambigus.
@@ -202,6 +230,9 @@ class Form extends Component
             'assignments' => $this->user?->roleAssignments()->with(['role', 'organization'])->get()
                 ->filter(fn ($a) => $a->organization->isSelfOrDescendantOf($organization)) ?? collect(),
             'locales' => config('waumini.locales'),
+            'linkedMember' => $this->user ? Member::with('departments')->where('user_id', $this->user->id)->first() : null,
+            'memberCandidates' => $this->user && trim($this->memberSearch) !== ''
+                ? Member::search($this->memberSearch)->whereNull('user_id')->orderBy('last_name')->limit(5)->get() : collect(),
         ])->title($this->user ? $this->user->name : __('Nouvel utilisateur'));
     }
 }

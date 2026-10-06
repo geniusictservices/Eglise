@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\Auditable;
 use App\Models\Concerns\BelongsToOrganization;
+use App\Support\FiscalYear;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -44,20 +45,28 @@ class FinanceClosing extends Model
         return $this->status === 'closed';
     }
 
-    public function label(): string
-    {
-        return $this->month ? ucfirst(Carbon::create($this->year, $this->month)->translatedFormat('F Y')) : __('Exercice :y', ['y' => $this->year]);
-    }
-
     /** Refuse toute écriture datée d'un mois ou d'un exercice clôturé. */
     public static function assertOpen(int $organizationId, Carbon|string $date): void
     {
         $date = Carbon::parse($date);
-        $closed = static::withoutOrganizationScope()->where('organization_id', $organizationId)->where('year', $date->year)
-            ->whereIn('month', [0, $date->month])->where('status', 'closed')->exists();
+        $closings = static::withoutOrganizationScope()->where('organization_id', $organizationId)->where('status', 'closed');
+        $closed = (clone $closings)->where('year', $date->year)->where('month', $date->month)->exists();
+
+        if (! $closed && (clone $closings)->where('month', 0)->exists()) {
+            $organization = Organization::find($organizationId);
+            $closed = $organization && (clone $closings)->where('month', 0)->where('year', FiscalYear::of($organization, $date))->exists();
+        }
 
         if ($closed) {
             throw new InvalidArgumentException(__(':m est clôturé : l’administrateur doit d’abord rouvrir la période.', ['m' => ucfirst($date->translatedFormat('F Y'))]));
         }
+    }
+
+    /** L'exercice d'une clôture annuelle, ou le mois d'une clôture mensuelle. */
+    public function label(): string
+    {
+        return $this->month
+            ? ucfirst(Carbon::create($this->year, $this->month)->translatedFormat('F Y'))
+            : __('Exercice :y', ['y' => FiscalYear::label($this->loadMissing('organization')->organization, $this->year)]);
     }
 }

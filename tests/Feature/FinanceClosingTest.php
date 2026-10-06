@@ -14,6 +14,7 @@ use App\Services\Closings;
 use App\Services\ExchangeRateService;
 use App\Services\FinanceReports;
 use App\Services\Ledger;
+use App\Support\FiscalYear;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
@@ -157,7 +158,7 @@ class FinanceClosingTest extends TestCase
         $this->record('income', 'USD', '50', '2026-09-03', 'Dîme');
 
         $this->get(route('finances.reports', ['annee' => 2026, 'mois' => 9]))->assertOk()->assertSee('Provisoire');
-        $this->get(route('finances.reports.print', ['annee' => 2026, 'mois' => 9]))->assertOk()->assertSee('Rapport financier de septembre 2026')->assertSee('Dîme');
+        $this->get(route('finances.reports.print', ['annee' => 2026, 'mois' => 9]))->assertOk()->assertSee('Rapport financier : Septembre 2026')->assertSee('Dîme');
         $this->get(route('finances.reports.print', ['annee' => 2026]))->assertOk()->assertSee('Mois par mois');
 
         $response = $this->get(route('finances.reports.excel', ['annee' => 2026, 'mois' => 9]));
@@ -168,6 +169,47 @@ class FinanceClosingTest extends TestCase
         $secretaire = User::factory()->create();
         $this->assign($secretaire, $this->role($this->eglise, 'secretaire'), $this->eglise);
         $this->actingAs($secretaire)->get(route('finances.reports.print', ['annee' => 2026]))->assertForbidden();
+    }
+
+    public function test_the_church_chooses_when_its_fiscal_year_starts(): void
+    {
+        $this->actingAs($this->admin);
+        LivewireTest::test(Livewire\Finances\Settings::class)
+            ->set('tab', 'exercice')->set('fiscalStart', 13)->call('saveFiscalYear')->assertHasErrors('fiscalStart')
+            ->set('fiscalStart', 7)->call('saveFiscalYear')->assertHasNoErrors();
+        $this->eglise->refresh();
+
+        $this->assertSame(7, FiscalYear::startMonth($this->eglise));
+        $this->assertSame(2026, FiscalYear::of($this->eglise, '2026-07-01'));
+        $this->assertSame(2025, FiscalYear::of($this->eglise, '2026-06-30'));
+        $this->assertSame('2026-2027', FiscalYear::label($this->eglise, 2026));
+
+        // Une paroisse sans réglage suit son siège.
+        $paroisse = $this->createChild($this->eglise, 'Paroisse');
+        $this->assertSame(7, FiscalYear::startMonth($paroisse));
+
+        // L'exercice 2026-2027 se clôture une fois juin 2027 passé, ses douze mois clôturés.
+        Carbon::setTestNow('2027-07-05 10:00');
+        $closings = app(Closings::class);
+        $this->actingAs($this->tresorier);
+        foreach (range(8, 12) as $m) {
+            $closings->close($this->eglise, 2026, $m);
+        }
+        $this->assertStringContainsString('janvier 2027', $closings->yearBlocker($this->eglise, 2026));
+        foreach (range(1, 6) as $m) {
+            $closings->close($this->eglise, 2027, $m);
+        }
+        $closings->closeYear($this->eglise, 2026);
+        $this->get(route('finances.reports.print', ['annee' => 2026]))->assertOk()->assertSee('Exercice 2026-2027')->assertSee('Du 1 juillet 2026 au 30 juin 2027');
+
+        // Le mois de début ne change plus.
+        $this->actingAs($this->admin);
+        LivewireTest::test(Livewire\Finances\Settings::class)->set('fiscalStart', 1)->call('saveFiscalYear')->assertHasErrors('fiscalStart');
+
+        // Rouvrir mars 2027 rouvre l'exercice 2026-2027.
+        $closings->reopen($this->eglise, 2027, 3, 'Facture de mars oubliée');
+        $this->assertFalse($closings->isClosed($this->eglise, 2026, 0));
+        $this->assertTrue($closings->isClosed($this->eglise, 2027, 2));
     }
 
     private function expectExceptionThrown(callable $action): void

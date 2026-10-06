@@ -10,9 +10,9 @@
     <div class="mb-5 flex flex-wrap items-center gap-2">
         <select wire:model.live="month" class="input !w-auto" aria-label="{{ __('Période') }}">
             <option value="0">{{ __('Exercice entier') }}</option>
-            @foreach (range(1, 12) as $m)<option value="{{ $m }}">{{ ucfirst(\Illuminate\Support\Carbon::create(2000, $m)->translatedFormat('F')) }}</option>@endforeach
+            @foreach ($months as $m => $label)<option value="{{ $m }}">{{ $label }}</option>@endforeach
         </select>
-        <select wire:model.live="year" class="input !w-auto" aria-label="{{ __('Année') }}">@foreach ($years as $y)<option value="{{ $y }}">{{ $y }}</option>@endforeach</select>
+        <select wire:model.live="year" class="input !w-auto" aria-label="{{ __('Exercice') }}">@foreach ($years as $y => $label)<option value="{{ $y }}">{{ $label }}</option>@endforeach</select>
         @if ($closing?->isClosed())
             <span class="badge bg-leaf-50 text-leaf-600"><x-icon name="lock" class="size-3.5" /> {{ __('Clôturé le :d', ['d' => $closing->closed_at->translatedFormat('j M Y')]) }}</span>
         @else
@@ -21,7 +21,7 @@
     </div>
 
     <section class="card p-5 sm:p-6" wire:loading.class="opacity-60">
-        <h2 class="mb-4 text-lg">{{ $month ? ucfirst($r['from']->translatedFormat('F Y')) : __('Exercice :y', ['y' => $year]) }}</h2>
+        <h2 class="mb-4 text-lg">{{ $title }}</h2>
         @include('finances.partials.report', ['r' => $r])
     </section>
 </div>

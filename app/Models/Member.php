@@ -26,7 +26,7 @@ class Member extends Model
         'separated' => 'Séparé(e)',
     ];
 
-    protected $guarded = ['id', 'number', 'number_year', 'number_sequence', 'card_token'];
+    protected $guarded = ['id', 'number', 'number_year', 'number_sequence', 'card_token', 'user_id'];
 
     protected function casts(): array
     {
@@ -66,6 +66,12 @@ class Member extends Model
     public function functionTerms(): HasMany
     {
         return $this->hasMany(MemberFunctionTerm::class)->orderByRaw('ended_on IS NULL DESC')->orderByDesc('started_on');
+    }
+
+    /** Le compte Waumini de la personne, s'il en a un. */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function lifeEvents(): HasMany

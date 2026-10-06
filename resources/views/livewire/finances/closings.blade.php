@@ -3,7 +3,7 @@
     <a href="{{ route('finances.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Finances') }}</a>
     <x-page-header :title="__('Clôtures')" :description="__('Un mois clôturé n’accepte plus d’opération ni d’annulation : ses soldes sont arrêtés. L’administrateur peut le rouvrir, avec un motif qui reste dans l’historique.')">
         <x-slot:actions>
-            <select wire:model.live="year" class="input !w-auto" aria-label="{{ __('Exercice') }}">@foreach ($years as $y)<option value="{{ $y }}">{{ $y }}</option>@endforeach</select>
+            <select wire:model.live="year" class="input !w-auto" aria-label="{{ __('Exercice') }}">@foreach ($years as $y => $label)<option value="{{ $y }}">{{ $label }}</option>@endforeach</select>
         </x-slot:actions>
     </x-page-header>
 
@@ -11,9 +11,9 @@
         {{-- Les mois d'avant la première opération ne se clôturent pas : on ne les montre pas. --}}
         @foreach ($months->reject(fn ($m) => $m['before'] && ! $m['closing']) as $m)
             @php $c = $m['closing']; $closed = $c?->isClosed(); @endphp
-            <li wire:key="m-{{ $year }}-{{ $m['month'] }}" @class(['card flex flex-col p-4', 'opacity-60' => $m['before'] || $m['future'], 'border-leaf-300' => $closed])>
+            <li wire:key="m-{{ $m['date']->format('Y-m') }}" @class(['card flex flex-col p-4', 'opacity-60' => $m['before'] || $m['future'], 'border-leaf-300' => $closed])>
                 <div class="flex items-center gap-2">
-                    <span class="flex-1 font-semibold text-ink-800">{{ ucfirst($m['date']->translatedFormat('F')) }}</span>
+                    <span class="flex-1 font-semibold text-ink-800">{{ ucfirst($m['date']->translatedFormat($m['date']->year === $year ? 'F' : 'F Y')) }}</span>
                     @if ($closed)
                         <span class="badge bg-leaf-50 text-leaf-600"><x-icon name="lock" class="size-3.5" /> {{ __('Clôturé') }}</span>
                     @elseif ($c)
@@ -55,7 +55,7 @@
     <section @class(['card mt-5 flex flex-wrap items-center gap-4 p-5', 'border-leaf-300' => $yearClosing?->isClosed()])>
         <span class="icon-tile bg-ink-50 text-ink-700"><x-icon name="archive" class="size-5" /></span>
         <div class="min-w-0 flex-1">
-            <p class="font-semibold text-ink-800">{{ __('Exercice :y', ['y' => $year]) }}</p>
+            <p class="font-semibold text-ink-800">{{ __('Exercice :y', ['y' => $yearLabel]) }}</p>
             <p class="text-sm text-sand-700">
                 @if ($yearClosing?->isClosed()) {{ __('Clôturé le :d par :n.', ['d' => $yearClosing->closed_at->translatedFormat('j M Y'), 'n' => $yearClosing->closer?->name]) }}
                 @elseif ($yearClosing) {{ __('Rouvert le :d : « :r »', ['d' => $yearClosing->reopened_at->translatedFormat('j M Y'), 'r' => $yearClosing->reopen_reason]) }}
@@ -68,7 +68,7 @@
         @if ($canReopen && $yearClosing?->isClosed())<button type="button" wire:click="askReopen(0)" class="btn-ghost text-terra-600">{{ __('Rouvrir') }}</button>@endif
     </section>
 
-    <x-modal name="close" :title="$target ? __('Clôturer :m', ['m' => \Illuminate\Support\Carbon::create($year, $target)->translatedFormat('F Y')]) : __('Clôturer l’exercice :y', ['y' => $year])">
+    <x-modal name="close" :title="$targetDate ? __('Clôturer :m', ['m' => $targetDate->translatedFormat('F Y')]) : __('Clôturer l’exercice :y', ['y' => $yearLabel])">
         <form wire:submit="close" class="space-y-4">
             <p class="text-sm text-ink-800">{{ __('Après la clôture, plus aucune opération ne pourra être saisie ou annulée à ces dates. Les soldes de fin de période sont enregistrés.') }}</p>
             @if ($checklist)

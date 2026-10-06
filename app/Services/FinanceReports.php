@@ -8,6 +8,7 @@ use App\Models\FinanceCategory;
 use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
 use App\Models\Organization;
+use App\Support\FiscalYear;
 use Brick\Math\BigDecimal;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -116,12 +117,29 @@ class FinanceReports
         ];
     }
 
-    /** Un mois (1 à 12) ou l'exercice (0). */
-    public function bounds(int $year, int $month): array
+    /** Un mois civil (année, 1 à 12) ou l'exercice qui commence cette année-là (mois 0). */
+    public function bounds(Organization $organization, int $year, int $month): array
     {
-        $from = $month ? Carbon::create($year, $month, 1) : Carbon::create($year, 1, 1);
+        if (! $month) {
+            return FiscalYear::bounds($organization, $year);
+        }
+        $from = Carbon::create($year, $month, 1);
 
-        return [$from, $month ? $from->copy()->endOfMonth()->startOfDay() : $from->copy()->endOfYear()->startOfDay()];
+        return [$from, $from->copy()->endOfMonth()->startOfDay()];
+    }
+
+    /**
+     * La période choisie dans les écrans : un exercice (mois 0) ou un de ses mois.
+     *
+     * @return array{0: Carbon, 1: Carbon, 2: ?FinanceClosing, 3: string} début, fin, clôture, intitulé
+     */
+    public function selection(Organization $organization, int $fiscalYear, int $month): array
+    {
+        $year = $month ? FiscalYear::calendarYear($organization, $fiscalYear, $month) : $fiscalYear;
+        [$from, $to] = $this->bounds($organization, $year, $month);
+
+        return [$from, $to, $this->closing($organization, $year, $month),
+            $month ? ucfirst($from->translatedFormat('F Y')) : __('Exercice :y', ['y' => FiscalYear::label($organization, $fiscalYear)])];
     }
 
     public function closing(Organization $organization, int $year, int $month): ?FinanceClosing

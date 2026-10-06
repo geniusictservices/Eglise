@@ -4,7 +4,7 @@
     <x-page-header :title="__('Comptes et catégories')" :description="__('Les comptes de la communauté (caisses physiques, mobile money, banques), chacun dans les devises de votre choix. Les catégories classent les recettes et les dépenses dans les rapports.')" />
 
     <div class="mb-6 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist" x-init="$el.querySelector('[aria-selected=true]')?.scrollIntoView({ inline: 'center', block: 'nearest' })">
-        @foreach (['caisses' => __('Comptes'), 'recettes' => __('Catégories de recettes'), 'depenses' => __('Catégories de dépenses'), 'circuit' => __('Circuit des dépenses')] as $key => $label)
+        @foreach (['caisses' => __('Comptes'), 'recettes' => __('Catégories de recettes'), 'depenses' => __('Catégories de dépenses'), 'circuit' => __('Circuit des dépenses'), 'exercice' => __('Exercice')] as $key => $label)
             <button type="button" role="tab" wire:click="$set('tab', '{{ $key }}')" aria-selected="{{ $tab === $key ? 'true' : 'false' }}"
                     @class(['flex-1 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold', 'bg-ink-700 text-white' => $tab === $key, 'text-ink-600 hover:bg-sand-50' => $tab !== $key])>{{ $label }}</button>
         @endforeach
@@ -33,6 +33,20 @@
                 @endforelse
             </ul>
         @endforeach
+    @elseif ($tab === 'exercice')
+        <form wire:submit="saveFiscalYear" class="card max-w-2xl space-y-5 p-5 sm:p-6">
+            <div>
+                <label for="fiscalStart" class="label">{{ __('L’exercice commence en') }}</label>
+                <select wire:model="fiscalStart" id="fiscalStart" class="input max-w-60">
+                    @foreach (range(1, 12) as $m)<option value="{{ $m }}">{{ ucfirst(\Illuminate\Support\Carbon::create(2000, $m)->translatedFormat('F')) }}</option>@endforeach
+                </select>
+                @error('fiscalStart') <p class="error">{{ $message }}</p> @enderror
+                <p class="hint">{{ __('Le budget, le plan d’action, la clôture de l’exercice et le rapport annuel suivent ce choix. Les mois se clôturent toujours un par un.') }}</p>
+            </div>
+            <p class="rounded-xl bg-sand-50 p-3 text-sm text-ink-800">{{ __('Exercice en cours : :l, du :a au :b.', ['l' => $fiscalLabel, 'a' => $fiscalBounds[0]->translatedFormat('j F Y'), 'b' => $fiscalBounds[1]->translatedFormat('j F Y')]) }}</p>
+            <p class="text-sm text-sand-700">{{ __('Sans choix, la communauté suit son niveau supérieur. Une fois un exercice clôturé, le mois de début ne change plus.') }}</p>
+            <div class="flex justify-end"><button class="btn-primary"><x-icon name="save" class="size-4" /> {{ __('Enregistrer') }}</button></div>
+        </form>
     @elseif ($tab === 'circuit')
         <form wire:submit="saveCircuit" class="card max-w-2xl space-y-6 p-5 sm:p-6">
             <div>

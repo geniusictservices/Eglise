@@ -6,9 +6,12 @@ use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\FinanceCategory;
+use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
 use App\Services\Expenses;
 use App\Services\Ledger;
+use App\Support\FiscalYear;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
@@ -39,6 +42,9 @@ class Settings extends Component
 
     public bool $blockAdvances = false;
 
+    // Exercice
+    public int $fiscalStart = 1;
+
     public function mount(Expenses $expenses): void
     {
         $this->authorize('finance.settings');
@@ -46,6 +52,25 @@ class Settings extends Component
         $this->approvalsRequired = (int) $circuit['approvals_required'];
         $this->advanceDays = (int) $circuit['advance_days'];
         $this->blockAdvances = (bool) $circuit['block_unjustified_advances'];
+        $this->fiscalStart = FiscalYear::startMonth($this->organization());
+    }
+
+    /** Le mois de début d'exercice ne change plus une fois un exercice clôturé. */
+    public function saveFiscalYear(): void
+    {
+        $this->authorizeWrite('finance.settings');
+        $this->validate(['fiscalStart' => 'required|integer|between:1,12']);
+        $organization = $this->organization();
+        if (FinanceClosing::where('month', 0)->exists() && $this->fiscalStart !== FiscalYear::startMonth($organization)) {
+            $this->addError('fiscalStart', __('Un exercice est déjà clôturé : le mois de début ne peut plus changer.'));
+
+            return;
+        }
+
+        $settings = $organization->settings ?? [];
+        $settings['finance']['fiscal_start'] = $this->fiscalStart;
+        $organization->update(['settings' => $settings]);
+        $this->notify(__('Exercice enregistré : il commence en :m.', ['m' => Carbon::create(2000, $this->fiscalStart)->translatedFormat('F')]));
     }
 
     /** Signatures demandées, délai des avances et blocage : valables pour les nouvelles demandes. */
@@ -177,7 +202,11 @@ class Settings extends Component
 
     public function render(Ledger $ledger)
     {
+        $organization = $this->organization();
+
         return view('livewire.finances.settings', [
+            'fiscalLabel' => FiscalYear::label($organization, FiscalYear::current($organization)),
+            'fiscalBounds' => FiscalYear::bounds($organization, FiscalYear::current($organization)),
             'balances' => $ledger->balances($this->organization())->groupBy(fn ($b) => $b['account']->id),
             'accounts' => CashAccount::with('currencies')->orderByDesc('is_active')->orderBy('position')->get(),
             'income' => FinanceCategory::where('type', 'income')->orderByDesc('is_active')->orderBy('position')->get(),

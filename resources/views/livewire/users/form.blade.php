@@ -100,6 +100,29 @@
                     </div>
                 </form>
             </section>
+
+            <section class="card self-start p-5 sm:p-6 lg:col-start-2">
+                <h2 class="text-lg font-semibold">{{ __('Fiche de membre') }}</h2>
+                <p class="mt-1 text-sm text-sand-700">{{ __('Reliez le compte à la fiche de la personne dans :o. Un responsable de département ne prépare alors le budget que de ses départements.', ['o' => $organization->displayName()]) }}</p>
+                @if ($linkedMember)
+                    <div class="mt-4 flex items-center gap-3 rounded-xl bg-ochre-50 px-3 py-2">
+                        <x-icon name="contact-round" class="size-5 text-ochre-600" />
+                        <div class="min-w-0 flex-1">
+                            <a href="{{ route('members.show', $linkedMember) }}" class="font-semibold text-ink-800 hover:underline">{{ $linkedMember->officialName() }}</a>
+                            @php $led = $linkedMember->departments->filter(fn ($d) => in_array($d->pivot->role, ['leader', 'deputy'], true)); @endphp
+                            <p class="text-xs text-sand-700">{{ $led->isNotEmpty() ? __('Responsable : :d', ['d' => $led->pluck('name')->implode(', ')]) : __('Responsable d’aucun département') }}</p>
+                        </div>
+                        <button type="button" wire:click="unlinkMember" class="rounded-lg p-1.5 text-sand-500 hover:bg-white" aria-label="{{ __('Délier') }}"><x-icon name="x" class="size-4" /></button>
+                    </div>
+                @else
+                    <input wire:model.live.debounce.300ms="memberSearch" type="search" class="input mt-4" placeholder="{{ __('Nom ou numéro du membre') }}" aria-label="{{ __('Rechercher le membre') }}">
+                    <ul class="mt-1 space-y-1">
+                        @foreach ($memberCandidates as $c)
+                            <li><button type="button" wire:click="linkMember({{ $c->id }})" class="w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-sand-100"><span class="font-semibold text-ink-700">{{ $c->officialName() }}</span> <span class="font-mono text-xs text-sand-700">{{ $c->number }}</span></button></li>
+                        @endforeach
+                    </ul>
+                @endif
+            </section>
         @endif
     </div>
 </div>

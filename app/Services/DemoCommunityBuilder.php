@@ -116,6 +116,7 @@ class DemoCommunityBuilder
         // Pas de fichiers photo pour les démos publiques, purgées après quelques jours.
         app(DemoMembers::class)->build($siege, $levels['himbi'], $levels['katindo'], withPhotos: ! isset($flags['is_demo']));
         app(DemoFinances::class)->build($siege, $levels['himbi'], withFiles: ! isset($flags['is_demo']));
+        app(DemoPlanning::class)->build($siege, $levels['himbi']);
 
         // Une église inscrite seule qui demande à rejoindre la région.
         $bethel = $person('Pasteur Samuel Kitambala', 20);

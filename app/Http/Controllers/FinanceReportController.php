@@ -19,21 +19,21 @@ class FinanceReportController extends Controller
         $month = max(0, min(12, (int) $request->query('mois', 0)));
         abort_unless($year >= 2000 && $year <= now()->year + 1, 404);
         $organization = current_organization();
-        [$from, $to] = $reports->bounds($year, $month);
+        [$from, $to, $closing, $title] = $reports->selection($organization, $year, $month);
 
-        return [$organization, $year, $month, $reports->period($organization, $from, $to), $reports->closing($organization, $year, $month)];
+        return [$organization, $year, $month, $reports->period($organization, $from, $to), $closing, $title];
     }
 
     public function print(Request $request, FinanceReports $reports)
     {
-        [$organization, $year, $month, $report, $closing] = $this->period($request, $reports);
+        [$organization, $year, $month, $report, $closing, $title] = $this->period($request, $reports);
 
         return view('finances.report', [
             'organization' => $organization,
             'identity' => $organization->documentIdentity(),
             'r' => $report,
             'closing' => $closing,
-            'title' => $month ? __('Rapport financier de :m', ['m' => $report['from']->translatedFormat('F Y')]) : __('Rapport financier de l’exercice :y', ['y' => $year]),
+            'title' => __('Rapport financier : :p', ['p' => $title]),
             'query' => ['annee' => $year, 'mois' => $month],
         ]);
     }
@@ -42,7 +42,7 @@ class FinanceReportController extends Controller
     {
         [$organization, $year, $month, $report, $closing] = $this->period($request, $reports);
         $book = $spreadsheet->build($organization, $report, $closing);
-        $period = $month ? sprintf('%d-%02d', $year, $month) : (string) $year;
+        $period = $month ? $report['from']->format('Y-m') : (string) $year;
 
         return response()->streamDownload(
             fn () => (new Xlsx($book))->save('php://output'),
