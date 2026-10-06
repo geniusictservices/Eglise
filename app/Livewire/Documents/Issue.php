@@ -5,6 +5,7 @@ namespace App\Livewire\Documents;
 use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\DocumentType;
 use App\Models\Member;
+use App\Models\RegisterEntry;
 use App\Services\Documents;
 use App\Services\DocumentTypes;
 use App\Support\DocumentTemplate;
@@ -25,7 +26,12 @@ class Issue extends Component
     #[Url(as: 'membre')]
     public ?int $memberId = null;
 
+    #[Url(as: 'acte')]
+    public ?int $entryId = null;
+
     public string $memberSearch = '';
+
+    public string $entrySearch = '';
 
     public string $beneficiary = '';
 
@@ -72,7 +78,15 @@ class Issue extends Component
     public function chooseMember(int $id): void
     {
         $this->memberId = Member::findOrFail($id)->id;
+        $this->entryId = null;
         $this->memberSearch = '';
+    }
+
+    public function chooseEntry(int $id): void
+    {
+        $this->entryId = RegisterEntry::findOrFail($id)->id;
+        $this->memberId = null;
+        $this->entrySearch = '';
     }
 
     public function issue(Documents $documents)
@@ -86,7 +100,7 @@ class Issue extends Component
 
         try {
             $document = $documents->issue($this->organization(), $type, [
-                'member_id' => $this->memberId, 'beneficiary' => $this->beneficiary, 'fields' => $this->fields,
+                'member_id' => $this->memberId, 'register_entry_id' => $type->subject === 'entry' ? $this->entryId : null, 'beneficiary' => $this->beneficiary, 'fields' => $this->fields,
                 'signatory' => $this->signatory, 'signatory_title' => $this->signatoryTitle, 'issued_on' => $this->issuedOn,
             ]);
         } catch (InvalidArgumentException $e) {
@@ -98,15 +112,31 @@ class Issue extends Component
         return $this->redirectRoute('documents.print', $document);
     }
 
+    private function searchEntries(?string $kind)
+    {
+        $words = preg_split('/\s+/', trim($this->entrySearch));
+
+        return RegisterEntry::with('register')
+            ->when($kind, fn ($q) => $q->whereHas('register', fn ($q) => $q->where('kind', $kind)))
+            ->where(function ($q) use ($words) {
+                foreach ($words as $word) {
+                    $q->where(fn ($q) => $q->where('last_name', 'like', "%{$word}%")->orWhere('first_name', 'like', "%{$word}%")
+                        ->orWhere('middle_name', 'like', "%{$word}%")->orWhere('entry_number', $word));
+                }
+            })->orderBy('last_name')->limit(8)->get();
+    }
+
     public function render(DocumentTypes $types)
     {
         $organization = $this->organization();
         $type = $this->type();
-        $member = $this->memberId ? Member::find($this->memberId) : null;
+        $entry = $type?->subject === 'entry' && $this->entryId ? RegisterEntry::with('register')->find($this->entryId) : null;
+        $member = ! $entry && $this->memberId ? Member::find($this->memberId) : null;
         $data = [];
         if ($type) {
             $values = $types->values($type, $organization, [
-                'member' => $member, 'person' => $member ? null : ($type->subject === 'free' ? ['official_name' => $this->beneficiary, 'full_name' => $this->beneficiary] : []),
+                'member' => $member, 'event' => $entry?->event(),
+                'person' => $member ? null : ($entry ? $entry->person() : ($type->subject === 'free' ? ['official_name' => $this->beneficiary, 'full_name' => $this->beneficiary] : [])),
                 'fields' => $this->fields, 'signatory' => $this->signatory ?: null, 'signatory_title' => $this->signatoryTitle ?: null,
                 'date' => $this->issuedOn ?: today(), 'number' => __('attribué à la délivrance'),
             ]);
@@ -124,6 +154,8 @@ class Issue extends Component
             'types' => $types->available($organization),
             'type' => $type,
             'member' => $member,
+            'entry' => $entry,
+            'entryCandidates' => $type?->subject === 'entry' && trim($this->entrySearch) !== '' ? $this->searchEntries($type->life_event_type) : collect(),
             'candidates' => trim($this->memberSearch) !== '' ? Member::search($this->memberSearch)->orderBy('last_name')->limit(6)->get() : collect(),
             'identity' => $organization->documentIdentity(),
             'organization' => $organization,

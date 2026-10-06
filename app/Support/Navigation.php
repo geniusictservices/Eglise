@@ -55,6 +55,7 @@ class Navigation
                 'label' => __('Documents'),
                 'items' => [
                     ['route' => 'documents.index', 'label' => __('Documents délivrés'), 'icon' => 'file-text', 'can' => ['documents.issue', 'registers.manage']],
+                    ['route' => 'registers.index', 'label' => __('Registres'), 'icon' => 'book-open', 'can' => ['registers.manage', 'documents.issue']],
                     ['route' => 'documents.templates', 'label' => __('Modèles de documents'), 'icon' => 'pencil', 'can' => 'documents.templates'],
                 ],
             ],

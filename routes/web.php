@@ -91,6 +91,8 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/documents', Livewire\Documents\Index::class)->name('documents.index');
     Route::get('/documents/delivrer', Livewire\Documents\Issue::class)->name('documents.issue');
     Route::get('/documents/{document}/imprimer', [DocumentController::class, 'print'])->whereNumber('document')->name('documents.print');
+    Route::get('/registres', Livewire\Registers\Index::class)->name('registers.index');
+    Route::get('/registres/{register}', Livewire\Registers\Show::class)->whereNumber('register')->name('registers.show');
     Route::get('/documents/modeles', Livewire\Documents\Templates::class)->name('documents.templates');
     Route::get('/documents/modeles/nouveau', Livewire\Documents\TemplateEditor::class)->name('documents.templates.create');
     Route::get('/documents/modeles/{type}', Livewire\Documents\TemplateEditor::class)->whereNumber('type')->name('documents.templates.edit');

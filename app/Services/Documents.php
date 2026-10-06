@@ -6,6 +6,7 @@ use App\Models\DocumentType;
 use App\Models\IssuedDocument;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\RegisterEntry;
 use App\Support\DocumentTemplate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -24,6 +25,14 @@ class Documents
     {
         $member = ($data['member_id'] ?? null)
             ? Member::withoutOrganizationScope()->where('organization_id', $organization->id)->find($data['member_id']) : null;
+        $entry = ($data['register_entry_id'] ?? null)
+            ? RegisterEntry::withoutOrganizationScope()->with('register')->where('organization_id', $organization->id)->find($data['register_entry_id']) : null;
+        // Réédition d'un acte d'un ancien registre : l'acte fait foi, même si la personne est aussi membre.
+        if ($entry) {
+            $member = null;
+            $data['person'] = $entry->person();
+            $data['event'] = $entry->event();
+        }
         $person = $data['person'] ?? null;
         if ($type->subject === 'member' && ! $member) {
             throw new InvalidArgumentException(__('Choisissez le membre à qui délivrer ce document.'));
@@ -45,7 +54,7 @@ class Documents
             throw new InvalidArgumentException(__('Un document ne se date pas dans l’avenir.'));
         }
 
-        return DB::transaction(function () use ($organization, $type, $data, $member, $person, $beneficiary, $issuedOn) {
+        return DB::transaction(function () use ($organization, $type, $data, $member, $entry, $person, $beneficiary, $issuedOn) {
             $year = $issuedOn->year;
             $sequence = (int) IssuedDocument::withoutOrganizationScope()->where('organization_id', $organization->id)
                 ->whereHas('type', fn ($q) => $q->where('code', $type->code))->where('year', $year)->lockForUpdate()->max('sequence') + 1;
@@ -63,7 +72,7 @@ class Documents
 
             return IssuedDocument::create([
                 'organization_id' => $organization->id, 'document_type_id' => $type->id, 'number' => $number, 'year' => $year, 'sequence' => $sequence,
-                'member_id' => $member?->id, 'beneficiary' => $beneficiary, 'title' => $type->title,
+                'member_id' => $member?->id ?? $entry?->member_id, 'register_entry_id' => $entry?->id, 'beneficiary' => $beneficiary, 'title' => $type->title,
                 'body' => DocumentTemplate::render($type->body, $values),
                 'data' => ['fields' => $data['fields'] ?? []] + ($data['data'] ?? []),
                 'signatory' => $values['signataire'], 'signatory_title' => $values['qualite_signataire'],

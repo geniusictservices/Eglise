@@ -23,19 +23,37 @@
                     @if ($type->subject === 'free')
                         <div><label for="d-benef" class="label">{{ __('Destinataire') }}</label><input wire:model.live.debounce.500ms="beneficiary" id="d-benef" class="input" placeholder="{{ __('Nom de la personne ou de l’institution') }}"></div>
                     @else
-                        <div>
-                            <p class="label">{{ __('Membre') }}</p>
-                            @if ($member)
+                        @if ($entry)
+                            <div>
+                                <p class="label">{{ __('Acte d’un registre') }}</p>
                                 <div class="flex items-center gap-3 rounded-xl bg-ochre-50 px-3 py-2">
-                                    @include('livewire.members.partials.avatar', ['member' => $member, 'size' => 'size-9 text-xs'])
-                                    <span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-ink-800">{{ $member->officialName() }}</span><span class="block font-mono text-xs text-sand-700">{{ $member->number }}</span></span>
-                                    <button type="button" wire:click="$set('memberId', null)" class="rounded-lg p-1.5 text-sand-500 hover:bg-white" aria-label="{{ __('Changer') }}"><x-icon name="x" class="size-4" /></button>
+                                    <x-icon name="book-open" class="size-5 text-ochre-600" />
+                                    <span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-ink-800">{{ $entry->officialName() }}</span><span class="block truncate text-xs text-sand-700">{{ $entry->reference() }}</span></span>
+                                    <button type="button" wire:click="$set('entryId', null)" class="rounded-lg p-1.5 text-sand-500 hover:bg-white" aria-label="{{ __('Changer') }}"><x-icon name="x" class="size-4" /></button>
                                 </div>
-                            @else
-                                <input wire:model.live.debounce.300ms="memberSearch" type="search" class="input" placeholder="{{ __('Nom, numéro ou téléphone') }}" aria-label="{{ __('Rechercher le membre') }}">
-                                <ul class="mt-1 space-y-1">@foreach ($candidates as $c)<li><button type="button" wire:click="chooseMember({{ $c->id }})" class="w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-sand-100"><span class="font-semibold text-ink-700">{{ $c->officialName() }}</span> <span class="font-mono text-xs text-sand-700">{{ $c->number }}</span></button></li>@endforeach</ul>
+                            </div>
+                        @else
+                            <div>
+                                <p class="label">{{ __('Membre') }}</p>
+                                @if ($member)
+                                    <div class="flex items-center gap-3 rounded-xl bg-ochre-50 px-3 py-2">
+                                        @include('livewire.members.partials.avatar', ['member' => $member, 'size' => 'size-9 text-xs'])
+                                        <span class="min-w-0 flex-1"><span class="block truncate text-sm font-semibold text-ink-800">{{ $member->officialName() }}</span><span class="block font-mono text-xs text-sand-700">{{ $member->number }}</span></span>
+                                        <button type="button" wire:click="$set('memberId', null)" class="rounded-lg p-1.5 text-sand-500 hover:bg-white" aria-label="{{ __('Changer') }}"><x-icon name="x" class="size-4" /></button>
+                                    </div>
+                                @else
+                                    <input wire:model.live.debounce.300ms="memberSearch" type="search" class="input" placeholder="{{ __('Nom, numéro ou téléphone') }}" aria-label="{{ __('Rechercher le membre') }}">
+                                    <ul class="mt-1 space-y-1">@foreach ($candidates as $c)<li><button type="button" wire:click="chooseMember({{ $c->id }})" class="w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-sand-100"><span class="font-semibold text-ink-700">{{ $c->officialName() }}</span> <span class="font-mono text-xs text-sand-700">{{ $c->number }}</span></button></li>@endforeach</ul>
+                                @endif
+                            </div>
+                            @if ($type->subject === 'entry' && ! $member)
+                                <div>
+                                    <p class="label">{{ __('… ou un acte d’un ancien registre') }}</p>
+                                    <input wire:model.live.debounce.300ms="entrySearch" type="search" class="input" placeholder="{{ __('Nom ou numéro de l’acte') }}" aria-label="{{ __('Rechercher dans les registres') }}">
+                                    <ul class="mt-1 space-y-1">@foreach ($entryCandidates as $c)<li><button type="button" wire:click="chooseEntry({{ $c->id }})" class="w-full rounded-xl px-3 py-2 text-left text-sm hover:bg-sand-100"><span class="font-semibold text-ink-700">{{ $c->officialName() }}</span> <span class="block text-xs text-sand-700">{{ $c->reference() }}@if ($c->event_date) · {{ $c->event_date->translatedFormat('j M Y') }}@endif</span></button></li>@endforeach</ul>
+                                </div>
                             @endif
-                        </div>
+                        @endif
                     @endif
 
                     @foreach ($type->customFields() as $f)

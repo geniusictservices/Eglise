@@ -47,6 +47,8 @@ use App\Models\PlanObjective;
 use App\Models\PlanPrice;
 use App\Models\Pledge;
 use App\Models\PledgeDelivery;
+use App\Models\Register;
+use App\Models\RegisterEntry;
 use App\Models\Role;
 use App\Models\RoleAssignment;
 use App\Models\SalaryAdvance;
@@ -116,6 +118,8 @@ class AppServiceProvider extends ServiceProvider
             'announcement' => Announcement::class,
             'document_type' => DocumentType::class,
             'issued_document' => IssuedDocument::class,
+            'register' => Register::class,
+            'register_entry' => RegisterEntry::class,
             'pay_schedule' => PaySchedule::class,
             'payee' => Payee::class,
             'pay_item' => PayItem::class,
