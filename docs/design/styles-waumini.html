@@ -1,0 +1,345 @@
+<title>Styles Waumini</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=Manrope:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Page de choix : quatre directions, chacune montrée sur téléphone et sur ordinateur avec le même contenu. */
+:root {
+  --bg: #F6F5F2; --surface: #FFFFFF; --text: #1E2A2F; --muted: #5F6B70; --line: #E3E0D8; --accent: #B5532F;
+  --f-display: "Outfit", "Segoe UI", system-ui, sans-serif; --f-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #12191C; --surface: #1A2327; --text: #E6ECEE; --muted: #9AA8AD; --line: #2A363B; --accent: #E08A62; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #12191C; --surface: #1A2327; --text: #E6ECEE; --muted: #9AA8AD; --line: #2A363B; --accent: #E08A62; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--f-body); font-size: 16px; line-height: 1.5; margin: 0; padding-inline: 16px; padding-block: 0 56px; }
+.wrap { max-width: 1180px; margin: 0 auto; }
+header.top { padding-block: 32px 8px; display: grid; gap: 10px; }
+.kicker { font-family: var(--f-display); font-weight: 600; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+h1 { font-family: var(--f-display); font-size: clamp(1.9rem, 4.5vw, 2.7rem); line-height: 1.1; margin: 0; text-wrap: balance; }
+.lead { color: var(--muted); max-width: 64ch; margin: 0; font-size: 1.05rem; }
+.toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.toc a { text-decoration: none; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-weight: 600; font-size: .92rem; }
+section.dir { margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--line); }
+.dir-head { display: grid; gap: 6px; margin-bottom: 20px; }
+.dir-head h2 { font-family: var(--f-display); font-size: 1.6rem; margin: 0; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.letter { display: inline-grid; place-items: center; width: 2.2rem; height: 2.2rem; border-radius: 10px; background: var(--text); color: var(--bg); font-size: 1.15rem; }
+.dir-head p { margin: 0; color: var(--muted); max-width: 70ch; }
+.traits { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .92rem; }
+.traits span b { color: var(--text); }
+.stage { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 860px) { .stage { grid-template-columns: minmax(0, 1fr); justify-items: center; } .deskbox { justify-self: stretch; } }
+.cap { font-size: .8rem; color: var(--muted); text-align: center; margin-top: 8px; font-family: var(--f-display); letter-spacing: .06em; text-transform: uppercase; }
+.phone { width: 300px; max-width: 100%; height: 610px; border-radius: 34px; border: 9px solid #111; background: #111; overflow: hidden; position: relative; box-shadow: 0 18px 40px rgba(0,0,0,.18); }
+.phone .scr { position: absolute; inset: 0; overflow: hidden; border-radius: 25px; }
+.deskbox { min-width: 0; width: 100%; }
+.desk { width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #CFCAC0; box-shadow: 0 18px 40px rgba(0,0,0,.14); background: #DDD; }
+.desk .chrome { height: 26px; background: #E9E6E0; display: flex; align-items: center; gap: 6px; padding: 0 10px; }
+.desk .chrome i { width: 9px; height: 9px; border-radius: 50%; background: #C9C3B8; display: block; }
+.desk .chrome em { margin-left: 12px; font-style: normal; font-size: 10px; color: #7A746A; background: #fff; border-radius: 5px; padding: 2px 10px; }
+.desk .vp { position: relative; overflow: hidden; }
+.desk .canvas { width: 1000px; height: 600px; transform-origin: 0 0; position: absolute; left: 0; top: 0; }
+svg.i { width: 1em; height: 1em; flex: none; }
+.ask { margin-top: 56px; padding: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; display: grid; gap: 10px; }
+.ask h2 { font-family: var(--f-display); margin: 0; font-size: 1.4rem; }
+.ask ol { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+
+/* ---------- A. Clair et net ---------- */
+.sa { --p: #0F5C6E; --pl: #E6F1F3; --a: #E09A2D; --t: #16252B; --m: #66757A; --l: #E6EBED; --bg: #F4F7F8; font-family: "Manrope", system-ui, sans-serif; color: var(--t); background: var(--bg); height: 100%; font-size: 13px; }
+.sa .h { font-weight: 800; letter-spacing: -.01em; }
+.sa .card { background: #fff; border-radius: 14px; box-shadow: 0 1px 2px rgba(16,40,48,.06), 0 4px 14px rgba(16,40,48,.05); }
+.sa .tb { display: flex; align-items: center; gap: 8px; padding: 14px 16px; background: #fff; border-bottom: 1px solid var(--l); }
+.sa .logo { width: 26px; height: 26px; border-radius: 8px; background: var(--p); color: #fff; display: grid; place-items: center; font-weight: 800; }
+.sa .av { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; background: var(--pl); color: var(--p); display: grid; place-items: center; font-weight: 800; font-size: 11px; }
+.sa .stat { padding: 12px; } .sa .stat b { display: block; font-size: 20px; font-weight: 800; } .sa .stat small { color: var(--m); }
+.sa .up { color: #2F7A55; font-weight: 700; font-size: 11px; }
+.sa .btn { background: var(--a); color: #1E1405; font-weight: 800; border-radius: 10px; padding: 9px 12px; display: inline-flex; gap: 6px; align-items: center; }
+.sa .row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--l); }
+.sa .dot { width: 30px; height: 30px; border-radius: 9px; background: var(--pl); color: var(--p); display: grid; place-items: center; }
+.sa .nav { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; border-top: 1px solid var(--l); display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 0 12px; font-size: 10px; color: var(--m); text-align: center; }
+.sa .nav div { display: grid; justify-items: center; gap: 2px; } .sa .nav .on { color: var(--p); font-weight: 800; }
+.sa .side { width: 210px; background: #fff; border-right: 1px solid var(--l); padding: 18px 12px; display: grid; align-content: start; gap: 4px; }
+.sa .side a { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; color: var(--m); font-weight: 600; text-decoration: none; }
+.sa .side a.on { background: var(--pl); color: var(--p); font-weight: 800; }
+.sa .bar { height: 8px; border-radius: 99px; background: var(--l); overflow: hidden; } .sa .bar i { display: block; height: 100%; background: var(--a); border-radius: 99px; }
+
+/* ---------- B. Comme le mobile money ---------- */
+.sb { --p: #0B5563; --p2: #0E6E7F; --a: #F2A93B; --t: #1B2326; --m: #6B767A; --bg: #F2F4F5; font-family: "Poppins", system-ui, sans-serif; color: var(--t); background: var(--bg); height: 100%; font-size: 12.5px; }
+.sb .hero { background: linear-gradient(160deg, var(--p2), var(--p)); color: #fff; padding: 16px 16px 46px; border-radius: 0 0 26px 26px; }
+.sb .hero small { opacity: .8; } .sb .big { font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
+.sb .pill { background: rgba(255,255,255,.16); border-radius: 99px; padding: 4px 10px; font-size: 11px; display: inline-flex; gap: 6px; align-items: center; }
+.sb .tiles { margin: -32px 12px 0; background: #fff; border-radius: 18px; padding: 14px 8px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 4px; box-shadow: 0 8px 20px rgba(11,85,99,.12); }
+.sb .tile { display: grid; justify-items: center; gap: 6px; text-align: center; font-size: 10.5px; font-weight: 500; line-height: 1.2; }
+.sb .tile span { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-size: 19px; }
+.sb .c1 { background: #FFF1DC; color: #B87412; } .sb .c2 { background: #E1F1F3; color: #0B5563; } .sb .c3 { background: #FBE6DE; color: #B5532F; } .sb .c4 { background: #E5F3EA; color: #2F7A55; }
+.sb .sec { padding: 14px 14px 0; } .sb .sec h4 { margin: 0 0 8px; font-size: 13px; font-weight: 600; display: flex; justify-content: space-between; } .sb .sec h4 a { color: var(--p); font-weight: 600; font-size: 11px; }
+.sb .item { background: #fff; border-radius: 14px; padding: 10px; display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+.sb .nav { position: absolute; left: 0; right: 0; bottom: 0; background: #fff; display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 0 12px; font-size: 10px; color: var(--m); text-align: center; box-shadow: 0 -4px 14px rgba(0,0,0,.05); }
+.sb .nav div { display: grid; justify-items: center; gap: 2px; } .sb .nav .on { color: var(--p); font-weight: 600; }
+.sb .fab { width: 44px; height: 44px; margin-top: -24px; border-radius: 50%; background: var(--a); color: #2A1B04; display: grid; place-items: center; font-size: 20px; box-shadow: 0 6px 14px rgba(242,169,59,.5); }
+
+/* ---------- C. Chaleureux, inspiré du wax ---------- */
+.sc { --p: #2C2F6B; --a: #E39B2C; --r: #C2522D; --g: #2E7A5A; --t: #22233A; --m: #6D6B78; --bg: #FFFAF3; font-family: "Lexend", system-ui, sans-serif; color: var(--t); background: var(--bg); height: 100%; font-size: 12.5px; }
+.sc .wax { background-color: var(--p);
+  background-image:
+    radial-gradient(circle at 12px 12px, var(--a) 0 5px, transparent 5.5px),
+    radial-gradient(circle at 36px 36px, var(--r) 0 5px, transparent 5.5px),
+    radial-gradient(circle at 36px 12px, transparent 0 7px, rgba(255,255,255,.18) 7px 8.5px, transparent 9px),
+    radial-gradient(circle at 12px 36px, transparent 0 7px, rgba(255,255,255,.18) 7px 8.5px, transparent 9px);
+  background-size: 48px 48px; }
+.sc .head { color: #fff; padding: 16px; position: relative; }
+.sc .head::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(44,47,107,.55), rgba(44,47,107,.92)); }
+.sc .head > * { position: relative; z-index: 1; }
+.sc .card { background: #fff; border-radius: 18px; border: 1px solid #F0E6D6; }
+.sc .k { padding: 12px; display: grid; gap: 4px; } .sc .k b { font-size: 19px; font-weight: 600; }
+.sc .ico { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-size: 15px; }
+.sc .o { background: var(--a); color: #2A1B04; } .sc .rr { background: var(--r); } .sc .gg { background: var(--g); } .sc .pp { background: var(--p); }
+.sc .chip { display: inline-flex; gap: 6px; align-items: center; border-radius: 99px; padding: 7px 12px; font-weight: 500; background: #fff; border: 1.5px solid #EADCC6; }
+.sc .nav { position: absolute; left: 10px; right: 10px; bottom: 10px; background: var(--p); color: #C9CAE8; border-radius: 20px; display: grid; grid-template-columns: repeat(4, 1fr); padding: 9px 0; font-size: 10px; text-align: center; }
+.sc .nav div { display: grid; justify-items: center; gap: 2px; } .sc .nav .on { color: var(--a); font-weight: 600; }
+.sc .ring { --v: 62; width: 54px; height: 54px; border-radius: 50%; background: conic-gradient(var(--a) calc(var(--v) * 1%), #F1E7D8 0); display: grid; place-items: center; } .sc .ring span { width: 40px; height: 40px; border-radius: 50%; background: #fff; display: grid; place-items: center; font-weight: 600; font-size: 12px; }
+
+/* ---------- D. Sobre et professionnel ---------- */
+.sd { --n: #1C2B3A; --p: #1F6F8B; --t: #1E252B; --m: #67727B; --l: #DDE2E6; --bg: #F3F5F7; font-family: "IBM Plex Sans", system-ui, sans-serif; color: var(--t); background: var(--bg); height: 100%; font-size: 12px; }
+.sd .topnav { background: var(--n); color: #C9D3DC; display: flex; align-items: center; gap: 18px; padding: 0 16px; height: 46px; }
+.sd .topnav b { color: #fff; font-weight: 600; } .sd .topnav .on { color: #fff; box-shadow: inset 0 -3px 0 #E09A2D; height: 100%; display: flex; align-items: center; }
+.sd .panel { background: #fff; border: 1px solid var(--l); border-radius: 6px; }
+.sd .kpis { display: grid; grid-template-columns: repeat(4, 1fr); } .sd .kpis > div { padding: 12px 14px; border-right: 1px solid var(--l); } .sd .kpis > div:last-child { border-right: 0; }
+.sd .kpis small { color: var(--m); text-transform: uppercase; letter-spacing: .06em; font-size: 9.5px; font-weight: 600; } .sd .kpis b { display: block; font-size: 18px; font-weight: 600; margin-top: 2px; }
+.sd table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; } .sd th { text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--m); font-weight: 600; padding: 7px 10px; border-bottom: 1px solid var(--l); background: #F8FAFB; } .sd td { padding: 7px 10px; border-bottom: 1px solid #EEF1F3; }
+.sd .tag { font-size: 10px; padding: 1px 7px; border-radius: 4px; font-weight: 600; } .sd .ok { background: #E3F2EA; color: #2F7A55; } .sd .wait { background: #FDF0DA; color: #94600E; }
+.sd .btn { background: var(--p); color: #fff; border-radius: 5px; padding: 6px 12px; font-weight: 600; }
+.sd .mbar { background: var(--n); color: #fff; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+.sd .seg { display: flex; gap: 0; margin: 10px 12px; border: 1px solid var(--l); border-radius: 6px; overflow: hidden; background: #fff; } .sd .seg span { flex: 1; text-align: center; padding: 7px 0; font-weight: 600; color: var(--m); } .sd .seg .on { background: var(--n); color: #fff; }
+.sd .li { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: #fff; border-bottom: 1px solid #EEF1F3; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-house" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol><symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><path d="M16 3.128a4 4 0 0 1 0 7.744" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><circle cx="9" cy="7" r="4" /></symbol><symbol id="i-coins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.744 17.736a6 6 0 1 1-7.48-7.48" /><path d="M15 6h1v4" /><path d="m6.134 14.768.866-.5 2 3.464" /><circle cx="16" cy="8" r="6" /></symbol><symbol id="i-hand-coins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 15h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 17" /><path d="m7 21 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9" /><path d="m2 16 6 6" /><circle cx="16" cy="9" r="2.9" /><circle cx="6" cy="5" r="3" /></symbol><symbol id="i-calendar-days" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v3" /><path d="M16 2v3" /><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /><path d="M8 13h.01" /><path d="M12 13h.01" /><path d="M16 13h.01" /><path d="M8 17h.01" /><path d="M12 17h.01" /><path d="M16 17h.01" /></symbol><symbol id="i-file-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></symbol><symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.268 21a2 2 0 0 0 3.464 0" /><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></symbol><symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></symbol><symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16" /><path d="M4 12h16" /><path d="M4 19h16" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14" /><path d="M12 5v14" /></symbol><symbol id="i-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></symbol><symbol id="i-heart-handshake" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19.414 14.414C21 12.828 22 11.5 22 9.5a5.5 5.5 0 0 0-9.591-3.676.6.6 0 0 1-.818.001A5.5 5.5 0 0 0 2 9.5c0 2.3 1.5 4 3 5.5l5.535 5.362a2 2 0 0 0 2.879.052 2.12 2.12 0 0 0-.004-3 2.124 2.124 0 1 0 3-3 2.124 2.124 0 0 0 3.004 0 2 2 0 0 0 0-2.828l-1.881-1.882a2.41 2.41 0 0 0-3.409 0l-1.71 1.71a2 2 0 0 1-2.828 0 2 2 0 0 1 0-2.828l2.823-2.762" /></symbol><symbol id="i-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /><circle cx="12" cy="12" r="3" /></symbol><symbol id="i-layout-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></symbol><symbol id="i-network" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1" /><rect x="2" y="16" width="6" height="6" rx="1" /><rect x="9" y="2" width="6" height="6" rx="1" /><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" /><path d="M12 12V8" /></symbol><symbol id="i-banknote" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2" /><circle cx="12" cy="12" r="2" /><path d="M6 12h.01M18 12h.01" /></symbol><symbol id="i-circle-dollar-sign" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" /><path d="M12 18V6" /></symbol><symbol id="i-ellipsis" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" /></symbol><symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></symbol><symbol id="i-arrow-left-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4" /><path d="M4 7h16" /><path d="m16 21 4-4-4-4" /><path d="M20 17H4" /></symbol><symbol id="i-scroll-text" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12h-5" /><path d="M15 8h-5" /><path d="M19 17V5a2 2 0 0 0-2-2H4" /><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-book-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v16" /><path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /></symbol><symbol id="i-shield-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></symbol><symbol id="i-history" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M12 7v5l4 2" /></symbol><symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></symbol></svg>
+
+<div class="wrap">
+  <header class="top">
+    <span class="kicker">Waumini · Choisir le style</span>
+    <h1>Quatre styles pour la même application</h1>
+    <p class="lead">Chaque style est appliqué au même écran : le tableau de bord de la paroisse de Himbi, tel qu’il sera quand les finances et les membres seront en place. Regardez la version téléphone et la version ordinateur, puis dites-moi lequel vous parle, ce que vous aimez et ce que vous changeriez. Les chiffres sont fictifs.</p>
+    <nav class="toc"><a href="#a">A. Clair et net</a><a href="#b">B. Comme le mobile money</a><a href="#c">C. Chaleureux, wax</a><a href="#d">D. Sobre et professionnel</a></nav>
+  </header>
+
+  <!-- ===================== A ===================== -->
+  <section class="dir" id="a">
+    <div class="dir-head">
+      <h2><span class="letter">A</span> Clair et net</h2>
+      <p>Fond blanc, beaucoup d’espace, une seule couleur forte (le bleu-vert du logo) et l’ocre pour l’action principale. L’esprit d’une application bancaire moderne : lisible, calme, sérieuse.</p>
+      <div class="traits"><span><b>Pour qui :</b> tout le monde, du pasteur au trésorier</span><span><b>Force :</b> très lisible, vieillit bien</span><span><b>Risque :</b> peu d’identité africaine</span></div>
+    </div>
+    <div class="stage">
+      <div>
+        <div class="phone"><div class="scr sa">
+          <div class="tb"><span class="logo">W</span><b class="h" style="font-size:14px">CEP Himbi</b><span class="av">FM</span></div>
+          <div style="padding:14px 14px 0;display:grid;gap:12px">
+            <div><div style="color:var(--m);font-size:11px">Dimanche 11 octobre</div><div class="h" style="font-size:19px">Bonjour, Furaha</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="card stat"><small>Membres</small><b>1 248</b><span class="up">+12 ce mois</span></div>
+              <div class="card stat"><small>Collecte du jour</small><b>1 850 $</b><small>≈ 5,27 M FC</small></div>
+            </div>
+            <div class="card" style="padding:12px;display:grid;gap:8px">
+              <div style="display:flex;justify-content:space-between"><b>Toiture du temple</b><b style="color:var(--p)">62 %</b></div>
+              <div class="bar"><i style="width:62%"></i></div>
+              <small style="color:var(--m)">12 400 $ versés sur 20 000 $ promis</small>
+            </div>
+            <span class="btn" style="justify-content:center"><svg class="i"><use href="#i-plus"/></svg> Saisir la collecte</span>
+            <div class="card" style="padding:4px 12px">
+              <div class="row" style="border:0"><span class="dot"><svg class="i"><use href="#i-calendar-days"/></svg></span><div><b>Répétition chorale</b><br><small style="color:var(--m)">Mardi · 17 h</small></div></div>
+              <div class="row"><span class="dot"><svg class="i"><use href="#i-wallet"/></svg></span><div><b>3 dépenses à valider</b><br><small style="color:var(--m)">Total 410 $</small></div></div>
+            </div>
+          </div>
+          <div class="nav"><div class="on"><svg class="i" style="font-size:18px"><use href="#i-house"/></svg>Accueil</div><div><svg class="i" style="font-size:18px"><use href="#i-users"/></svg>Membres</div><div><svg class="i" style="font-size:18px"><use href="#i-coins"/></svg>Finances</div><div><svg class="i" style="font-size:18px"><use href="#i-calendar-days"/></svg>Agenda</div><div><svg class="i" style="font-size:18px"><use href="#i-ellipsis"/></svg>Plus</div></div>
+        </div></div>
+        <p class="cap">Téléphone</p>
+      </div>
+      <div class="deskbox"><div class="desk"><div class="chrome"><i></i><i></i><i></i><em>waumini.cd/tableau-de-bord</em></div><div class="vp"><div class="canvas sa" style="display:flex">
+        <div class="side"><div style="display:flex;gap:8px;align-items:center;padding:0 6px 14px"><span class="logo">W</span><b class="h" style="font-size:16px">waumini</b></div>
+          <a class="on"><svg class="i"><use href="#i-layout-dashboard"/></svg>Tableau de bord</a><a><svg class="i"><use href="#i-users"/></svg>Membres</a><a><svg class="i"><use href="#i-coins"/></svg>Finances</a><a><svg class="i"><use href="#i-hand-coins"/></svg>Promesses</a><a><svg class="i"><use href="#i-scroll-text"/></svg>Budget</a><a><svg class="i"><use href="#i-calendar-days"/></svg>Agenda</a><a><svg class="i"><use href="#i-file-text"/></svg>Documents</a><a><svg class="i"><use href="#i-settings"/></svg>Paramètres</a></div>
+        <div style="flex:1;padding:22px 26px;display:grid;gap:16px;align-content:start">
+          <div style="display:flex;align-items:end;justify-content:space-between"><div><div style="color:var(--m)">Paroisse de Himbi · Dimanche 11 octobre</div><div class="h" style="font-size:24px">Bonjour, Furaha</div></div><span class="btn"><svg class="i"><use href="#i-plus"/></svg> Saisir la collecte</span></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+            <div class="card stat"><small>Membres</small><b>1 248</b><span class="up">+12 ce mois</span></div>
+            <div class="card stat"><small>Collecte du jour</small><b>1 850 $</b><small>≈ 5 272 500 FC</small></div>
+            <div class="card stat"><small>Dépenses à valider</small><b>3</b><small>410 $</small></div>
+            <div class="card stat"><small>Taux du jour</small><b>2 850 FC</b><small>pour 1 $</small></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px">
+            <div class="card" style="padding:16px;display:grid;gap:10px"><b class="h" style="font-size:15px">Promesses en cours</b>
+              <div style="display:grid;gap:6px"><div style="display:flex;justify-content:space-between"><span>Toiture du temple</span><b>62 %</b></div><div class="bar"><i style="width:62%"></i></div></div>
+              <div style="display:grid;gap:6px"><div style="display:flex;justify-content:space-between"><span>Campagne d’évangélisation Sake</span><b>38 %</b></div><div class="bar"><i style="width:38%"></i></div></div>
+              <div style="display:grid;gap:6px"><div style="display:flex;justify-content:space-between"><span>Instruments de la chorale</span><b>85 %</b></div><div class="bar"><i style="width:85%"></i></div></div></div>
+            <div class="card" style="padding:4px 16px"><div class="row" style="border:0"><span class="dot"><svg class="i"><use href="#i-calendar-days"/></svg></span><div><b>Culte</b><br><small style="color:var(--m)">Dimanche · 9 h</small></div></div><div class="row"><span class="dot"><svg class="i"><use href="#i-users"/></svg></span><div><b>Répétition chorale</b><br><small style="color:var(--m)">Mardi · 17 h</small></div></div><div class="row"><span class="dot"><svg class="i"><use href="#i-book-open"/></svg></span><div><b>Assemblée générale</b><br><small style="color:var(--m)">25 octobre</small></div></div></div>
+          </div>
+        </div>
+      </div></div></div><p class="cap">Ordinateur</p></div>
+    </div>
+  </section>
+
+  <!-- ===================== B ===================== -->
+  <section class="dir" id="b">
+    <div class="dir-head">
+      <h2><span class="letter">B</span> Comme le mobile money</h2>
+      <p>Un bandeau coloré avec le chiffre important, puis de grosses icônes rondes pour chaque action, comme dans M-Pesa, Airtel Money ou les applications bancaires que les fidèles et les trésoriers utilisent déjà chaque jour.</p>
+      <div class="traits"><span><b>Pour qui :</b> des utilisateurs peu habitués à l’informatique</span><span><b>Force :</b> familier tout de suite, tout est à un toucher</span><span><b>Risque :</b> moins adapté aux tableaux denses sur ordinateur</span></div>
+    </div>
+    <div class="stage">
+      <div>
+        <div class="phone"><div class="scr sb">
+          <div class="hero"><div style="display:flex;align-items:center;gap:8px"><span style="font-weight:600">CEP Himbi</span><svg class="i" style="margin-left:auto;font-size:18px"><use href="#i-bell"/></svg></div>
+            <div style="margin-top:14px"><small>Collecte de dimanche</small><div class="big">1 850 $</div><span class="pill">≈ 5 272 500 FC · 1 $ = 2 850 FC</span></div></div>
+          <div class="tiles">
+            <div class="tile"><span class="c1"><svg class="i"><use href="#i-banknote"/></svg></span>Collecte</div>
+            <div class="tile"><span class="c2"><svg class="i"><use href="#i-users"/></svg></span>Membres</div>
+            <div class="tile"><span class="c3"><svg class="i"><use href="#i-hand-coins"/></svg></span>Promesses</div>
+            <div class="tile"><span class="c4"><svg class="i"><use href="#i-wallet"/></svg></span>Dépenses</div>
+            <div class="tile"><span class="c2"><svg class="i"><use href="#i-file-text"/></svg></span>Attestation</div>
+            <div class="tile"><span class="c4"><svg class="i"><use href="#i-calendar-days"/></svg></span>Agenda</div>
+            <div class="tile"><span class="c1"><svg class="i"><use href="#i-scroll-text"/></svg></span>Budget</div>
+            <div class="tile"><span class="c3"><svg class="i"><use href="#i-bell"/></svg></span>Annonce</div>
+          </div>
+          <div class="sec"><h4>À faire <a>Tout voir</a></h4>
+            <div class="item"><span class="tile"><span class="c3" style="width:34px;height:34px;font-size:15px"><svg class="i"><use href="#i-wallet"/></svg></span></span><div><b>3 dépenses à valider</b><br><small style="color:var(--m)">410 $ au total</small></div></div>
+            <div class="item"><span class="tile"><span class="c1" style="width:34px;height:34px;font-size:15px"><svg class="i"><use href="#i-hand-coins"/></svg></span></span><div><b>Toiture : 62 % versé</b><br><small style="color:var(--m)">12 400 $ sur 20 000 $</small></div></div>
+          </div>
+          <div class="nav"><div class="on"><svg class="i" style="font-size:18px"><use href="#i-house"/></svg>Accueil</div><div><svg class="i" style="font-size:18px"><use href="#i-users"/></svg>Membres</div><div><span class="fab"><svg class="i"><use href="#i-plus"/></svg></span></div><div><svg class="i" style="font-size:18px"><use href="#i-coins"/></svg>Finances</div><div><svg class="i" style="font-size:18px"><use href="#i-user"/></svg>Profil</div></div>
+        </div></div>
+        <p class="cap">Téléphone</p>
+      </div>
+      <div class="deskbox"><div class="desk"><div class="chrome"><i></i><i></i><i></i><em>waumini.cd/tableau-de-bord</em></div><div class="vp"><div class="canvas sb">
+        <div class="hero" style="border-radius:0;padding:18px 28px 70px;display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div style="display:flex;gap:18px;align-items:center;font-weight:500"><b style="font-size:17px">waumini</b><span style="opacity:.75">Accueil</span><span style="opacity:.75">Membres</span><span style="opacity:.75">Finances</span><span style="opacity:.75">Budget</span><span style="opacity:.75">Documents</span></div>
+            <div style="margin-top:22px"><small>Paroisse de Himbi · collecte de dimanche</small><div class="big" style="font-size:34px">1 850 $</div><span class="pill">≈ 5 272 500 FC · taux 1 $ = 2 850 FC</span></div></div>
+          <div style="display:grid;grid-template-columns:repeat(3,auto);gap:30px;margin-top:52px;text-align:right"><div><small>Membres</small><div style="font-size:20px;font-weight:700">1 248</div></div><div><small>Promesses</small><div style="font-size:20px;font-weight:700">62 %</div></div><div><small>À valider</small><div style="font-size:20px;font-weight:700">3</div></div></div>
+        </div>
+        <div class="tiles" style="margin:-46px 28px 0;grid-template-columns:repeat(8,1fr);padding:18px">
+          <div class="tile"><span class="c1"><svg class="i"><use href="#i-banknote"/></svg></span>Saisir la collecte</div><div class="tile"><span class="c2"><svg class="i"><use href="#i-users"/></svg></span>Nouveau membre</div><div class="tile"><span class="c3"><svg class="i"><use href="#i-hand-coins"/></svg></span>Promesses</div><div class="tile"><span class="c4"><svg class="i"><use href="#i-wallet"/></svg></span>Dépenses</div><div class="tile"><span class="c2"><svg class="i"><use href="#i-file-text"/></svg></span>Attestation</div><div class="tile"><span class="c4"><svg class="i"><use href="#i-calendar-days"/></svg></span>Agenda</div><div class="tile"><span class="c1"><svg class="i"><use href="#i-scroll-text"/></svg></span>Budget</div><div class="tile"><span class="c3"><svg class="i"><use href="#i-bell"/></svg></span>Annonce</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:18px 28px">
+          <div><h4 style="margin:0 0 8px;font-size:14px;font-weight:600">À faire</h4><div class="item"><span class="tile"><span class="c3" style="width:34px;height:34px;font-size:15px"><svg class="i"><use href="#i-wallet"/></svg></span></span><div><b>3 dépenses à valider</b><br><small style="color:var(--m)">410 $ au total</small></div></div><div class="item"><span class="tile"><span class="c1" style="width:34px;height:34px;font-size:15px"><svg class="i"><use href="#i-hand-coins"/></svg></span></span><div><b>Toiture : 62 % versé</b><br><small style="color:var(--m)">12 400 $ sur 20 000 $</small></div></div></div>
+          <div><h4 style="margin:0 0 8px;font-size:14px;font-weight:600">Cette semaine</h4><div class="item"><span class="tile"><span class="c2" style="width:34px;height:34px;font-size:15px"><svg class="i"><use href="#i-calendar-days"/></svg></span></span><div><b>Répétition chorale</b><br><small style="color:var(--m)">Mardi · 17 h</small></div></div><div class="item"><span class="tile"><span class="c4" style="width:34px;height:34px;font-size:15px"><svg class="i"><use href="#i-book-open"/></svg></span></span><div><b>Assemblée générale</b><br><small style="color:var(--m)">25 octobre</small></div></div></div>
+        </div>
+      </div></div></div><p class="cap">Ordinateur</p></div>
+    </div>
+  </section>
+
+  <!-- ===================== C ===================== -->
+  <section class="dir" id="c">
+    <div class="dir-head">
+      <h2><span class="letter">C</span> Chaleureux, inspiré du wax</h2>
+      <p>Un motif de pagne wax en en-tête, des couleurs franches (indigo, ocre, terre cuite, vert), des formes rondes. Une identité africaine affirmée, fière, qui se reconnaît au premier coup d’œil.</p>
+      <div class="traits"><span><b>Pour qui :</b> des communautés qui veulent un outil « de chez nous »</span><span><b>Force :</b> identité forte et mémorable</span><span><b>Risque :</b> le motif doit rester discret pour ne pas fatiguer</span></div>
+    </div>
+    <div class="stage">
+      <div>
+        <div class="phone"><div class="scr sc">
+          <div class="head wax"><div style="display:flex;align-items:center;gap:8px"><b style="font-size:15px">waumini</b><span style="margin-left:auto;width:28px;height:28px;border-radius:50%;background:var(--a);color:#2A1B04;display:grid;place-items:center;font-weight:600;font-size:11px">FM</span></div>
+            <div style="margin-top:16px;font-size:11px;opacity:.85">CEP Himbi · dimanche 11 octobre</div><div style="font-size:20px;font-weight:600">Bonjour, Furaha</div></div>
+          <div style="padding:14px;display:grid;gap:10px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="card k"><span class="ico o"><svg class="i"><use href="#i-banknote"/></svg></span><small style="color:var(--m)">Collecte du jour</small><b>1 850 $</b></div>
+              <div class="card k"><span class="ico pp"><svg class="i"><use href="#i-users"/></svg></span><small style="color:var(--m)">Membres</small><b>1 248</b></div>
+            </div>
+            <div class="card" style="padding:12px;display:flex;gap:12px;align-items:center"><span class="ring" style="--v:62"><span>62 %</span></span><div><b>Toiture du temple</b><br><small style="color:var(--m)">12 400 $ sur 20 000 $</small></div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px"><span class="chip"><svg class="i" style="color:var(--r)"><use href="#i-plus"/></svg>Collecte</span><span class="chip"><svg class="i" style="color:var(--g)"><use href="#i-user"/></svg>Membre</span><span class="chip"><svg class="i" style="color:var(--p)"><use href="#i-file-text"/></svg>Attestation</span></div>
+            <div class="card" style="padding:12px;display:flex;gap:10px;align-items:center"><span class="ico rr"><svg class="i"><use href="#i-wallet"/></svg></span><div><b>3 dépenses à valider</b><br><small style="color:var(--m)">410 $ au total</small></div></div>
+          </div>
+          <div class="nav"><div class="on"><svg class="i" style="font-size:18px"><use href="#i-house"/></svg>Accueil</div><div><svg class="i" style="font-size:18px"><use href="#i-users"/></svg>Membres</div><div><svg class="i" style="font-size:18px"><use href="#i-coins"/></svg>Finances</div><div><svg class="i" style="font-size:18px"><use href="#i-ellipsis"/></svg>Plus</div></div>
+        </div></div>
+        <p class="cap">Téléphone</p>
+      </div>
+      <div class="deskbox"><div class="desk"><div class="chrome"><i></i><i></i><i></i><em>waumini.cd/tableau-de-bord</em></div><div class="vp"><div class="canvas sc" style="display:flex">
+        <div class="wax" style="width:200px;position:relative;color:#fff"><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(44,47,107,.86),rgba(44,47,107,.95))"></div>
+          <div style="position:relative;padding:18px 14px;display:grid;gap:4px"><b style="font-size:17px;padding:0 6px 14px">waumini</b>
+            <span style="background:var(--a);color:#2A1B04;border-radius:12px;padding:9px 10px;font-weight:600;display:flex;gap:8px;align-items:center"><svg class="i"><use href="#i-house"/></svg>Accueil</span>
+            <span style="padding:9px 10px;display:flex;gap:8px;align-items:center;opacity:.85"><svg class="i"><use href="#i-users"/></svg>Membres</span><span style="padding:9px 10px;display:flex;gap:8px;align-items:center;opacity:.85"><svg class="i"><use href="#i-coins"/></svg>Finances</span><span style="padding:9px 10px;display:flex;gap:8px;align-items:center;opacity:.85"><svg class="i"><use href="#i-hand-coins"/></svg>Promesses</span><span style="padding:9px 10px;display:flex;gap:8px;align-items:center;opacity:.85"><svg class="i"><use href="#i-scroll-text"/></svg>Budget</span><span style="padding:9px 10px;display:flex;gap:8px;align-items:center;opacity:.85"><svg class="i"><use href="#i-file-text"/></svg>Documents</span></div></div>
+        <div style="flex:1;padding:22px 26px;display:grid;gap:14px;align-content:start">
+          <div style="display:flex;justify-content:space-between;align-items:end"><div><small style="color:var(--m)">Paroisse de Himbi · dimanche 11 octobre</small><div style="font-size:24px;font-weight:600">Bonjour, Furaha</div></div><div style="display:flex;gap:8px"><span class="chip"><svg class="i" style="color:var(--r)"><use href="#i-plus"/></svg>Collecte</span><span class="chip"><svg class="i" style="color:var(--g)"><use href="#i-user"/></svg>Membre</span><span class="chip"><svg class="i" style="color:var(--p)"><use href="#i-file-text"/></svg>Attestation</span></div></div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <div class="card k"><span class="ico o"><svg class="i"><use href="#i-banknote"/></svg></span><small style="color:var(--m)">Collecte du jour</small><b>1 850 $</b><small style="color:var(--m)">≈ 5 272 500 FC</small></div>
+            <div class="card k"><span class="ico pp"><svg class="i"><use href="#i-users"/></svg></span><small style="color:var(--m)">Membres</small><b>1 248</b><small style="color:var(--g)">+12 ce mois</small></div>
+            <div class="card k"><span class="ico rr"><svg class="i"><use href="#i-wallet"/></svg></span><small style="color:var(--m)">Dépenses à valider</small><b>3</b><small style="color:var(--m)">410 $</small></div>
+            <div class="card k"><span class="ico gg"><svg class="i"><use href="#i-arrow-left-right"/></svg></span><small style="color:var(--m)">Taux du jour</small><b>2 850 FC</b><small style="color:var(--m)">pour 1 $</small></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+            <div class="card" style="padding:14px;display:flex;gap:12px;align-items:center"><span class="ring" style="--v:62"><span>62 %</span></span><div><b>Toiture du temple</b><br><small style="color:var(--m)">12 400 $ sur 20 000 $</small></div></div>
+            <div class="card" style="padding:14px;display:flex;gap:12px;align-items:center"><span class="ring" style="--v:38"><span>38 %</span></span><div><b>Évangélisation Sake</b><br><small style="color:var(--m)">1 900 $ sur 5 000 $</small></div></div>
+            <div class="card" style="padding:14px;display:flex;gap:12px;align-items:center"><span class="ring" style="--v:85"><span>85 %</span></span><div><b>Instruments chorale</b><br><small style="color:var(--m)">2 550 $ sur 3 000 $</small></div></div>
+          </div>
+        </div>
+      </div></div></div><p class="cap">Ordinateur</p></div>
+    </div>
+  </section>
+
+  <!-- ===================== D ===================== -->
+  <section class="dir" id="d">
+    <div class="dir-head">
+      <h2><span class="letter">D</span> Sobre et professionnel</h2>
+      <p>Une barre de navigation en haut, des chiffres alignés, des tableaux compacts. L’esprit des logiciels de gestion et de comptabilité : beaucoup d’informations à l’écran, efficace pour le travail de bureau.</p>
+      <div class="traits"><span><b>Pour qui :</b> secrétariats et trésoreries habitués aux logiciels</span><span><b>Force :</b> dense, rapide, sérieux pour les rapports</span><span><b>Risque :</b> intimidant pour un responsable de chorale sur téléphone</span></div>
+    </div>
+    <div class="stage">
+      <div>
+        <div class="phone"><div class="scr sd">
+          <div class="mbar"><svg class="i" style="font-size:18px"><use href="#i-menu"/></svg><b>CEP Himbi</b><svg class="i" style="margin-left:auto;font-size:16px"><use href="#i-search"/></svg></div>
+          <div class="seg"><span class="on">Aujourd’hui</span><span>Semaine</span><span>Mois</span></div>
+          <div class="panel" style="margin:0 12px;display:grid;grid-template-columns:1fr 1fr">
+            <div style="padding:10px;border-right:1px solid var(--l);border-bottom:1px solid var(--l)"><small style="color:var(--m)">COLLECTE</small><b style="display:block;font-size:16px">1 850 $</b></div>
+            <div style="padding:10px;border-bottom:1px solid var(--l)"><small style="color:var(--m)">MEMBRES</small><b style="display:block;font-size:16px">1 248</b></div>
+            <div style="padding:10px;border-right:1px solid var(--l)"><small style="color:var(--m)">À VALIDER</small><b style="display:block;font-size:16px">3</b></div>
+            <div style="padding:10px"><small style="color:var(--m)">TAUX</small><b style="display:block;font-size:16px">2 850 FC</b></div>
+          </div>
+          <div style="padding:12px 12px 6px;font-weight:600;font-size:11px;color:var(--m);text-transform:uppercase;letter-spacing:.06em">Dernières opérations</div>
+          <div class="li"><div><b>Dîme · K. Paluku</b><br><small style="color:var(--m)">Reçu R-2026-0412</small></div><b>50,00 $</b></div>
+          <div class="li"><div><b>Offrande du culte</b><br><small style="color:var(--m)">Caisse principale</small></div><b>1 240,00 $</b></div>
+          <div class="li"><div><b>Achat micros</b><br><span class="tag wait">À valider</span></div><b>-150,00 $</b></div>
+          <div class="li"><div><b>Offrande en FC</b><br><small style="color:var(--m)">≈ 560,00 $</small></div><b>1 596 000 FC</b></div>
+        </div></div>
+        <p class="cap">Téléphone</p>
+      </div>
+      <div class="deskbox"><div class="desk"><div class="chrome"><i></i><i></i><i></i><em>waumini.cd/tableau-de-bord</em></div><div class="vp"><div class="canvas sd">
+        <div class="topnav"><b style="font-size:15px">waumini</b><span class="on">Tableau de bord</span><span>Membres</span><span>Finances</span><span>Promesses</span><span>Budget</span><span>Documents</span><span>Rapports</span><span style="margin-left:auto">CEP Himbi ▾</span><span>F. Masika</span></div>
+        <div style="padding:16px 22px;display:grid;gap:14px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><div><small style="color:var(--m)">Accueil / Tableau de bord</small><div style="font-size:19px;font-weight:600">Paroisse de Himbi</div></div><span class="btn">+ Saisir la collecte</span></div>
+          <div class="panel kpis"><div><small>Collecte du jour</small><b>1 850,00 $</b><small style="text-transform:none;letter-spacing:0">≈ 5 272 500 FC</small></div><div><small>Membres</small><b>1 248</b><small style="text-transform:none;letter-spacing:0;color:#2F7A55">+12 ce mois</small></div><div><small>Dépenses à valider</small><b>3 · 410,00 $</b></div><div><small>Taux du jour</small><b>1 $ = 2 850 FC</b></div></div>
+          <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:14px">
+            <div class="panel"><table><thead><tr><th>Date</th><th>Opération</th><th>Caisse</th><th>Statut</th><th style="text-align:right">Montant</th></tr></thead><tbody>
+              <tr><td>11/10</td><td>Dîme · K. Paluku</td><td>Principale</td><td><span class="tag ok">Validé</span></td><td style="text-align:right">50,00 $</td></tr>
+              <tr><td>11/10</td><td>Offrande du culte</td><td>Principale</td><td><span class="tag ok">Validé</span></td><td style="text-align:right">1 240,00 $</td></tr>
+              <tr><td>11/10</td><td>Offrande en FC</td><td>Caisse CDF</td><td><span class="tag ok">Validé</span></td><td style="text-align:right">1 596 000 FC</td></tr>
+              <tr><td>10/10</td><td>Achat micros sans fil</td><td>Principale</td><td><span class="tag wait">À valider</span></td><td style="text-align:right">-150,00 $</td></tr>
+              <tr><td>09/10</td><td>Électricité SNEL</td><td>Principale</td><td><span class="tag wait">À valider</span></td><td style="text-align:right">-85,00 $</td></tr>
+              <tr><td>08/10</td><td>Carburant groupe</td><td>Principale</td><td><span class="tag wait">À valider</span></td><td style="text-align:right">-175,00 $</td></tr>
+            </tbody></table></div>
+            <div class="panel"><table><thead><tr><th>Promesse</th><th style="text-align:right">Versé</th></tr></thead><tbody><tr><td>Toiture du temple</td><td style="text-align:right">62 %</td></tr><tr><td>Évangélisation Sake</td><td style="text-align:right">38 %</td></tr><tr><td>Instruments chorale</td><td style="text-align:right">85 %</td></tr></tbody></table></div>
+          </div>
+        </div>
+      </div></div></div><p class="cap">Ordinateur</p></div>
+    </div>
+  </section>
+
+  <section class="ask">
+    <h2>À vous de choisir</h2>
+    <p style="margin:0;color:var(--muted)">Répondez-moi simplement dans la conversation, par exemple : « B, avec les couleurs de C ».</p>
+    <ol>
+      <li>Quel style vous parle le plus : <b>A</b>, <b>B</b>, <b>C</b> ou <b>D</b> ? On peut aussi en mélanger deux.</li>
+      <li>Qu’est-ce qui ne vous plaisait pas dans la première version : les couleurs, la police, la barre latérale foncée, trop de texte, pas assez d’icônes… ?</li>
+      <li>Avez-vous une application ou un site dont vous aimez le style ? Son nom suffit.</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+// Met à l'échelle chaque maquette d'ordinateur (1000 × 600) à la largeur disponible.
+function fit() {
+  document.querySelectorAll('.desk .vp').forEach(vp => {
+    const s = vp.clientWidth / 1000;
+    vp.style.height = (600 * s) + 'px';
+    vp.firstElementChild.style.transform = 'scale(' + s + ')';
+  });
+}
+fit();
+window.addEventListener('resize', fit);
+</script>
