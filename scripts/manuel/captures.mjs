@@ -1251,6 +1251,63 @@ const SCENES = [
             await settle(page);
             await mark(page, [{ selector: 'main form[wire\\:submit=requestTransfer]', label: '1' }]);
         },
+    },    // ---------- Sites vitrines ----------
+    {
+        id: '106-site-vitrine', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/site-vitrine`);
+            await settle(page);
+            await mark(page, [
+                { selector: 'main input[wire\\:model="form.is_published"]', label: '1', position: 'right' },
+                { selector: 'main [role=tablist]', label: '2' },
+                { selector: 'main label:has(input[value=chaleureux])', label: '3' },
+            ]);
+        },
+    },
+    {
+        id: '107-site-pages', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/site-vitrine?onglet=pages`);
+            await settle(page);
+            await mark(page, [{ selector: 'main label:has(input[value=programme])', label: '1' }, { selector: 'main label:has(input[value=don])', label: '2' }]);
+        },
+    },
+    {
+        id: '108-predications', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/predications`);
+            await settle(page);
+            await mark(page, [{ selector: 'main button[wire\\:click=create]', label: '1', position: 'right' }, { selector: 'main aside', label: '2' }]);
+        },
+    },
+    {
+        id: '109-site-accueil',
+        run: async (page) => {
+            await page.goto(`${BASE}/site/cep-himbi`);
+            await settle(page);
+        },
+    },
+    {
+        id: '110-site-don',
+        run: async (page) => {
+            await page.goto(`${BASE}/site/cep-himbi/don`);
+            await settle(page);
+            await mark(page, [{ selector: 'main section div.rounded-2xl', label: '1' }, { selector: 'main input[name=reference]', label: '2' }]);
+        },
+    },
+    {
+        id: '111-site-lumiere',
+        run: async (page) => {
+            await page.goto(`${BASE}/site/cep-katindo`);
+            await settle(page);
+        },
+    },
+    {
+        id: '112-site-solennel',
+        run: async (page) => {
+            await page.goto(`${BASE}/site/cep-siege`);
+            await settle(page);
+        },
     },
 ];
 

@@ -63,8 +63,16 @@
             </section>
 
             <section class="card min-w-0 p-5 sm:p-6">
-                <h2 class="mb-1 text-lg">{{ __('Mes dons et contributions') }}</h2>
+                <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+                    <h2 class="text-lg">{{ __('Mes dons et contributions') }}</h2>
+                    @if ($canWrite)<button type="button" wire:click="openGift" class="btn-secondary !min-h-0 !py-1.5 text-sm"><x-icon name="smartphone" class="size-4" /> {{ __('Déclarer un don') }}</button>@endif
+                </div>
                 @if ($yearTotals->isNotEmpty())<p class="mb-3 text-sm text-sand-700">{{ __('En :y : :t', ['y' => now()->year, 't' => $yearTotals->implode(' + ')]) }}</p>@endif
+                @foreach ($declarations as $d)
+                    <p @class(['mb-2 rounded-xl px-3 py-2 text-sm', 'bg-ochre-50 text-ochre-700' => $d->status === 'pending', 'bg-terra-50 text-terra-700' => $d->status === 'rejected'])>
+                        {{ Money::format($d->amount, $d->currency) }} · {{ $d->operator }} · {{ $d->status === 'pending' ? __('en cours de vérification') : __('non retrouvé : :r', ['r' => $d->reject_reason]) }}
+                    </p>
+                @endforeach
                 <ul class="divide-y divide-sand-100">
                     @forelse ($gifts as $t)
                         <li class="flex items-center gap-3 py-2.5">
@@ -122,6 +130,29 @@
                     <div><label for="ms-subject" class="label">{{ __('Sujet') }}</label><input wire:model="prayer.subject" id="ms-subject" class="input" placeholder="{{ __('Exemple : la santé de mon père') }}">@error('prayer.subject') <p class="error">{{ $message }}</p> @enderror</div>
                     <div><label for="ms-body" class="label">{{ __('Ce que vous voulez confier') }} <span class="font-normal text-sand-700">{{ __('(facultatif)') }}</span></label><textarea wire:model="prayer.body" id="ms-body" rows="4" class="input"></textarea></div>
                     <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'prayer' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Envoyer') }}</button></div>
+                </form>
+            </x-modal>
+            <x-modal name="gift" :title="__('Déclarer un don mobile money')">
+                <form wire:submit="declareGift" class="space-y-4">
+                    @if ($mobileAccounts->isNotEmpty())
+                        <p class="text-sm text-sand-700">{{ __('Envoyez votre don sur :n, puis recopiez l’ID de la transaction reçu par SMS.', ['n' => $mobileAccounts->map(fn ($a) => trim($a->provider.' '.$a->account_number))->implode(__(' ou '))]) }}</p>
+                    @endif
+                    <div class="grid gap-3 sm:grid-cols-[2fr_1fr]">
+                        <div><label for="ms-g-amount" class="label">{{ __('Montant') }}</label><input wire:model="gift.amount" id="ms-g-amount" type="number" step="0.01" min="0" class="input tabular">@error('gift.amount') <p class="error">{{ $message }}</p> @enderror</div>
+                        <div><label for="ms-g-cur" class="label">{{ __('Devise') }}</label><select wire:model="gift.currency" id="ms-g-cur" class="input"><option>USD</option><option>CDF</option></select></div>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div><label for="ms-g-op" class="label">{{ __('Envoyé par') }}</label><select wire:model="gift.operator" id="ms-g-op" class="input">@foreach ($operators as $op)<option>{{ $op }}</option>@endforeach</select></div>
+                        <div><label for="ms-g-date" class="label">{{ __('Le') }}</label><input wire:model="gift.paid_on" id="ms-g-date" type="date" class="input">@error('gift.paid_on') <p class="error">{{ $message }}</p> @enderror</div>
+                    </div>
+                    <div><label for="ms-g-ref" class="label">{{ __('ID de la transaction') }}</label><input wire:model="gift.reference" id="ms-g-ref" class="input font-mono uppercase">@error('gift.reference') <p class="error">{{ $message }}</p> @enderror</div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div><label for="ms-g-cat" class="label">{{ __('Pour') }}</label><select wire:model="gift.category_id" id="ms-g-cat" class="input"><option value="">{{ __('Offrande') }}</option>@foreach ($giftCategories as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></div>
+                        @if ($pledges->isNotEmpty())
+                            <div><label for="ms-g-pl" class="label">{{ __('Ou pour ma promesse') }}</label><select wire:model="gift.pledge_id" id="ms-g-pl" class="input"><option value="">—</option>@foreach ($pledges as $row)<option value="{{ $row['pledge']->id }}">{{ $row['pledge']->campaign?->name ?? __('Promesse') }}</option>@endforeach</select></div>
+                        @endif
+                    </div>
+                    <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'gift' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Déclarer') }}</button></div>
                 </form>
             </x-modal>
             <x-modal name="document" :title="__('Demander une attestation')">

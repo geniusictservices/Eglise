@@ -8,6 +8,7 @@ use App\Models\Member;
 use App\Models\Organization;
 use App\Models\PastoralCase;
 use App\Models\PastoralNote;
+use App\Models\PaymentDeclaration;
 use App\Models\PrayerRequest;
 use App\Models\User;
 use App\Services\DocumentTypes;
@@ -15,6 +16,7 @@ use App\Services\MemberAccounts;
 use App\Services\Notifier;
 use App\Services\Pastoral;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire as LivewireTest;
@@ -129,6 +131,24 @@ class PastoralTest extends TestCase
         // La prière portée : un mot arrive à la personne.
         app(Pastoral::class)->answer(PrayerRequest::sole(), 'Nous avons prié pour vous.');
         $this->assertSame(2, app(Notifier::class)->unreadCount($account));
+    }
+
+    public function test_a_member_declares_a_mobile_money_gift_from_their_space(): void
+    {
+        $tresorier = User::factory()->create(['current_organization_id' => $this->eglise->id]);
+        $this->assign($tresorier, $this->role($this->eglise, 'tresorier'), $this->eglise);
+        app(MemberAccounts::class)->open($this->rebecca, '0990001111');
+        $account = User::where('phone', '+243990001111')->sole();
+        $account->forceFill(['must_change_password' => false])->save();
+        $this->actingAs($account);
+
+        LivewireTest::test(Livewire\Member\Space::class)
+            ->call('openGift')->call('declareGift')->assertHasErrors(['gift.amount', 'gift.reference'])
+            ->set('gift.amount', '15')->set('gift.reference', 'mp1234')->call('declareGift')->assertHasNoErrors()
+            ->assertSee('en cours de vérification');
+        $declaration = PaymentDeclaration::sole();
+        $this->assertSame([$this->rebecca->id, 'member', 'MP1234'], [$declaration->member_id, $declaration->source, $declaration->transaction_reference]);
+        $this->assertTrue(DatabaseNotification::where('notifiable_id', $tresorier->id)->where('key', "declaration.{$declaration->id}.review")->exists());
     }
 
     public function test_opening_a_space_twice_or_with_a_bad_number_is_refused(): void

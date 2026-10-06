@@ -21,7 +21,7 @@ Les annonces **épinglées** restent en haut, puis les plus récentes. Chacune i
 
 ① **WhatsApp** ouvre WhatsApp avec le texte de l'annonce déjà écrit : le titre en gras, la date, l'heure et le lieu de l'activité s'il y en a une, le message et le nom de la communauté. Choisissez le groupe WhatsApp de l'église et envoyez. L'icône à côté **copie le texte**, pour le coller ailleurs (SMS, Facebook).
 
-② **Nouvelle annonce** : un titre, le message, pour qui elle est, et la date jusqu'à laquelle elle reste **visible** (deux semaines par défaut). Après publication, Waumini indique combien de personnes ont été prévenues.
+② **Nouvelle annonce** : un titre, le message, pour qui elle est, et la date jusqu'à laquelle elle reste **visible** (deux semaines par défaut). Après publication, Waumini indique combien de personnes ont été prévenues. Cochez **Publier aussi sur le site vitrine** pour qu'elle paraisse sur le [site de la communauté](34-site-vitrine.md), visible par tous.
 
 Chacun voit les annonces générales et celles de ses départements et de ses groupes. Une annonce passée sa date de fin va dans l'onglet **Anciennes**.
 

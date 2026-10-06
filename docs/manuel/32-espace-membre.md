@@ -27,7 +27,7 @@ En se connectant, le membre arrive directement dans **Mon espace**.
 - En haut, son numéro, son statut, ses départements et ses groupes ; ① **Ma carte** ouvre sa [carte de membre](12-membres.md#la-carte-de-membre) avec son QR code.
 - **Le programme** des deux prochaines semaines : les activités de toute la communauté, de ses départements et de ses groupes, avec ses inscriptions. Toucher une activité l'ouvre ; il peut s'y **inscrire** si elle est sur inscription.
 - **Les annonces** en cours qui le concernent.
-- **Mes dons et contributions** : ses dîmes et offrandes nominatives, le total de l'année, et le **reçu** de chacune à réimprimer.
+- **Mes dons et contributions** : ses dîmes et offrandes nominatives, le total de l'année, et le **reçu** de chacune à réimprimer. **Déclarer un don** : après avoir envoyé sa dîme ou son offrande par mobile money, le membre indique le montant, l'opérateur, la date et l'**ID de la transaction**, et ce pour quoi il donne (ou sa promesse). La trésorerie vérifie et valide ; en attendant, le don apparaît « en cours de vérification », et le reçu arrive à la validation.
 - **Mes promesses** : ce qui est versé, ce qui reste, la prochaine échéance.
 - **Mes demandes**, avec leur état.
 

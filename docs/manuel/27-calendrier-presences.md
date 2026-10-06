@@ -39,7 +39,7 @@ Donnez un **titre**, un **type** (culte, prière, enseignement, événement, év
 
 ② **Pour qui** : toute la communauté, un département ou un groupe. Un responsable de département ou de groupe ne programme que pour les siens.
 
-③ **Noter les présences** (coché d'office) et **Sur inscription**, avec un nombre de **places** si elles sont limitées.
+③ **Noter les présences** (coché d'office) et **Sur inscription**, avec un nombre de **places** si elles sont limitées. **Sur le site vitrine** montre l'activité sur le [site de la communauté](34-site-vitrine.md) ; la case est cochée d'office pour les activités de toute la communauté.
 
 **Annuler une seule date** : ouvrez cette date, menu **⋯**, **Annuler cette date seulement**. Les autres dates restent prévues ; **Rétablir cette date** la remet. **Modifier** change toute la série.
 

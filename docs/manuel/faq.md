@@ -92,3 +92,7 @@ Cherchez-le dans **Registres** : si le cahier des baptêmes a été recopié, so
 ### Le secteur voit nos chiffres. Peut-il modifier notre caisse ?
 
 Non. La [consolidation](33-consolidation.md) montre aux niveaux supérieurs les **totaux** de chaque paroisse : membres, recettes, dépenses, présence. Ils ne modifient ni votre registre ni votre caisse. Les quotes-parts versées au secteur sont retirées des totaux, pour ne pas compter deux fois le même argent.
+
+### Nous n'avons pas de site Internet. Faut-il payer un informaticien ?
+
+Non. Waumini fournit un [site vitrine](34-site-vitrine.md) à chaque communauté : choisissez une mise en page, écrivez votre mot d'accueil, cochez les pages et publiez. Le programme, les événements et les annonces viennent du calendrier : changer l'heure du culte dans Waumini la change sur le site.

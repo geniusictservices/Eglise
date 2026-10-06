@@ -34,7 +34,7 @@ Pour un **don en nature**, **Don en nature reçu** enregistre ce qui a été liv
 
 ## Les paiements mobile money déclarés
 
-Un membre qui envoie sa dîme par M-Pesa ou Airtel Money prévient l'église : la trésorière **déclare** ce paiement dans Waumini (bientôt, le membre pourra le faire lui-même depuis son espace). La finance vérifie ensuite sur le téléphone de l'église que l'argent est bien arrivé, puis valide.
+Un membre qui envoie sa dîme par M-Pesa ou Airtel Money la **déclare** lui-même depuis son [espace membre](32-espace-membre.md), ou un visiteur depuis le [site vitrine](34-site-vitrine.md) ; sinon il prévient l'église et la trésorière la déclare dans Waumini. La finance vérifie ensuite sur le téléphone de l'église que l'argent est bien arrivé, puis valide.
 
 > Permission nécessaire : **Valider les paiements déclarés**.
 

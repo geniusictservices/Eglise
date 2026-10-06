@@ -3,14 +3,19 @@
 namespace App\Livewire\Member;
 
 use App\Livewire\Concerns\WritesInOrganization;
+use App\Livewire\Finances\Declarations\Index as Declarations;
 use App\Models\Announcement;
+use App\Models\CashAccount;
 use App\Models\DocumentRequest;
 use App\Models\EventRegistration;
+use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Group;
+use App\Models\PaymentDeclaration;
 use App\Models\Pledge;
 use App\Models\PrayerRequest;
 use App\Services\Calendar;
+use App\Services\CircuitNotices;
 use App\Services\DocumentTypes;
 use App\Services\MemberAccounts;
 use App\Services\Pastoral;
@@ -19,6 +24,7 @@ use App\Support\AnnouncementAccess;
 use App\Support\DepartmentScope;
 use App\Support\Money;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use InvalidArgumentException;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -32,6 +38,8 @@ class Space extends Component
     public array $prayer = ['subject' => '', 'body' => ''];
 
     public array $request = ['type' => '', 'message' => ''];
+
+    public array $gift = [];
 
     public function mount(): void
     {
@@ -72,6 +80,37 @@ class Space extends Component
         $this->notify(__('Demande envoyée au secrétariat. Vous serez prévenu quand le document sera prêt.'));
     }
 
+    public function openGift(): void
+    {
+        $this->gift = ['amount' => '', 'currency' => 'USD', 'operator' => Declarations::OPERATORS[0], 'reference' => '', 'paid_on' => today()->toDateString(), 'category_id' => '', 'pledge_id' => '', 'message' => ''];
+        $this->resetValidation();
+        $this->dispatch('open-modal', name: 'gift');
+    }
+
+    /** Le membre déclare un don envoyé par mobile money ; la finance le vérifie, puis le valide ou le rejette. */
+    public function declareGift(CircuitNotices $notices): void
+    {
+        abort_if($this->organization()->isReadOnly(), 403);
+        $member = $this->member() ?? abort(403);
+        $this->validate([
+            'gift.amount' => 'required|numeric|min:0.01|max:100000000', 'gift.currency' => ['required', Rule::in(['USD', 'CDF'])],
+            'gift.operator' => ['required', Rule::in(Declarations::OPERATORS)], 'gift.reference' => 'required|string|max:100',
+            'gift.paid_on' => 'required|date|before_or_equal:today|after:-60 days', 'gift.message' => 'nullable|string|max:255',
+        ], attributes: ['gift.amount' => __('montant'), 'gift.reference' => __('ID de la transaction'), 'gift.paid_on' => __('date')]);
+        $pledge = $this->gift['pledge_id'] ? Pledge::where('member_id', $member->id)->find((int) $this->gift['pledge_id']) : null;
+        $category = $this->gift['category_id'] ? FinanceCategory::where('type', 'income')->find((int) $this->gift['category_id']) : null;
+        $declaration = PaymentDeclaration::create([
+            'member_id' => $member->id, 'declarant_name' => $member->fullName(), 'declarant_phone' => $member->phone,
+            'amount' => $this->gift['amount'], 'currency' => $pledge?->currency ?? $this->gift['currency'], 'operator' => $this->gift['operator'],
+            'transaction_reference' => $this->gift['reference'], 'paid_on' => $this->gift['paid_on'],
+            'category_id' => $pledge ? null : $category?->id, 'pledge_id' => $pledge?->id,
+            'message' => trim((string) $this->gift['message']) ?: null, 'source' => 'member', 'created_by' => auth()->id(),
+        ]);
+        $notices->declarationReceived($declaration);
+        $this->dispatch('close-modal', name: 'gift');
+        $this->notify(__('Don déclaré : la trésorerie va le vérifier avec l’ID de la transaction.'));
+    }
+
     /** Les documents qu'un membre peut demander pour lui-même. */
     private function requestable(DocumentTypes $types)
     {
@@ -110,6 +149,10 @@ class Space extends Component
             'prayers' => PrayerRequest::where('member_id', $member->id)->latest()->limit(5)->get(),
             'requests' => DocumentRequest::with('type')->where('member_id', $member->id)->latest()->limit(5)->get(),
             'requestable' => $this->requestable($types),
+            'declarations' => PaymentDeclaration::where('member_id', $member->id)->where(fn ($q) => $q->where('status', 'pending')->orWhere(fn ($q) => $q->where('status', 'rejected')->where('reviewed_at', '>=', now()->subDays(30))))->latest()->get(),
+            'mobileAccounts' => CashAccount::where('is_active', true)->where('kind', 'mobile')->whereNotNull('account_number')->orderBy('position')->get(),
+            'giftCategories' => FinanceCategory::where('type', 'income')->where('nature', 'personal')->orderBy('position')->get(),
+            'operators' => Declarations::OPERATORS,
             'canWrite' => ! $organization->isReadOnly(),
         ]);
     }

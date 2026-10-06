@@ -179,14 +179,4 @@
         </section>
     @endcan
 
-    {{-- Modules à venir --}}
-    <section class="rounded-[18px] border-[1.5px] border-dashed border-sand-300 p-5 sm:p-6">
-        <h2 class="text-lg">{{ __('Bientôt dans Waumini') }}</h2>
-        <p class="mt-1 text-sm text-sand-700">{{ __('Les modules arrivent étape par étape. Suivez l’avancement sur la feuille de route.') }}</p>
-        <div class="mt-4 flex flex-wrap gap-2">
-            @foreach ([__('Site vitrine')] as $module)
-                <span class="badge bg-sand-100 font-medium text-sand-700">{{ $module }}</span>
-            @endforeach
-        </div>
-    </section>
 </div>
