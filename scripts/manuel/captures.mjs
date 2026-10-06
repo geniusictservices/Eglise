@@ -877,6 +877,78 @@ const SCENES = [
                 : [{ selector: '#m-minutes', label: '1' }, { selector: 'main aside ul', label: '2' }, { selector: 'main form[wire\\:submit=addDecision]', label: '3' }]);
         },
     },
+    // ---------- Paie (paroisse de Himbi) ----------
+    {
+        id: '71-paie', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/paie`);
+            await settle(page);
+            await mark(page, [{ selector: 'main a[href*="/paie/"].mb-3', label: '1' }, { selector: 'main section.grid', label: '2' }, { selector: 'main button[wire\\:click=askPrepare]', label: '3' }]);
+        },
+    },
+    {
+        id: '72-paie-rythme', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/paie/reglages?onglet=rythmes`);
+            await page.click('main button[wire\\:click=editSchedule]');
+            await page.waitForSelector('[role=dialog] #sc-unit');
+            await page.fill('#sc-name', 'Intervenants de la convention');
+            await page.selectOption('#sc-unit', 'service');
+            await page.waitForSelector('#sc-label');
+            await page.fill('#sc-label', 'journée');
+            await settle(page);
+            await mark(page, [{ selector: '#sc-unit', label: '1' }, { selector: '#sc-label', label: '2' }]);
+        },
+    },
+    {
+        id: '73-paie-element', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/paie/reglages`);
+            await page.locator('main li button', { hasText: 'Mutuelle' }).click();
+            await page.waitForSelector('[role=dialog] #it-calc');
+            await settle(page);
+            await mark(page, [{ selector: '#it-calc', label: '1' }, { selector: '[role=dialog] label:has(input[wire\\:model="item.applies_to_all"])', label: '2' }]);
+        },
+    },
+    {
+        id: '74-beneficiaire', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/paie/beneficiaires`);
+            await page.locator('main li button', { hasText: 'Pasteur Daniel Paluku' }).click();
+            await page.waitForSelector('[role=dialog] #py-schedule');
+            await settle(page);
+            await mark(page, [{ selector: '#py-schedule', label: '1' }, { selector: '[role=dialog] fieldset', label: '2' }]);
+        },
+    },
+    {
+        id: '75-paie-approbation', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/paie`);
+            await page.locator('main ul a', { hasText: 'Octobre' }).click();
+            await page.waitForURL(/\/paie\/\d+$/);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.wax .flex-wrap', label: '1' }, { selector: 'main form[wire\\:submit=approve] button.btn-primary', label: '2' }, { selector: 'main tbody tr', text: 'Kambale', label: '3' }]);
+        },
+    },
+    {
+        id: '76-bulletin', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/paie`);
+            await page.locator('main ul a', { hasText: 'Octobre' }).click();
+            await page.waitForURL(/\/paie\/\d+$/);
+            const href = await page.locator('main tbody tr', { hasText: 'Kambale' }).locator('a[href*="/paie/bulletin/"]').getAttribute('href');
+            await page.goto(href);
+            await settle(page);
+        },
+    },
+    {
+        id: '77-avances', user: '0990000006',
+        run: async (page) => {
+            await page.goto(`${BASE}/paie/avances`);
+            await settle(page);
+            await mark(page, [{ selector: 'main li.border-ochre-300 button[wire\\:click$="true)"]', label: '1' }, { selector: 'main li .rounded-full.bg-sand-100', label: '2' }]);
+        },
+    },
 ];
 
 const browser = await chromium.launch();
