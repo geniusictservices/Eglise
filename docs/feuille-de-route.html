@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, suivi pastoral et espace membre livrés</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, consolidation multi-paroisses livrée</span>
   </header>
 
   <div class="hero">
@@ -278,10 +278,10 @@ const BLOCKS = [
       demo: "Livré : Grâce ouvre son espace sur son téléphone, retrouve ses reçus et demande son attestation ; le pasteur suit Maman Rebecca à l’hôpital avec une note que lui seul lit ; 205 tests automatiques." }
   ]},
   { letter: "Bloc 4", title: "Le réseau et la plateforme", steps: [
-    { status: "todo", title: "Consolidation multi-paroisses",
+    { status: "done", title: "Consolidation multi-paroisses",
       goal: "Le siège voit toutes ses paroisses sans ressaisie.",
-      items: ["Rapports consolidés à chaque niveau", "Transferts de membres entre paroisses", "Quotes-parts propres à chaque dénomination (pourcentage, montant fixe ou aucune), calculées et suivies", "Paroisses en retard de saisie repérées"],
-      demo: "Une dénomination de six paroisses, vue depuis la région." },
+      items: ["Consolidation à chaque niveau : membres et nouveaux membres, recettes, dépenses et solde en dollars, présence au culte, par mois ou par année", "Descente d’un niveau à l’autre, de la région au secteur puis à la paroisse, et retour par le fil", "Paroisses sans saisie depuis deux semaines repérées", "Quotes-parts propres à chaque niveau : pourcentage des recettes, montant fixe ou aucune, à partir d’un mois choisi", "Versement depuis la caisse de la paroisse, confirmation de réception par le niveau supérieur, chacun prévenu ; retirés des totaux pour ne rien compter deux fois", "Transferts de membres au sein de la dénomination : demandés par la paroisse de départ, acceptés ou refusés par celle d’arrivée ; nouveau numéro, ancien gardé ; l’espace membre suit", "1 nouveau chapitre du manuel"],
+      demo: "Livré : la région Nord-Kivu voit ses quatre paroisses ; Himbi verse 10 % de ses recettes de septembre au secteur, qui confirme la réception ; un fidèle de Katindo déménage à Himbi avec sa fiche ; 212 tests automatiques." },
     { status: "todo", title: "Sites vitrines",
       goal: "Chaque paroisse en ligne, sans rien saisir deux fois.",
       items: ["Thèmes au choix, couleurs et logo de la communauté", "Pages activées par la communauté", "Horaires et événements alimentés par le calendrier", "Prédications : liens YouTube ou Facebook, audios légers, avec guide", "Déclaration de don par mobile money"],
@@ -332,6 +332,13 @@ const DECISIONS = [
     "Reçus en A4 et en ticket thermique (80 mm par défaut, 58 mm possible) ; l’église choisit les informations affichées.",
     "Un mois clôturé est verrouillé ; seul l’administrateur le rouvre, avec un motif conservé.",
     "La quote-part due au niveau supérieur dépend de chaque dénomination : pourcentage, montant fixe ou aucune (étape Consolidation)."
+  ]],
+  ["Le réseau", [
+    "Chaque niveau fixe la quote-part de ses niveaux directement en dessous ; elle vaut à partir du mois où elle est enregistrée.",
+    "Les quotes-parts sont calculées sur les recettes propres du mois, hors quotes-parts reçues, et retirées des totaux consolidés.",
+    "Le niveau supérieur consulte les chiffres de ses paroisses ; il ne modifie ni leur registre ni leur caisse.",
+    "Un transfert de membre se fait au sein de la dénomination : la paroisse de départ le demande, celle d’arrivée l’accepte ; départements, groupes et ménage restent à la paroisse de départ.",
+    "Une paroisse est signalée en retard après deux semaines sans saisie."
   ]],
   ["Promesses", [
     "Une promesse peut porter sur un projet, une campagne, une contribution régulière ou une demande ponctuelle.",
