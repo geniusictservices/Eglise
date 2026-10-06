@@ -6,6 +6,7 @@ use App\Models\DemoRequest;
 use App\Models\Organization;
 use App\Models\Plan;
 use App\Models\User;
+use App\Services\AuditLogger;
 use App\Services\DemoCommunityBuilder;
 use App\Services\OrganizationProvisioner;
 use App\Services\Pricing;
@@ -14,6 +15,7 @@ use App\Services\Subscriptions;
 use App\Services\SupportTickets;
 use App\Support\Platform;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -69,12 +71,20 @@ class DemoSeeder extends Seeder
         Platform::set('contact.payment', 'M-Pesa 0812 000 900 · Airtel Money 0970 000 900 (Genius ICT SARL)');
         Auth::login(User::where('phone', '+243990000032')->firstOrFail());
         app(SubscriptionDeclarations::class)->declare($butembo, Plan::find($plans['msingi']), 'small', 'monthly',
-            ['amount' => '15', 'method' => 'M-Pesa', 'reference' => 'MP2610051188', 'paid_on' => today()->subDay()->toDateString(), 'message' => 'Paiement du mois d’octobre']);
+            ['amount' => '10', 'method' => 'M-Pesa', 'reference' => 'MP2610051188', 'paid_on' => today()->subDay()->toDateString(), 'message' => 'Paiement du mois d’octobre']);
 
         // Une agente du support ; le siège de la CEP l'a autorisée pour trois jours, et deux demandes sont en cours.
         $agent = User::forceCreate(['name' => 'Bénédicte Furaha', 'phone' => '+243990000098', 'password' => self::PASSWORD,
             'is_platform_staff' => true, 'platform_role' => 'support']);
         $siege->update(['support_access_until' => now()->addDays(3)]);
+        Auth::login($agent);
+        $audit = app(AuditLogger::class);
+        $now = now();
+        Carbon::setTestNow($now->copy()->subHours(3));
+        $audit->record('support_opened', $siege, description: __('a ouvert la communauté avec l’accès du support Genius ICT, en lecture seule'));
+        Carbon::setTestNow($now->copy()->subHours(2)->subMinutes(35));
+        $audit->record('support_closed', $siege, description: __('a refermé l’accès du support Genius ICT'));
+        Carbon::setTestNow();
         $tickets = app(SupportTickets::class);
         $himbi = Organization::where('name', 'Paroisse de Himbi')->firstOrFail();
         Auth::login($esther = User::where('phone', '+243990000008')->firstOrFail());

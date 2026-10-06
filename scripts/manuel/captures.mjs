@@ -1308,6 +1308,35 @@ const SCENES = [
             await page.goto(`${BASE}/site/cep-siege`);
             await settle(page);
         },
+    },    // ---------- Abonnement et support ----------
+    {
+        id: '113-declarer-abonnement', user: '0990000032',
+        run: async (page) => {
+            await page.goto(`${BASE}/abonnement`);
+            await settle(page);
+            await page.click('main button[wire\\:click=openDeclare]');
+            await page.waitForSelector('#d-plan', { state: 'visible' });
+            await page.selectOption('#d-plan', { label: 'Msingi' });
+            await page.waitForTimeout(600);
+            await mark(page, [{ selector: '#d-plan', label: '1' }, { selector: '#d-ref', label: '2' }]);
+        },
+    },
+    {
+        id: '114-support', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/support`);
+            await settle(page);
+            await mark(page, [{ selector: 'main section.card a', label: '1' }, { selector: 'main button', text: 'Nouvelle demande', label: '2', position: 'right' }]);
+        },
+    },
+    {
+        id: '115-ticket', user: '0990000008',
+        run: async (page) => {
+            await page.goto(`${BASE}/support`);
+            await page.goto(await page.locator('main a[href*="/support/"]').first().getAttribute('href'));
+            await settle(page);
+            await mark(page, [{ selector: '#tk-reply', label: '1' }, { selector: 'main button[wire\\:click=close]', label: '2' }]);
+        },
     },
 ];
 

@@ -80,6 +80,7 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 
 ### Aide
 
+- [Demander de l'aide au support Genius ICT](35-support.md)
 - [Questions fréquentes](faq.md)
 
 ## Qui fait quoi ?
@@ -99,7 +100,7 @@ Waumini fournit des **rôles modèles**. Votre administrateur peut les adapter o
 
 ## Besoin d'aide ?
 
-Contactez l'équipe Genius ICT (Goma) : **geniusictservices@gmail.com**. Si vous le souhaitez, vous pouvez autoriser un agent du support à voir votre communauté pendant quelques jours (voir [Accès du support](08-parametres.md#accès-du-support-genius-ict)).
+Écrivez à l'équipe Genius ICT (Goma) depuis **Administration › Support Genius ICT** (voir [Demander de l'aide](35-support.md)), ou à **geniusictservices@gmail.com**. Si vous le souhaitez, vous pouvez autoriser un agent du support à voir votre communauté, en lecture seule, pendant quelques jours (voir [Accès du support](08-parametres.md#accès-du-support-genius-ict)).
 
 ---
 

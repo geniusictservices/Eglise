@@ -70,16 +70,18 @@ Waumini parle comme votre communauté. Renommez un libellé, et il change **part
 
 ## Accès du support Genius ICT
 
-Pour vous aider, un agent du support Genius ICT peut voir votre communauté **comme vous la voyez**. Il n'y accède **qu'avec votre accord**.
+Pour vous aider, un agent du support Genius ICT peut **voir** votre communauté, en **lecture seule**. Il n'y accède **qu'avec votre accord**.
 
 <table><tr>
 <td width="68%"><img src="captures/bureau/22-acces-support.png" alt="Accès du support sur ordinateur"></td>
 <td width="32%"><img src="captures/mobile/22-acces-support.png" alt="Accès du support sur téléphone"></td>
 </tr></table>
 
-- Cochez **Autoriser l'accès du support** ① : l'accès est ouvert pour **7 jours** au plus, et la date de fin s'affiche.
-- Décochez la case pour **retirer l'accès immédiatement**.
-- Chaque accès est inscrit au [journal d'audit](09-journal.md).
-- Les **notes pastorales confidentielles** ne sont **jamais** visibles par le support.
+- Choisissez la durée (**1, 3 ou 7 jours**), puis cochez **Autoriser l'accès du support** ① : la date de fin s'affiche.
+- Décochez la case pour **retirer l'accès immédiatement** : l'agent est renvoyé hors de votre communauté à son prochain clic.
+- L'agent voit le registre, les finances, les rapports, le budget et la paie, avec un bandeau « lecture seule » : il ne peut **rien modifier**. Il ne voit **jamais** le suivi pastoral ni les données sensibles des membres.
+- **Les visites du support** : chaque entrée et chaque sortie d'un agent, avec son nom et l'heure. Elles sont aussi inscrites au [journal d'audit](09-journal.md).
+
+Pour poser une question au support, utilisez plutôt une [demande de support](35-support.md) : l'agent vous répond dans Waumini.
 
 Cette case demande la permission **Autoriser ou révoquer l'accès du support Genius ICT**.

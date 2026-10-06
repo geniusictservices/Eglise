@@ -159,7 +159,7 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
       <circle cx="80" cy="56" r="9" style="fill: var(--terra)"/>
     </svg>
     <span class="brand">waumini</span>
-    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, sites vitrines livrés</span>
+    <span class="by">Genius ICT · Goma, Nord-Kivu<br>Mise à jour : octobre 2026, espace Genius ICT complet</span>
   </header>
 
   <div class="hero">
@@ -286,10 +286,10 @@ const BLOCKS = [
       goal: "Chaque paroisse en ligne, sans rien saisir deux fois.",
       items: ["Un site par communauté, à son adresse (waumini.com/site/…), préparé en aperçu puis publié d’un geste", "Trois mises en page : Chaleureux (wax), Lumière (photo en grand), Solennel ; couleurs et logo de la communauté", "Pages choisies : programme, événements, annonces, prédications, qui sommes-nous, nos paroisses, dons, nous trouver", "Programme et événements tirés du calendrier, annonces choisies : une case « Sur le site vitrine » décide de ce qui est public", "Prédications : liens YouTube ou Facebook chargés seulement au toucher, audios légers jusqu’à 15 Mo, avec guide", "Dons par mobile money : numéros affichés, don déclaré avec l’ID de la transaction, vérifié par la trésorerie ; aussi depuis l’espace membre", "Bouton WhatsApp, itinéraire Google Maps, Facebook et YouTube ; 1 nouveau chapitre du manuel"],
       demo: "Livré : la Paroisse de Himbi en ligne avec son programme, la convention des jeunes et trois prédications ; Katindo au pied du Nyiragongo ; le siège qui présente ses paroisses ; un don M-Pesa déclaré depuis un téléphone ; 221 tests automatiques." },
-    { status: "doing", title: "Espace Genius ICT",
+    { status: "done", title: "Espace Genius ICT",
       goal: "Piloter la plateforme et accompagner les communautés.",
-      items: ["Livré : vue d’ensemble, communautés, essais prolongés, suspension", "Livré : offres et tarifs datés ; nouveau prix pour les nouvelles souscriptions, et au renouvellement pour les abonnés", "Livré : paiements enregistrés (mobile money, référence), prix figé pour la période, délai de grâce puis lecture seule chaque matin", "Livré : coordonnées et numéro WhatsApp, conditions et confidentialité versionnées, équipe et rôles internes", "À venir : paiement déclaré par la communauté et validé, accès support autorisé et révocable, tickets de support"],
-      demo: "Genius ICT change un tarif : les nouvelles églises le paient tout de suite, les abonnées à leur renouvellement." },
+      items: ["Vue d’ensemble avec un bloc « À traiter », communautés, essais prolongés, suspension", "Offres et tarifs datés ; nouveau prix pour les nouvelles souscriptions, et au renouvellement pour les abonnés", "Paiements enregistrés (mobile money, référence), prix figé pour la période, délai de grâce puis lecture seule chaque matin", "Paiement de l’abonnement déclaré par la communauté (offre, période, ID de la transaction), validé ou rejeté par Genius ICT", "Accès du support autorisé par la communauté pour 1, 3 ou 7 jours, révocable : lecture seule, bandeau, chaque visite au journal, jamais le suivi pastoral", "Tickets de support : la communauté écrit depuis Waumini, Genius ICT répond, chacun est prévenu ; prise en charge et clôture", "Coordonnées, numéros de paiement, textes juridiques versionnés, équipe et rôles internes ; nouveautés pour l’équipe ; 1 nouveau chapitre du manuel"],
+      demo: "Livré : la paroisse de Butembo déclare son paiement M-Pesa, Genius ICT le valide en un geste ; Bénédicte, au support, répond à Himbi sur le reçu en 58 mm et ouvre le siège en lecture seule avec son accord ; 227 tests automatiques." },
     { status: "todo", title: "Démo publique",
       goal: "Laisser chacun essayer Waumini, sans engagement ni inscription.",
       items: ["Un bouton « Essayer la démo » sur le site public", "Chaque visiteur reçoit sa propre copie de la communauté de démonstration, déjà remplie", "Toutes les fonctions utilisables, isolées des vraies communautés", "Données effacées automatiquement après 3 jours", "Identifiants affichés pour revenir depuis un autre appareil", "Déjà prêt : la communauté de démonstration réutilisable, le marquage et l’effacement des données de démo"],
@@ -404,7 +404,9 @@ const DECISIONS = [
   ]],
   ["Plateforme et support", [
     "Délai de grâce d’un mois avant le passage en lecture seule ; les données restent exportables.",
-    "Accès support « en tant que » la communauté, avec son accord et révocable.",
+    "Accès du support avec l’accord de la communauté, pour 1, 3 ou 7 jours, révocable, en lecture seule et sans le suivi pastoral ; chaque visite au journal.",
+    "La communauté déclare elle-même le paiement de son abonnement ; Genius ICT le valide après vérification de l’ID de la transaction.",
+    "Les heures sont celles de Goma (Afrique centrale) ; le fuseau se règle au déploiement.",
     "Plusieurs rôles internes chez Genius ICT, tickets de support et centre d’aide.",
     "Reprise des données par la communauté avec l’appui de Genius ICT, sur les modèles Excel de Waumini.",
     "Sites vitrines : thèmes existants, pages choisies par la communauté, un site par paroisse.",
