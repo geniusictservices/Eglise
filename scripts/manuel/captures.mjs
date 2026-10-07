@@ -815,7 +815,7 @@ const SCENES = [
             await page.click('main a:has-text("Voir le budget adopté")');
             await page.waitForURL(/\/budget\/version\/\d+$/);
             await settle(page);
-            await mark(page, [{ selector: 'main section.wax .grid', label: '1' }, { selector: 'main p.border-leaf-100', label: '2' }, { selector: 'main li', text: 'Nouvelle sonorisation', label: '3' }]);
+            await mark(page, [{ selector: 'main section.wax .grid', label: '1' }, { selector: 'main p.border-leaf-100', label: '2' }, { selector: 'main [role=tablist]', label: '3' }]);
         },
     },
     {

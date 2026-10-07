@@ -72,13 +72,13 @@ class BudgetTest extends TestCase
         $this->actingAs($this->responsable);
 
         LivewireTest::test(Livewire\Budget\Proposal::class, ['year' => 2027, 'department' => $this->jeunesse])
-            ->call('editLine', null, 'expense')
+            ->set('tab', 'depenses')->call('editLine')
             ->set('line.label', 'Campagne à Kibumba')
             ->set('line.category_id', (string) $this->category('expense', 'Évangélisation et missions'))
             ->set('line.amount', '1200')
             ->set('line.justification', 'Trois jours avec la chorale.')
             ->call('saveLine')->assertHasNoErrors()
-            ->call('editLine', null, 'income')
+            ->set('tab', 'recettes')->call('editLine')
             ->set('line.label', 'Cotisations des jeunes')
             ->set('line.category_id', (string) $this->category('income', 'Contribution d’un département'))
             ->set('line.amount', '672000')
@@ -94,7 +94,7 @@ class BudgetTest extends TestCase
         $this->assertSame('CDF', $proposal->lines->firstWhere('type', 'income')->original_currency);
 
         // Une fois envoyée, la proposition ne se modifie plus.
-        LivewireTest::test(Livewire\Budget\Proposal::class, ['year' => 2027, 'department' => $this->jeunesse])->call('editLine', null, 'expense')->assertForbidden();
+        LivewireTest::test(Livewire\Budget\Proposal::class, ['year' => 2027, 'department' => $this->jeunesse])->set('tab', 'depenses')->call('editLine')->assertForbidden();
 
         // Pas d'accès aux départements des autres.
         $this->get(route('budget.proposal', ['year' => 2027, 'department' => $this->chorale->id]))->assertForbidden();
@@ -119,7 +119,7 @@ class BudgetTest extends TestCase
         // L'arbitrage : le montant est réduit, une ligne commune est ajoutée.
         LivewireTest::test(Livewire\Budget\Version::class, ['budget' => $budget])
             ->set("amounts.{$line->id}", '900')
-            ->call('editLine', null, 'income')
+            ->set('tab', 'recettes')->call('editLine')
             ->set('line.label', 'Offrandes')
             ->set('line.department_id', '')
             ->set('line.category_id', (string) $this->category('income', 'Offrande du culte'))

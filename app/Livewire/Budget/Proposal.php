@@ -17,6 +17,7 @@ use Brick\Math\RoundingMode;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /** La proposition d'un département : ses besoins et ses recettes prévues pour l'exercice. */
@@ -27,6 +28,10 @@ class Proposal extends Component
     public int $year;
 
     public Department $department;
+
+    /** L'onglet affiché : les dépenses prévues ou les recettes prévues, jamais mélangées. */
+    #[Url(as: 'onglet', except: 'depenses')]
+    public string $tab = 'depenses';
 
     public ?int $lineId = null;
 
@@ -56,12 +61,13 @@ class Proposal extends Component
         return BudgetProposal::where('fiscal_year', $this->year)->where('department_id', $this->department->id)->first();
     }
 
-    public function editLine(Ledger $ledger, ?int $id = null, string $type = 'expense'): void
+    /** Une ligne s'ajoute dans l'onglet ouvert : une dépense prévue ou une recette prévue. */
+    public function editLine(Ledger $ledger, ?int $id = null): void
     {
         abort_unless($this->canEdit($this->proposal()), 403);
         $l = $id ? BudgetProposalLine::whereHas('proposal', fn ($q) => $q->where('department_id', $this->department->id)->where('fiscal_year', $this->year))->findOrFail($id) : null;
         $this->lineId = $l?->id;
-        $type = $l->type ?? $type;
+        $type = $l->type ?? ($this->tab === 'recettes' ? 'income' : 'expense');
         $this->line = [
             'type' => $type,
             'category_id' => (string) ($l->category_id ?? FinanceCategory::where('type', $type)->where('is_active', true)->orderBy('position')->value('id')),
@@ -72,11 +78,6 @@ class Proposal extends Component
         ];
         $this->resetValidation();
         $this->dispatch('open-modal', name: 'line');
-    }
-
-    public function updatedLineType(): void
-    {
-        $this->line['category_id'] = (string) FinanceCategory::where('type', $this->line['type'])->where('is_active', true)->orderBy('position')->value('id');
     }
 
     public function saveLine(Budgets $budgets, Ledger $ledger, ExchangeRateService $rates): void
@@ -150,6 +151,7 @@ class Proposal extends Component
 
         return view('livewire.budget.proposal', [
             'proposal' => $proposal,
+            'type' => $this->tab === 'recettes' ? 'income' : 'expense',
             'yearLabel' => FiscalYear::label($organization, $this->year),
             'canEdit' => $this->canEdit($proposal),
             'canSendBack' => $proposal?->status === 'submitted' && Gate::allows('budget.arbitrate') && ! $organization->isReadOnly(),

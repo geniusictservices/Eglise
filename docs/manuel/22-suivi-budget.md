@@ -11,9 +11,9 @@ Une fois le budget adopté, Waumini le compare chaque jour aux opérations : ce 
 <td width="32%"><img src="captures/mobile/65-suivi-budget.png" alt="Suivi du budget sur téléphone"></td>
 </tr></table>
 
-En haut, les dépenses et les recettes prévues et réalisées, et la part de l'exercice déjà écoulée.
+En haut, **deux onglets séparés** : **Dépenses prévues** (avec ce qui est déjà dépensé) et **Recettes prévues** (avec ce qui est déjà reçu). Dessous, la part de l'exercice déjà écoulée.
 
-① **Chaque ligne de dépenses** (département et catégorie) :
+① Dans l'onglet **Dépenses**, **chaque ligne de dépenses** (département et catégorie) :
 
 - **Prévu** : le budget adopté, plus les dépassements autorisés, moins ce que la ligne a cédé à d'autres ;
 - **Dépensé** : les dépenses payées, moins ce qui est revenu des avances ;
@@ -21,7 +21,7 @@ En haut, les dépenses et les recettes prévues et réalisées, et la part de l'
 - **Disponible** : ce qui reste ;
 - la barre : verte tant que la ligne suit le rythme de l'année, orange quand elle va plus vite, rouge quand elle est épuisée.
 
-Plus bas : les **recettes**, réalisées face au prévu ; ce qui a été dépensé ou reçu **hors budget** ; et ② **les dépassements** demandés, avec leur source et leur décision.
+Dans l'onglet **Recettes**, chaque ligne de recettes : **Prévu**, **Reçu**, **Reste à recevoir** et une barre, orange quand les recettes prennent du retard sur le rythme de l'année. Chaque onglet montre aussi ce qui a été dépensé ou reçu **hors budget**. Plus bas, et ② **les dépassements** demandés, avec leur source et leur décision.
 
 ## Le contrôle des dépenses
 

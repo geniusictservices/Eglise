@@ -19,6 +19,10 @@ class Execution extends Component
     #[Url(as: 'exercice')]
     public int $year = 0;
 
+    /** Les dépenses et les recettes, chacune dans son onglet. */
+    #[Url(as: 'onglet', except: 'depenses')]
+    public string $tab = 'depenses';
+
     public function mount(): void
     {
         abort_unless(Gate::any(['planning.view', 'budget.arbitrate', 'budget.approve', 'budget.authorize', 'finance.reports']), 403);

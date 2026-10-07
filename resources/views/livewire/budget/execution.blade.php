@@ -10,13 +10,13 @@
     @if (! $x['budget'])
         <div class="card p-8 text-center text-sand-700">{{ __('Pas de budget adopté pour l’exercice :y.', ['y' => $yearLabel]) }}</div>
     @else
-        <div class="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-            @foreach ([[__('Dépenses prévues'), $t['expense_budgeted'], 'text-ink-800'], [__('Dépenses réalisées'), $t['expense_actual'], 'text-terra-600'], [__('Recettes prévues'), $t['income_budgeted'], 'text-ink-800'], [__('Recettes réalisées'), $t['income_actual'], 'text-leaf-600']] as [$label, $value, $tone])
-                <div class="card p-4"><p class="text-sm text-sand-700">{{ $label }}</p><p class="text-xl font-semibold tabular {{ $tone }}">{{ Money::format($value, 'USD') }}</p></div>
-            @endforeach
-        </div>
+        @include('livewire.budget.partials.tabs', ['totals' => ['expense' => $t['expense_budgeted'], 'income' => $t['income_budgeted']], 'notes' => [
+            'depenses' => __('Dépensé : :m', ['m' => Money::format($t['expense_actual'], 'USD')]),
+            'recettes' => __('Reçu : :m', ['m' => Money::format($t['income_actual'], 'USD')]),
+        ]])
         <p class="mb-5 text-sm text-sand-700">{{ __(':p % de l’exercice est écoulé : une ligne bien au-delà de ce rythme mérite un regard.', ['p' => $elapsed]) }} {{ __('Version :v du budget.', ['v' => $x['budget']->version]) }}</p>
 
+        @if ($tab === 'depenses')
         <section class="card mb-5 p-5 sm:p-6">
             <h2 class="mb-3 text-lg">{{ __('Dépenses') }}</h2>
             <div class="overflow-x-auto">
@@ -55,22 +55,37 @@
             @endif
         </section>
 
+        @else
         <section class="card mb-5 p-5 sm:p-6">
             <h2 class="mb-3 text-lg">{{ __('Recettes') }}</h2>
-            <ul class="divide-y divide-sand-100 text-sm">
-                @foreach ($x['income'] as $r)
-                    @php $p = $r['budgeted'] > 0 ? round($r['actual'] / $r['budgeted'] * 100) : 0; @endphp
-                    <li class="flex flex-wrap items-center gap-x-4 gap-y-1 py-2">
-                        <span class="min-w-0 flex-1"><span class="font-semibold text-ink-800">{{ $r['category'] }}</span> <span class="text-sand-700">· {{ $r['department'] ?? __('Recettes générales') }}</span></span>
-                        <span class="tabular">{{ Money::format($r['actual'], 'USD') }} <span class="text-sand-700">/ {{ Money::format($r['budgeted'], 'USD') }}</span></span>
-                        <span class="w-12 text-right font-semibold tabular text-ink-800">{{ $p }} %</span>
-                    </li>
-                @endforeach
-            </ul>
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[36rem] border-collapse text-sm">
+                    <thead class="border-b-2 border-ink-700 text-xs text-ink-700">
+                        <tr>
+                            <th class="px-2 py-1.5 text-left font-semibold">{{ __('Ligne') }}</th>
+                            @foreach ([__('Prévu'), __('Reçu'), __('Reste à recevoir')] as $h)<th class="whitespace-nowrap px-2 py-1.5 text-right font-semibold">{{ $h }}</th>@endforeach
+                            <th class="w-32 px-2 py-1.5"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($x['income'] as $r)
+                            @php $p = $r['budgeted'] > 0 ? min(100, round($r['actual'] / $r['budgeted'] * 100)) : 100; $rest = $r['budgeted'] - $r['actual']; @endphp
+                            <tr class="border-b border-sand-100">
+                                <td class="px-2 py-2"><span class="font-semibold text-ink-800">{{ $r['category'] }}</span> <span class="text-sand-700">· {{ $r['department'] ?? __('Recettes générales') }}</span></td>
+                                <td class="whitespace-nowrap px-2 py-2 text-right tabular">{{ Money::format($r['budgeted'], 'USD') }}</td>
+                                <td class="whitespace-nowrap px-2 py-2 text-right tabular text-leaf-600">{{ Money::format($r['actual'], 'USD') }}</td>
+                                <td class="whitespace-nowrap px-2 py-2 text-right font-semibold tabular text-ink-800">{{ $rest > 0 ? Money::format($rest, 'USD') : __('atteint') }}</td>
+                                <td class="px-2 py-2"><span class="block h-2 overflow-hidden rounded-full bg-sand-100"><span @class(['block h-full rounded-full', 'bg-leaf-500' => $p >= $elapsed - 15, 'bg-ochre-500' => $p < $elapsed - 15]) style="width: {{ $p }}%"></span></span></td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
             @if (! empty($x['unbudgeted']['income']))
                 <p class="mt-3 text-sm text-sand-700">{{ __('Recettes reçues sans ligne au budget : :m.', ['m' => Money::format(array_sum($x['unbudgeted']['income']), 'USD')]) }}</p>
             @endif
         </section>
+        @endif
 
         <section class="card p-5 sm:p-6">
             <h2 class="mb-3 text-lg">{{ __('Dépassements') }}</h2>

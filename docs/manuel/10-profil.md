@@ -9,6 +9,7 @@ Touchez votre nom ou vos initiales en haut à droite, puis **Mon profil**.
 
 ## Informations
 
+- **Photo de profil** : **Ajouter une photo** (ou **Changer la photo**), choisie dans la galerie ou prise avec l'appareil photo. Elle est recadrée en carré et remplace vos initiales en haut de l'écran et dans la liste des utilisateurs. Seules les personnes de votre communauté la voient. **Retirer la photo** revient aux initiales.
 - **Nom complet** et **e-mail** (facultatif).
 - Le **téléphone** est votre identifiant de connexion. Pour en changer, demandez à l'administrateur.
 - **Langue de l'application** ① : français, kiswahili, lingála, kikongo ou tshiluba. Après **Enregistrer**, Waumini s'affiche dans la langue choisie. Les textes pas encore traduits restent en français.

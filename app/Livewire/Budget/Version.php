@@ -12,6 +12,7 @@ use App\Support\FiscalYear;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 /** Une version du budget : la finance l'arbitre et la présente, le pasteur l'approuve. */
@@ -23,6 +24,10 @@ class Version extends Component
 
     /** Montants arrêtés, ligne par ligne, pendant l'arbitrage. */
     public array $amounts = [];
+
+    /** L'onglet affiché : les dépenses prévues ou les recettes prévues, jamais mélangées. */
+    #[Url(as: 'onglet', except: 'depenses')]
+    public string $tab = 'depenses';
 
     public ?int $lineId = null;
 
@@ -54,12 +59,13 @@ class Version extends Component
         $this->budget->lines()->findOrFail((int) $key)->update(['amount' => $value]);
     }
 
-    public function editLine(?int $id = null, string $type = 'expense'): void
+    /** Une ligne s'ajoute dans l'onglet ouvert : une dépense prévue ou une recette prévue. */
+    public function editLine(?int $id = null): void
     {
         abort_unless($this->canArbitrate(), 403);
         $l = $id ? $this->budget->lines()->findOrFail($id) : null;
         $this->lineId = $l?->id;
-        $type = $l->type ?? $type;
+        $type = $l->type ?? ($this->tab === 'recettes' ? 'income' : 'expense');
         $this->line = [
             'type' => $type,
             'department_id' => (string) ($l->department_id ?? ($type === 'expense' ? Department::where('is_system', true)->value('id') : '')),
@@ -70,11 +76,6 @@ class Version extends Component
         ];
         $this->resetValidation();
         $this->dispatch('open-modal', name: 'line');
-    }
-
-    public function updatedLineType(): void
-    {
-        $this->line['category_id'] = (string) FinanceCategory::where('type', $this->line['type'])->where('is_active', true)->orderBy('position')->value('id');
     }
 
     public function saveLine(): void
@@ -177,14 +178,12 @@ class Version extends Component
         $organization = $this->organization();
         $lines = $this->budget->lines;
 
-        // Regroupement : les recettes, puis les dépenses, département par département.
-        $groups = [];
-        foreach (['income', 'expense'] as $type) {
-            $groups[$type] = $lines->where('type', $type)->groupBy(fn ($l) => $l->department?->name ?? __('Recettes générales'))->sortKeys();
-        }
+        // Les lignes de l'onglet ouvert, département par département.
+        $type = $this->tab === 'recettes' ? 'income' : 'expense';
 
         return view('livewire.budget.version', [
-            'groups' => $groups,
+            'type' => $type,
+            'groups' => $lines->where('type', $type)->groupBy(fn ($l) => $l->department?->name ?? __('Recettes générales'))->sortKeys(),
             'yearLabel' => FiscalYear::label($organization, $this->budget->fiscal_year),
             'canArbitrate' => $this->canArbitrate(),
             'canSubmit' => $this->canArbitrate() && $lines->isNotEmpty(),

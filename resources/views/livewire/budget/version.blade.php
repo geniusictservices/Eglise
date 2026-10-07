@@ -17,7 +17,6 @@
             @if ($canArbitrate)
                 <button type="button" wire:click="importProposals" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="download" class="size-4" /> {{ __('Reprendre les propositions') }}</button>
                 <button type="button" wire:click="importPayroll" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="briefcase" class="size-4" /> {{ __('Reprendre la masse salariale') }}</button>
-                <button type="button" wire:click="editLine(null, 'expense')" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="plus" class="size-4" /> {{ __('Ajouter une ligne') }}</button>
             @endif
             @if ($b->status === 'adopted' || $b->status === 'superseded')
                 <a href="{{ route('budget.print', $b) }}" target="_blank" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="printer" class="size-4" /> {{ __('Imprimer ou PDF') }}</a>
@@ -60,44 +59,41 @@
         <p class="mb-5 rounded-2xl border border-leaf-100 bg-leaf-50 p-4 text-sm text-leaf-600"><x-icon name="badge-check" class="mr-1 inline size-4" /> {{ __('Présenté par :s, approuvé par :n le :d.', ['s' => $b->submitter?->name, 'n' => $b->approver?->name, 'd' => $b->approved_at->translatedFormat('j M Y')]) }}@if ($b->approval_note) « {{ $b->approval_note }} »@endif</p>
     @endif
 
-    @foreach (['income' => __('Recettes prévues'), 'expense' => __('Dépenses prévues')] as $type => $title)
-        <section class="card mb-5 p-5 sm:p-6">
-            <h2 class="mb-3 text-lg">{{ $title }} <span class="text-base font-normal text-sand-700">· {{ Money::format($b->total($type), 'USD') }}</span></h2>
-            @forelse ($groups[$type] as $group => $lines)
-                <div class="mb-4 last:mb-0">
-                    <h3 class="mb-1 flex items-baseline gap-2 text-sm font-semibold text-ink-700"><span class="flex-1">{{ $group }}</span><span class="tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</span></h3>
-                    <ul class="divide-y divide-sand-100 rounded-xl border border-sand-200">
-                        @foreach ($lines as $l)
-                            <li wire:key="bl-{{ $l->id }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
-                                <span class="min-w-0 flex-1">
-                                    <span class="block text-sm font-semibold text-ink-800">{{ $l->label }}</span>
-                                    <span class="block text-xs text-sand-700">{{ $l->category?->name }}@if ($l->proposed_amount !== null && (float) $l->proposed_amount !== (float) $l->amount) · {{ __('proposé : :m', ['m' => Money::format($l->proposed_amount, 'USD')]) }}@endif @if ($l->note) · {{ $l->note }}@endif</span>
-                                </span>
-                                @if ($canArbitrate)
-                                    <input wire:model.blur="amounts.{{ $l->id }}" type="number" step="0.01" min="0" class="input !w-32 !py-1.5 text-right tabular" aria-label="{{ __('Montant arrêté') }}">
-                                    <button type="button" wire:click="editLine({{ $l->id }})" class="rounded-lg p-1.5 text-sand-500 hover:bg-sand-100" aria-label="{{ __('Modifier') }}"><x-icon name="pencil" class="size-4" /></button>
-                                    <button type="button" wire:click="deleteLine({{ $l->id }})" wire:confirm="{{ __('Retirer cette ligne du budget ?') }}" class="rounded-lg p-1.5 text-sand-500 hover:bg-terra-50 hover:text-terra-600" aria-label="{{ __('Retirer') }}"><x-icon name="trash-2" class="size-4" /></button>
-                                @else
-                                    <span class="font-semibold tabular text-ink-800">{{ Money::format($l->amount, 'USD') }}</span>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @empty
-                <p class="text-sm text-sand-700">{{ __('Aucune ligne.') }}</p>
-            @endforelse
-        </section>
-    @endforeach
+    @include('livewire.budget.partials.tabs', ['totals' => ['expense' => $expense, 'income' => $income]])
 
-    <x-modal name="line" :title="$lineId ? __('Modifier la ligne') : __('Ajouter une ligne')">
-        <form wire:submit="saveLine" class="space-y-4">
-            <div class="grid grid-cols-2 gap-2" role="radiogroup">
-                @foreach (['expense' => __('Dépense'), 'income' => __('Recette')] as $k => $label)
-                    <label @class(['cursor-pointer rounded-xl border p-3 text-center text-sm font-semibold', 'border-ochre-400 bg-ochre-50 text-ink-800' => ($line['type'] ?? '') === $k, 'border-sand-200 text-ink-600' => ($line['type'] ?? '') !== $k])>
-                        <input type="radio" wire:model.live="line.type" value="{{ $k }}" class="sr-only">{{ $label }}</label>
-                @endforeach
+    <section class="card mb-5 p-5 sm:p-6" wire:key="section-{{ $type }}">
+        <div class="mb-3 flex items-center gap-3">
+            <h2 class="flex-1 text-lg">{{ $type === 'expense' ? __('Dépenses prévues') : __('Recettes prévues') }}</h2>
+            @if ($canArbitrate)<button type="button" wire:click="editLine" class="btn-secondary !min-h-0 !py-1.5 text-sm"><x-icon name="plus" class="size-4" /> {{ $type === 'expense' ? __('Ajouter une dépense') : __('Ajouter une recette') }}</button>@endif
+        </div>
+        @forelse ($groups as $group => $lines)
+            <div class="mb-4 last:mb-0">
+                <h3 class="mb-1 flex items-baseline gap-2 text-sm font-semibold text-ink-700"><span class="flex-1">{{ $group }}</span><span class="tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</span></h3>
+                <ul class="divide-y divide-sand-100 rounded-xl border border-sand-200">
+                    @foreach ($lines as $l)
+                        <li wire:key="bl-{{ $l->id }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-sm font-semibold text-ink-800">{{ $l->label }}</span>
+                                <span class="block text-xs text-sand-700">{{ $l->category?->name }}@if ($l->proposed_amount !== null && (float) $l->proposed_amount !== (float) $l->amount) · {{ __('proposé : :m', ['m' => Money::format($l->proposed_amount, 'USD')]) }}@endif @if ($l->note) · {{ $l->note }}@endif</span>
+                            </span>
+                            @if ($canArbitrate)
+                                <input wire:model.blur="amounts.{{ $l->id }}" type="number" step="0.01" min="0" class="input !w-32 !py-1.5 text-right tabular" aria-label="{{ __('Montant arrêté') }}">
+                                <button type="button" wire:click="editLine({{ $l->id }})" class="rounded-lg p-1.5 text-sand-500 hover:bg-sand-100" aria-label="{{ __('Modifier') }}"><x-icon name="pencil" class="size-4" /></button>
+                                <button type="button" wire:click="deleteLine({{ $l->id }})" wire:confirm="{{ __('Retirer cette ligne du budget ?') }}" class="rounded-lg p-1.5 text-sand-500 hover:bg-terra-50 hover:text-terra-600" aria-label="{{ __('Retirer') }}"><x-icon name="trash-2" class="size-4" /></button>
+                            @else
+                                <span @class(['font-semibold tabular', 'text-terra-600' => $type === 'expense', 'text-leaf-600' => $type === 'income'])>{{ Money::format($l->amount, 'USD') }}</span>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
             </div>
+        @empty
+            <p class="text-sm text-sand-700">{{ $type === 'expense' ? __('Aucune dépense prévue.') : __('Aucune recette prévue.') }}</p>
+        @endforelse
+    </section>
+
+    <x-modal name="line" :title="($line['type'] ?? 'expense') === 'expense' ? ($lineId ? __('Modifier la dépense prévue') : __('Nouvelle dépense prévue')) : ($lineId ? __('Modifier la recette prévue') : __('Nouvelle recette prévue'))">
+        <form wire:submit="saveLine" class="space-y-4">
             <div><label for="bl-label" class="label">{{ __('Objet') }}</label><input wire:model="line.label" id="bl-label" class="input">@error('line.label') <p class="error">{{ $message }}</p> @enderror</div>
             <div class="grid gap-4 sm:grid-cols-2">
                 <div><label for="bl-dept" class="label">{{ __('Département') }}</label><select wire:model="line.department_id" id="bl-dept" class="input">@if (($line['type'] ?? '') === 'income')<option value="">{{ __('Recettes générales') }}</option>@endif @foreach ($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach</select>@error('line.department_id') <p class="error">{{ $message }}</p> @enderror</div>

@@ -2,7 +2,7 @@
 
 Le budget se prépare ensemble, une fois par exercice :
 
-1. **les départements proposent** leurs besoins et leurs recettes prévues, avec leur justification ;
+1. **les départements proposent** leurs dépenses prévues et leurs recettes prévues, séparément, avec leur justification ;
 2. **la finance arbitre** : elle reprend les propositions, ajuste les montants, ajoute les charges communes, puis **présente** le budget ;
 3. **le pasteur approuve**, ou renvoie le budget avec ses remarques. Le budget approuvé est **adopté**.
 
@@ -10,7 +10,7 @@ En cours d'année, le budget peut être **révisé** : chaque révision est une 
 
 | Qui | Ce qu'il fait | Permission |
 |---|---|---|
-| Responsable de département | Propose les besoins de **ses** départements | Proposer les besoins d'un département |
+| Responsable de département | Propose les dépenses et les recettes de **ses** départements | Proposer le budget d'un département |
 | Finance (trésorier) | Arbitre, ajoute des lignes, présente le budget, renvoie une proposition | Arbitrer le budget et le présenter |
 | Pasteur | Approuve le budget et ses révisions, ou les renvoie | Approuver le budget et ses révisions |
 
@@ -51,11 +51,11 @@ Pour qu'un responsable prépare le budget de **son** département, Waumini doit 
 
 ① **Le budget de l'exercice** : la version adoptée, par qui et quand, les recettes et les dépenses prévues, et l'excédent ou le déficit. Les boutons ouvrent le budget adopté, son [suivi](22-suivi-budget.md), ou créent une révision.
 
-② **Les propositions des départements** : pour chacun, ce qu'il a proposé, où en est sa proposition, et ce qui a été adopté. Choisissez l'exercice en haut à droite : en fin d'année, les départements préparent déjà l'exercice suivant.
+② **Les propositions des départements** : pour chacun, ses dépenses et ses recettes dans deux cadres séparés (ce qui est proposé et ce qui a été adopté), et où en est sa proposition. Choisissez l'exercice en haut à droite : en fin d'année, les départements préparent déjà l'exercice suivant.
 
-## Proposer les besoins d'un département
+## Proposer le budget d'un département
 
-Touchez **Proposer** (ou **Ouvrir**) sur la ligne du département, puis **Ajouter** dans **Besoins** ou dans **Recettes prévues**.
+Touchez **Proposer** (ou **Ouvrir**) sur la ligne du département. Les dépenses et les recettes sont **dans deux onglets séparés**, chacun avec son total : **Dépenses prévues** (ce que le département aura besoin de dépenser) et **Recettes prévues** (ce qu'il pense recevoir ou collecter). Ouvrez l'onglet voulu, puis **Ajouter une dépense** ou **Ajouter une recette**.
 
 <table><tr>
 <td width="68%"><img src="captures/bureau/63-proposition.png" alt="Ajouter un besoin sur ordinateur"></td>
@@ -66,7 +66,7 @@ Pour chaque ligne : l'objet, la catégorie (les mêmes que dans les finances), l
 
 ① **la devise** : un montant en francs est converti en dollars au taux du jour ; le montant d'origine reste affiché ;
 
-② **la justification** : pourquoi ce besoin, comment le montant est calculé. C'est elle qui aide la finance à arbitrer.
+② **la justification** : pourquoi cette dépense (ou d'où vient cette recette), comment le montant est calculé. C'est elle qui aide la finance à arbitrer.
 
 Quand tout est prêt : **Envoyer à la finance**. La proposition n'est plus modifiable, sauf si la finance la **renvoie pour correction**, avec une remarque que le département voit en haut de sa proposition.
 
@@ -83,11 +83,11 @@ La première fois, la finance touche **Préparer le budget** : Waumini crée la 
 
 ② **Qui a présenté et qui a approuvé**, et quand.
 
-③ **Chaque ligne**, regroupée par département. Pendant l'arbitrage, la finance change le montant directement dans la ligne ; le **montant proposé** reste affiché quand il est différent, avec la remarque de l'arbitrage (« Reportée à l'an prochain »).
+③ **Les deux onglets**, **Dépenses prévues** et **Recettes prévues**, chacun avec son total, puis **chaque ligne** de l'onglet ouvert, regroupée par département. Pendant l'arbitrage, la finance change le montant directement dans la ligne ; le **montant proposé** reste affiché quand il est différent, avec la remarque de l'arbitrage (« Reportée à l'an prochain »).
 
 **Reprendre la masse salariale** ajoute les salaires : une ligne « Rémunérations et motivations » par personne payée, dans son département, calculée d'après la [paie](24-paie.md#la-paie-dans-le-budget).
 
-La finance ajoute aussi les lignes communes avec **Ajouter une ligne** : les charges de l'Administration générale (électricité, sentinelle, entretien) et les recettes générales (offrandes, dîmes). Puis **Présenter le budget**.
+La finance ajoute aussi les lignes communes : dans l'onglet **Dépenses prévues**, **Ajouter une dépense** pour les charges de l'Administration générale (électricité, sentinelle, entretien) ; dans l'onglet **Recettes prévues**, **Ajouter une recette** pour les recettes générales (offrandes, dîmes). Puis **Présenter le budget**.
 
 ## Approuver
 

@@ -1,6 +1,6 @@
 @php use App\Support\Money; use App\Models\Budget; use App\Models\BudgetProposal; @endphp
 <div>
-    <x-page-header :title="__('Budget')" :description="__('Les départements proposent leurs besoins, la finance arbitre et présente le budget, le pasteur l’approuve. Chaque révision garde la version précédente.')">
+    <x-page-header :title="__('Budget')" :description="__('Les départements proposent leurs dépenses et leurs recettes, la finance arbitre et présente le budget, le pasteur l’approuve. Chaque révision garde la version précédente.')">
         <x-slot:actions>
             <select wire:model.live="year" class="input !w-auto" aria-label="{{ __('Exercice') }}">@foreach ($years as $y => $label)<option value="{{ $y }}">{{ __('Exercice :y', ['y' => $label]) }}</option>@endforeach</select>
         </x-slot:actions>
@@ -44,28 +44,35 @@
     {{-- Les départements --}}
     <section class="card mb-5 p-5 sm:p-6">
         <h2 class="mb-1 text-lg">{{ __('Propositions des départements') }}</h2>
-        <p class="mb-4 text-sm text-sand-700">{{ __('Chaque département prévoit ses besoins (dépenses) et ses recettes, avec leur justification, puis les envoie à la finance.') }}</p>
+        <p class="mb-4 text-sm text-sand-700">{{ __('Chaque département prévoit, séparément, ses dépenses et ses recettes, avec leur justification, puis les envoie à la finance.') }}</p>
         @if ($mine === [] && ! $linked)
             <p class="mb-4 rounded-xl bg-ochre-50 p-3 text-sm text-ink-800">{{ __('Votre compte n’est relié à aucune fiche de membre : demandez à l’administrateur de le relier (écran Utilisateurs) pour proposer le budget de votre département.') }}</p>
         @endif
         <ul class="divide-y divide-sand-100">
             @foreach ($departments as $d)
                 @php $p = $proposals->get($d->id); $allowed = $mine === null || in_array($d->id, $mine, true); $t = $byDepartment[$d->id] ?? null; @endphp
-                <li wire:key="d-{{ $d->id }}" class="flex flex-wrap items-center gap-x-4 gap-y-1 py-3">
-                    <span class="min-w-0 flex-1">
-                        <span class="block font-semibold text-ink-800">{{ $d->name }}</span>
-                        <span class="block text-xs text-sand-700">
-                            @if ($p && $p->lines->isNotEmpty()) {{ __('Proposé : :e de dépenses, :i de recettes', ['e' => Money::format($p->total('expense'), 'USD'), 'i' => Money::format($p->total('income'), 'USD')]) }}
-                            @else {{ __('Aucune proposition') }}
-                            @endif
-                            @if ($t) · <span class="font-semibold text-ink-700">{{ __('Adopté : :e', ['e' => Money::format($t['expense'], 'USD')]) }}</span>@endif
-                        </span>
-                    </span>
-                    @if ($p)
-                        <span @class(['badge', 'bg-leaf-50 text-leaf-600' => $p->status === 'submitted', 'bg-sand-100 text-sand-700' => $p->status === 'draft'])>{{ __(BudgetProposal::STATUSES[$p->status]) }}@if ($p->return_note) · {{ __('renvoyée') }}@endif</span>
-                    @endif
-                    @if ($allowed && ($canPropose || $p))
-                        <a href="{{ route('budget.proposal', ['year' => $year, 'department' => $d->id]) }}" class="btn-ghost !min-h-0 !px-2 !py-1.5 text-sm">{{ $p ? __('Ouvrir') : __('Proposer') }} <x-icon name="chevron-right" class="size-4" /></a>
+                <li wire:key="d-{{ $d->id }}" class="py-3">
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span class="min-w-0 basis-full font-semibold text-ink-800 sm:basis-0 sm:flex-1">{{ $d->name }}</span>
+                        @if ($p)
+                            <span @class(['badge mr-auto sm:mr-0', 'bg-leaf-50 text-leaf-600' => $p->status === 'submitted', 'bg-sand-100 text-sand-700' => $p->status === 'draft'])>{{ __(BudgetProposal::STATUSES[$p->status]) }}@if ($p->return_note) · {{ __('renvoyée') }}@endif</span>
+                        @endif
+                        @if ($allowed && ($canPropose || $p))
+                            <a href="{{ route('budget.proposal', ['year' => $year, 'department' => $d->id]) }}" class="btn-ghost !min-h-0 !px-2 !py-1.5 text-sm">{{ $p ? __('Ouvrir') : __('Proposer') }} <x-icon name="chevron-right" class="size-4" /></a>
+                        @endif
+                    </div>
+                    @if (($p && $p->lines->isNotEmpty()) || $t)
+                        <div class="mt-1.5 grid grid-cols-2 gap-2">
+                            @foreach (['expense' => [__('Dépenses'), 'bg-terra-500'], 'income' => [__('Recettes'), 'bg-leaf-500']] as $type => [$label, $dot])
+                                <div class="rounded-xl bg-sand-50 px-3 py-2 text-xs text-sand-700">
+                                    <p class="flex items-center gap-1.5 font-semibold text-ink-700"><span class="size-1.5 rounded-full {{ $dot }}"></span>{{ $label }}</p>
+                                    <p class="tabular">{{ __('Proposé : :m', ['m' => Money::format($p?->total($type) ?? 0, 'USD')]) }}</p>
+                                    @if ($t)<p class="font-semibold tabular text-ink-700">{{ __('Adopté : :m', ['m' => Money::format($t[$type], 'USD')]) }}</p>@endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-xs text-sand-700">{{ __('Aucune proposition') }}</p>
                     @endif
                 </li>
             @endforeach
