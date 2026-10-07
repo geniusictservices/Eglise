@@ -173,12 +173,29 @@ class Groups
             'name' => trim($data['name']), 'kind' => array_key_exists($data['kind'] ?? '', Group::KINDS) ? $data['kind'] : 'other',
             'department_id' => ($data['department_id'] ?? null) ?: null,
             'description' => trim((string) ($data['description'] ?? '')) ?: null,
-            'meeting_day' => ($data['meeting_day'] ?? '') === '' || ($data['meeting_day'] ?? null) === null ? null : (int) $data['meeting_day'],
-            'meeting_time' => ($data['meeting_time'] ?? null) ?: null,
+            'schedule' => $this->schedule($data['schedule'] ?? []),
             'place' => trim((string) ($data['place'] ?? '')) ?: null,
             'dues_amount' => (float) ($data['dues_amount'] ?? 0) > 0 ? $data['dues_amount'] : null,
             'dues_currency' => (float) ($data['dues_amount'] ?? 0) > 0 ? ($data['dues_currency'] ?? 'USD') : null,
         ];
+    }
+
+    /**
+     * Les rencontres de la semaine : jour (obligatoire), heure et intitulé, de lundi à dimanche.
+     *
+     * @return list<array{day: int, time: ?string, label: ?string}>|null
+     */
+    private function schedule(array $rows): ?array
+    {
+        $order = array_flip(array_keys(Group::DAYS));
+        $schedule = collect($rows)
+            ->filter(fn ($m) => is_array($m) && ($m['day'] ?? '') !== '' && ($m['day'] ?? null) !== null && isset(Group::DAYS[(int) $m['day']]))
+            ->map(fn ($m) => ['day' => (int) $m['day'], 'time' => ($m['time'] ?? null) ? substr((string) $m['time'], 0, 5) : null,
+                'label' => trim((string) ($m['label'] ?? '')) ?: null])
+            ->unique(fn ($m) => $m['day'].$m['time'])->take(Group::MAX_MEETINGS)
+            ->sortBy(fn ($m) => sprintf('%d %s', $order[$m['day']], $m['time'] ?? ''))->values()->all();
+
+        return $schedule ?: null;
     }
 
     private function member(Organization $organization, mixed $id): Member

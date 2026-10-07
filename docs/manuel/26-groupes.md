@@ -22,9 +22,11 @@ Le responsable et ses adjoints sont reconnus **par leur fiche de membre** : pour
 <td width="32%"><img src="captures/mobile/79-groupes.png" alt="Groupes sur téléphone"></td>
 </tr></table>
 
-① **Chaque groupe** : son type, son département s'il en a un, le nombre de personnes, son **responsable**, le jour, l'heure et le lieu de rencontre, et la **dernière rencontre** avec ses présents.
+① **Chaque groupe** : son type, son département s'il en a un, le nombre de personnes, son **responsable**, ses jours, heures et lieu de rencontre, et la **dernière rencontre** avec ses présents.
 
-② **Nouveau groupe** : nom, type, département (facultatif), **responsable** (obligatoire, cherché parmi les membres), jour, heure et lieu de rencontre. Sans responsable, le groupe n'est pas créé.
+② **Nouveau groupe** : nom, type, département (facultatif), **responsable** (obligatoire, cherché parmi les membres), les **rencontres de la semaine** et le lieu. Sans responsable, le groupe n'est pas créé.
+
+**Les rencontres de la semaine** : un jour, une heure et, si vous voulez, un intitulé (« Répétition », « Prière »). Une chorale qui répète le mardi et le samedi a deux lignes : **Ajouter un jour de rencontre**. Jusqu'à sept rencontres ; la corbeille en retire une. Waumini les range du lundi au dimanche et les affiche ainsi : « Mardi à 17:30 (répétition), samedi à 14:00 (répétition générale) ». Sans jour, le groupe se réunit à des dates variables.
 
 ## La fiche du groupe
 

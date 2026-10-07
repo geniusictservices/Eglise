@@ -46,7 +46,7 @@ class WebsiteEnrichedTest extends TestCase
     {
         $esther = Member::create(['last_name' => 'KAHINDO', 'first_name' => 'Esther']);
         $chorale = app(Groups::class)->create($this->eglise, ['name' => 'Chorale Les Messagers', 'kind' => 'choir', 'leader_member_id' => $esther->id,
-            'description' => 'Louange du dimanche', 'meeting_day' => 6, 'meeting_time' => '15:00', 'place' => 'Chez Maman Esther, avenue Mapendo']);
+            'description' => 'Louange du dimanche', 'schedule' => [['day' => 6, 'time' => '15:00', 'label' => 'Répétition'], ['day' => 2, 'time' => '17:30']], 'place' => 'Chez Maman Esther, avenue Mapendo']);
         app(Groups::class)->create($this->eglise, ['name' => 'Cellule cachée', 'kind' => 'cell', 'leader_member_id' => $esther->id]);
 
         LivewireTest::test(Livewire\Website\Edit::class)
@@ -76,7 +76,7 @@ class WebsiteEnrichedTest extends TestCase
         $this->get(route('website.page', [$slug, 'galerie']))->assertOk()->assertSee('Baptêmes au lac Kivu');
         $this->get(route('website.photo', [$slug, $photo->id, 'grande']))->assertOk();
         // Les groupes : le jour de rencontre, mais ni le lieu ni le responsable.
-        $this->get(route('website.page', [$slug, 'groupes']))->assertOk()->assertSee('Chorale Les Messagers')->assertSee('Samedi à 15:00')
+        $this->get(route('website.page', [$slug, 'groupes']))->assertOk()->assertSee('Chorale Les Messagers')->assertSee('Samedi à 15:00 (répétition)')->assertSee('Mardi à 17:30')
             ->assertDontSee('Cellule cachée')->assertDontSee('avenue Mapendo')->assertDontSee('KAHINDO');
         $this->get(route('website.page', [$slug, 'a-propos']))->assertOk()->assertSee('Pasteur Daniel Paluku')->assertSee('Pasteur titulaire');
         $this->get(route('website.leader', [$slug, 0]))->assertOk();

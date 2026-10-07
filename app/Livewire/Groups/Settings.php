@@ -16,8 +16,10 @@ class Settings
             'form.name' => 'required|string|max:120',
             'form.kind' => ['required', Rule::in(array_keys(Group::KINDS))],
             'form.department_id' => ['nullable', Rule::exists('departments', 'id')->where('organization_id', $organization->id)],
-            'form.meeting_day' => 'nullable|integer|between:0,6',
-            'form.meeting_time' => 'nullable|date_format:H:i',
+            'form.schedule' => 'array|max:'.Group::MAX_MEETINGS,
+            'form.schedule.*.day' => 'nullable|integer|between:0,6',
+            'form.schedule.*.time' => 'nullable|date_format:H:i',
+            'form.schedule.*.label' => 'nullable|string|max:40',
             'form.place' => 'nullable|string|max:160',
             'form.description' => 'nullable|string|max:1000',
             'form.dues_amount' => 'nullable|numeric|min:0|max:1000000',
@@ -34,6 +36,6 @@ class Settings
 
     public static function attributes(): array
     {
-        return ['form.name' => __('nom'), 'form.meeting_time' => __('heure'), 'form.place' => __('lieu'), 'form.leader_member_id' => __('responsable')];
+        return ['form.name' => __('nom'), 'form.schedule.*.time' => __('heure'), 'form.schedule.*.label' => __('intitulé'), 'form.place' => __('lieu'), 'form.leader_member_id' => __('responsable')];
     }
 }

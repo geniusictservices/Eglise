@@ -34,11 +34,14 @@ class Group extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['kind' => 'cell', 'is_active' => true];
+    /** Au plus : rencontres régulières par semaine. */
+    public const MAX_MEETINGS = 7;
+
+    protected $attributes = ['kind' => 'cell', 'is_active' => true, 'schedule' => null];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean', 'meeting_day' => 'integer'];
+        return ['is_active' => 'boolean', 'schedule' => 'array'];
     }
 
     public function leader(): BelongsTo
@@ -67,14 +70,35 @@ class Group extends Model
         return $this->hasOne(GroupMeeting::class)->latestOfMany('held_on');
     }
 
-    /** « Mercredi à 17 h 00 · chez Maman Furaha » */
+    /**
+     * Les rencontres de la semaine, dans l'ordre : « Mardi à 17:30 (répétition) ».
+     *
+     * @return list<string>
+     */
+    public function meetingTimes(): array
+    {
+        return collect($this->schedule ?? [])->map(function (array $m) {
+            $when = __(self::DAYS[$m['day']] ?? '');
+            if ($m['time'] ?? null) {
+                $when .= ' '.__('à :h', ['h' => $m['time']]);
+            }
+
+            return ($m['label'] ?? null) ? $when.' ('.mb_strtolower($m['label']).')' : $when;
+        })->all();
+    }
+
+    /** « Mardi à 17:30 (répétition), samedi à 14:00 · Église » */
     public function schedule(): ?string
     {
-        $when = $this->meeting_day !== null ? __(self::DAYS[$this->meeting_day]) : null;
-        if ($when && $this->meeting_time) {
-            $when .= ' '.__('à :h', ['h' => substr($this->meeting_time, 0, 5)]);
-        }
+        $times = $this->meetingTimes();
+        $when = $times ? $times[0].collect(array_slice($times, 1))->map(fn ($t) => ', '.mb_strtolower(mb_substr($t, 0, 1)).mb_substr($t, 1))->implode('') : null;
 
         return collect([$when, $this->place])->filter()->implode(' · ') ?: null;
+    }
+
+    /** Le premier jour de rencontre (pour les dates proposées), ou null. */
+    public function firstMeetingDay(): ?int
+    {
+        return isset($this->schedule[0]['day']) ? (int) $this->schedule[0]['day'] : null;
     }
 }

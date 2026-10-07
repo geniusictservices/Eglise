@@ -17,7 +17,7 @@ use Livewire\WithPagination;
 /** Un groupe : responsable, adjoints, membres, rencontres et présences. */
 class Show extends Component
 {
-    use WithPagination, WritesInOrganization;
+    use EditsSchedule, WithPagination, WritesInOrganization;
 
     public Group $group;
 
@@ -46,8 +46,7 @@ class Show extends Component
     {
         $this->authorizeSetUp();
         $this->form = $this->group->only(['name', 'kind', 'place']) + [
-            'department_id' => $this->group->department_id ?? '', 'meeting_day' => $this->group->meeting_day ?? '',
-            'meeting_time' => $this->group->meeting_time ? substr($this->group->meeting_time, 0, 5) : '', 'description' => (string) $this->group->description,
+            'department_id' => $this->group->department_id ?? '', 'schedule' => self::scheduleRows($this->group), 'description' => (string) $this->group->description,
             'dues_amount' => $this->group->dues_amount ?? '', 'dues_currency' => $this->group->dues_currency ?? 'USD',
         ];
         $this->resetValidation();

@@ -9,12 +9,15 @@
         @else
             <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($groups as $group)
-                    @php $when = $group->meeting_day !== null ? __(\App\Models\Group::DAYS[$group->meeting_day]).($group->meeting_time ? ' '.__('à :h', ['h' => substr($group->meeting_time, 0, 5)]) : '') : null; @endphp
                     <li class="flex min-w-0 flex-col rounded-2xl border border-sand-200 bg-white p-5">
                         <p class="text-xs font-semibold uppercase tracking-wider text-ochre-600">{{ __(\App\Models\Group::KINDS[$group->kind] ?? 'Autre') }}</p>
                         <p @class(['mt-1 text-xl font-semibold text-ink-800', 'font-serif' => $website->theme === 'solennel'])>{{ $group->name }}</p>
                         @if ($group->description)<p class="mt-2 text-ink-900">{{ $group->description }}</p>@endif
-                        @if ($when)<p class="mt-3 flex items-center gap-2 text-sm font-semibold text-ink-700"><x-icon name="calendar" class="size-4 text-ochre-600" /> {{ $when }}</p>@endif
+                        @if ($group->meetingTimes())
+                            <ul class="mt-3 space-y-1">
+                                @foreach ($group->meetingTimes() as $when)<li class="flex items-center gap-2 text-sm font-semibold text-ink-700"><x-icon name="calendar" class="size-4 text-ochre-600" /> {{ $when }}</li>@endforeach
+                            </ul>
+                        @endif
                     </li>
                 @endforeach
             </ul>

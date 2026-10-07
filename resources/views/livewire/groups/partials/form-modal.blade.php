@@ -32,12 +32,25 @@
                 @error('form.leader_member_id') <p class="error">{{ $message }}</p> @enderror
             </div>
         @endif
-        <div class="grid gap-4 sm:grid-cols-3">
-            <div><label for="g-day" class="label">{{ __('Jour de rencontre') }}</label>
-                <select wire:model="form.meeting_day" id="g-day" class="input"><option value="">{{ __('Variable') }}</option>@foreach (Group::DAYS as $k => $l)<option value="{{ $k }}">{{ __($l) }}</option>@endforeach</select></div>
-            <div><label for="g-time" class="label">{{ __('Heure') }}</label><input wire:model="form.meeting_time" id="g-time" type="time" class="input">@error('form.meeting_time') <p class="error">{{ $message }}</p> @enderror</div>
-            <div><label for="g-place" class="label">{{ __('Lieu') }}</label><input wire:model="form.place" id="g-place" class="input" placeholder="{{ __('Chez…, salle…') }}"></div>
+        <div>
+            <p class="label">{{ __('Rencontres de la semaine') }} <span class="font-normal text-sand-700">{{ __('(une chorale peut répéter plusieurs jours)') }}</span></p>
+            <ul class="space-y-2">
+                @foreach ($form['schedule'] ?? [] as $i => $m)
+                    <li wire:key="meeting-{{ $i }}-{{ count($form['schedule']) }}" class="grid grid-cols-[1fr_6.5rem_auto] gap-2 sm:grid-cols-[1fr_7rem_1.2fr_auto]">
+                        <select wire:model="form.schedule.{{ $i }}.day" class="input" aria-label="{{ __('Jour') }}"><option value="">{{ __('Jour…') }}</option>@foreach (Group::DAYS as $k => $l)<option value="{{ $k }}">{{ __($l) }}</option>@endforeach</select>
+                        <input wire:model="form.schedule.{{ $i }}.time" type="time" class="input" aria-label="{{ __('Heure') }}">
+                        <input wire:model="form.schedule.{{ $i }}.label" maxlength="40" class="input col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto" placeholder="{{ __('Répétition, prière… (facultatif)') }}" aria-label="{{ __('Intitulé') }}">
+                        <button type="button" wire:click="removeMeeting({{ $i }})" class="rounded-lg p-2 text-sand-500 hover:bg-terra-50 hover:text-terra-600 sm:row-start-auto" aria-label="{{ __('Retirer') }}"><x-icon name="trash-2" class="size-4" /></button>
+                    </li>
+                @endforeach
+            </ul>
+            @error('form.schedule.*.time') <p class="error">{{ $message }}</p> @enderror
+            @if (count($form['schedule'] ?? []) < Group::MAX_MEETINGS)
+                <button type="button" wire:click="addMeeting" class="btn-ghost mt-1 !min-h-0 !px-2 !py-1.5 text-sm"><x-icon name="plus" class="size-4" /> {{ __('Ajouter un jour de rencontre') }}</button>
+            @endif
+            <p class="hint">{{ __('Sans jour : rencontres à des dates variables.') }}</p>
         </div>
+        <div><label for="g-place" class="label">{{ __('Lieu') }}</label><input wire:model="form.place" id="g-place" class="input" placeholder="{{ __('Chez…, salle…') }}"></div>
         <div class="grid grid-cols-[2fr_1fr] gap-4">
             <div><label for="g-dues" class="label">{{ __('Cotisation mensuelle') }} <span class="font-normal text-sand-700">{{ __('(facultatif)') }}</span></label><input wire:model="form.dues_amount" id="g-dues" type="number" step="0.01" min="0" class="input tabular" placeholder="0"></div>
             <div><label for="g-cur" class="label">{{ __('Devise') }}</label><select wire:model="form.dues_currency" id="g-cur" class="input"><option value="USD">USD</option><option value="CDF">CDF</option></select></div>

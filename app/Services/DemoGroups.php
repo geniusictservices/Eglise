@@ -26,6 +26,9 @@ class DemoGroups
                 ['Cellule de Mabanga', 'cell', null, ['NZIAVAKE', 'Joseph'], 3, '17:30', 'Chez la famille Nziavake', fn () => Member::where('district', 'like', 'Mabanga%')->get(), null],
                 ['Prière des mamans', 'prayer', 'Mamans', ['MASIKA', 'Rebecca'], 2, '15:00', 'Salle paroissiale', fn () => Member::where('gender', 'F')->whereNotNull('birth_date')->where('birth_date', '<=', now()->subYears(28))->get(), ['KAVUGHO', 'Marthe']],
                 ['Jeunes en mission', 'youth', 'Jeunesse', ['KAKULE', 'Josué'], 6, '15:00', 'Église, salle des jeunes', fn () => Member::whereBetween('birth_date', [now()->subYears(35), now()->subYears(14)])->get(), null],
+                // La chorale répète deux fois par semaine, et chante au culte du dimanche.
+                ['Chorale Les Voix de Sion', 'choir', null, ['MUHINDO', 'Patrick'], [[2, '17:30', 'Répétition'], [6, '14:00', 'Répétition générale'], [0, '08:00', 'Mise en voix avant le culte']], null, 'Temple de Himbi',
+                    fn () => Member::whereNotNull('birth_date')->whereBetween('birth_date', [now()->subYears(45), now()->subYears(16)])->orderBy('id')->get()->filter(fn ($m) => $m->id % 2 === 0), null],
             ];
 
             foreach ($groups as [$name, $kind, $department, $leaderName, $day, $time, $place, $people, $deputy]) {
@@ -33,9 +36,11 @@ class DemoGroups
                 if (! $leader) {
                     continue;
                 }
+                $schedule = is_array($day) ? array_map(fn ($m) => ['day' => $m[0], 'time' => $m[1], 'label' => $m[2]], $day) : [['day' => $day, 'time' => $time]];
+                $day = $schedule[0]['day'];
                 Carbon::setTestNow(now()->subMonths(5));
                 $group = $service->create($himbi, ['name' => $name, 'kind' => $kind, 'department_id' => $department ? ($dept[$department] ?? null) : null,
-                    'leader_member_id' => $leader->id, 'meeting_day' => $day, 'meeting_time' => $time, 'place' => $place]);
+                    'leader_member_id' => $leader->id, 'schedule' => $schedule, 'place' => $place]);
                 foreach ($people()->where('id', '!=', $leader->id) as $m) {
                     $service->addMember($group, $m->id, $deputy && $m->last_name === $deputy[0] && $m->first_name === $deputy[1] ? 'deputy' : 'member');
                 }

@@ -35,7 +35,7 @@ class DemoWebsites
                 'tagline' => 'Goma, Himbi II · Une famille qui prie',
                 'verse_text' => 'Venez à moi, vous tous qui êtes fatigués et chargés, et je vous donnerai du repos.',
                 'verse_reference' => 'Matthieu 11.28',
-                'public_groups' => Group::whereIn('name', ['Prière des mamans', 'Jeunes en mission', 'Cellule de Himbi II', 'Cellule de Himbi I'])->pluck('id')->all(),
+                'public_groups' => Group::whereIn('name', ['Chorale Les Voix de Sion', 'Prière des mamans', 'Jeunes en mission', 'Cellule de Himbi II', 'Cellule de Himbi I'])->pluck('id')->all(),
                 'welcome_title' => 'Bienvenue à la Paroisse de Himbi',
                 'welcome_text' => 'Que vous soyez de passage à Goma ou à la recherche d’une église où grandir, vous êtes attendu. Nos cultes ont lieu en français et en swahili, avec la chorale Les Voix de Sion.',
                 'about_text' => "La Paroisse de Himbi est née en 1994 d’une cellule de prière réunie chez la famille Kahindo, au bord du lac. Elle rassemble aujourd’hui près de quatre cents fidèles, des enfants de l’école du dimanche aux mamans de la prière du jeudi.\n\nNous sommes membres de la Communauté Évangélique de la Paix, présente dans le Nord et le Sud-Kivu.",

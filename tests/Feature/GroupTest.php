@@ -62,7 +62,9 @@ class GroupTest extends TestCase
         LivewireTest::test(Livewire\Groups\Index::class)
             ->call('create')
             ->set('form.name', 'Cellule de Himbi')
-            ->set('form.meeting_day', '3')->set('form.meeting_time', '17:00')->set('form.place', 'Chez Esther')
+            ->set('form.schedule.0.day', '3')->set('form.schedule.0.time', '17:00')->set('form.place', 'Chez Esther')
+            ->call('addMeeting')->set('form.schedule.1.day', '1')->set('form.schedule.1.time', '18:00')->set('form.schedule.1.label', 'Répétition')
+            ->call('addMeeting')->call('removeMeeting', 2)
             ->call('chooseLeader', $this->esther->id)
             ->call('save')
             ->assertHasNoErrors()
@@ -70,7 +72,9 @@ class GroupTest extends TestCase
 
         $group = Group::sole();
         $this->assertSame($this->esther->id, $group->leader_member_id);
-        $this->assertSame('Mercredi à 17:00 · Chez Esther', $group->schedule());
+        // Les rencontres sont rangées du lundi au dimanche.
+        $this->assertSame([['day' => 1, 'time' => '18:00', 'label' => 'Répétition'], ['day' => 3, 'time' => '17:00', 'label' => null]], $group->schedule);
+        $this->assertSame('Lundi à 18:00 (répétition), mercredi à 17:00 · Chez Esther', $group->schedule());
         $this->get(route('groups.show', $group))->assertOk()->assertSee('Cellule de Himbi')->assertSee('KAHINDO Esther');
         $this->get(route('groups.index'))->assertOk()->assertSee('Cellule de Himbi');
         app(Groups::class)->addMember($group, $this->ruth->id);
