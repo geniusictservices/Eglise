@@ -22,7 +22,7 @@ class User extends Authenticatable implements PasskeyUser
     use Auditable, HasFactory, Notifiable, PasskeyAuthenticatable;
 
     protected $fillable = [
-        'name', 'phone', 'email', 'password', 'locale',
+        'name', 'phone', 'email', 'photo_path', 'password', 'locale',
         'is_active', 'must_change_password', 'current_organization_id',
     ];
 
@@ -39,6 +39,7 @@ class User extends Authenticatable implements PasskeyUser
         'must_change_password' => false,
         'current_organization_id' => null,
         'last_login_at' => null,
+        'photo_path' => null,
     ];
 
     /** Affectations chargées une fois par requête. */

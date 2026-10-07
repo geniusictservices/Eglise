@@ -200,7 +200,7 @@
                 <p class="label">{{ __('Aperçu') }}</p>
                 <div class="mx-auto w-full max-w-[300px] overflow-hidden rounded-[30px] border-[7px] border-ink-900 bg-sand-50 shadow-xl">
                     <div class="wax wax-veil px-4 pb-6 pt-4 text-white" @unless ($preview->pattern) style="background-image:none" @endunless>
-                        <div class="flex items-center gap-2"><x-icon name="menu" class="size-5" /><span class="text-sm font-semibold">{{ $organization->displayName() }}</span><span class="ml-auto grid size-7 place-items-center rounded-full bg-ochre-500 text-[11px] font-semibold text-on-accent">{{ auth()->user()->initials() }}</span></div>
+                        <div class="flex items-center gap-2"><x-icon name="menu" class="size-5" /><span class="text-sm font-semibold">{{ $organization->displayName() }}</span><x-user-avatar :user="auth()->user()" size="size-7" class="ml-auto text-[11px]" /></div>
                         <p class="mt-4 text-xs text-ink-100">{{ __('Dimanche 11 octobre') }}</p>
                         <p class="text-lg font-semibold">{{ __('Bonjour !') }}</p>
                     </div>

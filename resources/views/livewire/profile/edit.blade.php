@@ -11,6 +11,24 @@
     <div class="grid gap-6 lg:grid-cols-2">
         <form wire:submit="saveProfile" class="card space-y-4 self-start p-5 sm:p-6">
             <h2 class="text-lg font-semibold">{{ __('Informations') }}</h2>
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <x-user-avatar :user="$user" size="size-20" class="text-2xl" />
+                    <div wire:loading.flex wire:target="photo,removePhoto" class="absolute inset-0 items-center justify-center rounded-full bg-white/70">
+                        <x-icon name="refresh-cw" class="size-5 animate-spin text-ink-700" />
+                    </div>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="btn-secondary cursor-pointer !min-h-0 !py-2">
+                        <x-icon name="camera" class="size-4" /> {{ $user->photo_path ? __('Changer la photo') : __('Ajouter une photo') }}
+                        <input type="file" wire:model="photo" accept="image/*" class="sr-only">
+                    </label>
+                    @if ($user->photo_path)
+                        <button type="button" wire:click="removePhoto" wire:confirm="{{ __('Retirer votre photo de profil ?') }}" class="block text-sm font-semibold text-terra-600 hover:underline">{{ __('Retirer la photo') }}</button>
+                    @endif
+                </div>
+            </div>
+            @error('photo') <p class="error">{{ $message }}</p> @enderror
             <div>
                 <label for="name" class="label">{{ __('Nom complet') }}</label>
                 <input wire:model="name" id="name" class="input" required>

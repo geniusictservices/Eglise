@@ -20,6 +20,7 @@ use App\Http\Controllers\OrganizationLogoController;
 use App\Http\Controllers\PayrollPrintController;
 use App\Http\Controllers\ReceiptController;
 use App\Http\Controllers\SwitchOrganizationController;
+use App\Http\Controllers\UserPhotoController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePlatformStaff;
@@ -68,6 +69,7 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged::class, MarkNotificationsOpened::class])->group(function () {
     Route::post('/deconnexion', LogoutController::class)->name('logout');
+    Route::get('/utilisateurs/{user}/photo', UserPhotoController::class)->whereNumber('user')->name('users.photo');
     Route::post('/support/quitter', function () {
         $organization = app(SupportAccess::class)->stop();
 

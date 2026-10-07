@@ -3,15 +3,22 @@
 namespace App\Livewire\Profile;
 
 use App\Services\AuditLogger;
+use App\Support\UserPhoto;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Title('Mon profil')]
 class Edit extends Component
 {
+    use WithFileUploads;
+
+    /** La nouvelle photo de profil, enregistrée dès qu'elle est choisie. */
+    public $photo = null;
+
     public string $name = '';
 
     public string $email = '';
@@ -33,6 +40,25 @@ class Edit extends Component
     {
         $user = auth()->user();
         $this->fill(['name' => $user->name, 'email' => (string) $user->email, 'locale' => $user->locale]);
+    }
+
+    public function updatedPhoto(): void
+    {
+        $this->validate(['photo' => 'required|image|max:5120'], attributes: ['photo' => __('photo')]);
+        $user = auth()->user();
+        $old = $user->photo_path;
+        $user->update(['photo_path' => UserPhoto::store($this->photo->getRealPath(), $user)]);
+        UserPhoto::delete($old);
+        $this->reset('photo');
+        $this->dispatch('notify', message: __('Photo de profil enregistrée.'));
+    }
+
+    public function removePhoto(): void
+    {
+        $user = auth()->user();
+        UserPhoto::delete($user->photo_path);
+        $user->update(['photo_path' => null]);
+        $this->dispatch('notify', message: __('Photo de profil retirée.'));
     }
 
     public function saveProfile()

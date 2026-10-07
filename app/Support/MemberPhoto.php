@@ -20,7 +20,7 @@ class MemberPhoto
     public static function store(string $source, Member $member): string
     {
         $path = 'members/'.$member->organization_id.'/'.$member->id.'-'.Str::random(8).'.jpg';
-        Storage::disk('local')->put($path, self::portraitJpeg($source));
+        Storage::disk('local')->put($path, self::croppedJpeg($source, self::WIDTH, self::HEIGHT));
 
         return $path;
     }
@@ -32,7 +32,8 @@ class MemberPhoto
         }
     }
 
-    private static function portraitJpeg(string $source): string
+    /** L'image recadrée au format demandé, en JPEG (sert aussi aux photos de profil des utilisateurs). */
+    public static function croppedJpeg(string $source, int $width, int $height): string
     {
         $image = @imagecreatefromstring((string) file_get_contents($source));
         if (! $image) {
@@ -42,15 +43,15 @@ class MemberPhoto
         $image = self::orient($image, $source);
         $w = imagesx($image);
         $h = imagesy($image);
-        $ratio = self::WIDTH / self::HEIGHT;
+        $ratio = $width / $height;
 
-        // Plus grand cadre 7:9 possible, centré, un peu plus haut que le milieu pour garder le visage.
+        // Plus grand cadre possible au bon format, centré, un peu plus haut que le milieu pour garder le visage.
         [$cw, $ch] = $w / $h > $ratio ? [(int) round($h * $ratio), $h] : [$w, (int) round($w / $ratio)];
         $x = (int) (($w - $cw) / 2);
         $y = (int) max(0, ($h - $ch) * 0.35);
 
-        $out = imagecreatetruecolor(self::WIDTH, self::HEIGHT);
-        imagecopyresampled($out, $image, 0, 0, $x, $y, self::WIDTH, self::HEIGHT, $cw, $ch);
+        $out = imagecreatetruecolor($width, $height);
+        imagecopyresampled($out, $image, 0, 0, $x, $y, $width, $height, $cw, $ch);
 
         ob_start();
         imagejpeg($out, null, 82);

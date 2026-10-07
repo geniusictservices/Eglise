@@ -33,7 +33,7 @@
                     <tr class="hover:bg-sand-50/60">
                         <td>
                             <div class="flex items-center gap-3">
-                                <span class="grid size-9 shrink-0 place-items-center rounded-full bg-ochre-100 font-display text-xs font-semibold text-ochre-700">{{ $user->initials() }}</span>
+                                <x-user-avatar :user="$user" tone="bg-ochre-100 text-ochre-700" class="font-display text-xs" />
                                 <div>
                                     <p class="font-semibold text-ink-700">{{ $user->name }}</p>
                                     @unless ($user->is_active)<span class="badge bg-sand-100 text-sand-700">{{ __('Désactivé') }}</span>@endunless
@@ -69,7 +69,7 @@
         @forelse ($users as $user)
             <li>
                 <a @can('users.manage') href="{{ route('users.edit', $user) }}" @endcan class="card flex items-start gap-3 p-4">
-                    <span class="grid size-10 shrink-0 place-items-center rounded-full bg-ochre-100 font-display text-sm font-semibold text-ochre-700">{{ $user->initials() }}</span>
+                    <x-user-avatar :user="$user" size="size-10" tone="bg-ochre-100 text-ochre-700" class="font-display text-sm" />
                     <div class="min-w-0 flex-1">
                         <p class="truncate font-semibold text-ink-700">{{ $user->name }}</p>
                         <p class="text-sm text-sand-700 tabular">{{ $user->formattedPhone() }}</p>

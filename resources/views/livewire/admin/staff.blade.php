@@ -13,7 +13,7 @@
             <ul class="divide-y divide-sand-100">
                 @foreach ($staff as $member)
                     <li class="flex flex-wrap items-center gap-3 py-3" wire:key="s-{{ $member->id }}">
-                        <span class="grid size-10 shrink-0 place-items-center rounded-full bg-ochre-100 text-sm font-semibold text-ochre-700">{{ $member->initials() }}</span>
+                        <x-user-avatar :user="$member" size="size-10" tone="bg-ochre-100 text-ochre-700" class="text-sm" />
                         <span class="min-w-0 flex-1">
                             <span class="block truncate font-semibold text-ink-700">{{ $member->name }}</span>
                             <span class="block text-sm tabular text-sand-700">{{ $member->formattedPhone() }}</span>
