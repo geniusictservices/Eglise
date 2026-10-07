@@ -26,8 +26,9 @@ return [
     |
     */
 
+    // Une origine n'a jamais de chemin : https://exemple.com, même si Waumini est installé dans exemple.com/waumini.
     'allowed_origins' => [
-        config('app.url'),
+        preg_replace('#^(https?://[^/]+).*$#', '$1', (string) config('app.url')),
     ],
 
     /*
