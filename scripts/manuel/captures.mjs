@@ -19,7 +19,14 @@ const PASSWORD = 'Waumini2026';
 const SITE = process.argv.includes('--site');
 const SITE_SCENES = ['03-tableau-de-bord', '09-hierarchie', '13-utilisateurs', '19-devises'];
 const SITE_OUT = new URL('../../public/images/site/', import.meta.url).pathname;
-const only = SITE ? SITE_SCENES : process.argv.slice(2).filter((a) => !a.startsWith('--'));
+// --livret : captures propres pour le livret de présentation (docs/livret), en version ordinateur et téléphone.
+const LIVRET = process.argv.includes('--livret');
+const LIVRET_SCENES = ['03-tableau-de-bord', '05-menu-telephone', '22-acces-support', '27-membres', '29-membre-fiche', '36-carte',
+    '39-finances', '42-recu', '45-collecte', '48-declarations', '49-depenses', '51-depense-signature', '57-rapport', '62-budget', '68-plan',
+    '76-bulletin', '82-calendrier', '84-presences-culte', '86-annonces', '90-document-imprime', '91-verification', '95-registre',
+    '96-suivi-pastoral', '99-espace-membre', '102-consolidation', '109-site-accueil', '110-site-don'];
+const LIVRET_OUT = new URL('../../docs/livret/captures/', import.meta.url).pathname;
+const only = SITE ? SITE_SCENES : LIVRET ? LIVRET_SCENES : process.argv.slice(2).filter((a) => !a.startsWith('--'));
 
 const VIEWPORTS = {
     bureau: { viewport: { width: 1366, height: 820 }, deviceScaleFactor: 1, isMobile: false },
@@ -28,7 +35,7 @@ const VIEWPORTS = {
 
 // Repères numérotés posés au-dessus des éléments décrits dans le texte.
 async function mark(page, marks) {
-    if (SITE) return;
+    if (SITE || LIVRET) return;
     // Fait défiler pour que les éléments repérés soient visibles (au-dessus de la barre d'onglets sur téléphone).
     await page.evaluate((marks) => {
         const els = marks.map(({ selector, text }) => [...document.querySelectorAll(selector)].find((e) => e.getClientRects().length && (!text || e.textContent.includes(text)))).filter(Boolean);
@@ -1344,7 +1351,7 @@ const browser = await chromium.launch();
 let count = 0;
 
 // Scène par scène (ordinateur puis téléphone), pour que les deux versions montrent les mêmes données.
-for (const name of Object.keys(VIEWPORTS)) mkdirSync(`${OUT}${name}`, { recursive: true });
+for (const name of Object.keys(VIEWPORTS)) mkdirSync(`${LIVRET ? LIVRET_OUT : OUT}${name}`, { recursive: true });
 mkdirSync(SITE_OUT, { recursive: true });
 
 for (const scene of SCENES) {
@@ -1360,7 +1367,7 @@ for (const scene of SCENES) {
         try {
             if (scene.user) await login(page, scene.user);
             await scene.run(page, name);
-            await page.screenshot({ path: SITE ? `${SITE_OUT}${name}-${scene.id}.png` : `${OUT}${name}/${scene.id}.png` });
+            await page.screenshot({ path: SITE ? `${SITE_OUT}${name}-${scene.id}.png` : `${LIVRET ? LIVRET_OUT : OUT}${name}/${scene.id}.png` });
             count++;
             console.log(`✓ ${name}/${scene.id}`);
         } catch (error) {
