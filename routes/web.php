@@ -53,6 +53,10 @@ Route::prefix('site/{site}')->where(['site' => '[a-z0-9-]+'])->name('website.')-
     Route::get('/predications/{sermon}', 'sermon')->whereNumber('sermon')->name('sermon');
     Route::get('/audio/{sermon}', 'audio')->whereNumber('sermon')->name('audio');
     Route::post('/don', 'give')->middleware('throttle:6,1')->name('give');
+    Route::post('/priere', 'pray')->middleware('throttle:4,1')->name('pray');
+    Route::post('/bienvenue', 'welcome')->middleware('throttle:4,1')->name('welcome');
+    Route::get('/photos/{photo}/{size}', 'photo')->whereNumber('photo')->whereIn('size', ['grande', 'vignette'])->name('photo');
+    Route::get('/responsables/{index}', 'leader')->whereNumber('index')->name('leader');
     Route::get('/{page}', 'page')->whereIn('page', array_keys(Website::PAGES))->name('page');
 });
 Route::get('/aide', [HelpController::class, 'show'])->name('help.index');

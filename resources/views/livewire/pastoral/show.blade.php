@@ -8,7 +8,7 @@
             <div class="min-w-0 flex-1">
                 <p class="text-sm text-ochre-300">{{ __(PastoralCase::KINDS[$case->kind]) }} · {{ __('ouvert le :d', ['d' => $case->opened_on->translatedFormat('j F Y')]) }}@if ($case->status === 'closed') · {{ __('clos le :d', ['d' => $case->closed_on?->translatedFormat('j F Y')]) }}@endif</p>
                 <h1 class="text-2xl font-semibold text-white">{{ $case->personName() }}</h1>
-                <p class="mt-1 text-sm text-ink-100">{{ $case->title }}</p>
+                <p class="mt-1 text-sm text-ink-100">{{ $case->title }}@if ($case->source === 'website') · {{ __('arrivé par le site web') }}@endif</p>
             </div>
             <div class="flex w-full flex-wrap gap-2 sm:w-auto">
                 @if ($case->phone())<a href="tel:{{ $case->phone() }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="phone" class="size-4" /> {{ __('Appeler') }}</a>@endif

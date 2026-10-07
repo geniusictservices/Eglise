@@ -43,6 +43,8 @@ L'onglet **Prière** réunit les demandes confiées à l'équipe : enregistrées
 
 Après avoir prié, touchez **Porté dans la prière** et, si vous voulez, écrivez un mot : si la personne a son espace membre, elle le reçoit.
 
+**Depuis le site de l'église.** Si la communauté a ouvert les pages *Demande de prière* et *Nouveau ? Faisons connaissance* de son [site vitrine](34-site-vitrine.md#la-prière-et-les-nouveaux-venus), les demandes de prière et les visiteurs qui se présentent arrivent ici, marqués **Site web**, avec leur numéro de téléphone. Un visiteur devient un suivi « Nouveau venu », avec une première visite prévue dans trois jours.
+
 ## Les anniversaires
 
 <table><tr>

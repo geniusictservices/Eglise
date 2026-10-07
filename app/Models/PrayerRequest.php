@@ -13,7 +13,7 @@ class PrayerRequest extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['status' => 'open', 'is_private' => true];
+    protected $attributes = ['status' => 'open', 'is_private' => true, 'source' => 'app', 'requester_phone' => null];
 
     protected function casts(): array
     {

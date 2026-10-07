@@ -25,6 +25,17 @@
         </div>
     </section>
 
+    {{-- Le verset du moment --}}
+    @if ($website->verse_text)
+        <section class="border-b border-sand-200 bg-white">
+            <figure class="mx-auto max-w-4xl px-4 py-10 text-center sm:px-6">
+                <x-icon name="book-open" class="mx-auto size-7 text-ochre-500" />
+                <blockquote @class(['mt-3 text-xl leading-relaxed text-ink-800 sm:text-2xl', 'font-serif italic' => $style === 'solennel'])>« {{ $website->verse_text }} »</blockquote>
+                @if ($website->verse_reference)<figcaption class="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-ochre-600">{{ $website->verse_reference }}</figcaption>@endif
+            </figure>
+        </section>
+    @endif
+
     <div class="mx-auto max-w-6xl space-y-16 px-4 pt-14 sm:px-6">
         {{-- Les cultes réguliers --}}
         @if ($schedule->isNotEmpty() && $website->hasPage('programme'))
@@ -40,6 +51,26 @@
                     @endforeach
                 </ul>
                 <a href="{{ route('website.page', [$organization->slug, 'programme']) }}" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-ink-700 hover:underline">{{ __('Tout le programme') }} <x-icon name="arrow-right" class="size-4" /></a>
+            </section>
+        @endif
+
+        {{-- Nouveau ? Un sujet de prière ? --}}
+        @if ($website->hasPage('bienvenue') || $website->hasPage('priere'))
+            <section class="grid gap-4 sm:grid-cols-2">
+                @if ($website->hasPage('bienvenue'))
+                    <a href="{{ route('website.page', [$organization->slug, 'bienvenue']) }}" class="group flex gap-4 rounded-3xl border border-sand-200 bg-white p-6 transition hover:border-ochre-300 hover:shadow-lg hover:shadow-ink-900/5">
+                        <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-ochre-100 text-ochre-700"><x-icon name="user-plus" class="size-6" /></span>
+                        <span><span class="block text-lg font-semibold text-ink-800">{{ __('Nouveau parmi nous ?') }}</span><span class="mt-1 block text-ink-900">{{ __('Laissez-nous vos coordonnées : nous serons heureux de faire votre connaissance.') }}</span>
+                            <span class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-ink-700 group-hover:underline">{{ __('Faisons connaissance') }} <x-icon name="arrow-right" class="size-4" /></span></span>
+                    </a>
+                @endif
+                @if ($website->hasPage('priere'))
+                    <a href="{{ route('website.page', [$organization->slug, 'priere']) }}" class="group flex gap-4 rounded-3xl border border-sand-200 bg-white p-6 transition hover:border-ochre-300 hover:shadow-lg hover:shadow-ink-900/5">
+                        <span class="grid size-12 shrink-0 place-items-center rounded-2xl bg-leaf-50 text-leaf-600"><x-icon name="heart-handshake" class="size-6" /></span>
+                        <span><span class="block text-lg font-semibold text-ink-800">{{ __('Un sujet de prière ?') }}</span><span class="mt-1 block text-ink-900">{{ __('Confiez-le à l’équipe pastorale, en toute confidentialité.') }}</span>
+                            <span class="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-ink-700 group-hover:underline">{{ __('Demander la prière') }} <x-icon name="arrow-right" class="size-4" /></span></span>
+                    </a>
+                @endif
             </section>
         @endif
 
@@ -87,6 +118,18 @@
                     @endforeach
                 </ul>
                 <a href="{{ route('website.page', [$organization->slug, 'paroisses']) }}" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-ink-700 hover:underline">{{ __('Toutes nos paroisses') }} <x-icon name="arrow-right" class="size-4" /></a>
+            </section>
+        @endif
+
+        @if ($photos->isNotEmpty())
+            <section>
+                <x-website.heading :website="$website" :eyebrow="__('En images')">{{ __('La vie de la communauté') }}</x-website.heading>
+                <ul class="grid grid-cols-3 gap-2 sm:gap-3 lg:grid-cols-6">
+                    @foreach ($photos as $photo)
+                        <li><a href="{{ route('website.page', [$organization->slug, 'galerie']) }}" class="block overflow-hidden rounded-2xl bg-sand-100"><img src="{{ route('website.photo', [$organization->slug, $photo->id, 'vignette']) }}" alt="{{ $photo->caption }}" loading="lazy" class="aspect-square w-full object-cover transition hover:scale-105"></a></li>
+                    @endforeach
+                </ul>
+                <a href="{{ route('website.page', [$organization->slug, 'galerie']) }}" class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-ink-700 hover:underline">{{ __('Toute la galerie') }} <x-icon name="arrow-right" class="size-4" /></a>
             </section>
         @endif
 

@@ -27,7 +27,7 @@ class PastoralCase extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['status' => 'open'];
+    protected $attributes = ['status' => 'open', 'source' => 'app'];
 
     protected function casts(): array
     {

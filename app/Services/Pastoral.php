@@ -28,7 +28,7 @@ class Pastoral
             'organization_id' => $organization->id, 'member_id' => $member?->id,
             'person_name' => $member ? null : trim($data['person_name']), 'person_phone' => $member ? null : (trim((string) ($data['person_phone'] ?? '')) ?: null),
             'kind' => array_key_exists($data['kind'] ?? '', PastoralCase::KINDS) ? $data['kind'] : 'other', 'title' => trim($data['title']),
-            'opened_on' => today()->toDateString(), 'next_on' => ($data['next_on'] ?? null) ?: null,
+            'opened_on' => today()->toDateString(), 'next_on' => ($data['next_on'] ?? null) ?: null, 'source' => ($data['source'] ?? 'app') === 'website' ? 'website' : 'app',
             'assigned_to' => ($data['assigned_to'] ?? null) ?: null, 'created_by' => auth()->id(),
         ]);
         $this->announce($case);
@@ -85,7 +85,9 @@ class Pastoral
         $request = PrayerRequest::create([
             'organization_id' => $organization->id, 'member_id' => $member?->id,
             'requester_name' => $member ? null : trim($data['requester_name']), 'subject' => trim($data['subject']),
+            'requester_phone' => $member ? null : (trim((string) ($data['requester_phone'] ?? '')) ?: null),
             'body' => trim((string) ($data['body'] ?? '')) ?: null, 'is_private' => (bool) ($data['is_private'] ?? true), 'created_by' => auth()->id(),
+            'source' => ($data['source'] ?? 'app') === 'website' ? 'website' : 'app',
         ]);
         $this->notifier->send($organization, $this->notifier->withPermission($organization, 'pastoral.view'), "prayer.{$request->id}", [
             'title' => __('Demande de prière : :s', ['s' => $request->subject]), 'body' => $request->requesterName(),

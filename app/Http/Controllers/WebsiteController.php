@@ -6,6 +6,7 @@ use App\Livewire\Finances\Declarations\Index as Declarations;
 use App\Models\Organization;
 use App\Models\Sermon;
 use App\Models\Website;
+use App\Models\WebsitePhoto;
 use App\Services\Websites;
 use App\Support\DocumentIdentity;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class WebsiteController extends Controller
             'announcements' => $website->hasPage('annonces') ? $this->websites->announcements($organization)->take(3) : collect(),
             'sermon' => $website->hasPage('predications') ? $this->websites->sermons($organization)->first() : null,
             'parishes' => $website->hasPage('paroisses') ? $this->websites->parishes($organization) : collect(),
+            'photos' => $website->hasPage('galerie') ? $this->websites->photos($organization)->take(6) : collect(),
         ]);
     }
 
@@ -44,6 +46,8 @@ class WebsiteController extends Controller
             'annonces' => ['announcements' => $this->websites->announcements($organization)],
             'predications' => ['sermons' => $this->websites->sermons($organization)],
             'paroisses' => ['parishes' => $this->websites->parishes($organization)],
+            'galerie' => ['photos' => $this->websites->photos($organization)],
+            'groupes' => ['groups' => $this->websites->groups($website)],
             'don' => ['accounts' => $this->websites->givingAccounts($website), 'categories' => $this->websites->givingCategories($website),
                 'currencies' => ['USD', 'CDF'], 'operators' => Declarations::OPERATORS],
             default => [],
@@ -92,6 +96,60 @@ class WebsiteController extends Controller
         $this->websites->declareGift($website, $data);
 
         return redirect()->route('website.page', [$site, 'don'])->with('given', true);
+    }
+
+    /** Une demande de prière confiée depuis le site : elle arrive dans le suivi pastoral. */
+    public function pray(Request $request, string $site)
+    {
+        $website = $this->website($request, $site);
+        abort_unless($website->hasPage('priere'), 404);
+        if (filled($request->input('site_web'))) {
+            return redirect()->route('website.page', [$site, 'priere'])->with('sent', true);
+        }
+        $data = $request->validate([
+            'name' => 'required|string|max:150', 'phone' => 'nullable|string|max:20',
+            'subject' => 'required|string|max:160', 'message' => 'nullable|string|max:2000',
+        ], [], ['name' => __('nom'), 'phone' => __('téléphone'), 'subject' => __('sujet de prière')]);
+        $this->websites->prayerFromWebsite($website, $data);
+
+        return redirect()->route('website.page', [$site, 'priere'])->with('sent', true);
+    }
+
+    /** Un visiteur se présente : l'équipe pastorale le recontacte. */
+    public function welcome(Request $request, string $site)
+    {
+        $website = $this->website($request, $site);
+        abort_unless($website->hasPage('bienvenue'), 404);
+        if (filled($request->input('site_web'))) {
+            return redirect()->route('website.page', [$site, 'bienvenue'])->with('sent', true);
+        }
+        $data = $request->validate([
+            'name' => 'required|string|max:150', 'phone' => 'required|string|max:20', 'neighbourhood' => 'nullable|string|max:100',
+            'heard_from' => 'nullable|string|max:100', 'wants_visit' => 'nullable|boolean', 'message' => 'nullable|string|max:1000',
+        ], [], ['name' => __('nom'), 'phone' => __('téléphone')]);
+        $this->websites->welcomeVisitor($website, $data);
+
+        return redirect()->route('website.page', [$site, 'bienvenue'])->with('sent', true);
+    }
+
+    public function photo(Request $request, string $site, int $photo, string $size)
+    {
+        $website = $this->website($request, $site);
+        abort_unless($website->hasPage('galerie'), 404);
+        $photo = WebsitePhoto::withoutOrganizationScope()->where('organization_id', $website->organization_id)->findOrFail($photo);
+        $path = $size === 'vignette' ? $photo->thumb_path : $photo->path;
+        abort_unless(Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response($path, null, ['Cache-Control' => 'public, max-age=2592000, immutable']);
+    }
+
+    public function leader(Request $request, string $site, int $index)
+    {
+        $website = $this->website($request, $site);
+        $path = $website->leaders[$index]['photo_path'] ?? null;
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return Storage::disk('local')->response($path, null, ['Cache-Control' => 'public, max-age=604800']);
     }
 
     private function website(Request $request, string $site): Website

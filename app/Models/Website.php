@@ -24,27 +24,36 @@ class Website extends Model
         'evenements' => 'Événements',
         'annonces' => 'Annonces',
         'predications' => 'Prédications',
+        'groupes' => 'Nos groupes',
+        'galerie' => 'Galerie photos',
         'a-propos' => 'Qui sommes-nous',
         'paroisses' => 'Nos paroisses',
+        'priere' => 'Demande de prière',
+        'bienvenue' => 'Nouveau ? Faisons connaissance',
         'don' => 'Faire un don',
         'contact' => 'Nous trouver',
     ];
 
-    /** Les mêmes, en court, pour le menu. */
+    /** Les mêmes, en court, pour le menu. La prière et l'accueil des nouveaux ont leurs boutons sur l'accueil et en bas de page. */
     public const NAV = [
         'programme' => 'Programme', 'evenements' => 'Événements', 'annonces' => 'Annonces', 'predications' => 'Prédications',
-        'a-propos' => 'À propos', 'paroisses' => 'Paroisses', 'don' => 'Dons', 'contact' => 'Contact',
+        'groupes' => 'Groupes', 'galerie' => 'Galerie', 'a-propos' => 'À propos', 'paroisses' => 'Paroisses', 'don' => 'Dons', 'contact' => 'Contact',
     ];
 
-    public const DEFAULT_PAGES = ['programme', 'evenements', 'annonces', 'predications', 'a-propos', 'don', 'contact'];
+    public const DEFAULT_PAGES = ['programme', 'evenements', 'annonces', 'predications', 'groupes', 'galerie', 'a-propos', 'priere', 'bienvenue', 'don', 'contact'];
+
+    /** Au plus : photos dans la galerie, responsables présentés. */
+    public const MAX_PHOTOS = 60;
+
+    public const MAX_LEADERS = 12;
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['is_published' => false, 'theme' => 'chaleureux'];
+    protected $attributes = ['is_published' => false, 'theme' => 'chaleureux', 'verse_text' => null, 'verse_reference' => null, 'leaders' => null, 'public_groups' => null];
 
     protected function casts(): array
     {
-        return ['is_published' => 'boolean', 'pages' => 'array', 'giving_accounts' => 'array', 'giving_categories' => 'array', 'published_at' => 'datetime'];
+        return ['is_published' => 'boolean', 'pages' => 'array', 'giving_accounts' => 'array', 'giving_categories' => 'array', 'leaders' => 'array', 'public_groups' => 'array', 'published_at' => 'datetime'];
     }
 
     public function organization(): BelongsTo

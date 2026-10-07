@@ -13,9 +13,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>{{ isset($title) ? $title.' · ' : '' }}{{ $organization->name }}</title>
     <meta name="description" content="{{ \Illuminate\Support\Str::limit(strip_tags($description ?? $website->welcome_text ?? $website->tagline ?? $organization->name), 160) }}">
+    {{-- L'aperçu du lien partagé sur WhatsApp ou Facebook : titre, texte et photo. --}}
     <meta property="og:title" content="{{ isset($title) ? $title.' · ' : '' }}{{ $organization->name }}">
+    <meta property="og:description" content="{{ \Illuminate\Support\Str::limit(strip_tags($description ?? $website->welcome_text ?? $website->tagline ?? $organization->name), 200) }}">
     <meta property="og:type" content="website">
-    @if ($website->cover_path)<meta property="og:image" content="{{ route('website.cover', $organization->slug) }}">@endif
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:site_name" content="{{ $organization->name }}">
+    <meta property="og:locale" content="fr_CD">
+    @if ($website->cover_path)<meta property="og:image" content="{{ route('website.cover', $organization->slug) }}">@elseif ($logo)<meta property="og:image" content="{{ $logo }}">@endif
+    <meta name="twitter:card" content="{{ $website->cover_path ? 'summary_large_image' : 'summary' }}">
     @if (! $website->is_published || $organization->is_demo)<meta name="robots" content="noindex">@endif
     <meta name="theme-color" content="{{ $theme->primary }}">
     @if ($logo)<link rel="icon" href="{{ $logo }}">@else<link rel="icon" href="{{ asset('icons/favicon.svg') }}" type="image/svg+xml">@endif
@@ -80,6 +86,8 @@
             <div class="min-w-0 space-y-2 text-sm">
                 @if ($website->facebook_url)<a href="{{ $website->facebook_url }}" rel="noopener" target="_blank" class="flex items-center gap-2 underline-offset-4 hover:underline"><x-icon name="external-link" class="size-4" /> Facebook</a>@endif
                 @if ($website->youtube_url)<a href="{{ $website->youtube_url }}" rel="noopener" target="_blank" class="flex items-center gap-2 underline-offset-4 hover:underline"><x-icon name="play" class="size-4" /> YouTube</a>@endif
+                @if ($website->hasPage('priere'))<a href="{{ route('website.page', [$organization->slug, 'priere']) }}" class="flex items-center gap-2 underline-offset-4 hover:underline"><x-icon name="heart-handshake" class="size-4" /> {{ __('Demander la prière') }}</a>@endif
+                @if ($website->hasPage('bienvenue'))<a href="{{ route('website.page', [$organization->slug, 'bienvenue']) }}" class="flex items-center gap-2 underline-offset-4 hover:underline"><x-icon name="user-plus" class="size-4" /> {{ __('Nouveau ? Faisons connaissance') }}</a>@endif
                 <p @class(['pt-2 text-xs', 'text-white/60' => $dark, 'text-sand-700' => ! $dark])>{{ __('Site tenu avec') }} <a href="{{ route('home') }}" class="font-semibold underline-offset-4 hover:underline">Waumini</a></p>
             </div>
         </div>

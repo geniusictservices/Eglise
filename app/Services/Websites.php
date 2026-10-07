@@ -6,11 +6,17 @@ use App\Models\Announcement;
 use App\Models\CashAccount;
 use App\Models\Event;
 use App\Models\FinanceCategory;
+use App\Models\Group;
 use App\Models\Organization;
+use App\Models\PastoralCase;
+use App\Models\PastoralNote;
 use App\Models\PaymentDeclaration;
+use App\Models\PrayerRequest;
 use App\Models\Sermon;
 use App\Models\Website;
+use App\Models\WebsitePhoto;
 use App\Support\CurrentOrganization;
+use App\Support\MemberPhoto;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -28,7 +34,11 @@ class Websites
 {
     public const COVER_MAX = 1600;
 
-    public function __construct(private Calendar $calendar, private CircuitNotices $notices) {}
+    public const PHOTO_MAX = 1600;
+
+    public const THUMB_SIZE = 600;
+
+    public function __construct(private Calendar $calendar, private CircuitNotices $notices, private Pastoral $pastoral, private Notifier $notifier) {}
 
     /** Le site de la communauté, avec des textes de départ s'il n'existe pas encore. */
     public function for(Organization $organization): Website
@@ -49,18 +59,134 @@ class Websites
         $categories = FinanceCategory::withoutOrganizationScope()->where('organization_id', $organization->id)->where('type', 'income')
             ->whereIn('id', (array) ($data['giving_categories'] ?? []))->pluck('id')->all();
 
+        $groups = Group::withoutOrganizationScope()->where('organization_id', $organization->id)->whereIn('id', (array) ($data['public_groups'] ?? []))->pluck('id')->all();
+
         $website->fill([
+            'public_groups' => $groups,
             'theme' => array_key_exists($data['theme'] ?? '', Website::THEMES) ? $data['theme'] : 'chaleureux',
             'pages' => $pages,
             'is_published' => $publish,
             'published_at' => $publish ? ($website->published_at ?? now()) : null,
             'giving_accounts' => $accounts,
             'giving_categories' => $categories,
-        ] + collect(['tagline', 'welcome_title', 'welcome_text', 'about_text', 'beliefs_text', 'pastor_name', 'pastor_message', 'giving_text', 'whatsapp', 'map_url', 'facebook_url', 'youtube_url'])
+        ] + collect(['tagline', 'welcome_title', 'welcome_text', 'verse_text', 'verse_reference', 'about_text', 'beliefs_text', 'pastor_name', 'pastor_message', 'giving_text', 'whatsapp', 'map_url', 'facebook_url', 'youtube_url'])
             ->mapWithKeys(fn ($k) => [$k => trim((string) ($data[$k] ?? '')) ?: null])->all());
         $website->save();
 
         return $website;
+    }
+
+    /**
+     * Les responsables présentés sur « Qui sommes-nous » : nom, fonction et photo (carrée).
+     * Une photo retirée de la liste est effacée.
+     *
+     * @param  array<int, array{name?: string, role?: string, photo_path?: ?string}>  $leaders
+     * @param  array<int, UploadedFile|null>  $photos  nouvelles photos, par position dans la liste
+     */
+    public function saveLeaders(Website $website, array $leaders, array $photos = []): void
+    {
+        $old = collect($website->leaders ?? [])->pluck('photo_path')->filter();
+        $kept = [];
+        foreach (array_values($leaders) as $i => $leader) {
+            $name = trim((string) ($leader['name'] ?? ''));
+            if ($name === '' || count($kept) >= Website::MAX_LEADERS) {
+                continue;
+            }
+            // Seule une photo déjà enregistrée pour ce site peut être reprise.
+            $path = $old->contains($leader['photo_path'] ?? null) ? $leader['photo_path'] : null;
+            if (($photos[$i] ?? null) instanceof UploadedFile) {
+                $path = 'websites/leaders/'.$website->organization_id.'-'.Str::random(10).'.jpg';
+                Storage::disk('local')->put($path, MemberPhoto::croppedJpeg($photos[$i]->getRealPath(), 400, 400));
+            }
+            $kept[] = ['name' => $name, 'role' => trim((string) ($leader['role'] ?? '')) ?: null, 'photo_path' => $path];
+        }
+        $old->diff(collect($kept)->pluck('photo_path'))->each(fn ($p) => Storage::disk('local')->delete($p));
+        $website->update(['leaders' => $kept]);
+    }
+
+    /** Ajoute une photo à la galerie : réduite à 1600 px, avec une vignette carrée de 600 px. */
+    public function addPhoto(Organization $organization, UploadedFile $file, ?string $caption = null): WebsitePhoto
+    {
+        if (WebsitePhoto::withoutOrganizationScope()->where('organization_id', $organization->id)->count() >= Website::MAX_PHOTOS) {
+            throw new InvalidArgumentException(__('La galerie est pleine (:n photos) : retirez d’abord des photos anciennes.', ['n' => Website::MAX_PHOTOS]));
+        }
+        $base = 'websites/photos/'.$organization->id.'-'.Str::random(10);
+        Storage::disk('local')->put("{$base}.jpg", $this->scaledJpeg($file->getRealPath(), self::PHOTO_MAX));
+        Storage::disk('local')->put("{$base}-v.jpg", MemberPhoto::croppedJpeg($file->getRealPath(), self::THUMB_SIZE, self::THUMB_SIZE));
+
+        return WebsitePhoto::create(['organization_id' => $organization->id, 'path' => "{$base}.jpg", 'thumb_path' => "{$base}-v.jpg",
+            'caption' => trim((string) $caption) ?: null, 'created_by' => auth()->id()]);
+    }
+
+    public function deletePhoto(WebsitePhoto $photo): void
+    {
+        Storage::disk('local')->delete([$photo->path, $photo->thumb_path]);
+        $photo->delete();
+    }
+
+    /** Les photos de la galerie, les plus récentes d'abord. */
+    public function photos(Organization $organization): Collection
+    {
+        return WebsitePhoto::withoutOrganizationScope()->where('organization_id', $organization->id)->latest()->latest('id')->get();
+    }
+
+    /** Les groupes que la communauté a choisi de montrer : chorales, cellules, jeunesse… */
+    public function groups(Website $website): Collection
+    {
+        return Group::withoutOrganizationScope()->where('organization_id', $website->organization_id)->where('is_active', true)
+            ->whereIn('id', $website->public_groups ?? [])->orderBy('name')->get();
+    }
+
+    /** Une demande de prière confiée depuis le site : elle arrive dans le suivi pastoral. */
+    public function prayerFromWebsite(Website $website, array $data): PrayerRequest
+    {
+        return app(CurrentOrganization::class)->within($website->organization, fn () => $this->pastoral->pray($website->organization, [
+            'requester_name' => $data['name'], 'requester_phone' => $data['phone'] ?? null, 'subject' => $data['subject'],
+            'body' => $data['message'] ?? null, 'is_private' => true, 'source' => 'website',
+        ]));
+    }
+
+    /** Un visiteur se présente sur le site : un suivi « Nouveau venu » est ouvert, et l'équipe pastorale prévenue. */
+    public function welcomeVisitor(Website $website, array $data): PastoralCase
+    {
+        $organization = $website->organization;
+
+        return app(CurrentOrganization::class)->within($organization, function () use ($organization, $data) {
+            $case = $this->pastoral->open($organization, [
+                'person_name' => $data['name'], 'person_phone' => $data['phone'], 'kind' => 'newcomer', 'source' => 'website',
+                'title' => __('S’est présenté sur le site'), 'next_on' => today()->addDays(3)->toDateString(),
+            ]);
+            $details = collect([
+                ($data['neighbourhood'] ?? null) ? __('Quartier : :q', ['q' => trim($data['neighbourhood'])]) : null,
+                ($data['heard_from'] ?? null) ? __('Nous a connus par : :h', ['h' => trim($data['heard_from'])]) : null,
+                ($data['wants_visit'] ?? false) ? __('Souhaite recevoir une visite ou un appel.') : null,
+                trim((string) ($data['message'] ?? '')) ?: null,
+            ])->filter()->implode("\n");
+            if ($details !== '') {
+                PastoralNote::create(['pastoral_case_id' => $case->id, 'author_id' => null, 'kind' => 'note', 'happened_on' => today()->toDateString(), 'body' => $details]);
+            }
+            $this->notifier->send($organization, $this->notifier->withPermission($organization, 'pastoral.view'), "pastoral.{$case->id}.website", [
+                'title' => __('Nouveau venu : :p', ['p' => $case->person_name]), 'body' => __('S’est présenté sur le site de l’église.'),
+                'url' => route('pastoral.show', $case), 'icon' => 'user-plus']);
+
+            return $case;
+        });
+    }
+
+    private function scaledJpeg(string $source, int $max): string
+    {
+        $image = @imagecreatefromstring((string) file_get_contents($source));
+        if (! $image) {
+            throw new InvalidArgumentException(__('Image illisible.'));
+        }
+        $w = imagesx($image);
+        $h = imagesy($image);
+        $scale = min(1, $max / max($w, $h));
+        $out = imagescale($image, max(1, (int) round($w * $scale)), max(1, (int) round($h * $scale)));
+        ob_start();
+        imagejpeg($out, null, 80);
+
+        return (string) ob_get_clean();
     }
 
     /** La photo d'accueil : réduite à 1600 px de large au plus, en JPEG. */

@@ -5,7 +5,9 @@ Chaque communauté peut avoir **son site sur Internet**, sans rien saisir deux f
 - le **programme des cultes** et les **événements** viennent du [calendrier](27-calendrier-presences.md) : changez l'heure du culte dans le calendrier, le site affiche la nouvelle heure ;
 - les **annonces** choisies viennent des [annonces](28-annonces.md) ;
 - les **prédications** sont publiées dans Waumini ;
-- les **numéros mobile money** viennent de vos comptes, et les **dons déclarés** sur le site arrivent dans les [paiements déclarés](18-promesses.md).
+- les **numéros mobile money** viennent de vos comptes, et les **dons déclarés** sur le site arrivent dans les [paiements déclarés](18-promesses.md) ;
+- les **groupes** montrés viennent des [groupes](26-groupes.md) ;
+- les **demandes de prière** et les **nouveaux venus** qui se présentent sur le site arrivent dans le [suivi pastoral](31-suivi-pastoral.md).
 
 L'adresse du site est celle de Waumini suivie du nom court de la communauté, par exemple `waumini.com/site/cep-himbi`. Partagez-la sur WhatsApp, imprimez-la sur vos affiches et vos documents.
 
@@ -28,7 +30,7 @@ En haut, l'**adresse** du site et son état : en ligne, ou pas encore publié. *
 
 ① **Publier le site** : tant que la case n'est pas cochée, le site n'est visible que par ceux qui le gèrent, avec un bandeau « Aperçu ». Préparez tranquillement vos textes, regardez le résultat, puis publiez. Décocher la case retire le site d'Internet ; rien n'est perdu.
 
-② **Les onglets** : *Accueil et apparence*, *Pages*, *Qui sommes-nous*, *Dons*, *Contact*. Touchez **Enregistrer** en bas après vos changements.
+② **Les onglets** : *Accueil et apparence*, *Pages*, *Galerie*, *Qui sommes-nous*, *Dons*, *Contact*. Touchez **Enregistrer** en bas après vos changements.
 
 ③ **La mise en page**, au choix :
 
@@ -39,6 +41,8 @@ En haut, l'**adresse** du site et son état : en ligne, ou pas encore publié. *
 Les **couleurs et le logo** sont ceux de la communauté, choisis dans [Paramètres › Apparence et Identité](08-parametres.md). Une paroisse sans logo propre prend celui du siège.
 
 **La page d'accueil** : le grand titre, une ligne sous le nom (« Goma, Himbi II · Une famille qui prie »), un mot d'accueil de quelques lignes, et une **photo** facultative (l'église, l'assemblée, la chorale). Waumini réduit la photo pour qu'elle se charge vite, même avec une connexion lente.
+
+**Le verset du moment** (facultatif) : un verset et sa référence (« Matthieu 11.28 »), affichés en grand sous la photo d'accueil. Changez-le quand vous voulez : pour une fête, une campagne, le thème de l'année.
 
 ## Les pages
 
@@ -55,8 +59,12 @@ L'accueil est toujours là. Cochez les autres pages à montrer :
 | Événements | Les conventions, concerts, retraites à venir, avec un bouton pour les partager sur WhatsApp | Le calendrier |
 | Annonces | Les annonces choisies | Les annonces |
 | Prédications | Les messages en vidéo ou en audio | Site vitrine › Prédications |
-| Qui sommes-nous | Votre histoire, ce que vous croyez, le mot du pasteur | Onglet *Qui sommes-nous* |
+| Nos groupes | Les chorales, cellules, jeunesse, mamans… choisies, avec leur jour de rencontre | Les groupes |
+| Galerie photos | Les photos de la vie de la communauté | Onglet *Galerie* |
+| Qui sommes-nous | Votre histoire, ce que vous croyez, vos responsables, le mot du pasteur | Onglet *Qui sommes-nous* |
 | Nos paroisses | Les niveaux en dessous, avec un lien vers leur site | La hiérarchie |
+| Demande de prière | Un formulaire : la demande arrive dans le suivi pastoral | Suivi pastoral |
+| Nouveau ? Faisons connaissance | Un formulaire : le visiteur laisse ses coordonnées, un suivi « Nouveau venu » est ouvert | Suivi pastoral |
 | Faire un don | Les numéros et la déclaration du don | Onglet *Dons* |
 | Nous trouver | Adresse, téléphone, WhatsApp, itinéraire | Paramètres et onglet *Contact* |
 
@@ -68,7 +76,30 @@ L'accueil est toujours là. Cochez les autres pages à montrer :
 - une activité d'un **département** ou d'un **groupe** n'est pas sur le site, sauf si vous cochez la case (la convention des jeunes, ouverte à tous) ;
 - une **annonce** n'est sur le site que si vous cochez **Publier aussi sur le site vitrine**.
 
+**Nos groupes.** Sous la liste des pages, cochez les groupes à montrer. Le site affiche leur nom, leur genre (chorale, cellule…), leur description et leur jour de rencontre. **Ni le lieu ni le responsable ne sont publiés** : une cellule se réunit souvent chez une famille. Le visiteur intéressé est invité à se présenter, et l'équipe le met en contact avec le groupe.
+
 ② **Faire un don** : voir plus bas.
+
+## La galerie photos
+
+Dans l'onglet **Galerie** : **Choisir des photos** (jusqu'à 20 à la fois, depuis la galerie du téléphone ou l'ordinateur), une **légende** facultative pour toutes (« Baptêmes au lac Kivu, août 2026 »), puis **Ajouter à la galerie**. Les photos sont enregistrées tout de suite, réduites pour s'afficher vite, avec une vignette carrée.
+
+Sous chaque photo, sa légende se modifie directement ; la corbeille la retire du site. La galerie garde au plus 60 photos : retirez les plus anciennes pour en ajouter d'autres. Sur le site, la page **Galerie** montre les photos ; un toucher ouvre la photo en grand. L'accueil montre les six plus récentes.
+
+Choisissez des photos où les personnes sont d'accord pour paraître sur Internet, surtout les enfants.
+
+## Les responsables
+
+Dans l'onglet **Qui sommes-nous**, sous les textes : **Ajouter un responsable**, puis son **nom**, sa **fonction** (« Pasteur titulaire », « Responsable des mamans ») et, si vous le souhaitez, sa **photo** (recadrée en rond). Ils paraissent sur la page *Qui sommes-nous*, dans l'ordre de la liste, avec leurs initiales quand il n'y a pas de photo. La corbeille retire un responsable et sa photo. Jusqu'à 12 responsables, avec leur accord.
+
+## La prière et les nouveaux venus
+
+Deux formulaires simples, avec chacun un bouton sur l'accueil du site et un lien en bas de chaque page :
+
+- **Demande de prière** : le visiteur écrit son nom, son sujet de prière et, s'il le souhaite, son téléphone et quelques mots. La demande arrive dans **Suivi pastoral › Prière**, marquée **Site web**, avec son numéro ; l'équipe pastorale est prévenue dans ses [nouveautés](25-nouveautes.md). Elle reste confidentielle et n'est jamais publiée.
+- **Nouveau ? Faisons connaissance** : le visiteur laisse son nom, son téléphone, son quartier, comment il a connu l'église, et peut demander une visite. Waumini ouvre un **suivi « Nouveau venu »**, marqué **Site web**, avec une première visite prévue dans trois jours ; ses réponses sont dans la première note. L'équipe pastorale est prévenue, puis l'appelle et confie le suivi à quelqu'un.
+
+Un champ invisible arrête les robots, et un même téléphone ne peut pas envoyer des dizaines de formulaires d'affilée.
 
 ## Les prédications
 
@@ -95,7 +126,9 @@ Décocher **Visible sur le site** cache une prédication sans la supprimer. La c
 <td width="32%"><img src="captures/mobile/109-site-accueil.png" alt="Accueil du site sur téléphone"></td>
 </tr></table>
 
-L'accueil présente le mot d'accueil, les boutons **Nos cultes**, **Faire un don** et **Nous trouver**, puis les rencontres de la semaine, le mot du pasteur, les prochains événements, les dernières annonces et la dernière prédication. Sur téléphone, le **Menu** en haut à droite ouvre les autres pages.
+L'accueil présente le mot d'accueil, les boutons **Nos cultes**, **Faire un don** et **Nous trouver**, le verset du moment, puis les rencontres de la semaine, les boutons **Nouveau parmi nous ?** et **Un sujet de prière ?**, le mot du pasteur, les prochains événements, les dernières annonces, les dernières photos et la dernière prédication.
+
+**Partager le lien sur WhatsApp ou Facebook** : l'aperçu montre le nom de l'église, le mot d'accueil et la photo d'accueil (ou le logo). Sur téléphone, le **Menu** en haut à droite ouvre les autres pages.
 
 Les deux autres mises en page, sur la communauté de démonstration : **Lumière** pour la Paroisse de Katindo, avec sa photo, et **Solennel** pour le siège, qui présente ses paroisses.
 
