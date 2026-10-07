@@ -1,0 +1,28 @@
+# Waumini installé dans un sous-dossier, par exemple https://exemple.com/waumini/,
+# quand l'hébergement ne permet pas de faire pointer l'adresse sur public/.
+# Seuls les fichiers de public/ sont servis ; tout le reste passe par index.php.
+# Les fichiers du projet (.env, vendor, storage…) ne sont jamais accessibles.
+# (Sur une installation classique, l'adresse pointe sur public/ et ce fichier ne sert pas.)
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # La porte d'entrée elle-même.
+    RewriteRule ^index\.php$ - [L]
+
+    # Les fichiers du projet : interdits.
+    RewriteRule ^(\.env.*|\.git.*|artisan|composer\.(json|lock)|package(-lock)?\.json|vite\.config\.js|phpunit\.xml|README\.md)$ - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|docs|lang|resources|routes|scripts|storage|tests|vendor|branding|node_modules)(/|$) - [F,L]
+
+    # Le dossier de l'installation, quel que soit son nom.
+    RewriteCond %{REQUEST_URI}::$1 ^(.*?/)(.*)::\2$
+    RewriteRule ^(.*)$ - [E=WAUMINI_BASE:%1]
+
+    # Les fichiers publics (feuilles de style, icônes, images…) viennent de public/.
+    RewriteCond %{DOCUMENT_ROOT}%{ENV:WAUMINI_BASE}public/$1 -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Tout le reste : l'application.
+    RewriteRule ^ index.php [L]
+</IfModule>

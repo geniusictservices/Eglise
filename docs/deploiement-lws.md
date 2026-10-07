@@ -26,6 +26,16 @@ Organisation recommandée :
 
 Faire ensuite pointer le domaine vers `~/waumini/public` : dans cPanel, *Domaines*, modifier la **racine du document** du domaine pour `waumini/public`. Si l'offre ne le permet pas, copier le contenu de `public/` dans la racine du domaine et corriger les deux chemins de `index.php` (`__DIR__.'/../waumini/vendor/autoload.php'` et `__DIR__.'/../waumini/bootstrap/app.php'`).
 
+### Installer dans un sous-dossier
+
+Si l'adresse ne peut pas pointer sur `public/` (par exemple `https://exemple.com/waumini/`, dans un dossier de `public_html`), Waumini fonctionne quand même : le fichier `.htaccess` et la porte d'entrée `index.php` placés à la racine du projet servent seulement les fichiers de `public/`, envoient tout le reste à l'application, et **interdisent l'accès** à `.env`, `vendor`, `storage` et aux autres fichiers du projet. Il suffit :
+
+- d'envoyer le projet complet dans le dossier (avec ses fichiers cachés `.htaccess` et `.env`) ;
+- de mettre l'adresse complète dans `.env` : `APP_URL=https://exemple.com/waumini` ;
+- de vérifier que `https://exemple.com/waumini/.env` répond bien « Interdit ».
+
+L'installation sur le téléphone fonctionne aussi, limitée au sous-dossier. Un sous-domaine (`waumini.exemple.com` pointé sur `public/`) reste la solution la plus propre pour la production.
+
 ## 3. Configurer
 
 Créer `~/waumini/.env` à partir de `.env.example` :

@@ -50,7 +50,12 @@ class Notifier
             return 0;
         }
 
+        // Le chemin dans Waumini, sans le sous-dossier éventuel de l'installation (ex. /waumini).
         $path = '/'.ltrim((string) parse_url($content['url'], PHP_URL_PATH), '/');
+        $base = rtrim((string) parse_url(url('/'), PHP_URL_PATH), '/');
+        if ($base !== '' && str_starts_with($path, $base.'/')) {
+            $path = substr($path, strlen($base));
+        }
         $data = ['title' => $content['title'], 'body' => $content['body'] ?? null, 'icon' => $content['icon'] ?? 'bell', 'url' => $path];
 
         foreach (User::whereIn('id', $ids)->where('is_active', true)->pluck('id') as $userId) {

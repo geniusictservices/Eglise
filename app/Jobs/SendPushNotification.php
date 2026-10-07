@@ -35,7 +35,7 @@ class SendPushNotification implements ShouldQueue
         $payload = json_encode([
             'title' => $notification->data['title'],
             'body' => $notification->data['body'] ?? '',
-            'url' => route('notifications.open', $notification->id, false),
+            'url' => route('notifications.open', $notification->id),
             'tag' => $notification->key ?: $notification->id,
             'count' => $unread,
         ]);

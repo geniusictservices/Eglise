@@ -19,7 +19,7 @@ document.addEventListener('alpine:init', () => {
             this.error = null;
             try {
                 const response = await Passkeys.verify({ remember: true });
-                window.location.href = response?.redirect ?? '/tableau-de-bord';
+                window.location.href = response?.redirect ?? `${document.querySelector('meta[name="app-url"]')?.content.replace(/\/$/, '') ?? ''}/tableau-de-bord`;
             } catch (error) {
                 this.error = explain(error);
                 this.loading = false;

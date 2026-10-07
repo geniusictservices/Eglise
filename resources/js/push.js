@@ -4,7 +4,10 @@ const toKey = (base64) => {
     return Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
 };
 
-const send = (method, body) => fetch('/nouveautes/telephone', {
+// Adresse de Waumini (racine du site ou sous-dossier), donnée par la page.
+const base = document.querySelector('meta[name="app-url"]')?.content.replace(/\/$/, '') ?? '';
+
+const send = (method, body) => fetch(`${base}/nouveautes/telephone`, {
     method,
     headers: {
         'Content-Type': 'application/json',
