@@ -52,7 +52,7 @@ class Index extends Component
         return view('livewire.attendance.index', [
             'records' => $records,
             'chart' => $chart,
-            'chartTitle' => $charted['event']?->title,
+            'chartTitle' => $charted ? $charted['event']?->title : null,
             'peak' => max(1, (int) $chart->max('headcount')),
             'averages' => $averages,
             'events' => Event::where('tracks_attendance', true)->orderBy('title')->get(),
