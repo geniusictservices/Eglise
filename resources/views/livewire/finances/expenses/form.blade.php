@@ -5,13 +5,46 @@
     <form wire:submit="save" class="grid gap-5 lg:grid-cols-[1.3fr_1fr] lg:items-start">
         <section class="card space-y-4 p-5 sm:p-6">
             <div><label for="title" class="label">{{ __('Objet') }}</label><input wire:model="title" id="title" class="input" placeholder="{{ __('Exemple : achat de 50 chaises pour la salle') }}">@error('title') <p class="error">{{ $message }}</p> @enderror</div>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div><label for="departmentId" class="label">{{ __('Département') }}</label><select wire:model.live="departmentId" id="departmentId" class="input">@foreach ($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach</select></div>
-                <div><label for="categoryId" class="label">{{ __('Catégorie') }}</label><select wire:model.live="categoryId" id="categoryId" class="input">@foreach ($categories as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></div>
-            </div>
-            @if ($budgetLine)
+            @if ($adopted)
+                {{-- Une dépense se rattache au budget adopté ; un imprévu dit pourquoi il n'était pas prévu. --}}
+                <div class="grid grid-cols-2 gap-2" role="radiogroup" aria-label="{{ __('Rattachement au budget') }}">
+                    @foreach (['budget' => [__('Prévue au budget'), 'milestone'], 'imprevu' => [__('Imprévu'), 'triangle-alert']] as $mode => [$label, $icon])
+                        <label @class(['flex cursor-pointer items-center justify-center gap-2 rounded-xl border p-3 text-sm font-semibold', 'border-ochre-400 bg-ochre-50 text-ink-800' => $budgetMode === $mode, 'border-sand-200 text-ink-600' => $budgetMode !== $mode])>
+                            <input type="radio" wire:model.live="budgetMode" value="{{ $mode }}" class="sr-only"><x-icon :name="$icon" class="size-4" /> {{ $label }}</label>
+                    @endforeach
+                </div>
+            @endif
+            @if ($adopted && $budgetMode === 'budget')
+                <div>
+                    <label for="budgetLineId" class="label">{{ __('Ligne du budget :y', ['y' => \App\Support\FiscalYear::label($this->organization(), $adopted->fiscal_year)]) }}</label>
+                    <select wire:model.live="budgetLineId" id="budgetLineId" class="input">
+                        <option value="">{{ __('Choisir la ligne…') }}</option>
+                        @foreach ($choices as $department => $lines)
+                            <optgroup label="{{ $department }}">
+                                @foreach ($lines as $c)<option value="{{ $c['line']->id }}">{{ $c['line']->label }} · {{ $c['line']->category?->name }} · {{ __('reste :m', ['m' => \App\Support\Money::format($c['available'], 'USD')]) }}</option>@endforeach
+                            </optgroup>
+                        @endforeach
+                    </select>
+                    @error('budgetLineId') <p class="error">{{ $message }}</p> @enderror
+                </div>
+            @else
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div><label for="departmentId" class="label">{{ __('Département') }}</label><select wire:model.live="departmentId" id="departmentId" class="input">@foreach ($departments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach</select></div>
+                    <div><label for="categoryId" class="label">{{ __('Catégorie') }}</label><select wire:model.live="categoryId" id="categoryId" class="input">@foreach ($categories as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></div>
+                </div>
+                @if ($adopted)
+                    <div>
+                        <label for="unforeseenReason" class="label">{{ __('Pourquoi n’était-ce pas prévu ?') }}</label>
+                        <textarea wire:model="unforeseenReason" id="unforeseenReason" rows="2" maxlength="255" class="input" placeholder="{{ __('Exemple : la toiture a cédé pendant l’orage du 3 octobre') }}"></textarea>
+                        @error('unforeseenReason') <p class="error">{{ $message }}</p> @enderror
+                    </div>
+                @else
+                    <p class="rounded-xl bg-sand-50 p-3 text-sm text-ink-800"><x-icon name="info" class="mr-1 inline size-4 text-sand-500" /> {{ __('Pas encore de budget adopté pour cet exercice : la dépense est classée par département et par catégorie.') }}</p>
+                @endif
+            @endif
+            @if ($budgetLine && ! ($adopted && $budgetMode === 'budget' && ! $budgetLineId))
                 @if ($budgetLine['available'] === null)
-                    <p class="rounded-xl bg-ochre-50 p-3 text-sm text-ink-800"><x-icon name="info" class="mr-1 inline size-4 text-ochre-600" /> {{ __('Cette ligne n’est pas prévue au budget : la dépense demandera une autorisation de dépassement.') }}</p>
+                    <p class="rounded-xl bg-ochre-50 p-3 text-sm text-ink-800"><x-icon name="info" class="mr-1 inline size-4 text-ochre-600" /> {{ __('Rien n’est prévu au budget pour ce département et cette catégorie : la dépense demandera une autorisation de dépassement au pasteur.') }}</p>
                 @else
                     <p class="rounded-xl bg-sand-50 p-3 text-sm text-ink-800">{{ __('Budget de cette ligne : :a disponibles.', ['a' => \App\Support\Money::format($budgetLine['available'], 'USD')]) }}</p>
                 @endif
@@ -49,6 +82,7 @@
                     @error('files.*') <p class="error">{{ $message }}</p> @enderror
                 </div>
             </section>
+            @error('submit') <p class="error">{{ $message }}</p> @enderror
             <button class="btn-primary w-full" wire:loading.attr="disabled" wire:target="files,save"><x-icon name="upload" class="size-4" /> {{ __('Envoyer la demande') }}</button>
         </aside>
     </form>

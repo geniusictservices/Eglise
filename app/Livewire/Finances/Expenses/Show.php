@@ -191,7 +191,7 @@ class Show extends Component
 
     public function render(Ledger $ledger, Expenses $expenses)
     {
-        $this->expense->refresh()->load(['department', 'category', 'beneficiary', 'requester', 'checker', 'disburser', 'justifier', 'account', 'transaction', 'approvals.user', 'attachments']);
+        $this->expense->refresh()->load(['department', 'category', 'budgetLine', 'beneficiary', 'requester', 'checker', 'disburser', 'justifier', 'account', 'transaction', 'approvals.user', 'attachments']);
         $e = $this->expense;
         $writable = ! $this->organization()->isReadOnly();
         $me = auth()->id();

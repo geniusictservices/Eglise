@@ -3,11 +3,14 @@
 namespace App\Services;
 
 use App\Models\AttachmentRequest;
+use App\Models\Budget;
+use App\Models\ExpenseRequest;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\CurrentOrganization;
+use App\Support\FiscalYear;
 use Closure;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Carbon;
@@ -119,6 +122,7 @@ class DemoCommunityBuilder
         app(DemoMembers::class)->build($siege, $levels['himbi'], $levels['katindo'], withPhotos: ! isset($flags['is_demo']));
         app(DemoFinances::class)->build($siege, $levels['himbi'], withFiles: ! isset($flags['is_demo']));
         app(DemoPlanning::class)->build($siege, $levels['himbi']);
+        $this->linkExpensesToBudget($levels['himbi']);
         app(DemoPayroll::class)->build($levels['himbi']);
         app(DemoGroups::class)->build($levels['himbi']);
         app(DemoCalendar::class)->build($levels['himbi']);
@@ -145,5 +149,27 @@ class DemoCommunityBuilder
         $previous ? Auth::login($previous) : Auth::logout();
 
         return $siege;
+    }
+
+    /** Les dépenses de la démo suivent leur ligne du budget adopté ; les rafraîchissements de la réunion des diacres sont un imprévu. */
+    private function linkExpensesToBudget(Organization $himbi): void
+    {
+        app(CurrentOrganization::class)->within($himbi, function () use ($himbi) {
+            $adopted = Budget::where('status', 'adopted')->with('lines')->get();
+            foreach (ExpenseRequest::all() as $expense) {
+                if (str_starts_with($expense->title, 'Rafraîchissements')) {
+                    $expense->update(['is_unforeseen' => true, 'unforeseen_reason' => 'Réunion extraordinaire des diacres, convoquée après le décès du doyen.']);
+
+                    continue;
+                }
+                $year = FiscalYear::of($himbi, $expense->needed_on ?? $expense->created_at);
+                $lines = $adopted->firstWhere('fiscal_year', $year)?->lines->where('type', 'expense')
+                    ->where('department_id', $expense->department_id)->where('category_id', $expense->category_id);
+                $line = $lines?->firstWhere('label', $expense->title) ?? $lines?->first();
+                if ($line) {
+                    $expense->update(['budget_line_id' => $line->id]);
+                }
+            }
+        });
     }
 }

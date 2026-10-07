@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire;
+use App\Livewire\Finances\Expenses\Form;
 use App\Models\BudgetLine;
 use App\Models\BudgetOverrun;
 use App\Models\CashAccount;
@@ -180,5 +181,39 @@ class BudgetControlTest extends TestCase
             'title' => 'Chaises 2027', 'amount' => 9000, 'currency' => 'USD', 'is_advance' => false, 'needed_on' => '2027-02-01']);
         $this->assertNull(app(BudgetControl::class)->shortfall($request));
         $this->get(route('budget.execution', ['exercice' => 2026]))->assertOk()->assertSee('Jeunesse');
+    }
+
+    public function test_an_expense_is_linked_to_a_budget_line_unless_it_is_unforeseen(): void
+    {
+        $line = BudgetLine::where('category_id', $this->fournitures)->whereHas('budget', fn ($q) => $q->where('status', 'adopted'))->sole();
+        $this->actingAs($this->admin);
+
+        // Par défaut, la dépense se rattache à une ligne du budget : son département et sa catégorie suivent.
+        LivewireTest::test(Form::class)
+            ->assertSee('Prévue au budget')->assertSee('reste 400,00')
+            ->set('title', 'Ballons pour le tournoi')->set('amount', '120')
+            ->call('save')->assertHasErrors('budgetLineId')
+            ->set('budgetLineId', (string) $line->id)->assertSet('departmentId', (string) $this->jeunesse->id)
+            ->call('save')->assertHasNoErrors()->assertRedirect();
+        $request = ExpenseRequest::latest('id')->first();
+        $this->assertSame([$line->id, false, $this->jeunesse->id, $this->fournitures], [$request->budget_line_id, $request->is_unforeseen, $request->department_id, $request->category_id]);
+        $this->get(route('finances.expenses.show', $request))->assertOk()->assertSee('Ligne du budget : Ligne');
+
+        // Un imprévu dit pourquoi il n'était pas prévu ; sans ligne au budget, il demandera un dépassement.
+        $travaux = FinanceCategory::where('type', 'expense')->where('name', 'Entretien et réparations')->value('id');
+        LivewireTest::test(Form::class)
+            ->set('budgetMode', 'imprevu')->set('title', 'Tôles après l’orage')->set('amount', '300')
+            ->set('departmentId', (string) $this->jeunesse->id)->set('categoryId', (string) $travaux)
+            ->call('save')->assertHasErrors('unforeseenReason')
+            ->set('unforeseenReason', 'La toiture a cédé pendant l’orage')->call('save')->assertHasNoErrors();
+        $imprevu = ExpenseRequest::latest('id')->first();
+        $this->assertSame([null, true, 'La toiture a cédé pendant l’orage'], [$imprevu->budget_line_id, $imprevu->is_unforeseen, $imprevu->unforeseen_reason]);
+        $this->assertSame(300.0, app(BudgetControl::class)->shortfall($imprevu));
+        $this->actingAs($this->admin)->get(route('finances.expenses.show', $imprevu))->assertOk()->assertSee('Imprévu')->assertSee('La toiture a cédé pendant l’orage');
+        $this->get(route('finances.expenses'))->assertOk()->assertSee('imprévu');
+
+        // Une ligne qui n'est pas celle du budget adopté est refusée.
+        $this->expectException(InvalidArgumentException::class);
+        app(Expenses::class)->submit($this->eglise, ['title' => 'X', 'amount' => 10, 'currency' => 'USD', 'budget_line_id' => 999999]);
     }
 }

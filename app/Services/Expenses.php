@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BudgetLine;
 use App\Models\CashAccount;
 use App\Models\ExpenseApproval;
 use App\Models\ExpenseRequest;
@@ -57,6 +58,8 @@ class Expenses
             throw new InvalidArgumentException(__('Une avance précédente (:n) n’a pas été justifiée à temps : elle doit l’être avant une nouvelle avance.', ['n' => $blocking->number]));
         }
 
+        $data = $this->budgetLink($organization, $data);
+
         $request = DB::transaction(fn () => ExpenseRequest::create($data + [
             'organization_id' => $organization->id,
             'number' => $this->nextNumber($organization),
@@ -67,6 +70,30 @@ class Expenses
         app(CircuitNotices::class)->expenseSubmitted($request);
 
         return $request;
+    }
+
+    /**
+     * Le rattachement au budget : une ligne du budget adopté (son département et sa catégorie
+     * deviennent ceux de la dépense), ou un imprévu, qui dit pourquoi il n'était pas prévu.
+     */
+    private function budgetLink(Organization $organization, array $data): array
+    {
+        if ($data['is_unforeseen'] ?? false) {
+            if (trim((string) ($data['unforeseen_reason'] ?? '')) === '') {
+                throw new InvalidArgumentException(__('Dites pourquoi cette dépense n’était pas prévue au budget.'));
+            }
+
+            return ['budget_line_id' => null, 'is_unforeseen' => true, 'unforeseen_reason' => trim($data['unforeseen_reason'])] + $data;
+        }
+        if (! ($data['budget_line_id'] ?? null)) {
+            return ['is_unforeseen' => false, 'unforeseen_reason' => null] + $data;
+        }
+        $line = BudgetLine::where('type', 'expense')->whereHas('budget', fn ($q) => $q->withoutGlobalScope('organization')
+            ->where('organization_id', $organization->id)->where('status', 'adopted'))->find($data['budget_line_id'])
+            ?? throw new InvalidArgumentException(__('Choisissez une ligne du budget adopté.'));
+
+        return ['department_id' => $line->department_id, 'category_id' => $line->category_id, 'budget_line_id' => $line->id,
+            'is_unforeseen' => false, 'unforeseen_reason' => null] + $data;
     }
 
     public function check(ExpenseRequest $request, ?string $note = null): void

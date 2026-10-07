@@ -38,7 +38,13 @@ Un responsable de département ne voit que **ses propres demandes**.
 <td width="32%"><img src="captures/mobile/50-depense-demande.png" alt="Demander une dépense sur téléphone"></td>
 </tr></table>
 
-① **L'objet**, le département (*Administration générale* pour les dépenses communes), la catégorie, le montant et la devise, et les détails.
+① **L'objet**, le **rattachement au budget**, le montant et la devise, et les détails.
+
+**Prévue au budget ou imprévu.** Quand le budget de l'exercice est adopté, une dépense se rattache d'abord à **une ligne du budget** : choisissez-la dans la liste, rangée par département, avec ce qui **reste** sur chacune (« Chaises pour la salle des jeunes · Fournitures et matériel · reste 450 $ »). Le département et la catégorie de la dépense sont ceux de la ligne.
+
+Si la dépense n'était pas prévue (une toiture qui cède, un deuil, une réunion convoquée en urgence), choisissez **Imprévu** : indiquez le département et la catégorie, et dites **pourquoi ce n'était pas prévu**. La dépense est marquée **Imprévu** dans la liste et sur sa fiche. S'il ne reste rien pour ce département et cette catégorie, elle passera par une [autorisation de dépassement](22-suivi-budget.md) du pasteur, qui dit d'où viendra l'argent.
+
+Sans budget adopté pour l'exercice, la dépense est simplement classée par département (*Administration générale* pour les dépenses communes) et par catégorie.
 
 ② **Avance à justifier** : cochez-la quand l'argent est remis **avant** l'achat (le transport d'une mission, les courses d'une fête). Indiquez la personne qui reçoit l'argent et rapportera les factures et le reste.
 

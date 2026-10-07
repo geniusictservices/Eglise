@@ -6,6 +6,7 @@
 
     <section class="wax wax-veil wax-veil-strong mb-5 overflow-hidden rounded-[22px] p-5 text-white sm:p-6">
         <p class="text-sm text-ochre-300"><span class="font-mono">{{ $e->number }}</span> · {{ $e->department?->name ?? __('Sans département') }} · {{ $e->category?->name }}@if ($e->is_advance) · {{ __('avance à justifier') }}@endif</p>
+        @if ($e->is_unforeseen)<p class="mt-1"><span class="badge bg-ochre-500 text-[var(--color-on-accent)]"><x-icon name="triangle-alert" class="size-3" /> {{ __('Imprévu') }}</span></p>@endif
         <h1 class="text-2xl font-semibold text-white">{{ $e->title }}</h1>
         <p class="mt-1 text-3xl font-semibold tabular text-white">{{ Money::format($e->amount, $e->currency) }}</p>
         <p class="mt-1 text-sm text-ink-100">
@@ -41,6 +42,11 @@
             @if ($budgetLine)
                 <section @class(['card p-5 sm:p-6', 'border-terra-300' => $missing > 0])>
                     <h2 class="mb-2 text-lg">{{ __('Budget') }} <span class="text-sm font-normal text-sand-700">· {{ $expense->department?->name }} · {{ $expense->category?->name }}</span></h2>
+                    @if ($expense->budgetLine)
+                        <p class="mb-3 text-sm text-ink-800"><x-icon name="milestone" class="mr-1 inline size-4 text-ochre-600" /> {{ __('Ligne du budget : :l', ['l' => $expense->budgetLine->label]) }}</p>
+                    @elseif ($expense->is_unforeseen)
+                        <p class="mb-3 rounded-xl bg-ochre-50 p-3 text-sm text-ink-800"><span class="font-semibold">{{ __('Imprévu :') }}</span> {{ $expense->unforeseen_reason }}</p>
+                    @endif
                     @if ($budgetLine['unbudgeted'] ?? false)
                         <p class="text-sm font-semibold text-terra-600">{{ __('Cette dépense n’est pas prévue au budget.') }}</p>
                     @else

@@ -27,10 +27,12 @@ class ExpenseRequest extends Model
 
     protected $guarded = ['id'];
 
+    protected $attributes = ['budget_line_id' => null, 'is_unforeseen' => false, 'unforeseen_reason' => null];
+
     protected function casts(): array
     {
         return [
-            'amount' => 'decimal:2', 'justified_amount' => 'decimal:2', 'is_advance' => 'boolean',
+            'amount' => 'decimal:2', 'justified_amount' => 'decimal:2', 'is_advance' => 'boolean', 'is_unforeseen' => 'boolean',
             'needed_on' => 'date', 'justify_by' => 'date',
             'checked_at' => 'datetime', 'disbursed_at' => 'datetime', 'justified_at' => 'datetime',
         ];
@@ -44,6 +46,12 @@ class ExpenseRequest extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(FinanceCategory::class);
+    }
+
+    /** La ligne du budget adopté à laquelle la dépense est rattachée (aucune pour un imprévu). */
+    public function budgetLine(): BelongsTo
+    {
+        return $this->belongsTo(BudgetLine::class);
     }
 
     public function beneficiary(): BelongsTo

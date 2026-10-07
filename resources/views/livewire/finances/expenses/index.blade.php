@@ -27,7 +27,7 @@
                     <span @class(['icon-tile', 'bg-ochre-100 text-ochre-700' => $r->is_advance, 'bg-terra-50 text-terra-600' => ! $r->is_advance])><x-icon :name="$r->is_advance ? 'hand-coins' : 'upload'" class="size-5" /></span>
                     <span class="min-w-0 flex-1">
                         <span class="block truncate font-semibold text-ink-800">{{ $r->title }}</span>
-                        <span class="block truncate text-sm text-sand-700"><span class="font-mono text-xs">{{ $r->number }}</span> · {{ $r->department?->name ?? __('Sans département') }} · {{ $r->requester?->name }}@if ($r->is_advance) · {{ __('avance') }}@endif</span>
+                        <span class="block truncate text-sm text-sand-700"><span class="font-mono text-xs">{{ $r->number }}</span> · {{ $r->department?->name ?? __('Sans département') }} · {{ $r->requester?->name }}@if ($r->is_advance) · {{ __('avance') }}@endif @if ($r->is_unforeseen) · <span class="font-semibold text-ochre-700">{{ __('imprévu') }}</span>@endif</span>
                     </span>
                     <span class="text-right">
                         <span class="block font-semibold tabular text-ink-800">{{ Money::format($r->amount, $r->currency) }}</span>
