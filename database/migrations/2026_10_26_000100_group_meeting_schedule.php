@@ -13,11 +13,8 @@ return new class extends Migration
         Schema::table('groups', function (Blueprint $table) {
             $table->json('schedule')->nullable()->after('description'); // [{day, time, label}]
         });
-        foreach (DB::table('groups')->whereNotNull('meeting_day')->get(['id', 'meeting_day', 'meeting_time']) as $group) {
-            DB::table('groups')->where('id', $group->id)->update(['schedule' => json_encode([[
-                'day' => (int) $group->meeting_day, 'time' => $group->meeting_time ? substr($group->meeting_time, 0, 5) : null, 'label' => null,
-            ]])]);
-        }
+        // En SQL simple, pour que « php artisan migrate --pretend » donne aussi cette reprise.
+        DB::statement("UPDATE `groups` SET `schedule` = JSON_ARRAY(JSON_OBJECT('day', `meeting_day`, 'time', LEFT(`meeting_time`, 5), 'label', NULL)) WHERE `meeting_day` IS NOT NULL");
         Schema::table('groups', function (Blueprint $table) {
             $table->dropColumn(['meeting_day', 'meeting_time']);
         });
