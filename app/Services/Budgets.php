@@ -168,9 +168,12 @@ class Budgets
         $general = Department::withoutGlobalScope('organization')->where('organization_id', $organization->id)->where('is_system', true)->value('id');
         $expenseCategory = FinanceCategory::withoutOrganizationScope()->firstOrCreate(
             ['organization_id' => $organization->id, 'type' => 'expense', 'name' => 'Projets et travaux'], ['position' => 55])->id;
+        // Ce qu'une paroisse collecte pour un projet du siège, elle le lui verse.
+        $sentCategory = fn () => FinanceCategory::withoutOrganizationScope()->firstOrCreate(
+            ['organization_id' => $organization->id, 'type' => 'expense', 'name' => ProjectNetwork::SENT_CATEGORY], ['position' => 96])->id;
         $count = 0;
 
-        $list = Project::withoutOrganizationScope()->with('years')->where('organization_id', $organization->id)
+        $list = Project::withoutOrganizationScope()->with(['years', 'parentProject.organization'])->where('organization_id', $organization->id)
             ->whereIn('status', ['planned', 'ongoing'])->whereHas('years', fn ($q) => $q->where('fiscal_year', $year))->orderBy('id')->get();
         foreach ($list as $project) {
             $tranche = $project->years->firstWhere('fiscal_year', $year);
@@ -182,7 +185,9 @@ class Budgets
             foreach ([
                 ['carryover', 'income', max(0, $projects->carriedInto($project, $year)), __(':p : solde reporté', ['p' => $project->name]), $incomeCategory, $project->department_id],
                 ['project', 'income', (float) $tranche->income_planned, __(':p : collecte prévue', ['p' => $project->name]), $incomeCategory, $project->department_id],
-                ['project', 'expense', (float) $tranche->expense_planned, __(':p : dépenses prévues', ['p' => $project->name]), $expenseCategory, $project->department_id ?? $general],
+                $project->isRelay()
+                    ? ['project', 'expense', (float) $tranche->expense_planned, __(':p : versement à :o', ['p' => $project->name, 'o' => $project->parentProject?->organization?->displayName()]), $sentCategory(), $general]
+                    : ['project', 'expense', (float) $tranche->expense_planned, __(':p : dépenses prévues', ['p' => $project->name]), $expenseCategory, $project->department_id ?? $general],
             ] as [$source, $type, $amount, $label, $category, $department]) {
                 $line = $budget->lines()->where('project_id', $project->id)->where('source', $source)->where('type', $type)->first();
                 if ($amount < 0.005 || ($source === 'project' && in_array($type, $manual, true))) {

@@ -8,6 +8,7 @@ use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
 use App\Models\Member;
 use App\Models\Organization;
+use App\Models\ProjectRemittance;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -53,6 +54,9 @@ class Consolidation
         $moves = FinanceTransaction::withoutOrganizationScope()->valid()->whereIn('organization_id', $ids)
             ->whereBetween('occurred_on', [$from->toDateString(), $to->toDateString()])->whereIn('type', ['income', 'expense'])
             ->when($quota->isNotEmpty(), fn ($q) => $q->where(fn ($q) => $q->whereNull('category_id')->orWhereNotIn('category_id', $quota)))
+            // Les versements des paroisses au siège pour un projet : un mouvement interne, comme les quotes-parts.
+            ->whereNotIn('id', ProjectRemittance::query()->whereNotNull('expense_transaction_id')->select('expense_transaction_id'))
+            ->whereNotIn('id', ProjectRemittance::query()->whereNotNull('income_transaction_id')->select('income_transaction_id'))
             ->selectRaw('type, sum(usd_amount) as usd')->groupBy('type')->pluck('usd', 'type');
         $members = Member::withoutOrganizationScope()->whereIn('organization_id', $ids)
             ->where(fn ($q) => $q->whereNull('status_id')->orWhereHas('status', fn ($q) => $q->where('counts_as_member', true)));

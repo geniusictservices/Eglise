@@ -7,6 +7,7 @@ use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Organization;
+use App\Models\Pledge;
 use App\Models\Project;
 use App\Models\ProjectIndicator;
 use App\Models\ProjectIndicatorValue;
@@ -44,7 +45,8 @@ class Projects
 
         $promised = 0.0;
         $inKind = 0.0;
-        foreach ($project->pledges()->where('status', '!=', 'cancelled')->get() as $pledge) {
+        // Sans le cloisonnement : le siège lit aussi les promesses faites dans ses paroisses.
+        foreach (Pledge::withoutOrganizationScope()->where('project_id', $project->id)->where('status', '!=', 'cancelled')->get() as $pledge) {
             $p = $this->pledges->progress($pledge);
             $promised += $usd((string) $p['promised'], $pledge->currency);
             $inKind += $usd((string) $p['delivered'], $pledge->currency);

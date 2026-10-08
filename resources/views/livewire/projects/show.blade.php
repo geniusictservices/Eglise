@@ -13,11 +13,15 @@
                     @if ($p->ends_on) · {{ __('fin prévue le :d', ['d' => $p->ends_on->translatedFormat('j M Y')]) }}@endif
                 </p>
                 @if ($p->account)<p class="mt-1 text-sm text-ink-100"><x-icon name="wallet" class="mr-1 inline size-4" /> {{ __('Compte du projet : :a', ['a' => $p->account->name]) }}</p>@endif
+                @if ($p->isRelay() && $relayRow)
+                    <p class="mt-2 rounded-xl bg-white/10 px-3 py-2 text-sm text-white">{{ __('Projet de :o. Votre part : :s · collecté : :c · versé : :v · reste à verser : :r.', ['o' => $p->parentProject->organization->displayName(), 's' => Money::format($relayRow['share'], 'USD'), 'c' => Money::format($relayRow['collected'], 'USD'), 'v' => Money::format($relayRow['sent'], 'USD'), 'r' => Money::format($relayRow['to_send'], 'USD')]) }}</p>
+                @endif
                 <p class="mt-1 text-xs text-ink-100">{{ $progress['percent'] === null ? __('Pas encore d’indicateur : l’avancement se calcule à partir des indicateurs du projet.') : trans_choice('Avancement calculé sur :count indicateur.|Avancement calculé sur :count indicateurs.', $progress['rows']->count()) }}</p>
             </div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
             @if ($canUpdate)<button type="button" wire:click="$set('tab', 'avancement')" class="btn-accent !min-h-0 !py-2"><x-icon name="target" class="size-4" /> {{ $progress['percent'] === null ? __('Définir les indicateurs') : __('Relever une mesure') }}</button>@endif
+            @if ($canRemit)<button type="button" wire:click="openRemit" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="send" class="size-4" /> {{ __('Verser à :o', ['o' => $p->parentProject->organization->displayName()]) }}</button>@endif
             @if ($canPledge)<a href="{{ route('finances.pledges.create', ['projet' => $p->id]) }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="handshake" class="size-4" /> {{ __('Nouvelle promesse') }}</a>@endif
             @if ($canRecord)<button type="button" wire:click="openGift" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="hand-coins" class="size-4" /> {{ __('Recevoir un don') }}</button>@endif
             @if ($canRequest)<a href="{{ route('finances.expenses.create', ['projet' => $p->id]) }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="upload" class="size-4" /> {{ __('Demander une dépense') }}</a>@endif
@@ -27,7 +31,7 @@
 
     @if ($seesMoney)
         <section class="card mb-5 p-5 sm:p-6">
-            @include('livewire.projects.partials.figures', ['totals' => $totals])
+            @include('livewire.projects.partials.figures', ['totals' => $totals, 'relay' => $p->isRelay()])
             @if ($totals['goal'])
                 <div class="mt-3 h-2.5 overflow-hidden rounded-full bg-sand-100"><div class="h-full rounded-full bg-leaf-500" style="width: {{ $totals['percent'] }}%"></div></div>
                 <p class="mt-1 text-xs text-sand-700">{{ __(':p % de l’objectif reçu (dons en nature compris)', ['p' => $totals['percent']]) }}@if ($totals['committed'] > 0) · {{ __(':m engagés (dépenses approuvées, pas encore payées)', ['m' => Money::format($totals['committed'], 'USD')]) }}@endif</p>
@@ -36,12 +40,61 @@
     @endif
 
     <div class="mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist">
-        @foreach (['annees' => __('Années'), 'promesses' => __('Promesses'), 'argent' => __('Recettes et dépenses'), 'avancement' => __('Indicateurs')] as $key => $label)
+        @foreach (array_merge($overview ? ['paroisses' => __('Paroisses')] : [], ['annees' => __('Années'), 'promesses' => __('Promesses'), 'argent' => __('Recettes et dépenses'), 'avancement' => __('Indicateurs')]) as $key => $label)
             <button type="button" role="tab" wire:click="$set('tab', '{{ $key }}')" aria-selected="{{ $tab === $key ? 'true' : 'false' }}" @class(['flex-1 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold', 'bg-ink-700 text-white' => $tab === $key, 'text-ink-600 hover:bg-sand-50' => $tab !== $key])>{{ $label }}</button>
         @endforeach
     </div>
 
-    @if ($tab === 'annees')
+    @if ($tab === 'paroisses' && $overview)
+        @php $o = $overview['totals']; @endphp
+        <section class="card mb-5 p-5 sm:p-6">
+            <div class="mb-1 flex flex-wrap items-center gap-3">
+                <h2 class="flex-1 text-lg">{{ __('Les parts des paroisses') }}</h2>
+                @if ($canManage)<button type="button" wire:click="editShares" class="btn-secondary !min-h-0 !py-1.5 text-sm"><x-icon name="pencil" class="size-4" /> {{ __('Répartir entre les paroisses') }}</button>@endif
+            </div>
+            <p class="mb-4 text-sm text-sand-700">{{ __('Chaque paroisse collecte sa part sur place (promesses, dons, collectes), puis la verse ici. Un versement compte dans le projet quand il est reçu.') }}</p>
+            <div class="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                @foreach ([[__('Parts fixées'), $o['share'], 'text-ink-800'], [__('Collecté dans les paroisses'), $o['collected'], 'text-leaf-600'], [__('Reçu ici'), $o['received'], 'text-leaf-600'], [__('Reste à collecter'), $o['to_collect'], 'text-terra-600']] as [$label, $value, $tone])
+                    <div class="rounded-xl bg-sand-50 px-3 py-2"><p class="text-xs text-sand-700">{{ $label }}</p><p class="font-semibold tabular {{ $tone }}">{{ Money::format($value, 'USD') }}</p></div>
+                @endforeach
+            </div>
+            <ul class="space-y-3">
+                @forelse ($overview['rows'] as $row)
+                    @php $pct = $row['share'] > 0 ? min(100, (int) round($row['collected'] / $row['share'] * 100)) : 0; @endphp
+                    <li wire:key="relay-{{ $row['relay']->id }}" class="rounded-xl border border-sand-200 p-3">
+                        <div class="flex flex-wrap items-baseline gap-x-3"><span class="min-w-0 flex-1 font-semibold text-ink-800">{{ $row['organization']->displayName() }}</span><span class="text-sm tabular text-sand-700">{{ __('part : :m', ['m' => Money::format($row['share'], 'USD')]) }}</span></div>
+                        <div class="mt-2 h-2 overflow-hidden rounded-full bg-sand-100"><div class="h-full rounded-full bg-leaf-500" style="width: {{ $pct }}%"></div></div>
+                        <dl class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm sm:grid-cols-4">
+                            <div><dt class="text-xs text-sand-700">{{ __('Collecté') }}</dt><dd class="tabular text-leaf-600">{{ Money::format($row['collected'], 'USD') }} <span class="text-xs text-sand-700">{{ $pct }} %</span></dd></div>
+                            <div><dt class="text-xs text-sand-700">{{ __('Versé') }}</dt><dd class="tabular">{{ Money::format($row['sent'], 'USD') }}</dd></div>
+                            <div><dt class="text-xs text-sand-700">{{ __('Reçu ici') }}</dt><dd class="tabular">{{ Money::format($row['received'], 'USD') }}</dd></div>
+                            <div><dt class="text-xs text-sand-700">{{ __('Gardé sur place') }}</dt><dd @class(['tabular', 'font-semibold text-ochre-700' => $row['to_send'] > 0])>{{ Money::format($row['to_send'], 'USD') }}</dd></div>
+                        </dl>
+                    </li>
+                @empty
+                    <li class="rounded-xl border border-dashed border-sand-300 p-4 text-sm text-sand-700">{{ __('Aucune part fixée. Répartissez le projet entre les paroisses pour qu’elles le voient et le collectent.') }}</li>
+                @endforelse
+            </ul>
+        </section>
+        @if ($overview['pending']->isNotEmpty())
+            <section class="card mb-5 border-ochre-300 p-5 sm:p-6">
+                <h2 class="mb-1 text-lg">{{ __('Versements à confirmer') }}</h2>
+                <p class="mb-3 text-sm text-sand-700">{{ __('Confirmez quand l’argent est arrivé : il entre alors dans le compte choisi, pour ce projet.') }}</p>
+                @if ($canReceive)
+                    <div class="mb-3"><label for="rc-acc" class="label">{{ __('Compte qui reçoit') }}</label><select wire:model="receiveAccount" id="rc-acc" class="input">@foreach ($accounts as $a)<option value="{{ $a->id }}">{{ $a->name }}</option>@endforeach</select>@error('receiveAccount') <p class="error">{{ $message }}</p> @enderror</div>
+                @endif
+                <ul class="divide-y divide-sand-100">
+                    @foreach ($overview['pending'] as $r)
+                        <li wire:key="rem-{{ $r->id }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5 text-sm">
+                            <span class="min-w-0 flex-1"><span class="block font-semibold text-ink-800">{{ $r->from->displayName() }}</span><span class="block text-xs text-sand-700">{{ $r->paid_on->translatedFormat('j M Y') }}@if ($r->reference) · {{ $r->reference }}@endif @if ($r->sender) · {{ $r->sender->name }}@endif</span></span>
+                            <span class="font-semibold tabular">{{ Money::format($r->amount, $r->currency) }}</span>
+                            @if ($canReceive)<button type="button" wire:click="receiveRemittance({{ $r->id }})" class="btn-secondary !min-h-0 !py-1 text-xs">{{ __('Confirmer la réception') }}</button>@endif
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+    @elseif ($tab === 'annees')
         <section class="card p-5 sm:p-6">
             <h2 class="mb-1 text-lg">{{ __('Année par année') }}</h2>
             <p class="mb-3 text-sm text-sand-700">{{ __('La tranche prévue de chaque exercice (reprise par le budget de l’année), ce qui a été reçu, ce que le budget ordinaire lui réserve, ce qui a été dépensé, et ce qui reste, reporté sur l’année suivante.') }}</p>
@@ -234,6 +287,35 @@
             <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'measure' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Enregistrer') }}</button></div>
         </form>
     </x-modal>
+
+    <x-modal name="shares" :title="__('Parts des paroisses')">
+        <form wire:submit="saveShares" class="space-y-3">
+            <p class="text-sm text-sand-700">{{ __('La part de chaque niveau, en dollars. Laissez vide pour ne rien demander. Chaque paroisse reçoit le projet chez elle, avec sa part comme objectif.') }}@if ($p->goal_amount) {{ __('Objectif du projet : :m.', ['m' => Money::format($p->goal_amount, $p->goal_currency)]) }}@endif</p>
+            <ul class="max-h-[55vh] divide-y divide-sand-100 overflow-y-auto rounded-xl border border-sand-200">
+                @foreach ($eligibleUnits as $u)
+                    <li wire:key="sh-{{ $u->id }}" class="flex items-center gap-3 px-3 py-2"><label for="sh-{{ $u->id }}" class="min-w-0 flex-1 text-sm font-semibold text-ink-800">{{ $u->displayName() }}</label><input wire:model.live.debounce.400ms="shares.{{ $u->id }}" id="sh-{{ $u->id }}" type="number" step="0.01" min="0" class="input !w-32 !py-1.5 text-right tabular"></li>
+                @endforeach
+            </ul>
+            <p class="text-sm font-semibold text-ink-800">{{ __('Total des parts : :m', ['m' => Money::format(collect($shares)->sum(fn ($v) => (float) $v), 'USD')]) }}</p>
+            @error('shares') <p class="error">{{ $message }}</p> @enderror
+            <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'shares' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Enregistrer') }}</button></div>
+        </form>
+    </x-modal>
+
+    @if ($p->isRelay())
+        <x-modal name="remit" :title="__('Verser à :o', ['o' => $p->parentProject->organization->displayName()])">
+            <form wire:submit="saveRemit" class="space-y-4">
+                <p class="text-sm text-sand-700">{{ __('L’argent collecté pour ce projet sort du compte choisi. :o confirmera la réception.', ['o' => $p->parentProject->organization->displayName()]) }}</p>
+                <div><label for="rm-acc" class="label">{{ __('Compte') }}</label><select wire:model="remit.account_id" id="rm-acc" class="input">@foreach ($accounts as $a)<option value="{{ $a->id }}">{{ $a->name }}</option>@endforeach</select>@error('remit.account_id') <p class="error">{{ $message }}</p> @enderror</div>
+                <div class="grid grid-cols-[1fr_7rem] gap-3">
+                    <div><label for="rm-amount" class="label">{{ __('Montant') }}</label><input wire:model="remit.amount" id="rm-amount" type="number" step="0.01" min="0" class="input tabular">@error('remit.amount') <p class="error">{{ $message }}</p> @enderror</div>
+                    <div><label for="rm-cur" class="label">{{ __('Devise') }}</label><select wire:model="remit.currency" id="rm-cur" class="input">@foreach ($currencies as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach</select></div>
+                </div>
+                <div><label for="rm-ref" class="label">{{ __('Référence (ID mobile money, bordereau…)') }}</label><input wire:model="remit.reference" id="rm-ref" class="input"></div>
+                <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'remit' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Verser') }}</button></div>
+            </form>
+        </x-modal>
+    @endif
 
     <x-modal name="gift" :title="__('Recevoir un don pour le projet')">
         <form wire:submit="saveGift" class="space-y-4">

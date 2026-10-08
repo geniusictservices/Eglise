@@ -26,7 +26,7 @@ class Project extends Model
 
     protected $attributes = ['kind' => 'project', 'status' => 'ongoing', 'goal_currency' => 'USD', 'progress' => 0,
         'theme' => null, 'department_id' => null, 'responsible_member_id' => null, 'responsible_name' => null, 'cash_account_id' => null,
-        'legacy_plan_action_id' => null];
+        'legacy_plan_action_id' => null, 'parent_project_id' => null];
 
     protected function casts(): array
     {
@@ -41,6 +41,23 @@ class Project extends Model
     public function years(): HasMany
     {
         return $this->hasMany(ProjectYear::class)->orderBy('fiscal_year');
+    }
+
+    /** Pour le projet relais d'une paroisse : le projet du siège qu'il porte. */
+    public function parentProject(): BelongsTo
+    {
+        return $this->belongsTo(Project::class, 'parent_project_id')->withoutGlobalScope('organization');
+    }
+
+    /** Pour un projet du siège : ses projets relais, un par paroisse qui a une part. */
+    public function relays(): HasMany
+    {
+        return $this->hasMany(Project::class, 'parent_project_id')->withoutGlobalScope('organization');
+    }
+
+    public function isRelay(): bool
+    {
+        return $this->parent_project_id !== null;
     }
 
     public function indicators(): HasMany

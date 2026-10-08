@@ -8,11 +8,14 @@ use App\Models\Department;
 use App\Models\ExpenseRequest;
 use App\Models\FinanceTransaction;
 use App\Models\Member;
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectIndicator;
 use App\Models\ProjectIndicatorValue;
+use App\Models\ProjectRemittance;
 use App\Services\Ledger;
 use App\Services\Pledges;
+use App\Services\ProjectNetwork;
 use App\Services\Projects;
 use App\Support\DepartmentScope;
 use Illuminate\Support\Facades\Gate;
@@ -40,6 +43,15 @@ class Show extends Component
     public ?int $measureId = null;
 
     public array $measure = [];
+
+    /** Les parts des paroisses d'un projet du siège, par niveau. */
+    public array $shares = [];
+
+    /** Le versement d'une paroisse au siège. */
+    public array $remit = [];
+
+    /** Le compte du siège où entre un versement reçu. */
+    public string $receiveAccount = '';
 
     /** Un don reçu directement pour le projet, sans promesse. */
     public array $gift = [];
@@ -138,6 +150,82 @@ class Show extends Component
         $this->notify(__('Mesure enregistrée : l’avancement est recalculé.'));
     }
 
+    public function editShares(ProjectNetwork $network): void
+    {
+        abort_unless(Gate::allows('planning.manage') && ! $this->organization()->isReadOnly() && ! $this->record->isRelay(), 403);
+        $current = $this->record->relays()->where('status', '!=', 'cancelled')->pluck('goal_amount', 'organization_id');
+        $this->shares = $network->eligible($this->record)->mapWithKeys(fn (Organization $o) => [$o->id => isset($current[$o->id]) ? (string) (float) $current[$o->id] : ''])->all();
+        $this->resetValidation();
+        $this->dispatch('open-modal', name: 'shares');
+    }
+
+    public function saveShares(ProjectNetwork $network): void
+    {
+        abort_unless(Gate::allows('planning.manage') && ! $this->organization()->isReadOnly() && ! $this->record->isRelay(), 403);
+        $this->validate(['shares.*' => 'nullable|numeric|min:0'], attributes: ['shares.*' => __('part')]);
+        $eligible = $network->eligible($this->record)->keyBy('id');
+        try {
+            foreach ($this->shares as $id => $amount) {
+                if (isset($eligible[(int) $id])) {
+                    $network->setShare($this->record, $eligible[(int) $id], (float) ($amount ?: 0));
+                }
+            }
+        } catch (InvalidArgumentException $e) {
+            $this->addError('shares', $e->getMessage());
+
+            return;
+        }
+        $this->dispatch('close-modal', name: 'shares');
+        $this->notify(__('Parts enregistrées : chaque paroisse voit le projet et sa part.'));
+    }
+
+    public function openRemit(ProjectNetwork $network): void
+    {
+        $this->authorizeWrite('finance.disburse');
+        abort_unless($this->record->isRelay(), 404);
+        $toSend = $network->overview($this->record->parentProject)['rows']->firstWhere('relay.id', $this->record->id)['to_send'] ?? 0;
+        $this->remit = ['account_id' => (string) ($this->record->cash_account_id ?: CashAccount::where('is_active', true)->orderBy('position')->value('id')),
+            'currency' => 'USD', 'amount' => $toSend > 0 ? (string) $toSend : '', 'reference' => ''];
+        $this->resetValidation();
+        $this->dispatch('open-modal', name: 'remit');
+    }
+
+    public function saveRemit(ProjectNetwork $network, Ledger $ledger): void
+    {
+        $this->authorizeWrite('finance.disburse');
+        $organization = $this->organization();
+        $data = $this->validate([
+            'remit.account_id' => ['required', Rule::exists('cash_accounts', 'id')->where('organization_id', $organization->id)],
+            'remit.currency' => ['required', Rule::in($ledger->currencies($organization))],
+            'remit.amount' => 'required|numeric|gt:0',
+            'remit.reference' => 'nullable|string|max:100',
+        ], attributes: ['remit.amount' => __('montant'), 'remit.account_id' => __('compte')])['remit'];
+        try {
+            $network->send($this->record, CashAccount::findOrFail($data['account_id']), $data['currency'], (string) $data['amount'], trim((string) $data['reference']) ?: null);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('remit.amount', $e->getMessage());
+
+            return;
+        }
+        $this->dispatch('close-modal', name: 'remit');
+        $this->notify(__('Versement envoyé : le siège confirmera la réception.'));
+    }
+
+    public function receiveRemittance(int $id, ProjectNetwork $network): void
+    {
+        $this->authorizeWrite('finance.income');
+        $this->validate(['receiveAccount' => ['required', Rule::exists('cash_accounts', 'id')->where('organization_id', $this->organization()->id)]], attributes: ['receiveAccount' => __('compte')]);
+        $remittance = ProjectRemittance::where('parent_project_id', $this->record->id)->where('to_organization_id', $this->organization()->id)->findOrFail($id);
+        try {
+            $network->receive($remittance, CashAccount::findOrFail($this->receiveAccount));
+        } catch (InvalidArgumentException $e) {
+            $this->addError('receiveAccount', $e->getMessage());
+
+            return;
+        }
+        $this->notify(__('Versement reçu : il entre dans le projet.'));
+    }
+
     public function openGift(Ledger $ledger): void
     {
         $this->authorizeWrite('finance.income');
@@ -193,7 +281,20 @@ class Show extends Component
         $seesMoney = Gate::any(['finance.view', 'planning.view', 'planning.manage']);
         $seesNames = Gate::any(['finance.pledges', 'finance.contributions.view']);
 
+        $network = app(ProjectNetwork::class);
+        $hasUnits = ! $this->record->isRelay() && $organization->children()->exists();
+        $overview = $this->record->isRelay() ? null : ($hasUnits || $this->record->relays()->exists() ? $network->overview($this->record) : null);
+        $relayRow = $this->record->isRelay() ? $network->overview($this->record->parentProject)['rows']->firstWhere('relay.id', $this->record->id) : null;
+        if ($overview && $this->receiveAccount === '') {
+            $this->receiveAccount = (string) ($this->record->cash_account_id ?: CashAccount::where('is_active', true)->orderBy('position')->value('id'));
+        }
+
         return view('livewire.projects.show', $this->projectFormData() + [
+            'overview' => $overview,
+            'relayRow' => $relayRow,
+            'eligibleUnits' => $this->shares ? $network->eligible($this->record) : collect(),
+            'canReceive' => Gate::allows('finance.income') && ! $organization->isReadOnly(),
+            'canRemit' => $this->record->isRelay() && Gate::allows('finance.disburse') && ! $organization->isReadOnly(),
             'p' => $this->record,
             'totals' => $totals = $projects->totals($this->record),
             'progress' => $projects->progressOf($this->record, $totals),
