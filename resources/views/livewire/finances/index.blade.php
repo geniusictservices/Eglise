@@ -43,6 +43,13 @@
                 @endforeach
             </div>
             @if ($totalUsd !== null && $byCurrency->count() > 1)<p class="mt-1 text-sm text-ochre-300">{{ __('soit environ :t au taux du jour', ['t' => Money::format($totalUsd, 'USD')]) }}</p>@endif
+            @if ($reserved['total'] > 0 && $totalUsd !== null)
+                @php $free = (float) (string) $totalUsd - $reserved['total']; @endphp
+                <p class="mt-2 text-sm text-ink-100">{{ __('Dont :r réservés aux projets (:p) ; libre pour le fonctionnement : :f.', ['r' => Money::format($reserved['total'], 'USD'), 'p' => $reserved['projects']->take(3)->map(fn ($r) => $r['project']->name)->implode(', ').($reserved['projects']->count() > 3 ? '…' : ''), 'f' => Money::format(max(0, $free), 'USD')]) }}</p>
+                @if ($free < -0.004)
+                    <p class="mt-2 rounded-xl bg-terra-600/90 px-3 py-2 text-sm font-semibold text-white"><x-icon name="triangle-alert" class="mr-1 inline size-4" /> {{ __('Les comptes contiennent :m de moins que l’argent des projets : cet argent a servi à autre chose et doit être remis.', ['m' => Money::format(-$free, 'USD')]) }}</p>
+                @endif
+            @endif
             <div class="mt-4 flex flex-wrap gap-2">
                 @can('finance.income')<a href="{{ route('finances.collections') }}" class="btn-accent !min-h-0 !py-2"><x-icon name="hand-coins" class="size-4" /> {{ __('Collecte du culte') }}</a>
                 <a href="{{ route('finances.income') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="download" class="size-4" /> {{ __('Recette') }}</a>@endcan

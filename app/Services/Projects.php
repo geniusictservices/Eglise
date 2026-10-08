@@ -35,7 +35,7 @@ class Projects
     /**
      * Les chiffres d'un projet, depuis le début.
      *
-     * @return array{goal: ?float, promised: float, received: float, in_kind: float, budgeted: float, spent: float, committed: float, available: float, percent: ?int}
+     * @return array{goal: ?float, promised: float, received: float, in_kind: float, budgeted: float, budgeted_planned: float, spent: float, committed: float, available: float, percent: ?int}
      */
     public function totals(Project $project): array
     {
@@ -53,6 +53,7 @@ class Projects
         $money = $this->moneyByYear($project);
         $received = (float) $money->sum('income');
         $budgeted = (float) $money->sum('budgeted');
+        $budgetedPlanned = (float) $money->sum('budgeted_planned');
         $spent = (float) $money->sum('expense');
         $committed = $this->committed($project);
         // Sans objectif chiffré, l'objectif est la somme des collectes prévues année par année.
@@ -65,6 +66,7 @@ class Projects
             'received' => round($received, 2),
             'in_kind' => round($inKind, 2),
             'budgeted' => round($budgeted, 2),
+            'budgeted_planned' => round($budgetedPlanned, 2),
             'spent' => round($spent, 2),
             'committed' => round($committed, 2),
             'available' => round($received + $budgeted - $spent - $committed, 2),
@@ -293,6 +295,27 @@ class Projects
     }
 
     /**
+     * L'argent des projets qui est dans les caisses : pour chaque projet, ce qu'il a reçu moins
+     * ce qu'il a dépensé (les restes d'avances revenus compris). Cet argent appartient aux projets :
+     * il ne doit pas servir aux dépenses ordinaires.
+     *
+     * @return array{total: float, projects: Collection<int, array{project: Project, amount: float}>}
+     */
+    public function reserved(Organization $organization): array
+    {
+        $net = FinanceTransaction::withoutOrganizationScope()->valid()->where('organization_id', $organization->id)
+            ->whereNotNull('project_id')->whereIn('type', ['income', 'expense'])
+            ->groupBy('project_id')
+            ->selectRaw("project_id, sum(case when type = 'income' then usd_amount else -usd_amount end) as net")
+            ->pluck('net', 'project_id');
+        $projects = Project::withoutOrganizationScope()->with('account')->whereIn('id', $net->keys())->where('status', '!=', 'cancelled')->get()
+            ->map(fn (Project $p) => ['project' => $p, 'amount' => round(max(0, (float) $net[$p->id]), 2)])
+            ->filter(fn ($r) => $r['amount'] > 0.004)->sortByDesc('amount')->values();
+
+        return ['total' => round((float) $projects->sum('amount'), 2), 'projects' => $projects];
+    }
+
+    /**
      * Les projets ouverts d'un exercice : ceux qui ont une tranche cette année-là, ou qui sont en cours.
      */
     public function forYear(int $year): Collection
@@ -306,13 +329,13 @@ class Projects
      * L'argent du projet, par exercice : recettes (sans les retours d'avance), part des recettes
      * ordinaires que le budget adopté lui réserve, et dépenses (moins ce qui est revenu des avances).
      *
-     * @return Collection<int, array{income: float, budgeted: float, expense: float}>
+     * @return Collection<int, array{income: float, budgeted: float, budgeted_planned: float, expense: float}>
      */
     private function moneyByYear(Project $project): Collection
     {
         $organization = $project->loadMissing('organization')->organization;
         $byYear = collect();
-        $empty = ['income' => 0.0, 'budgeted' => 0.0, 'expense' => 0.0];
+        $empty = ['income' => 0.0, 'budgeted' => 0.0, 'budgeted_planned' => 0.0, 'expense' => 0.0];
         $rows = FinanceTransaction::withoutOrganizationScope()->valid()->where('project_id', $project->id)
             ->whereIn('type', ['income', 'expense'])->get(['type', 'usd_amount', 'occurred_on', 'expense_request_id']);
         foreach ($rows as $t) {
@@ -335,15 +358,42 @@ class Projects
             ->groupBy('budgets.fiscal_year')
             ->selectRaw("budgets.fiscal_year as year, sum(case when budget_lines.type = 'expense' then budget_lines.amount else -budget_lines.amount end) as net")
             ->pluck('net', 'year');
+        // Cette part n'est débloquée qu'au rythme des recettes ordinaires réellement rentrées dans l'exercice.
         foreach ($net as $year => $usd) {
             if ((float) $usd > 0.004) {
                 $current = $byYear->get((int) $year, $empty);
-                $current['budgeted'] += (float) $usd;
+                $current['budgeted_planned'] += (float) $usd;
+                $current['budgeted'] += round((float) $usd * $this->ordinaryRealization($organization, (int) $year), 2);
                 $byYear->put((int) $year, $current);
             }
         }
 
         return $byYear->sortKeys();
+    }
+
+    /** @var array<string, float> */
+    private array $realization = [];
+
+    /**
+     * La part des recettes ordinaires prévues au budget adopté d'un exercice qui est déjà rentrée
+     * (entre 0 et 1). Sans recette ordinaire prévue, tout est débloqué.
+     */
+    public function ordinaryRealization(Organization $organization, int $year): float
+    {
+        return $this->realization[$organization->id.'-'.$year] ??= (function () use ($organization, $year) {
+            $planned = (float) BudgetLine::query()->join('budgets', 'budgets.id', '=', 'budget_lines.budget_id')
+                ->where('budgets.organization_id', $organization->id)->where('budgets.fiscal_year', $year)->where('budgets.status', 'adopted')
+                ->where('budget_lines.type', 'income')->whereNull('budget_lines.project_id')->sum('budget_lines.amount');
+            if ($planned <= 0) {
+                return 1.0;
+            }
+            [$from, $to] = FiscalYear::bounds($organization, $year);
+            $actual = (float) FinanceTransaction::withoutOrganizationScope()->valid()->where('organization_id', $organization->id)
+                ->where('type', 'income')->whereNull('project_id')->whereNull('expense_request_id')
+                ->whereBetween('occurred_on', [$from->toDateString(), $to->toDateString()])->sum('usd_amount');
+
+            return min(1.0, round($actual / $planned, 4));
+        })();
     }
 
     /** Les dépenses du projet contrôlées ou approuvées, pas encore payées. */

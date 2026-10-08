@@ -6,6 +6,7 @@ use App\Models\ExpenseRequest;
 use App\Models\FinanceTransaction;
 use App\Models\PaymentDeclaration;
 use App\Services\Ledger;
+use App\Services\Projects;
 use Brick\Math\BigDecimal;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Title;
@@ -20,16 +21,19 @@ class Index extends Component
         $this->authorize('finance.view');
     }
 
-    public function render(Ledger $ledger)
+    public function render(Ledger $ledger, Projects $projects)
     {
         $organization = current_organization();
         $balances = $ledger->balances($organization);
+        $totalUsd = $balances->every(fn ($b) => $b['usd'] !== null) ? $balances->reduce(fn ($sum, $r) => $sum->plus($r['usd']), BigDecimal::zero()) : null;
         $month = FinanceTransaction::valid()->whereBetween('occurred_on', [now()->startOfMonth()->toDateString(), now()->endOfMonth()->toDateString()]);
 
         return view('livewire.finances.index', [
             'balances' => $balances->groupBy(fn ($b) => $b['account']->id),
             'byCurrency' => $balances->groupBy('currency')->map(fn ($rows) => $rows->reduce(fn ($sum, $r) => $sum->plus($r['balance']), BigDecimal::zero())),
-            'totalUsd' => $balances->every(fn ($b) => $b['usd'] !== null) ? $balances->reduce(fn ($sum, $r) => $sum->plus($r['usd']), BigDecimal::zero()) : null,
+            'totalUsd' => $totalUsd,
+            // L'argent des projets qui est dans les caisses : il ne sert pas aux dépenses ordinaires.
+            'reserved' => $projects->reserved($organization),
             'income' => (clone $month)->where('type', 'income')->sum('usd_amount'),
             'expense' => (clone $month)->where('type', 'expense')->sum('usd_amount'),
             'byCategory' => (clone $month)->where('type', 'income')->with('category')

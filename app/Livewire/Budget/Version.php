@@ -7,9 +7,12 @@ use App\Models\Budget;
 use App\Models\BudgetLine;
 use App\Models\Department;
 use App\Models\FinanceCategory;
+use App\Models\Pledge;
 use App\Models\Project;
+use App\Services\BudgetControl;
 use App\Services\Budgets;
 use App\Services\BudgetSources;
+use App\Services\Pledges;
 use App\Services\Projects;
 use App\Support\FiscalYear;
 use Illuminate\Support\Facades\Gate;
@@ -112,6 +115,38 @@ class Version extends Component
         $this->fillAmounts();
     }
 
+    /** Les promesses générales encore attendues, ajoutées comme recette prévue (ou mises à jour). */
+    public function addPledges(Pledges $pledges): void
+    {
+        abort_unless($this->canArbitrate(), 403);
+        $amount = $this->pendingPledges($pledges);
+        if ($amount <= 0) {
+            return;
+        }
+        $label = __('Promesses des membres en cours');
+        $line = $this->budget->lines()->where('type', 'income')->where('label', $label)->first();
+        $values = ['type' => 'income', 'department_id' => null, 'label' => $label, 'amount' => $amount, 'note' => __('Reste attendu des promesses actives'),
+            'category_id' => FinanceCategory::firstOrCreate(['type' => 'income', 'name' => 'Promesses et projets'], ['nature' => 'personal', 'position' => 50])->id];
+        $line ? $line->update($values) : BudgetLine::create($values + ['budget_id' => $this->budget->id]);
+        $this->fillAmounts();
+        $this->notify(__('Promesses ajoutées aux recettes prévues.'));
+    }
+
+    /** Ce qui reste attendu des promesses actives sans projet (l'argent des projets est déjà dans leur collecte), en dollars. */
+    private function pendingPledges(Pledges $pledges): float
+    {
+        $control = app(BudgetControl::class);
+
+        return round((float) Pledge::with('organization')->where('status', 'active')->whereNull('project_id')->where('kind', '!=', 'in_kind')->get()
+            ->sum(function (Pledge $p) use ($pledges, $control) {
+                try {
+                    return $control->usd($this->organization(), (string) $pledges->progress($p)['remaining'], $p->currency);
+                } catch (InvalidArgumentException) {
+                    return 0;
+                }
+            }), 2);
+    }
+
     public function importProjects(Budgets $budgets): void
     {
         abort_unless($this->canArbitrate(), 403);
@@ -186,7 +221,7 @@ class Version extends Component
         $this->notify($message);
     }
 
-    public function render(Budgets $budgets, BudgetSources $sources, Projects $projects)
+    public function render(Budgets $budgets, BudgetSources $sources, Projects $projects, Pledges $pledges)
     {
         $this->budget->refresh()->load(['lines.department', 'lines.category', 'lines.project', 'preparer', 'submitter', 'approver']);
         $organization = $this->organization();
@@ -199,6 +234,10 @@ class Version extends Component
         return view('livewire.budget.version', [
             'type' => $type,
             'summary' => $summary,
+            // Le solde reporté d'un projet a pu changer depuis la reprise (dépenses de fin d'exercice, clôture).
+            'staleCarryover' => $this->canArbitrate() ? $lines->where('source', 'carryover')->map(fn ($l) => ['line' => $l, 'now' => max(0, $projects->carriedInto($l->project, $this->budget->fiscal_year))])
+                ->filter(fn ($r) => $r['line']->project && abs($r['now'] - (float) $r['line']->amount) > 0.5)->values() : collect(),
+            'pendingPledges' => $this->canArbitrate() && $this->tab === 'recettes' ? $this->pendingPledges($pledges) : 0,
             'missingProjects' => $this->tab === 'projets' ? $projects->forYear($this->budget->fiscal_year)
                 ->filter(fn ($p) => $p->years->contains('fiscal_year', $this->budget->fiscal_year) && ! $lines->contains('project_id', $p->id))->values() : collect(),
             'openProjects' => Project::whereIn('status', ['planned', 'ongoing'])->orderBy('name')->get(['id', 'name']),

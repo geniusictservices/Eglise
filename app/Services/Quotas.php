@@ -48,14 +48,14 @@ class Quotas
         ]);
     }
 
-    /** Les recettes propres d'un niveau sur un mois, en dollars, hors quotes-parts reçues. */
+    /** Les recettes propres d'un niveau sur un mois, en dollars, hors quotes-parts reçues et hors argent des projets. */
     public function base(Organization $organization, string $period): float
     {
         [$from, $to] = $this->bounds($period);
         $quota = FinanceCategory::withoutOrganizationScope()->where('organization_id', $organization->id)->whereIn('name', Consolidation::QUOTA_CATEGORIES)->pluck('id');
 
         return round((float) FinanceTransaction::withoutOrganizationScope()->valid()->where('organization_id', $organization->id)->where('type', 'income')
-            ->whereBetween('occurred_on', [$from, $to])
+            ->whereBetween('occurred_on', [$from, $to])->whereNull('project_id')->whereNull('expense_request_id')
             ->when($quota->isNotEmpty(), fn ($q) => $q->where(fn ($q) => $q->whereNull('category_id')->orWhereNotIn('category_id', $quota)))
             ->sum('usd_amount'), 2);
     }

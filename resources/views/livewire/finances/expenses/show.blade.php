@@ -135,6 +135,7 @@
                                     @endforeach
                                 </div>
                                 @error('accountId') <p class="error">{{ $message }}</p> @enderror
+                                @if ($eatsProjectMoney)<p class="rounded-xl border border-ochre-300 bg-ochre-50 p-3 text-sm text-ink-800"><x-icon name="triangle-alert" class="mr-1 inline size-4 text-ochre-600" /> {{ __('Attention : il n’y a pas assez d’argent libre. Ce décaissement prendrait :m sur l’argent réservé aux projets.', ['m' => Money::format($eatsProjectMoney, 'USD')]) }}</p>@endif
                                 <button class="btn-primary"><x-icon name="banknote" class="size-4" /> {{ $e->is_advance ? __('Remettre :m', ['m' => Money::format($e->amount, $e->currency)]) : __('Décaisser :m', ['m' => Money::format($e->amount, $e->currency)]) }}</button>
                             </form>
                         @endif

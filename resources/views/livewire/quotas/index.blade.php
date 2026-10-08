@@ -38,7 +38,7 @@
                             @endforeach
                         </div>
                         @if ($rule['mode'] === 'percent')
-                            <div class="flex items-center gap-2"><input wire:model="rule.percent" type="number" step="0.5" min="0" max="100" class="input w-28 tabular" aria-label="{{ __('Pourcentage') }}"><span class="text-sm text-sand-700">{{ __('% des recettes du mois (hors quotes-parts reçues)') }}</span></div>
+                            <div class="flex items-center gap-2"><input wire:model="rule.percent" type="number" step="0.5" min="0" max="100" class="input w-28 tabular" aria-label="{{ __('Pourcentage') }}"><span class="text-sm text-sand-700">{{ __('% des recettes du mois (hors quotes-parts reçues et argent des projets)') }}</span></div>
                         @elseif ($rule['mode'] === 'fixed')
                             <div class="flex items-center gap-2"><input wire:model="rule.amount" type="number" step="0.01" min="0" class="input w-36 tabular" aria-label="{{ __('Montant') }}"><select wire:model="rule.currency" class="input w-auto" aria-label="{{ __('Devise') }}"><option>USD</option><option>CDF</option></select><span class="text-sm text-sand-700">{{ __('par mois') }}</span></div>
                         @endif

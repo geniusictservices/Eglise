@@ -9,7 +9,9 @@ use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\Department;
 use App\Models\FinanceCategory;
+use App\Models\Member;
 use App\Models\Organization;
+use App\Models\Pledge;
 use App\Models\User;
 use App\Services\BudgetControl;
 use App\Services\Budgets;
@@ -125,12 +127,32 @@ class BudgetSourcesTest extends TestCase
         $budgets->submit($budget->fresh());
         $budgets->approve($budget->fresh(), $this->pasteur);
 
-        // Adopté : la toiture a 400 $ des recettes ordinaires ; le solde reporté n'est pas une recette de 2027.
-        $this->assertSame(400.0, $projects->totals($toiture->fresh())['available']);
-        $this->assertSame(0.0, $projects->totals($temple->fresh())['budgeted']);
+        // Adopté : la toiture a 400 $ des recettes ordinaires, débloqués au rythme des rentrées.
+        $this->assertSame([400.0, 0.0], [$projects->totals($toiture->fresh())['budgeted_planned'], $projects->totals($toiture->fresh())['available']]);
+        Carbon::setTestNow('2027-03-10 10:00');
+        app(Ledger::class)->record($caisse, 'USD', 'income', ['amount' => '200', 'category_id' => FinanceCategory::where('type', 'income')->where('name', 'Offrande du culte')->value('id')]);
+        $this->assertSame(200.0, app(Projects::class)->totals($toiture->fresh())['available']); // 200 $ rentrés sur 400 $ prévus : la moitié
+        // Le solde reporté n'est pas une recette de 2027.
+        $this->assertSame(0.0, app(Projects::class)->totals($temple->fresh())['budgeted']);
+
+        // L'argent du temple dans les caisses lui est réservé : 3 500 $ reçus, 800 $ dépensés.
+        $this->assertSame(2700.0, app(Projects::class)->reserved($this->eglise)['total']);
+        $this->get(route('finances.index'))->assertOk()->assertSee('réservés aux projets');
         $this->assertSame(3400.0, app(BudgetControl::class)->execution($this->eglise, 2027)['totals']['income_budgeted']);
 
         LivewireTest::test(Livewire\Budget\Version::class, ['budget' => $budget])->set('tab', 'projets')
             ->assertSee('pris sur les recettes ordinaires')->assertSee('Payé par son argent');
+    }
+
+    public function test_active_pledges_are_offered_as_planned_income(): void
+    {
+        $member = Member::create(['last_name' => 'KAHINDO', 'first_name' => 'Esther']);
+        Pledge::create(['member_id' => $member->id, 'amount' => '600', 'currency' => 'USD', 'pledged_on' => today()]);
+        $budget = app(Budgets::class)->prepare($this->eglise, 2027);
+
+        LivewireTest::test(Livewire\Budget\Version::class, ['budget' => $budget])->set('tab', 'recettes')
+            ->assertSee('Les promesses en cours (hors projets) attendent encore')
+            ->call('addPledges')->call('addPledges');
+        $this->assertSame('600.00', (string) $budget->lines()->where('label', 'Promesses des membres en cours')->sole()->amount);
     }
 }

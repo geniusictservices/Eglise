@@ -8,9 +8,9 @@
         </div>
     @endforeach
 </div>
-@if ($t['budgeted'] > 0 || $t['committed'] > 0)
+@if ($t['budgeted_planned'] > 0 || $t['committed'] > 0)
     <p class="mt-2 text-xs text-sand-700">
-        @if ($t['budgeted'] > 0){{ __('Le budget adopté lui réserve :m sur les recettes ordinaires (dîmes, offrandes…), compté dans le disponible.', ['m' => Money::format($t['budgeted'], 'USD')]) }}@endif
+        @if ($t['budgeted_planned'] > 0){{ __('Le budget adopté lui accorde :p sur les recettes ordinaires (dîmes, offrandes…) ; :m sont déjà débloqués, au rythme des recettes rentrées, et comptent dans le disponible.', ['p' => Money::format($t['budgeted_planned'], 'USD'), 'm' => Money::format($t['budgeted'], 'USD')]) }}@endif
         @if ($t['committed'] > 0){{ __('Dépenses approuvées pas encore payées : :m.', ['m' => Money::format($t['committed'], 'USD')]) }}@endif
     </p>
 @endif

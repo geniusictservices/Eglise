@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\Consolidation;
 use App\Services\Ledger;
 use App\Services\MemberTransfers;
+use App\Services\Projects;
 use App\Services\Quotas;
 use App\Support\CurrentOrganization;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -111,6 +112,11 @@ class ConsolidationTest extends TestCase
         $caisseHimbi = $this->account($this->himbi);
         $caisseSecteur = $this->account($this->secteur, 'Caisse du secteur');
         $this->income($this->himbi, $caisseHimbi, '500');
+        // Un don pour un projet de la paroisse n'entre pas dans la base des quotes-parts.
+        $this->in($this->himbi, function () use ($caisseHimbi) {
+            $temple = app(Projects::class)->save($this->himbi, ['name' => 'Temple']);
+            app(Ledger::class)->record($caisseHimbi, 'USD', 'income', ['amount' => '300', 'category_id' => $temple->category_id, 'project_id' => $temple->id]);
+        });
 
         $owed = $quotas->owed($this->himbi, $period);
         $this->assertEquals(50, $owed['due']);
@@ -132,7 +138,7 @@ class ConsolidationTest extends TestCase
         } finally {
             // Le versement interne ne gonfle ni les recettes ni les dépenses du secteur.
             $totals = app(Consolidation::class)->figures($this->secteur, now()->startOfMonth(), now()->endOfMonth());
-            $this->assertEquals(500, $totals['income']);
+            $this->assertEquals(800, $totals['income']); // les offrandes et le don pour le temple, sans la quote-part
             $this->assertEquals(0, $totals['expense']);
             // La base de calcul du secteur ignore les quotes-parts reçues.
             $this->assertEquals(0, $quotas->base($this->secteur, $period));

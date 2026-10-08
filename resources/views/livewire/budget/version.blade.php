@@ -44,6 +44,13 @@
     </section>
 
 
+    @if ($staleCarryover->isNotEmpty())
+        <div class="mb-4 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800">
+            <p class="font-semibold">{{ __('Le solde reporté a changé depuis la reprise des projets :') }}</p>
+            <ul class="mt-1">@foreach ($staleCarryover as $r)<li>{{ $r['line']->project->name }} : {{ Money::format($r['line']->amount, 'USD') }} → <span class="font-semibold">{{ Money::format($r['now'], 'USD') }}</span></li>@endforeach</ul>
+            <button type="button" wire:click="importProjects" class="btn-secondary mt-3 !min-h-0 !py-1.5 text-sm"><x-icon name="refresh-cw" class="size-4" /> {{ __('Mettre à jour') }}</button>
+        </div>
+    @endif
     @if ($b->return_note && $b->status === 'draft')
         <p class="mb-4 rounded-2xl border border-terra-100 bg-terra-50 p-4 text-sm text-terra-700"><span class="font-semibold">{{ __('Renvoyé par le pasteur :') }}</span> {{ $b->return_note }}</p>
     @endif
@@ -116,6 +123,9 @@
             @if ($canArbitrate)<button type="button" wire:click="editLine" class="btn-secondary !min-h-0 !py-1.5 text-sm"><x-icon name="plus" class="size-4" /> {{ $type === 'expense' ? __('Ajouter une dépense') : __('Ajouter une recette') }}</button>@endif
         </div>
         <p class="-mt-1 mb-3 text-sm text-sand-700">{{ $type === 'expense' ? __('Pour chaque dépense : la part des recettes prévues qu’elle consomme.') : __('Pour chaque recette : la part qu’elle apporte aux recettes prévues.') }}</p>
+        @if ($type === 'income' && $pendingPledges > 0)
+            <p class="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl bg-sand-50 p-3 text-sm text-ink-800"><span class="min-w-0 flex-1">{{ __('Les promesses en cours (hors projets) attendent encore :m.', ['m' => Money::format($pendingPledges, 'USD')]) }}</span><button type="button" wire:click="addPledges" class="btn-secondary !min-h-0 !py-1 text-xs">{{ __('Ajouter aux recettes prévues') }}</button></p>
+        @endif
         @forelse ($groups as $group => $lines)
             <div class="mb-4 last:mb-0">
                 <h3 class="mb-1 flex items-baseline gap-2 text-sm font-semibold text-ink-700"><span class="flex-1">{{ $group }}</span><span class="tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</span><span class="w-12 text-right text-xs tabular text-sand-700">{{ $pctLabel($lines->sum('amount')) }}</span></h3>

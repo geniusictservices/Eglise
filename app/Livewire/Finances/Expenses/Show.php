@@ -10,6 +10,8 @@ use App\Models\ExpenseRequest;
 use App\Services\BudgetControl;
 use App\Services\Expenses;
 use App\Services\Ledger;
+use App\Services\Projects;
+use Brick\Math\BigDecimal;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -221,7 +223,24 @@ class Show extends Component
                 ->reject(fn ($l, $k) => $k === $own || $l['available'] <= 0)->sortByDesc('available')->all();
         }
 
+        // Une dépense ordinaire ne doit pas entamer l'argent réservé aux projets.
+        $eatsProjectMoney = null;
+        if ($e->status === 'approved' && ! $e->project_id) {
+            $balances = $ledger->balances($this->organization());
+            if ($balances->every(fn ($b) => $b['usd'] !== null)) {
+                $free = (float) (string) $balances->reduce(fn ($sum, $r) => $sum->plus($r['usd']), BigDecimal::zero())
+                    - app(Projects::class)->reserved($this->organization())['total'];
+                try {
+                    $needed = $control->usd($this->organization(), (string) $e->amount, $e->currency);
+                    $eatsProjectMoney = $needed > $free + 0.004 ? round($needed - max(0, $free), 2) : null;
+                } catch (InvalidArgumentException) {
+                    // Sans taux du jour, pas de comparaison possible.
+                }
+            }
+        }
+
         return view('livewire.finances.expenses.show', [
+            'eatsProjectMoney' => $eatsProjectMoney,
             'budgetLine' => $budgetLine,
             'missing' => $missing,
             'overruns' => $overruns,
