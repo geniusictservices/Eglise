@@ -1,0 +1,212 @@
+/*
+ * Les documents délivrés : attestations, certificats, lettres.
+ *
+ * Une feuille A4 (paysage pour les certificats, portrait pour les lettres) dont toutes les
+ * mesures sont en em, et la taille du texte proportionnelle à la largeur de la feuille :
+ * l'aperçu et l'impression gardent exactement la même mise en page.
+ * Couleurs : --p (principale) et --a (accent) de l'église, posées sur la feuille.
+ */
+
+.wd-frame { container-type: inline-size; width: 100%; margin-inline: auto; }
+.wd-frame.is-landscape { max-width: 297mm; }
+.wd-frame.is-portrait { max-width: 210mm; }
+
+.wd {
+    --p-soft: color-mix(in srgb, var(--p) 7%, white);
+    --p-line: color-mix(in srgb, var(--p) 22%, white);
+    --a-soft: color-mix(in srgb, var(--a) 18%, white);
+    --ink: color-mix(in srgb, var(--p) 55%, #111);
+    position: relative; isolation: isolate; width: 100%; background: #fff; color: #1f1f29;
+    font-family: 'Lexend', 'Segoe UI', system-ui, sans-serif; line-height: 1.55;
+    box-shadow: 0 10px 30px -12px rgb(30 30 60 / 0.25);
+    /* Sur téléphone, le navigateur grossit d'office les longs paragraphes : la feuille garderait
+       ses proportions mais pas son texte, qui déborderait. */
+    -webkit-text-size-adjust: none; text-size-adjust: none;
+}
+.wd-frame.is-landscape .wd { aspect-ratio: 297 / 210; font-size: 1.3cqw; }
+.wd-frame.is-portrait .wd { aspect-ratio: 210 / 297; font-size: 1.82cqw; }
+
+.wd .blank { color: #9a948a; }
+.wd strong { color: var(--ink); font-weight: 600; }
+.wd .wd-serif { font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif; }
+.wd .wd-script { font-family: 'Great Vibes', 'Cormorant Garamond', Georgia, serif; font-weight: 400; }
+.wd img { max-width: none; }
+.wd .document-body p { margin-bottom: 0; } /* l'espacement des paragraphes est en em, proportionnel à la feuille */
+
+/* ---------- Les pièces communes ---------- */
+.wd-logo { width: 5.2em; height: 5.2em; object-fit: contain; }
+.wd-org-parent { font-size: 0.72em; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #6d6759; }
+.wd-org-name { font-size: 1.45em; font-weight: 600; line-height: 1.15; color: var(--p); }
+.wd-org-legal { font-size: 0.7em; color: #6d6759; line-height: 1.4; }
+.wd-org-motto { font-size: 0.72em; font-style: italic; color: var(--ink); }
+.wd-number { font-size: 0.78em; letter-spacing: 0.06em; color: #6d6759; font-variant-numeric: tabular-nums; }
+.wd-photo { width: 7.4em; height: 9.4em; object-fit: cover; padding: 0.25em; background: #fff; border: 1px solid var(--p-line); box-shadow: 0 0.2em 0.6em rgb(0 0 0 / 0.08); }
+.wd-photo-empty { display: grid; place-items: center; text-align: center; font-size: 0.65em; color: #9a948a; border: 1px dashed #cfc7b8; width: 11.4em; height: 14.4em; }
+.wd-qr { display: flex; align-items: flex-end; gap: 0.7em; }
+.wd-qr-code { width: 5.6em; height: 5.6em; flex-shrink: 0; }
+.wd-qr-code svg { width: 100%; height: 100%; }
+.wd-qr p { width: 9.5em; font-size: 0.62em; line-height: 1.35; color: #6d6759; }
+.wd-sign { text-align: center; min-width: 15em; }
+.wd-sign-date { font-size: 0.85em; }
+.wd-sign-role { margin-top: 0.3em; font-size: 0.85em; font-weight: 600; color: var(--ink); }
+.wd-sign-space { height: 3.6em; }
+.wd-sign-name { border-top: 1px solid var(--p-line); padding-top: 0.35em; font-weight: 600; color: var(--ink); }
+.wd-footer-note { font-size: 0.62em; color: #8a8478; text-align: center; }
+.wd-cancelled { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; z-index: 20; }
+.wd-cancelled span { transform: rotate(-12deg); border: 0.25em solid #b5472b; border-radius: 0.6em; padding: 0.3em 1em; font-size: 3.4em; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: rgb(181 71 43 / 0.85); }
+
+/* Le sceau : le logo dans un cercle, avec le nom de l'église écrit tout autour. */
+.wd-seal { width: 8.5em; height: 8.5em; color: var(--a); }
+.wd-seal svg { width: 100%; height: 100%; overflow: visible; }
+.wd-seal text { font-size: 7.4px; letter-spacing: 1.1px; text-transform: uppercase; font-weight: 600; fill: currentColor; font-family: 'Lexend', sans-serif; }
+
+/* =====================================================================
+   Le certificat (paysage)
+   ===================================================================== */
+.wd-cert { display: flex; overflow: hidden; }
+.wd-cert .wd-main { position: relative; z-index: 1; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 3.4em 5em 2.6em; }
+.wd-cert .wd-head { display: flex; flex-direction: column; align-items: center; gap: 0.15em; }
+.wd-cert .wd-head .wd-logo { margin-bottom: 0.35em; }
+.wd-cert .wd-number { position: absolute; top: 3em; right: 4.4em; }
+.wd-cert .wd-title { margin-top: 1.1em; font-size: 2.9em; line-height: 1.05; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--p); }
+.wd-cert .wd-divider { display: flex; align-items: center; gap: 0.6em; margin: 0.7em 0 0.4em; color: var(--a); }
+.wd-cert .wd-divider::before, .wd-cert .wd-divider::after { content: ''; width: 5em; height: 1px; background: currentColor; }
+.wd-cert .wd-divider span { width: 0.55em; height: 0.55em; transform: rotate(45deg); background: currentColor; }
+.wd-cert .wd-name { margin-top: 0.1em; font-size: 3.4em; line-height: 1.15; color: var(--ink); }
+.wd-cert .wd-body { margin-top: 0.8em; max-width: 46em; font-size: 0.98em; line-height: 1.6; }
+.wd-cert .wd-body p + p { margin-top: 0.85em; }
+.wd-cert .wd-foot { margin-top: auto; width: 100%; display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 2em; padding-top: 1em; }
+.wd-cert .wd-foot .wd-qr { justify-self: start; text-align: left; }
+.wd-cert .wd-foot .wd-sign { justify-self: end; }
+.wd-cert .wd-photo-slot { position: absolute; top: 5.6em; right: 4.6em; }
+.wd-cert .wd-photo-slot .wd-photo-empty { width: 7.4em; height: 9.4em; }
+.wd-cert .wd-footer-note { margin-top: 0.8em; }
+
+/* Titres et noms longs : plus petits, pour tenir sur la page. */
+.wd-cert .wd-title.is-long { font-size: 2.25em !important; }
+.wd-cert .wd-name.is-long { font-size: 2.3em !important; }
+.wd-s-prestige.wd-cert .wd-name.is-long { font-size: 2.9em !important; }
+.wd-cert .wd-foot .wd-footer-note { margin-top: 0.7em; max-width: 24em; text-align: left; }
+
+/* Prestige : double cadre, coins ornés, nom calligraphié, sceau. */
+.wd-s-prestige.wd-cert { border: 0.95em solid var(--p); }
+.wd-s-prestige.wd-cert::before { content: ''; position: absolute; inset: 0.9em; border: 1px solid var(--a); z-index: 0; }
+.wd-s-prestige.wd-cert::after { content: ''; position: absolute; inset: 1.35em; border: 0.18em solid var(--p-line); z-index: 0; }
+.wd-s-prestige .wd-corner { position: absolute; width: 1.1em; height: 1.1em; background: var(--a); transform: rotate(45deg); z-index: 2; }
+.wd-s-prestige .wd-corner.tl { top: 0.35em; left: 0.35em; } .wd-s-prestige .wd-corner.tr { top: 0.35em; right: 0.35em; }
+.wd-s-prestige .wd-corner.bl { bottom: 0.35em; left: 0.35em; } .wd-s-prestige .wd-corner.br { bottom: 0.35em; right: 0.35em; }
+.wd-s-prestige.wd-cert .wd-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 3.3em; letter-spacing: 0.12em; }
+.wd-s-prestige.wd-cert .wd-name { font-family: 'Great Vibes', 'Cormorant Garamond', Georgia, serif; font-size: 4em; color: var(--p); }
+.wd-s-prestige.wd-cert .wd-seal-slot { position: absolute; bottom: 2.1em; left: 50%; transform: translateX(-50%) rotate(-8deg); }
+
+/* Solennel : bordure guillochée, filigrane, ruban. */
+.wd-s-solennel.wd-cert { background:
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--p) 14%, white) 0 1px, transparent 1px 0.55em),
+    repeating-linear-gradient(-45deg, color-mix(in srgb, var(--a) 22%, white) 0 1px, transparent 1px 0.55em), #fff; }
+.wd-s-solennel.wd-cert::before { content: ''; position: absolute; inset: 1.8em; background: #fff; border: 0.32em double var(--p); z-index: 0; }
+.wd-s-solennel.wd-cert::after { content: ''; position: absolute; inset: 2.55em; border: 1px solid var(--a); z-index: 0; }
+.wd-s-solennel .wd-watermark { position: absolute; inset: 0; display: grid; place-items: center; z-index: 0; opacity: 0.06; }
+.wd-s-solennel .wd-watermark img { width: 22em; height: 22em; object-fit: contain; filter: grayscale(1); }
+.wd-s-solennel.wd-cert .wd-main { padding: 4.2em 6em 3.4em; }
+.wd-s-solennel.wd-cert .wd-number { top: 3.6em; right: 4.8em; }
+.wd-s-solennel.wd-cert .wd-title { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 3.2em; letter-spacing: 0.16em; }
+.wd-s-solennel.wd-cert .wd-name { font-family: 'Cormorant Garamond', Georgia, serif; font-style: italic; font-weight: 600; font-size: 3.5em; }
+.wd-s-solennel .wd-ribbon { position: absolute; bottom: 3.4em; left: 50%; transform: translateX(-50%); z-index: 2; display: grid; place-items: center; }
+.wd-s-solennel .wd-ribbon::before, .wd-s-solennel .wd-ribbon::after { content: ''; position: absolute; top: 4.8em; width: 1.9em; height: 3.4em; background: var(--a); z-index: -1; clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%); }
+.wd-s-solennel .wd-ribbon::before { left: 1.8em; transform: rotate(14deg); }
+.wd-s-solennel .wd-ribbon::after { right: 1.8em; transform: rotate(-14deg); }
+.wd-s-solennel .wd-ribbon .wd-seal { width: 6.6em; height: 6.6em; border-radius: 50%; background: var(--a); color: #fff; padding: 0.2em; box-shadow: 0 0.2em 0.6em rgb(0 0 0 / 0.18); }
+.wd-s-solennel .wd-photo-slot { top: 6.2em; right: 5.4em; }
+
+/* Moderne : bandeau de couleur sur le côté. */
+.wd-s-moderne.wd-cert .wd-band { position: relative; z-index: 1; width: 27%; flex-shrink: 0; display: flex; flex-direction: column; gap: 0.8em; padding: 3em 2.2em 2.4em; color: #fff;
+    background: linear-gradient(160deg, var(--p), color-mix(in srgb, var(--p) 70%, #000)); }
+.wd-s-moderne.wd-cert .wd-band::after { content: ''; position: absolute; inset: 0; z-index: -1; opacity: 0.12;
+    background: radial-gradient(circle at 20% 20%, #fff 0 0.18em, transparent 0.2em) 0 0 / 1.6em 1.6em; }
+.wd-s-moderne .wd-band .wd-logo { width: 4.6em; height: 4.6em; background: #fff; border-radius: 1em; padding: 0.4em; }
+.wd-s-moderne .wd-band .wd-org-parent { color: color-mix(in srgb, var(--a) 70%, white); }
+.wd-s-moderne .wd-band .wd-org-name { color: #fff; font-size: 1.3em; }
+.wd-s-moderne .wd-band .wd-org-legal { color: rgb(255 255 255 / 0.7); }
+.wd-s-moderne .wd-band .wd-number { position: static; color: rgb(255 255 255 / 0.85); margin-top: 0.4em; }
+.wd-s-moderne .wd-band .wd-photo { border-color: transparent; border-radius: 0.6em; }
+.wd-s-moderne .wd-band .wd-photo-empty { border-color: rgb(255 255 255 / 0.5); color: rgb(255 255 255 / 0.7); width: 7.4em; height: 9.4em; font-size: 1em; }
+.wd-s-moderne .wd-band .wd-qr { margin-top: auto; }
+.wd-s-moderne .wd-band .wd-qr-code { background: #fff; padding: 0.35em; border-radius: 0.5em; }
+.wd-s-moderne .wd-band .wd-qr p { color: rgb(255 255 255 / 0.75); }
+.wd-s-moderne.wd-cert .wd-main { align-items: flex-start; text-align: left; padding: 3.6em 4.4em 2.6em; }
+.wd-s-moderne.wd-cert .wd-eyebrow { font-size: 0.8em; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--a); }
+.wd-s-moderne.wd-cert .wd-title { margin-top: 0.25em; font-size: 2.9em; letter-spacing: 0.01em; text-transform: none; }
+.wd-s-moderne.wd-cert .wd-divider { justify-content: flex-start; }
+.wd-s-moderne.wd-cert .wd-divider::before { display: none; }
+.wd-s-moderne.wd-cert .wd-divider::after { width: 7em; height: 0.25em; border-radius: 1em; }
+.wd-s-moderne.wd-cert .wd-divider span { display: none; }
+.wd-s-moderne.wd-cert .wd-name { font-size: 2.7em; font-weight: 600; color: var(--p); }
+.wd-s-moderne.wd-cert .wd-body { text-align: left; }
+.wd-s-moderne.wd-cert .wd-foot { grid-template-columns: 1fr auto; }
+
+/* Classique : en-tête officiel, filet double, cadre fin. */
+.wd-s-classique.wd-cert::before { content: ''; position: absolute; inset: 1.4em; border: 1px solid var(--p); z-index: 0; }
+.wd-s-classique.wd-cert .wd-head { flex-direction: row; align-items: center; gap: 1.1em; text-align: left; width: 100%; padding-bottom: 0.8em; border-bottom: 0.3em double var(--p); }
+.wd-s-classique.wd-cert .wd-head .wd-logo { margin: 0; }
+.wd-s-classique.wd-cert .wd-number { top: 8.4em; }
+.wd-s-classique.wd-cert .wd-title { font-size: 2.3em; letter-spacing: 0.1em; }
+.wd-s-classique.wd-cert .wd-name { font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 700; font-size: 3em; }
+.wd-s-classique .wd-photo-slot { top: 9.4em; }
+
+/* Épuré : du blanc, un trait de couleur. */
+.wd-s-epure.wd-cert::before { content: ''; position: absolute; top: 0; left: 0; width: 34%; height: 0.55em; background: var(--a); }
+.wd-s-epure.wd-cert .wd-main { align-items: flex-start; text-align: left; padding: 4.2em 6em 3em; }
+.wd-s-epure.wd-cert .wd-head { flex-direction: row; align-items: center; gap: 0.9em; text-align: left; }
+.wd-s-epure.wd-cert .wd-head .wd-logo { width: 3.6em; height: 3.6em; margin: 0; }
+.wd-s-epure.wd-cert .wd-head .wd-org-name { font-size: 1.15em; }
+.wd-s-epure.wd-cert .wd-title { margin-top: 1.6em; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 3.4em; text-transform: none; letter-spacing: 0; }
+.wd-s-epure.wd-cert .wd-divider { display: none; }
+.wd-s-epure.wd-cert .wd-name { margin-top: 0.3em; font-size: 2.3em; font-weight: 500; color: var(--p); }
+.wd-s-epure.wd-cert .wd-body { text-align: left; color: #3b3a44; }
+.wd-s-epure.wd-cert .wd-foot { grid-template-columns: 1fr auto; }
+
+/* =====================================================================
+   La lettre (portrait)
+   ===================================================================== */
+.wd-letter { display: flex; flex-direction: column; padding: 2.9em 3.4em 2.2em; }
+.wd-letter .wd-lhead { display: flex; align-items: center; gap: 1em; padding-bottom: 0.9em; border-bottom: 0.25em double var(--p); }
+.wd-letter .wd-lhead .wd-logo { width: 4.6em; height: 4.6em; }
+.wd-letter .wd-meta { display: flex; justify-content: space-between; align-items: flex-start; gap: 1em; margin-top: 1.1em; }
+.wd-letter .wd-ltitle { margin-top: 1.1em; text-align: center; font-size: 1.55em; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--p); }
+.wd-letter .wd-ltitle::after { content: ''; display: block; width: 3.4em; height: 0.12em; margin: 0.35em auto 0; background: var(--a); }
+.wd-letter .wd-lbody { margin-top: 1.4em; flex: 1; text-align: justify; font-size: 0.95em; }
+.wd-letter .wd-lbody p + p { margin-top: 1em; }
+.wd-letter .wd-lfoot { margin-top: 1.6em; display: flex; flex-wrap: wrap-reverse; align-items: flex-end; justify-content: space-between; gap: 1.5em; }
+.wd-letter .wd-footer-note { margin-top: 1.2em; padding-top: 0.5em; border-top: 1px solid var(--p-line); }
+.wd-letter .wd-photo, .wd-letter .wd-photo-empty { width: 6em; height: 7.6em; }
+
+.wd-s-prestige.wd-letter { border: 0.45em solid var(--p); box-shadow: inset 0 0 0 0.75em #fff, inset 0 0 0 0.82em var(--a), 0 10px 30px -12px rgb(30 30 60 / 0.25); }
+.wd-s-prestige.wd-letter .wd-lhead, .wd-s-solennel.wd-letter .wd-lhead { flex-direction: column; text-align: center; gap: 0.2em; border-bottom: 0; }
+.wd-s-prestige.wd-letter .wd-lhead::after, .wd-s-solennel.wd-letter .wd-lhead::after { content: '◆'; color: var(--a); font-size: 0.8em; margin-top: 0.4em; }
+.wd-s-prestige.wd-letter .wd-ltitle, .wd-s-solennel.wd-letter .wd-ltitle { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 2em; }
+.wd-s-solennel.wd-letter { box-shadow: inset 0 0 0 1.1em color-mix(in srgb, var(--p) 6%, white), inset 0 0 0 1.25em var(--p), 0 10px 30px -12px rgb(30 30 60 / 0.25); padding: 3.4em 3.8em 2.6em; }
+.wd-s-moderne.wd-letter { padding-top: 0; }
+.wd-s-moderne.wd-letter .wd-lhead { margin: 0 -3.4em; padding: 1.7em 3.4em 1.4em; border: 0; color: #fff; background: linear-gradient(120deg, var(--p), color-mix(in srgb, var(--p) 72%, #000)); }
+.wd-s-moderne.wd-letter .wd-lhead .wd-logo { background: #fff; border-radius: 0.8em; padding: 0.3em; }
+.wd-s-moderne.wd-letter .wd-lhead .wd-org-name { color: #fff; }
+.wd-s-moderne.wd-letter .wd-lhead .wd-org-parent { color: color-mix(in srgb, var(--a) 70%, white); }
+.wd-s-moderne.wd-letter .wd-lhead .wd-org-legal, .wd-s-moderne.wd-letter .wd-lhead .wd-org-motto { color: rgb(255 255 255 / 0.75); }
+.wd-s-moderne.wd-letter .wd-ltitle { text-align: left; letter-spacing: 0.02em; text-transform: none; font-size: 1.9em; }
+.wd-s-moderne.wd-letter .wd-ltitle::after { margin-left: 0; }
+.wd-s-epure.wd-letter .wd-lhead { border-bottom: 0; }
+.wd-s-epure.wd-letter::before { content: ''; position: absolute; top: 0; left: 3.4em; width: 7em; height: 0.4em; background: var(--a); }
+.wd-s-epure.wd-letter .wd-ltitle { text-align: left; text-transform: none; letter-spacing: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-size: 2.3em; }
+.wd-s-epure.wd-letter .wd-ltitle::after { display: none; }
+.wd-s-epure.wd-letter .wd-lbody { text-align: left; }
+
+@media print {
+    .wd-frame { max-width: none !important; }
+    .wd-frame.is-landscape { width: 297mm; }
+    .wd-frame.is-portrait { width: 210mm; }
+    .wd { box-shadow: none !important; }
+    .wd-frame.is-landscape .wd { height: 209.5mm; aspect-ratio: auto; }
+    .wd-frame.is-portrait .wd { min-height: 296.5mm; aspect-ratio: auto; }
+    .wd-s-prestige.wd-letter { box-shadow: inset 0 0 0 0.75em #fff, inset 0 0 0 0.82em var(--a) !important; }
+    .wd-s-solennel.wd-letter { box-shadow: inset 0 0 0 1.1em color-mix(in srgb, var(--p) 6%, white), inset 0 0 0 1.25em var(--p) !important; }
+    .wd .wd-photo-empty { visibility: hidden; }
+}

@@ -26,7 +26,8 @@ class DocumentType extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['subject' => 'member', 'is_active' => true, 'position' => 0, 'number_format' => '{CODE}/{SIGLE}/{ANNEE}/{NUMERO}', 'show_photo' => false];
+    protected $attributes = ['subject' => 'member', 'is_active' => true, 'position' => 0, 'number_format' => '{CODE}/{SIGLE}/{ANNEE}/{NUMERO}', 'show_photo' => false,
+        'orientation' => 'portrait', 'style' => null];
 
     protected function casts(): array
     {

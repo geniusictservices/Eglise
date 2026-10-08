@@ -34,6 +34,13 @@ Une église est une personne morale : ses reçus, et plus tard ses attestations 
 
 ③ **Ce qui s'affiche sur les documents** : cochez ou décochez chaque élément (logo, dénomination, forme juridique, personnalité juridique, Id. Nat., NIF, représentant, devise, adresse, téléphone, e-mail, nom du niveau supérieur). Seules les informations renseignées s'affichent. Choisissez aussi le **texte en bas des reçus**, celui **en bas des attestations et lettres** (voir [Les documents](29-documents.md)), et le **format de reçu par défaut** (A4, ticket 80 mm ou 58 mm).
 
+<table><tr>
+<td width="68%"><img src="captures/bureau/59-style-documents.png" alt="Style des documents sur ordinateur"></td>
+<td width="32%"><img src="captures/mobile/59-style-documents.png" alt="Style des documents sur téléphone"></td>
+</tr></table>
+
+④ **Le style des documents** : Prestige, Solennel, Moderne, Classique ou Épuré, choisi sur des vignettes, toujours aux couleurs de l'église. Un modèle peut avoir son propre style (voir [Le style des documents](29-documents.md#le-style-des-documents)).
+
 **Dans une dénomination**, l'identité juridique est celle du **siège** : les paroisses la reçoivent telle quelle, avec le logo du siège si elles n'ont pas le leur. Chaque paroisse garde son nom, son adresse et son téléphone, et peut régler ce qui s'affiche sur ses propres documents ; sinon, elle suit le réglage de son niveau supérieur.
 
 ## Apparence : les couleurs de votre espace

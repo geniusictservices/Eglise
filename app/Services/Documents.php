@@ -7,6 +7,7 @@ use App\Models\IssuedDocument;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\RegisterEntry;
+use App\Support\DocumentStyles;
 use App\Support\DocumentTemplate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -83,7 +84,7 @@ class Documents
                 'organization_id' => $organization->id, 'document_type_id' => $type->id, 'number' => $number, 'year' => $year, 'sequence' => $sequence,
                 'member_id' => $member?->id ?? $entry?->member_id, 'register_entry_id' => $entry?->id, 'beneficiary' => $beneficiary, 'title' => $type->title,
                 'body' => DocumentTemplate::render($type->body, $values), 'photo_path' => $photo,
-                'data' => ['fields' => $data['fields'] ?? []] + ($data['data'] ?? []),
+                'data' => ['fields' => $data['fields'] ?? [], 'headline' => DocumentStyles::headline($type, $values, $beneficiary)] + ($data['data'] ?? []),
                 'signatory' => $values['signataire'], 'signatory_title' => $values['qualite_signataire'],
                 'issued_on' => $issuedOn->toDateString(), 'token' => Str::random(32), 'issued_by' => auth()->id(),
             ]);

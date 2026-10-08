@@ -132,6 +132,30 @@
                         <select wire:model="receiptFormat" id="receiptFormat" class="input">@foreach (\App\Support\DocumentIdentity::RECEIPT_FORMATS as $k => $l)<option value="{{ $k }}">{{ __($l) }}</option>@endforeach</select>
                         <p class="hint">{{ __('Les tickets 58 et 80 mm sont pour les imprimantes thermiques. Le format se change aussi au moment d’imprimer.') }}</p></div>
                 </section>
+                @php $docTheme = $this->organization()->theme(); @endphp
+                <section class="card space-y-3 p-5">
+                    <h2 class="text-base">{{ __('Style des attestations et certificats') }}</h2>
+                    <p class="text-sm text-sand-700">{{ __('Aux couleurs de l’église. Les attestations et certificats s’impriment en paysage, les lettres en portrait. Chaque modèle peut aussi choisir son propre style.') }}</p>
+                    <div class="grid grid-cols-2 gap-2" role="radiogroup">
+                        @foreach (\App\Support\DocumentStyles::STYLES as $key => $s)
+                            <label wire:key="ds-{{ $key }}" @class(['cursor-pointer rounded-xl border p-2 text-xs transition', 'border-ochre-400 ring-2 ring-ochre-300' => $documentStyle === $key, 'border-sand-200 hover:border-ochre-300' => $documentStyle !== $key])>
+                                <input type="radio" wire:model.live="documentStyle" value="{{ $key }}" class="sr-only">
+                                <span class="relative mb-2 block aspect-[297/210] overflow-hidden rounded-md bg-white shadow-sm" style="--p: {{ $docTheme->primary }}; --a: {{ $docTheme->accent }};">
+                                    @switch($key)
+                                        @case('prestige')<span class="absolute inset-0 border-[5px]" style="border-color: var(--p)"></span><span class="absolute inset-[7px] border" style="border-color: var(--a)"></span><span class="absolute inset-x-0 top-[26%] mx-auto block h-1.5 w-1/2 rounded" style="background: var(--p)"></span><span class="absolute inset-x-0 top-[44%] mx-auto block h-2 w-2/3 rounded-full" style="background: var(--a); opacity: .55"></span><span class="absolute bottom-[12%] left-1/2 size-4 -translate-x-1/2 rounded-full border-2" style="border-color: var(--a)"></span>@break
+                                        @case('solennel')<span class="absolute inset-0" style="background: repeating-linear-gradient(45deg, var(--p) 0 1px, transparent 1px 4px); opacity: .25"></span><span class="absolute inset-[8px] border-4 border-double bg-white" style="border-color: var(--p)"></span><span class="absolute inset-x-0 top-[30%] mx-auto block h-1.5 w-1/2 rounded" style="background: var(--p)"></span><span class="absolute bottom-[14%] left-1/2 size-4 -translate-x-1/2 rounded-full" style="background: var(--a)"></span>@break
+                                        @case('moderne')<span class="absolute inset-y-0 left-0 w-[28%]" style="background: var(--p)"></span><span class="absolute left-[36%] top-[24%] block h-1 w-[18%] rounded" style="background: var(--a)"></span><span class="absolute left-[36%] top-[36%] block h-2 w-1/2 rounded" style="background: var(--p)"></span><span class="absolute left-[36%] top-[52%] block h-1.5 w-[40%] rounded" style="background: var(--p); opacity: .5"></span>@break
+                                        @case('classique')<span class="absolute inset-[5px] border" style="border-color: var(--p)"></span><span class="absolute inset-x-[10px] top-[24%] block border-b-[3px] border-double" style="border-color: var(--p)"></span><span class="absolute inset-x-0 top-[42%] mx-auto block h-1.5 w-1/2 rounded" style="background: var(--p)"></span>@break
+                                        @default<span class="absolute left-0 top-0 block h-1 w-1/3" style="background: var(--a)"></span><span class="absolute left-[12%] top-[34%] block h-2.5 w-1/2 rounded" style="background: var(--p); opacity: .85"></span><span class="absolute left-[12%] top-[54%] block h-1.5 w-1/3 rounded" style="background: var(--p); opacity: .45"></span>
+                                    @endswitch
+                                </span>
+                                <span class="block font-semibold text-ink-800">{{ __($s['name']) }}</span>
+                                <span class="block text-sand-700">{{ __($s['description']) }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @if (\Illuminate\Support\Facades\Route::has('documents.templates'))<p class="text-xs text-sand-700">{{ __('Les couleurs se changent dans l’onglet Apparence. Après l’enregistrement, ouvrez un document délivré pour voir le résultat.') }}</p>@endif
+                </section>
                 <button type="submit" class="btn-primary w-full"><x-icon name="save" class="size-4" /> {{ __('Enregistrer') }}</button>
             </div>
         </form>

@@ -6,6 +6,7 @@ use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\DocumentType;
 use App\Models\LifeEvent;
 use App\Services\DocumentTypes;
+use App\Support\DocumentStyles;
 use App\Support\DocumentTemplate;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
@@ -29,9 +30,10 @@ class TemplateEditor extends Component
         $this->form = $type ? $type->only(['name', 'title', 'code', 'subject', 'body', 'number_format']) + [
             'life_event_type' => $type->life_event_type ?? '', 'signatory_title' => (string) $type->signatory_title,
             'fields' => $type->customFields(), 'show_photo' => $type->show_photo,
+            'orientation' => $type->orientation, 'style' => (string) $type->style,
         ] : [
             'name' => '', 'title' => '', 'code' => '', 'subject' => 'member', 'life_event_type' => '', 'signatory_title' => __('Pasteur'),
-            'number_format' => '{CODE}/{SIGLE}/{ANNEE}/{NUMERO}', 'fields' => [], 'show_photo' => false,
+            'number_format' => '{CODE}/{SIGLE}/{ANNEE}/{NUMERO}', 'fields' => [], 'show_photo' => false, 'orientation' => 'landscape', 'style' => '',
             'body' => __("Je soussigné(e), **{signataire}**, {qualite_signataire} de {communaute}, atteste que **{civilite} {nom_officiel}**, {né} le {date_naissance} à {lieu_naissance}, …\n\nEn foi de quoi, la présente attestation lui est délivrée pour servir et valoir ce que de droit."),
         ];
     }
@@ -60,6 +62,8 @@ class TemplateEditor extends Component
             'form.number_format' => 'required|string|max:60',
             'form.body' => 'required|string|max:8000',
             'form.fields.*.label' => 'nullable|string|max:60',
+            'form.orientation' => ['required', Rule::in(array_keys(DocumentStyles::ORIENTATIONS))],
+            'form.style' => ['nullable', Rule::in(array_keys(DocumentStyles::STYLES))],
         ], attributes: ['form.name' => __('nom'), 'form.title' => __('titre imprimé'), 'form.code' => __('code'), 'form.body' => __('texte'), 'form.number_format' => __('format du numéro')]);
 
         try {
@@ -92,6 +96,7 @@ class TemplateEditor extends Component
             'subject' => $this->form['subject'], 'life_event_type' => $this->form['life_event_type'] ?: null, 'body' => $this->form['body'],
             'number_format' => str_contains($this->form['number_format'], '{NUMERO}') ? $this->form['number_format'] : '{CODE}/{NUMERO}',
             'signatory_title' => $this->form['signatory_title'], 'show_photo' => $this->form['subject'] !== 'free' && (bool) ($this->form['show_photo'] ?? false),
+            'orientation' => $this->form['orientation'] ?? 'portrait', 'style' => ($this->form['style'] ?? '') ?: null, 'key' => $this->type?->key,
             'fields' => collect($this->form['fields'])->filter(fn ($f) => trim($f['label'] ?? '') !== '')
                 ->map(fn ($f) => $f + ['key' => DocumentTemplate::fieldKey($f['label'])])->values()->all(),
         ]);

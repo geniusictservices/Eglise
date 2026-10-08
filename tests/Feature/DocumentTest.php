@@ -123,8 +123,18 @@ class DocumentTest extends TestCase
         $this->assertStringContainsString('sous la référence B-301', $document->body);
         $this->assertSame('Daniel Paluku', $document->signatory);
 
-        $this->get(route('documents.print', $document))->assertOk()->assertSee('Attestation de baptême')->assertSee($document->number)->assertSee('<svg', false);
+        $this->get(route('documents.print', $document))->assertOk()->assertSee('Attestation de baptême')->assertSee($document->number)->assertSee('<svg', false)
+            // Un certificat s'imprime en paysage, dans le style de l'église (Prestige par défaut), le nom mis en valeur.
+            ->assertSee('size: A4 landscape', false)->assertSee('wd-cert wd-s-prestige', false)->assertSee('Kahindo Vagheni Esther');
+        $this->assertSame('KAHINDO Vagheni Esther', $document->data['headline']);
         $this->get(route('documents.index'))->assertOk()->assertSee('KAHINDO Vagheni Esther');
+
+        // L'église choisit un autre style ; un modèle peut garder le sien, et une lettre reste en portrait.
+        $this->paroisse->update(['settings' => ['documents' => ['style' => 'moderne']]]);
+        $this->get(route('documents.print', $document))->assertSee('wd-s-moderne', false);
+        $document->type->update(['style' => 'solennel']);
+        $this->get(route('documents.print', $document->fresh()))->assertSee('wd-s-solennel', false);
+        $this->assertSame('portrait', $this->type('recommendation')->orientation);
 
         // Le texte délivré est figé : modifier le modèle ne le change pas.
         $this->esther->update(['birth_place' => 'Goma']);

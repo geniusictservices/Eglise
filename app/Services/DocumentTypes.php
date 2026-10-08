@@ -7,6 +7,7 @@ use App\Models\LifeEvent;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Support\DefaultDocumentTypes;
+use App\Support\DocumentStyles;
 use App\Support\DocumentTemplate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -54,7 +55,7 @@ class DocumentTypes
         }
         $existing = DocumentType::where('organization_id', $organization->id)->where('replaces_id', $type->id)->first();
 
-        return $existing ?? DocumentType::create($type->only(['key', 'name', 'title', 'subject', 'life_event_type', 'body', 'fields', 'code', 'number_format', 'signatory_title', 'show_photo', 'position'])
+        return $existing ?? DocumentType::create($type->only(['key', 'name', 'title', 'subject', 'life_event_type', 'body', 'fields', 'code', 'number_format', 'signatory_title', 'show_photo', 'orientation', 'style', 'position'])
             + ['organization_id' => $organization->id, 'replaces_id' => $type->id]);
     }
 
@@ -81,6 +82,8 @@ class DocumentTypes
             'life_event_type' => ($data['life_event_type'] ?? null) ?: null, 'body' => trim($data['body']), 'fields' => $fields,
             'number_format' => trim($data['number_format']), 'signatory_title' => trim((string) ($data['signatory_title'] ?? '')) ?: null,
             'show_photo' => ($data['subject'] ?? 'member') !== 'free' && (bool) ($data['show_photo'] ?? false),
+            'orientation' => array_key_exists($data['orientation'] ?? '', DocumentStyles::ORIENTATIONS) ? $data['orientation'] : 'portrait',
+            'style' => array_key_exists($data['style'] ?? '', DocumentStyles::STYLES) ? $data['style'] : null,
         ];
         if ($type) {
             $type->update($values);

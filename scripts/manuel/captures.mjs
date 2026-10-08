@@ -758,6 +758,14 @@ const SCENES = [
                 : [{ selector: 'main form section:first-child', label: '1' }, { selector: 'main form section:nth-child(2) h2', label: '2' }, { selector: 'main form aside section:first-child h2, main form > div:nth-child(2) section:first-child h2', label: '3' }]);
         },
     },
+    {
+        id: '59-style-documents', user: '0990000001',
+        run: async (page) => {
+            await page.goto(`${BASE}/parametres?onglet=identite`);
+            await settle(page);
+            await mark(page, [{ selector: 'main form section h2', text: 'Style des attestations', label: '4' }]);
+        },
+    },
     // ---------- Plan d'action et budget (paroisse de Himbi) ----------
     {
         id: '60-exercice', user: '0990000007',

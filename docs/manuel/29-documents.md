@@ -58,7 +58,28 @@ Le texte est **figé** dès la délivrance : corriger ensuite la fiche ne change
 
 **La photo du membre.** Les modèles qui la demandent (d'office : attestation d'appartenance, lettre de recommandation, attestation de service, ordre de mission) impriment la **photo de la fiche**, au format identité, en haut à droite. Elle est **copiée au moment de la délivrance** : changer la photo de la fiche ensuite ne change pas un document déjà remis. Si la fiche n'a pas de photo, Waumini le signale avant la délivrance, avec un lien pour l'ajouter ; sinon, le document part sans photo.
 
-Le document porte l'en-tête de la communauté (nom, identité juridique, adresse, devise, choisis dans [Paramètres › Identité et documents](08-parametres.md), avec le texte du bas propre aux documents), son numéro, son titre, le texte, le lieu et la date, la qualité et le nom du signataire, et, en bas, le **QR code**. Touchez **Imprimer**, en A4.
+Le document porte l'en-tête de la communauté (nom, identité juridique, adresse, devise, choisis dans [Paramètres › Identité et documents](08-parametres.md), avec le texte du bas propre aux documents), son numéro, son titre, le texte, le lieu et la date, la qualité et le nom du signataire, et, en bas, le **QR code**. Touchez **Imprimer**, en A4 : le navigateur reçoit déjà la bonne orientation, paysage ou portrait.
+
+**Paysage ou portrait.** Les certificats et attestations (appartenance, baptême, mariage, présentation d'enfant, service) s'impriment en **paysage**, comme un diplôme : le nom de la personne en grand au centre, le texte dessous, puis la date, le sceau de l'église, le QR code et la signature. Les lettres (recommandation, transfert, ordre de mission, convocation) restent en **portrait**, avec l'en-tête en haut et le texte en paragraphes.
+
+## Le style des documents
+
+Cinq styles, tous **aux couleurs de l'église** (celles du thème choisi dans Paramètres) :
+
+| Style | Ce qu'il donne |
+|---|---|
+| **Prestige** | Double cadre, coins ornés, nom en lettres calligraphiées et sceau rond. Le style proposé d'office. |
+| **Solennel** | Bordure guillochée comme un diplôme, logo en filigrane, ruban. |
+| **Moderne** | Bandeau de couleur sur le côté, titres nets, mise en page aérée. |
+| **Classique** | En-tête officiel, filet double, cadre fin : sobre et administratif. |
+| **Épuré** | Beaucoup de blanc, un trait de couleur, une typographie élégante. Économe en encre. |
+
+Le style se choisit à deux endroits :
+
+- **Paramètres › Identité et documents › Style des attestations et certificats** : le style de toute l'église, choisi sur des vignettes. Par défaut, **Prestige**.
+- **Dans un modèle** (ci-dessous) : un style propre à ce modèle, par exemple **Prestige** pour le baptême et **Épuré** pour la convocation. Laissé sur « Celui de l'église », le modèle suit le réglage général.
+
+Le sceau rond porte le nom de l'église ; les couleurs suivent le thème : changer de thème change aussi les documents qui seront délivrés ensuite, sans toucher à ceux qui sont déjà imprimés.
 
 ① **Page de vérification** montre ce que verra la personne qui scannera le QR code.
 
@@ -97,6 +118,8 @@ Un modèle de la communauté peut être **mis de côté** : il n'est plus propos
 - **Délivré à** : un membre ; un membre ou une personne d'un ancien registre ; ou un destinataire libre (une lettre à la mairie).
 - **Étape de vie reprise** : le baptême, le mariage… dont le document cite la date, le lieu et l'officiant.
 - **Mettre la photo du membre** : la photo de sa fiche, au format identité (pas pour un destinataire libre).
+- **Présentation** : **paysage** pour un certificat ou une attestation, **portrait** pour une lettre ou un ordre de mission.
+- **Style** : celui de l'église, ou l'un des cinq styles, pour ce modèle seulement.
 - **Format du numéro** : par exemple `{CODE}/{SIGLE}/{ANNEE}/{NUMERO}`. `{SIGLE}` est le sigle de la paroisse, `{SIEGE}` celui du siège, `{AN}` l'année sur deux chiffres. La numérotation repart à 1 chaque année.
 
 ① **Les champs à remplir** : ce que la personne qui délivre doit indiquer. Chaque champ devient une variable : le champ « Voix » s'écrit `{voix}` dans le texte.

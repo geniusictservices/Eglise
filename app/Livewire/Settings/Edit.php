@@ -5,6 +5,7 @@ namespace App\Livewire\Settings;
 use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\AuditLog;
 use App\Support\DocumentIdentity;
+use App\Support\DocumentStyles;
 use App\Support\OrganizationLogo;
 use App\Support\Phone;
 use App\Support\SupportAccess;
@@ -75,6 +76,9 @@ class Edit extends Component
 
     public string $receiptFormat = 'a4';
 
+    /** Le style des attestations, certificats et lettres. */
+    public string $documentStyle = 'prestige';
+
     public $logo = null;
 
     public function mount(): void
@@ -105,6 +109,7 @@ class Edit extends Component
         $this->footer = $display['footer'];
         $this->documentFooter = $display['document_footer'];
         $this->receiptFormat = $display['receipt_format'];
+        $this->documentStyle = DocumentStyles::forOrganization($o);
     }
 
     public function saveIdentity(): void
@@ -115,6 +120,7 @@ class Edit extends Component
             'footer' => 'nullable|string|max:300',
             'documentFooter' => 'nullable|string|max:300',
             'receiptFormat' => ['required', Rule::in(array_keys(DocumentIdentity::RECEIPT_FORMATS))],
+            'documentStyle' => ['required', Rule::in(array_keys(DocumentStyles::STYLES))],
             'logo' => 'nullable|image|max:4096',
         ], attributes: ['logo' => __('logo'), 'footer' => __('texte de pied de page')]);
 
@@ -130,6 +136,7 @@ class Edit extends Component
             'footer' => trim($this->footer) ?: null,
             'document_footer' => trim($this->documentFooter) ?: null,
             'receipt_format' => $this->receiptFormat,
+            'style' => $this->documentStyle,
         ];
 
         $attributes = ['legal' => $legal ?: null, 'settings' => $settings];

@@ -3,6 +3,11 @@
 @import '@fontsource/lexend/500.css';
 @import '@fontsource/lexend/600.css';
 @import '@fontsource/lexend/700.css';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource/cormorant-garamond/700.css';
+@import '@fontsource/cormorant-garamond/600-italic.css';
+@import '@fontsource/great-vibes/400.css';
+@import './documents.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

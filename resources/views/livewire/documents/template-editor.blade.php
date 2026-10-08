@@ -24,6 +24,13 @@
                     <div><label for="t-number" class="label">{{ __('Format du numéro') }}</label><input wire:model.live.debounce.500ms="form.number_format" id="t-number" class="input font-mono">
                         @error('form.number_format') <p class="error">{{ $message }}</p> @else <p class="mt-1 text-xs text-sand-700">{{ __('Exemple : :n', ['n' => $values['numero_document']]) }} · {CODE} {SIGLE} {SIEGE} {ANNEE} {AN} {NUMERO}</p> @enderror</div>
                 </div>
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div><label for="t-orientation" class="label">{{ __('Présentation') }}</label><select wire:model.live="form.orientation" id="t-orientation" class="input">
+                        <option value="landscape">{{ __('Paysage : certificat, attestation') }}</option><option value="portrait">{{ __('Portrait : lettre, ordre de mission') }}</option></select></div>
+                    <div><label for="t-style" class="label">{{ __('Style') }}</label><select wire:model.live="form.style" id="t-style" class="input">
+                        <option value="">{{ __('Celui de l’église (:s)', ['s' => __(\App\Support\DocumentStyles::STYLES[\App\Support\DocumentStyles::forOrganization($organization)]['name'])]) }}</option>
+                        @foreach (\App\Support\DocumentStyles::STYLES as $key => $s)<option value="{{ $key }}">{{ __($s['name']) }}</option>@endforeach</select></div>
+                </div>
                 @if ($form['subject'] !== 'free')
                     <label class="flex items-start gap-3 rounded-xl border border-sand-200 p-3 text-sm">
                         <input type="checkbox" wire:model.live="form.show_photo" class="mt-0.5 size-4">
@@ -84,7 +91,8 @@
                     <div class="origin-top-left">
                         @include('documents.sheet', ['organization' => $organization, 'identity' => $identity, 'title' => $draft->title, 'number' => $values['numero_document'],
                             'body' => $preview, 'date' => $values['date'], 'signatory' => $values['signataire'], 'signatoryTitle' => $values['qualite_signataire'], 'qr' => \App\Support\QrCode::svg(url('/verifier/document/exemple')),
-                            'photoFrame' => $draft->show_photo])
+                            'photoFrame' => $draft->show_photo, 'orientation' => $draft->orientation,
+                            'style' => \App\Support\DocumentStyles::resolve($draft, $organization), 'headline' => \App\Support\DocumentStyles::headline($draft, $values, null)])
                     </div>
                 </div>
             </div>

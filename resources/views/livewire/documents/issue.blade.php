@@ -99,7 +99,8 @@
                     <div class="overflow-hidden rounded-xl bg-sand-100 p-3 sm:p-5">
                         @include('documents.sheet', ['organization' => $organization, 'identity' => $identity, 'title' => $type->title, 'number' => $values['numero_document'],
                             'body' => $preview, 'date' => $values['date'], 'signatory' => $values['signataire'], 'signatoryTitle' => $values['qualite_signataire'], 'qr' => \App\Support\QrCode::svg(url('/verifier/document/exemple')),
-                            'photo' => $photo, 'photoFrame' => $type->show_photo])
+                            'photo' => $photo, 'photoFrame' => $type->show_photo, 'orientation' => $type->orientation,
+                            'style' => \App\Support\DocumentStyles::resolve($type, $organization), 'headline' => \App\Support\DocumentStyles::headline($type, $values, null)])
                     </div>
                 </div>
             </aside>
