@@ -201,7 +201,9 @@ class Show extends Component
         if ($e->status === 'approved') {
             $accounts = $ledger->balances($this->organization())->where('currency', $e->currency)->filter(fn ($b) => $b['account']->is_active)->values();
             if ($this->accountId === '' && $accounts->isNotEmpty()) {
-                $this->accountId = (string) ($accounts->first(fn ($b) => (float) (string) $b['balance'] >= (float) $e->amount) ?? $accounts->first())['account']->id;
+                // Une dépense de projet sort d'abord du compte du projet, s'il en a un.
+                $this->accountId = (string) ($accounts->first(fn ($b) => $e->project?->cash_account_id && $b['account']->id === $e->project->cash_account_id)
+                    ?? $accounts->first(fn ($b) => (float) (string) $b['balance'] >= (float) $e->amount) ?? $accounts->first())['account']->id;
             }
         }
 

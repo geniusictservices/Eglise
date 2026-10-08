@@ -89,7 +89,10 @@ class DemoPlanning
         ], $tresoriere, $last.'08');
 
         $budget = $as($tresoriere, $last.'15', fn () => $service->prepare($himbi, $year));
-        $as($tresoriere, $last.'15', function () use ($budget, $cat, $general) {
+        $as($tresoriere, $last.'15', function () use ($budget, $cat, $general, $service) {
+            // La campagne de Sake proposée par la Jeunesse est la dépense du projet Sake : pas de doublon.
+            $budget->lines()->where('label', 'Évangélisation à Sake (transport, repas)')->update(['project_id' => Project::where('name', 'Évangélisation à Sake')->value('id')]);
+            $service->importProjects($budget);
             // L'arbitrage : la sonorisation est reportée, la convention réduite.
             $budget->lines()->where('label', 'Nouvelle sonorisation complète')->update(['amount' => 0, 'note' => 'Reportée à l’an prochain']);
             $budget->lines()->where('label', 'Convention des jeunes')->update(['amount' => 600, 'note' => 'Avec la participation des jeunes']);
@@ -104,6 +107,8 @@ class DemoPlanning
             ] as [$type, $department, $category, $label, $amount]) {
                 BudgetLine::create(['budget_id' => $budget->id, 'type' => $type, 'department_id' => $department, 'category_id' => $cat[$category], 'label' => $label, 'amount' => $amount]);
             }
+            // Chaque dépense prévue dit quelles recettes la paient.
+            app(BudgetFundings::class)->auto($budget->fresh());
             app(Budgets::class)->submit($budget);
         });
         $as($pasteur, ($year).'-01-11', fn () => $service->approve($budget->fresh(), $pasteur, 'Approuvé en conseil le 11 janvier.'));
@@ -113,7 +118,10 @@ class DemoPlanning
         $as($tresoriere, $year.'-07-06', function () use ($revision, $cat, $general) {
             BudgetLine::create(['budget_id' => $revision->id, 'type' => 'expense', 'department_id' => $general, 'category_id' => $cat['Entretien et réparations'],
                 'label' => 'Réparation de la toiture de la sacristie', 'amount' => 400, 'note' => 'Financée par la réduction de la convention']);
-            $revision->lines()->where('label', 'Convention des jeunes')->update(['amount' => 400]);
+            $convention = $revision->lines()->where('label', 'Convention des jeunes')->first();
+            $convention->update(['amount' => 400]);
+            app(BudgetFundings::class)->trim($convention);
+            app(BudgetFundings::class)->auto($revision->fresh());
             app(Budgets::class)->submit($revision);
         });
         $as($pasteur, $year.'-07-09', fn () => $service->approve($revision->fresh(), $pasteur));
@@ -187,6 +195,11 @@ class DemoPlanning
                         'created_at' => now()->subDays(mt_rand(3, 25))]);
                 }
             }
+        }
+
+        // La convention et la toiture sont payées par les recettes ordinaires : leurs lignes du budget portent leur marque.
+        foreach (['Convention des jeunes', 'Réparation de la toiture de la sacristie'] as $label) {
+            BudgetLine::whereHas('budget', fn ($q) => $q->where('organization_id', $himbi->id))->where('label', $label)->update(['project_id' => Project::where('name', $label)->value('id')]);
         }
 
         // Les réunions : deux tenues, une à venir.

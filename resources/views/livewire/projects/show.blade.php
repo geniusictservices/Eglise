@@ -43,7 +43,7 @@
     @if ($tab === 'annees')
         <section class="card p-5 sm:p-6">
             <h2 class="mb-1 text-lg">{{ __('Année par année') }}</h2>
-            <p class="mb-3 text-sm text-sand-700">{{ __('La tranche prévue de chaque exercice (reprise par le budget de l’année), ce qui a été reçu et dépensé, et ce qui reste, reporté sur l’année suivante.') }}</p>
+            <p class="mb-3 text-sm text-sand-700">{{ __('La tranche prévue de chaque exercice (reprise par le budget de l’année), ce qui a été reçu, ce que le budget ordinaire lui réserve, ce qui a été dépensé, et ce qui reste, reporté sur l’année suivante.') }}</p>
             @if ($yearRows->isEmpty())
                 <p class="text-sm text-sand-700">{{ __('Aucune année prévue.') }}@if ($canManage) <button type="button" wire:click="editProject({{ $p->id }})" class="font-semibold text-ink-700 underline">{{ __('Prévoir les années') }}</button>@endif</p>
             @else
@@ -60,6 +60,7 @@
                                 @if ($y['carried'])<div class="col-span-2 flex items-baseline justify-between"><dt class="text-xs text-sand-700">{{ __('Reporté') }}</dt><dd class="tabular">{{ Money::format($y['carried'], 'USD') }}</dd></div>@endif
                                 <div><dt class="text-xs text-sand-700">{{ __('Collecte prévue') }}</dt><dd class="tabular">{{ Money::format($y['income_planned'], 'USD') }}</dd></div>
                                 <div><dt class="text-xs text-sand-700">{{ __('Reçu') }}</dt><dd class="tabular text-leaf-600">{{ Money::format($y['income'], 'USD') }}</dd></div>
+                                @if ($y['budgeted'])<div class="col-span-2 flex items-baseline justify-between"><dt class="text-xs text-sand-700">{{ __('Budget ordinaire') }}</dt><dd class="tabular text-leaf-600">{{ Money::format($y['budgeted'], 'USD') }}</dd></div>@endif
                                 <div><dt class="text-xs text-sand-700">{{ __('Dépenses prévues') }}</dt><dd class="tabular">{{ Money::format($y['expense_planned'], 'USD') }}</dd></div>
                                 <div><dt class="text-xs text-sand-700">{{ __('Dépensé') }}</dt><dd class="tabular text-terra-600">{{ Money::format($y['expense'], 'USD') }}</dd></div>
                             </dl>
@@ -70,7 +71,7 @@
                     <table class="w-full min-w-[40rem] border-collapse text-sm">
                         <thead class="border-b-2 border-ink-700 text-xs text-ink-700">
                             <tr><th class="px-2 py-1.5 text-left font-semibold">{{ __('Exercice') }}</th>
-                                @foreach ([__('Reporté'), __('Collecte prévue'), __('Reçu'), __('Dépenses prévues'), __('Dépensé'), __('Reste')] as $h)<th class="whitespace-nowrap px-2 py-1.5 text-right font-semibold">{{ $h }}</th>@endforeach</tr>
+                                @foreach ([__('Reporté'), __('Collecte prévue'), __('Reçu'), __('Budget ordinaire'), __('Dépenses prévues'), __('Dépensé'), __('Reste')] as $h)<th class="whitespace-nowrap px-2 py-1.5 text-right font-semibold">{{ $h }}</th>@endforeach</tr>
                         </thead>
                         <tbody>
                             @foreach ($yearRows as $y)
@@ -79,6 +80,7 @@
                                     <td class="px-2 py-2 text-right tabular text-sand-700">{{ $y['carried'] ? Money::format($y['carried'], 'USD') : '·' }}</td>
                                     <td class="px-2 py-2 text-right tabular">{{ Money::format($y['income_planned'], 'USD') }}</td>
                                     <td class="px-2 py-2 text-right tabular text-leaf-600">{{ Money::format($y['income'], 'USD') }}</td>
+                                    <td class="px-2 py-2 text-right tabular text-leaf-600">{{ $y['budgeted'] ? Money::format($y['budgeted'], 'USD') : '·' }}</td>
                                     <td class="px-2 py-2 text-right tabular">{{ Money::format($y['expense_planned'], 'USD') }}</td>
                                     <td class="px-2 py-2 text-right tabular text-terra-600">{{ Money::format($y['expense'], 'USD') }}</td>
                                     <td @class(['px-2 py-2 text-right font-semibold tabular', 'text-terra-600' => $y['balance'] < 0, 'text-ink-800' => $y['balance'] >= 0])>{{ Money::format($y['balance'], 'USD') }}</td>

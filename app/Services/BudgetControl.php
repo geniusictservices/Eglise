@@ -60,6 +60,9 @@ class BudgetControl
 
         $rows = ['expense' => [], 'income' => []];
         foreach ($budget?->lines ?? [] as $line) {
+            if ($line->isCarryover()) {
+                continue; // le solde reporté d'un projet n'est pas une recette de l'exercice
+            }
             $key = self::key($line->department_id, $line->category_id);
             $rows[$line->type][$key] ??= ['department' => $line->department?->name, 'category' => $line->category?->name, 'department_id' => $line->department_id,
                 'category_id' => $line->category_id, 'budgeted' => 0.0, 'overruns' => 0.0, 'transfers' => 0.0, 'actual' => 0.0, 'committed' => 0.0];

@@ -70,6 +70,7 @@ class BudgetControlTest extends TestCase
         foreach ([[$this->missions, 1500], [$this->fournitures, 400]] as [$category, $amount]) {
             BudgetLine::create(['budget_id' => $budget->id, 'type' => 'expense', 'department_id' => $this->jeunesse->id, 'category_id' => $category, 'label' => 'Ligne', 'amount' => $amount]);
         }
+        $this->fundBudget($budget);
         $budgets->submit($budget);
         $budgets->approve($budget->fresh(), $this->pasteur);
     }

@@ -10,6 +10,7 @@ use App\Models\FinanceCategory;
 use App\Models\Organization;
 use App\Models\Payee;
 use App\Models\PaySlip;
+use App\Models\Project;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -71,6 +72,7 @@ class Budgets
         return DB::transaction(function () use ($organization, $year) {
             $budget = Budget::create(['organization_id' => $organization->id, 'fiscal_year' => $year, 'version' => 1, 'status' => 'draft', 'prepared_by' => auth()->id()]);
             $this->importProposals($budget);
+            $this->importProjects($budget);
 
             return $budget;
         });
@@ -148,6 +150,61 @@ class Budgets
         return $count;
     }
 
+    /**
+     * Reprend les projets de l'exercice : pour chacun, sa collecte prévue, son solde reporté
+     * des années précédentes (recettes réservées au projet) et ses dépenses prévues.
+     * Une ligne déjà reprise est mise à jour ; un type de ligne déjà saisi à la main pour
+     * le projet n'est pas repris en double.
+     *
+     * @return int lignes ajoutées ou mises à jour
+     */
+    public function importProjects(Budget $budget): int
+    {
+        $this->expectDraft($budget);
+        $organization = $budget->organization()->firstOrFail();
+        $year = $budget->fiscal_year;
+        $projects = app(Projects::class);
+        $fundings = app(BudgetFundings::class);
+        $general = Department::withoutGlobalScope('organization')->where('organization_id', $organization->id)->where('is_system', true)->value('id');
+        $expenseCategory = FinanceCategory::withoutOrganizationScope()->firstOrCreate(
+            ['organization_id' => $organization->id, 'type' => 'expense', 'name' => 'Projets et travaux'], ['position' => 55])->id;
+        $count = 0;
+
+        $list = Project::withoutOrganizationScope()->with('years')->where('organization_id', $organization->id)
+            ->whereIn('status', ['planned', 'ongoing'])->whereHas('years', fn ($q) => $q->where('fiscal_year', $year))->orderBy('id')->get();
+        foreach ($list as $project) {
+            $tranche = $project->years->firstWhere('fiscal_year', $year);
+            $incomeCategory = $project->category_id ?? tap(FinanceCategory::withoutOrganizationScope()->firstOrCreate(
+                ['organization_id' => $organization->id, 'type' => 'income', 'name' => mb_substr($project->name, 0, 120)],
+                ['nature' => 'personal', 'position' => 60])->id, fn ($id) => $project->update(['category_id' => $id]));
+            $manual = $budget->lines()->where('project_id', $project->id)->whereNull('source')->pluck('type')->unique()->all();
+
+            foreach ([
+                ['carryover', 'income', max(0, $projects->carriedInto($project, $year)), __(':p : solde reporté', ['p' => $project->name]), $incomeCategory, $project->department_id],
+                ['project', 'income', (float) $tranche->income_planned, __(':p : collecte prévue', ['p' => $project->name]), $incomeCategory, $project->department_id],
+                ['project', 'expense', (float) $tranche->expense_planned, __(':p : dépenses prévues', ['p' => $project->name]), $expenseCategory, $project->department_id ?? $general],
+            ] as [$source, $type, $amount, $label, $category, $department]) {
+                $line = $budget->lines()->where('project_id', $project->id)->where('source', $source)->where('type', $type)->first();
+                if ($amount < 0.005 || ($source === 'project' && in_array($type, $manual, true))) {
+                    $line?->delete();
+
+                    continue;
+                }
+                $values = ['type' => $type, 'department_id' => $department, 'category_id' => $category, 'label' => mb_substr($label, 0, 190),
+                    'amount' => round($amount, 2), 'project_id' => $project->id, 'source' => $source, 'note' => $source === 'project' ? $tranche->note : null];
+                if ($line) {
+                    $line->update($values);
+                    $fundings->trim($line);
+                } else {
+                    BudgetLine::create($values + ['budget_id' => $budget->id]);
+                }
+                $count++;
+            }
+        }
+
+        return $count;
+    }
+
     /** Nouvelle version, copie du budget adopté, pour une révision en cours d'exercice. */
     public function revise(Organization $organization, int $year, string $reason): Budget
     {
@@ -160,9 +217,12 @@ class Budgets
             $version = (int) Budget::withoutOrganizationScope()->where('organization_id', $organization->id)->where('fiscal_year', $year)->max('version') + 1;
             $budget = Budget::create(['organization_id' => $organization->id, 'fiscal_year' => $year, 'version' => $version, 'status' => 'draft',
                 'reason' => $reason, 'prepared_by' => auth()->id()]);
+            $map = [];
             foreach ($adopted->lines as $line) {
-                BudgetLine::create($line->only(['type', 'department_id', 'category_id', 'label', 'amount', 'proposed_amount', 'proposal_line_id', 'payee_id']) + ['budget_id' => $budget->id]);
+                $map[$line->id] = BudgetLine::create($line->only(['type', 'department_id', 'category_id', 'label', 'amount', 'proposed_amount', 'proposal_line_id', 'payee_id', 'project_id', 'source', 'note'])
+                    + ['budget_id' => $budget->id])->id;
             }
+            app(BudgetFundings::class)->copy($adopted, $budget, $map);
 
             return $budget;
         });
@@ -174,6 +234,13 @@ class Budgets
         $this->expectDraft($budget);
         if (! $budget->lines()->exists()) {
             throw new InvalidArgumentException(__('Le budget est vide.'));
+        }
+        // Chaque dépense prévue dit d'où viendra son argent.
+        $unfunded = app(BudgetFundings::class)->unfunded($budget->unsetRelation('lines')->unsetRelation('fundings'));
+        if ($unfunded->isNotEmpty()) {
+            throw new InvalidArgumentException(trans_choice(
+                ':count dépense prévue n’a pas encore de financement complet (:l) : dites quelles recettes la paient, ou réduisez-la.|:count dépenses prévues n’ont pas encore de financement complet (:l…) : dites quelles recettes les paient, ou réduisez-les.',
+                $unfunded->count(), ['l' => $unfunded->first()->label]));
         }
         $budget->update(['status' => 'submitted', 'submitted_by' => auth()->id(), 'submitted_at' => now(), 'return_note' => null]);
         app(CircuitNotices::class)->budgetSubmitted($budget);

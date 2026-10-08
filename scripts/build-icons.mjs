@@ -17,6 +17,7 @@ const names = [
     'graduation-cap', 'heart', 'user-check', 'user-x', 'qr-code', 'printer', 'hash', 'camera', 'milestone', 'award', 'message-circle',
     'handshake', 'megaphone', 'calendar-check', 'calendar-plus', 'church', 'clipboard-check',
     'mic', 'play', 'video', 'external-link', 'navigation', 'send',
+    'target', 'git-merge', 'unlink',
 ];
 
 const out = {};

@@ -71,6 +71,7 @@ class PayrollBudgetTest extends TestCase
         $budgets = app(Budgets::class);
         $budget = $budgets->prepare($this->eglise, 2026);
         $lines($budget);
+        $this->fundBudget($budget);
         $budgets->submit($budget);
         $budgets->approve($budget->fresh(), $this->pasteur);
 

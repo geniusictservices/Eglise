@@ -35,7 +35,7 @@
                     @foreach ($groups[$type] as $group => $lines)
                         <tr class="bg-sand-50 font-semibold break-inside-avoid"><td class="px-2 py-1.5" colspan="2">{{ $group }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</td></tr>
                         @foreach ($lines as $l)
-                            <tr class="border-b border-sand-100"><td class="px-2 py-1.5 pl-5">{{ $l->label }}</td><td class="px-2 py-1.5 text-sand-700">{{ $l->category?->name }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($l->amount, 'USD') }}</td></tr>
+                            <tr class="border-b border-sand-100"><td class="px-2 py-1.5 pl-5">{{ $l->label }}@if ($type === 'expense' && $state['expense'][$l->id]['sources']->isNotEmpty())<span class="block text-xs text-sand-700">{{ __('Financée par') }} {{ $state['expense'][$l->id]['sources']->map(fn ($src) => $src['line']->label.' '.Money::format($src['amount'], 'USD'))->implode(' · ') }}</span>@endif</td><td class="px-2 py-1.5 text-sand-700">{{ $l->category?->name }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($l->amount, 'USD') }}</td></tr>
                         @endforeach
                     @endforeach
                     <tr class="font-semibold"><td class="px-2 py-2" colspan="2">{{ __('Total') }}</td><td class="whitespace-nowrap px-2 py-2 text-right tabular">{{ Money::format($b->total($type), 'USD') }}</td></tr>

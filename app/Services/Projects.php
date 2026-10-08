@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BudgetFunding;
 use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
@@ -22,7 +23,8 @@ use InvalidArgumentException;
  *
  * L'argent d'un projet est celui qui porte sa marque, quel que soit le compte où il se
  * trouve. Un projet qui a son propre compte le dit ; sinon, son argent reste dans les
- * caisses ordinaires, mais il lui est réservé.
+ * caisses ordinaires, mais il lui est réservé. S'y ajoute ce que le budget adopté lui
+ * réserve sur les recettes ordinaires (dîmes, offrandes…) : la toiture payée par les dîmes.
  */
 class Projects
 {
@@ -31,7 +33,7 @@ class Projects
     /**
      * Les chiffres d'un projet, depuis le début.
      *
-     * @return array{goal: ?float, promised: float, received: float, in_kind: float, spent: float, committed: float, available: float, percent: ?int}
+     * @return array{goal: ?float, promised: float, received: float, in_kind: float, budgeted: float, spent: float, committed: float, available: float, percent: ?int}
      */
     public function totals(Project $project): array
     {
@@ -48,6 +50,7 @@ class Projects
 
         $money = $this->moneyByYear($project);
         $received = (float) $money->sum('income');
+        $budgeted = (float) $money->sum('budgeted');
         $spent = (float) $money->sum('expense');
         $committed = $this->committed($project);
         // Sans objectif chiffré, l'objectif est la somme des collectes prévues année par année.
@@ -59,18 +62,19 @@ class Projects
             'promised' => round($promised, 2),
             'received' => round($received, 2),
             'in_kind' => round($inKind, 2),
+            'budgeted' => round($budgeted, 2),
             'spent' => round($spent, 2),
             'committed' => round($committed, 2),
-            'available' => round($received - $spent - $committed, 2),
+            'available' => round($received + $budgeted - $spent - $committed, 2),
             'percent' => $goal ? min(100, (int) round(($received + $inKind) / $goal * 100)) : null,
         ];
     }
 
     /**
-     * Année par année : la tranche prévue, ce qui est reçu et dépensé, et le solde reporté
-     * d'une année sur l'autre (ce qui reste du projet au début de l'exercice).
+     * Année par année : la tranche prévue, ce qui est reçu, réservé par le budget ordinaire et
+     * dépensé, et le solde reporté d'une année sur l'autre (ce qui reste au début de l'exercice).
      *
-     * @return Collection<int, array{year: int, label: string, income_planned: float, expense_planned: float, carried: float, income: float, expense: float, balance: float, note: ?string}>
+     * @return Collection<int, array{year: int, label: string, income_planned: float, expense_planned: float, carried: float, income: float, budgeted: float, expense: float, balance: float, note: ?string}>
      */
     public function years(Project $project): Collection
     {
@@ -87,9 +91,10 @@ class Projects
                 'income_planned' => (float) ($planned[$year]->income_planned ?? 0), 'expense_planned' => (float) ($planned[$year]->expense_planned ?? 0),
                 'note' => $planned[$year]->note ?? null,
                 'carried' => round($carried, 2),
-                'income' => round((float) ($money[$year]['income'] ?? 0), 2), 'expense' => round((float) ($money[$year]['expense'] ?? 0), 2),
+                'income' => round((float) ($money[$year]['income'] ?? 0), 2), 'budgeted' => round((float) ($money[$year]['budgeted'] ?? 0), 2),
+                'expense' => round((float) ($money[$year]['expense'] ?? 0), 2),
             ];
-            $carried += $row['income'] - $row['expense'];
+            $carried += $row['income'] + $row['budgeted'] - $row['expense'];
             $row['balance'] = round($carried, 2);
 
             return $row;
@@ -99,7 +104,7 @@ class Projects
     /** Ce qui reste du projet au début d'un exercice : tout ce qui a été reçu moins tout ce qui a été dépensé avant. */
     public function carriedInto(Project $project, int $year): float
     {
-        return round((float) $this->moneyByYear($project)->filter(fn ($m, $y) => $y < $year)->sum(fn ($m) => $m['income'] - $m['expense']), 2);
+        return round((float) $this->moneyByYear($project)->filter(fn ($m, $y) => $y < $year)->sum(fn ($m) => $m['income'] + $m['budgeted'] - $m['expense']), 2);
     }
 
     /** Le disponible d'un projet pour une nouvelle dépense. */
@@ -195,20 +200,21 @@ class Projects
     }
 
     /**
-     * L'argent du projet, par exercice : recettes (sans les retours d'avance) et dépenses
-     * (moins ce qui est revenu des avances).
+     * L'argent du projet, par exercice : recettes (sans les retours d'avance), part des recettes
+     * ordinaires que le budget adopté lui réserve, et dépenses (moins ce qui est revenu des avances).
      *
-     * @return Collection<int, array{income: float, expense: float}>
+     * @return Collection<int, array{income: float, budgeted: float, expense: float}>
      */
     private function moneyByYear(Project $project): Collection
     {
         $organization = $project->loadMissing('organization')->organization;
         $byYear = collect();
+        $empty = ['income' => 0.0, 'budgeted' => 0.0, 'expense' => 0.0];
         $rows = FinanceTransaction::withoutOrganizationScope()->valid()->where('project_id', $project->id)
             ->whereIn('type', ['income', 'expense'])->get(['type', 'usd_amount', 'occurred_on', 'expense_request_id']);
         foreach ($rows as $t) {
             $year = FiscalYear::of($organization, $t->occurred_on);
-            $current = $byYear->get($year, ['income' => 0.0, 'expense' => 0.0]);
+            $current = $byYear->get($year, $empty);
             if ($t->type === 'expense') {
                 $current['expense'] += (float) $t->usd_amount;
             } elseif ($t->expense_request_id) {
@@ -217,6 +223,19 @@ class Projects
                 $current['income'] += (float) $t->usd_amount;
             }
             $byYear->put($year, $current);
+        }
+
+        // Ce que le budget adopté de chaque exercice finance pour le projet sur les recettes ordinaires.
+        $budgeted = BudgetFunding::query()
+            ->join('budgets', 'budgets.id', '=', 'budget_fundings.budget_id')
+            ->join('budget_lines as e', 'e.id', '=', 'budget_fundings.expense_line_id')
+            ->join('budget_lines as i', 'i.id', '=', 'budget_fundings.income_line_id')
+            ->where('budgets.status', 'adopted')->where('e.project_id', $project->id)->whereNull('i.project_id')
+            ->groupBy('budgets.fiscal_year')->selectRaw('budgets.fiscal_year as year, sum(budget_fundings.amount) as usd')->pluck('usd', 'year');
+        foreach ($budgeted as $year => $usd) {
+            $current = $byYear->get((int) $year, $empty);
+            $current['budgeted'] += (float) $usd;
+            $byYear->put((int) $year, $current);
         }
 
         return $byYear->sortKeys();

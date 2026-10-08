@@ -125,6 +125,9 @@ class BudgetTest extends TestCase
             ->set('line.category_id', (string) $this->category('income', 'Offrande du culte'))
             ->set('line.amount', '5000')
             ->call('saveLine')->assertHasNoErrors()
+            // Chaque dépense prévue dit quelles recettes la paient, avant la présentation.
+            ->call('submit')->assertHasErrors('note')
+            ->call('autoFund')
             ->call('submit')->assertHasNoErrors();
         $budget->refresh();
         $this->assertSame('submitted', $budget->status);
@@ -153,6 +156,7 @@ class BudgetTest extends TestCase
         $budgets = app(Budgets::class);
         $budget = $budgets->prepare($this->eglise, 2027);
         $budget->lines()->create(['type' => 'expense', 'department_id' => $this->chorale->id, 'category_id' => $this->category('expense', 'Fournitures et matériel'), 'label' => 'Sono', 'amount' => 2500]);
+        $this->fundBudget($budget);
         $budgets->submit($budget);
 
         $this->actingAs($this->pasteur);
@@ -169,6 +173,7 @@ class BudgetTest extends TestCase
         $this->actingAs($this->tresorier);
         $v1 = $budgets->prepare($this->eglise, 2026);
         $v1->lines()->create(['type' => 'expense', 'department_id' => $this->jeunesse->id, 'category_id' => $this->category('expense', 'Évangélisation et missions'), 'label' => 'Sake', 'amount' => 1500]);
+        $this->fundBudget($v1);
         $budgets->submit($v1);
         $budgets->approve($v1->fresh(), $this->pasteur);
 
@@ -178,7 +183,8 @@ class BudgetTest extends TestCase
 
         $v2 = Budget::where('version', 2)->sole();
         $this->assertSame('draft', $v2->status);
-        $this->assertSame(1, $v2->lines()->count());
+        $this->assertSame(2, $v2->lines()->count());
+        $this->assertSame('1500.00', (string) $v2->fundings()->sole()->amount); // le financement suit dans la nouvelle version
         // Le budget adopté reste en vigueur pendant la révision.
         $this->assertSame($v1->id, $budgets->adopted($this->eglise, 2026)->id);
 

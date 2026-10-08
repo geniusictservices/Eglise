@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Budget;
+use App\Services\BudgetFundings;
 use App\Support\FiscalYear;
 use Illuminate\Support\Facades\Gate;
 
 /** Le budget adopté, prêt à imprimer pour le conseil ou l'assemblée. */
 class BudgetPrintController extends Controller
 {
-    public function __invoke(Budget $budget)
+    public function __invoke(Budget $budget, BudgetFundings $fundings)
     {
         abort_unless(Gate::any(['planning.view', 'budget.arbitrate', 'budget.approve']), 403);
         $budget->load(['lines.department', 'lines.category', 'submitter', 'approver', 'organization']);
@@ -17,6 +18,7 @@ class BudgetPrintController extends Controller
 
         return view('budget.print', [
             'b' => $budget,
+            'state' => $fundings->state($budget),
             'organization' => $organization,
             'identity' => $organization->documentIdentity(),
             'yearLabel' => FiscalYear::label($organization, $budget->fiscal_year),

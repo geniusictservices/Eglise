@@ -93,7 +93,7 @@ class Expenses
             ?? throw new InvalidArgumentException(__('Choisissez une ligne du budget adopté.'));
 
         return ['department_id' => $line->department_id, 'category_id' => $line->category_id, 'budget_line_id' => $line->id,
-            'is_unforeseen' => false, 'unforeseen_reason' => null] + $data;
+            'project_id' => $line->project_id ?? ($data['project_id'] ?? null), 'is_unforeseen' => false, 'unforeseen_reason' => null] + $data;
     }
 
     public function check(ExpenseRequest $request, ?string $note = null): void
