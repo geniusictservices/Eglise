@@ -27,7 +27,7 @@ class ExpenseRequest extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['budget_line_id' => null, 'is_unforeseen' => false, 'unforeseen_reason' => null];
+    protected $attributes = ['budget_line_id' => null, 'project_id' => null, 'is_unforeseen' => false, 'unforeseen_reason' => null];
 
     protected function casts(): array
     {
@@ -46,6 +46,11 @@ class ExpenseRequest extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(FinanceCategory::class);
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
     }
 
     /** La ligne du budget adopté à laquelle la dépense est rattachée (aucune pour un imprévu). */

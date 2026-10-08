@@ -9,15 +9,18 @@ use App\Models\Department;
 use App\Models\ExpenseAttachment;
 use App\Models\FinanceCategory;
 use App\Models\Member;
+use App\Models\Project;
 use App\Services\BudgetControl;
 use App\Services\Budgets;
 use App\Services\Expenses;
 use App\Services\Ledger;
+use App\Services\Projects;
 use App\Support\FiscalYear;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -31,6 +34,10 @@ class Form extends Component
     public string $budgetMode = 'budget';
 
     public string $budgetLineId = '';
+
+    /** Le projet que la dépense fait avancer (facultatif) : son argent paie la dépense. */
+    #[Url(as: 'projet', except: '')]
+    public string $projectId = '';
 
     public string $unforeseenReason = '';
 
@@ -77,6 +84,7 @@ class Form extends Component
         $fromBudget = $this->adoptedBudget() && $this->budgetMode === 'budget';
         $this->validate([
             'budgetLineId' => [Rule::requiredIf($fromBudget)],
+            'projectId' => ['nullable', Rule::exists('projects', 'id')->where('organization_id', $this->organization()->id)->whereIn('status', ['planned', 'ongoing'])],
             'unforeseenReason' => [Rule::requiredIf($this->adoptedBudget() && $this->budgetMode === 'imprevu'), 'nullable', 'string', 'min:5', 'max:255'],
             'departmentId' => ['required', Rule::exists('departments', 'id')->where('organization_id', $this->organization()->id)],
             'categoryId' => ['required', Rule::exists('finance_categories', 'id')->where('organization_id', $this->organization()->id)->where('type', 'expense')],
@@ -95,7 +103,7 @@ class Form extends Component
         try {
             $request = $expenses->submit($this->organization(), [
                 'department_id' => (int) $this->departmentId, 'category_id' => (int) $this->categoryId,
-                'budget_line_id' => $fromBudget ? (int) $this->budgetLineId : null,
+                'budget_line_id' => $fromBudget ? (int) $this->budgetLineId : null, 'project_id' => $this->projectId ? (int) $this->projectId : null,
                 'is_unforeseen' => $this->adoptedBudget() !== null && $this->budgetMode === 'imprevu', 'unforeseen_reason' => trim($this->unforeseenReason) ?: null,
                 'title' => trim($this->title), 'description' => trim($this->description) ?: null,
                 'amount' => $this->amount, 'currency' => $this->currency, 'is_advance' => $this->isAdvance,
@@ -177,6 +185,8 @@ class Form extends Component
             'settings' => app(Expenses::class)->settings($this->organization()),
             'budgetLine' => $this->budgetLine(),
             'adopted' => $this->adoptedBudget(),
+            'projects' => Project::whereIn('status', ['planned', 'ongoing'])->orderBy('name')->get(),
+            'projectAvailable' => $this->projectId && ($project = Project::find((int) $this->projectId)) ? app(Projects::class)->available($project) : null,
             'choices' => $this->budgetChoices(),
         ]);
     }

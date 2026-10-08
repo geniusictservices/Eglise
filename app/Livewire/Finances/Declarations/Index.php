@@ -152,11 +152,11 @@ class Index extends Component
 
     public function render(Ledger $ledger)
     {
-        $review = $this->reviewId ? PaymentDeclaration::with(['member', 'category', 'pledge.campaign'])->find($this->reviewId) : null;
+        $review = $this->reviewId ? PaymentDeclaration::with(['member', 'category', 'pledge.project'])->find($this->reviewId) : null;
         $member = $this->memberId ? Member::find($this->memberId) : null;
 
         return view('livewire.finances.declarations.index', [
-            'declarations' => PaymentDeclaration::with(['member', 'category', 'pledge.campaign', 'reviewer'])->where('status', $this->status)
+            'declarations' => PaymentDeclaration::with(['member', 'category', 'pledge.project', 'reviewer'])->where('status', $this->status)
                 ->latest(in_array($this->status, ['validated', 'rejected'], true) ? 'reviewed_at' : 'created_at')->limit(100)->get(),
             'pendingCount' => PaymentDeclaration::where('status', 'pending')->count(),
             'review' => $review,
@@ -166,7 +166,7 @@ class Index extends Component
             'canDeclare' => Gate::allows('finance.income') && ! $this->organization()->isReadOnly(),
             'currencies' => $ledger->currencies($this->organization()),
             'categories' => FinanceCategory::where('type', 'income')->where('is_active', true)->whereIn('nature', ['personal', 'collective'])->orderBy('position')->get(),
-            'pledges' => $member ? Pledge::with('campaign')->where('member_id', $member->id)->where('status', 'active')->get() : collect(),
+            'pledges' => $member ? Pledge::with('project')->where('member_id', $member->id)->where('status', 'active')->get() : collect(),
             'member' => $member,
             'candidates' => ! $this->memberId && trim($this->memberSearch) !== '' ? Member::search($this->memberSearch)->orderBy('last_name')->limit(5)->get() : collect(),
         ]);

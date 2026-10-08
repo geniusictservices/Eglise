@@ -22,8 +22,9 @@ class MeetingDecision extends Model
         return $this->belongsTo(Meeting::class)->withoutGlobalScope('organization');
     }
 
-    public function action(): BelongsTo
+    /** Le projet que la décision fait avancer. */
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(PlanAction::class, 'plan_action_id');
+        return $this->belongsTo(Project::class);
     }
 }

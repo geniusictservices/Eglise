@@ -13,9 +13,8 @@ use App\Models\Member;
 use App\Models\MemberStatus;
 use App\Models\MemberStatusChange;
 use App\Models\Organization;
-use App\Models\PlanAction;
-use App\Models\PlanActionUpdate;
-use App\Models\PlanObjective;
+use App\Models\Project;
+use App\Models\ProjectUpdate;
 use App\Models\User;
 use App\Models\Vision;
 use App\Support\CurrentOrganization;
@@ -151,35 +150,40 @@ class DemoPlanning
         $member = fn (string $first) => $first === 'Josué' ? Member::where('last_name', 'KAKULE')->value('id') : Member::where('first_name', $first)->value('id');
         $users = User::whereHas('roleAssignments', fn ($q) => $q->where('organization_id', $himbi->id))->get()->keyBy('name');
 
-        $vision = Vision::create(['title' => 'Une église qui grandit, forme ses jeunes et sert son quartier', 'starts_year' => $year - 1, 'ends_year' => $year + 3,
+        Vision::create(['title' => 'Une église qui grandit, forme ses jeunes et sert son quartier', 'starts_year' => $year - 1, 'ends_year' => $year + 3,
             'statement' => 'D’ici 2029 : 600 fidèles dans un temple agrandi, une jeunesse formée et envoyée, des familles accompagnées et un quartier qui voit l’Évangile en actes.']);
 
-        $plan = [
-            ['Former et envoyer les jeunes', $dept['Jeunesse'], '30 jeunes engagés dans l’évangélisation', [
-                ['Évangélisation à Sake', $dept['Jeunesse'], 'Gloire', '-04-10', '-09-20', 1500, 100, 'Campagne menée : 12 jeunes, 9 décisions pour Christ.'],
+        // Les projets de l'exercice, rangés par axe de la vision. Sake et le temple existent déjà (avec leurs promesses) : on les complète.
+        $projects = [
+            ['Former et envoyer les jeunes', [
+                ['Évangélisation à Sake', $dept['Jeunesse'], 'Gloire', null, null, null, 45, 'Douze jeunes inscrits ; le transport de la reconnaissance est payé.'],
                 ['Convention des jeunes', $dept['Jeunesse'], 'Gloire', '-09-01', '-12-20', 400, 40, 'Salle réservée, orateurs confirmés.'],
                 ['Tournoi de la paix', $dept['Jeunesse'], 'Josué', '-11-01', '-12-15', 300, 0, null],
             ]],
-            ['Accueillir et intégrer les nouveaux venus', null, '60 nouveaux membres baptisés', [
+            ['Accueillir et intégrer les nouveaux venus', [
                 ['Cours des nouveaux convertis, un samedi sur deux', null, 'Samuel', '-02-01', '-11-30', null, 60, '18 participants réguliers.'],
                 ['Baptêmes de Pâques', null, 'Samuel', '-03-01', '-04-05', null, 100, '23 baptisés au lac.'],
                 ['Équipe d’accueil à chaque culte', null, 'Rebecca', '-01-15', '-12-31', null, 75, null],
             ]],
-            ['Entretenir et agrandir le temple', $general, '25 000 $ réunis pour le nouveau temple', [
+            ['Entretenir et agrandir le temple', [
                 ['Réparation de la toiture de la sacristie', $general, 'Jérémie', '-07-10', '-10-31', 400, 30, 'Devis retenu, tôles commandées.'],
-                ['Campagne pour le nouveau temple', $general, 'Jérémie', '-01-15', '-12-31', null, 35, 'Promesses : 8 950 $ ; reçu : 3 400 $.'],
-                ['Plans de l’architecte', $general, null, '-05-01', '-09-30', 800, 20, null],
+                ['Construction du nouveau temple', $general, null, null, null, null, 35, 'Promesses : 8 950 $ ; terrain voisin en négociation.'],
             ]],
         ];
-        foreach ($plan as $i => [$title, $department, $indicator, $actions]) {
-            $objective = PlanObjective::create(['vision_id' => $vision->id, 'fiscal_year' => $year, 'title' => $title, 'department_id' => $department, 'indicator' => $indicator, 'position' => $i + 1]);
-            foreach ($actions as [$label, $actionDepartment, $responsible, $start, $due, $cost, $progress, $note]) {
-                $action = PlanAction::create(['plan_objective_id' => $objective->id, 'title' => $label, 'department_id' => $actionDepartment,
+        $service = app(Projects::class);
+        foreach ($projects as [$theme, $items]) {
+            foreach ($items as [$label, $department, $responsible, $start, $due, $cost, $progress, $note]) {
+                $project = Project::where('name', $label)->first();
+                $data = ['name' => $label, 'theme' => $theme, 'department_id' => $department, 'kind' => $project->kind ?? 'project',
                     'responsible_member_id' => $responsible ? $member($responsible) : null, 'responsible_name' => $responsible ? null : 'Comité des travaux',
-                    'starts_on' => $year.$start, 'due_on' => $year.$due, 'estimated_cost' => $cost, 'progress' => $progress,
-                    'status' => $progress >= 100 ? 'done' : ($progress > 0 ? 'ongoing' : 'planned')]);
+                    'starts_on' => $start ? $year.$start : $project?->starts_on?->toDateString(), 'ends_on' => $due ? $year.$due : $project?->ends_on?->toDateString(),
+                    'goal_amount' => $project?->goal_amount, 'goal_currency' => 'USD', 'cash_account_id' => $project?->cash_account_id,
+                    'status' => $progress >= 100 ? 'done' : ($progress > 0 ? 'ongoing' : 'planned')];
+                $years = $cost && ! $project ? [['fiscal_year' => $year, 'income_planned' => 0, 'expense_planned' => $cost]] : [];
+                $project = $service->save($himbi, $data, $years, $project);
+                $project->update(['progress' => $progress]);
                 if ($note) {
-                    PlanActionUpdate::create(['plan_action_id' => $action->id, 'user_id' => $users['Pasteur Daniel Paluku']->id, 'progress' => $progress, 'note' => $note,
+                    ProjectUpdate::create(['project_id' => $project->id, 'user_id' => $users['Pasteur Daniel Paluku']->id, 'progress' => $progress, 'note' => $note,
                         'created_at' => now()->subDays(mt_rand(3, 25))]);
                 }
             }

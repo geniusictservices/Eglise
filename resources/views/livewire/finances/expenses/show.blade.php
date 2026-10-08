@@ -6,6 +6,7 @@
 
     <section class="wax wax-veil wax-veil-strong mb-5 overflow-hidden rounded-[22px] p-5 text-white sm:p-6">
         <p class="text-sm text-ochre-300"><span class="font-mono">{{ $e->number }}</span> · {{ $e->department?->name ?? __('Sans département') }} · {{ $e->category?->name }}@if ($e->is_advance) · {{ __('avance à justifier') }}@endif</p>
+        @if ($e->project)<p class="mt-1 text-sm text-ink-100"><x-icon name="milestone" class="mr-1 inline size-4" /> {{ __('Projet : :p', ['p' => $e->project->name]) }}</p>@endif
         @if ($e->is_unforeseen)<p class="mt-1"><span class="badge bg-ochre-500 text-[var(--color-on-accent)]"><x-icon name="triangle-alert" class="size-3" /> {{ __('Imprévu') }}</span></p>@endif
         <h1 class="text-2xl font-semibold text-white">{{ $e->title }}</h1>
         <p class="mt-1 text-3xl font-semibold tabular text-white">{{ Money::format($e->amount, $e->currency) }}</p>

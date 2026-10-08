@@ -138,7 +138,7 @@ class Show extends Component
 
     public function render(Pledges $pledges)
     {
-        $this->pledge->refresh()->load(['campaign', 'member', 'household', 'department']);
+        $this->pledge->refresh()->load(['project', 'member', 'household', 'department']);
         $progress = $pledges->progress($this->pledge);
 
         // Échéancier : date, montant attendu, cumul, honorée ou non.

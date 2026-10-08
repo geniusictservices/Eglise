@@ -1,12 +1,12 @@
 @php use App\Support\Money; $c = $pledge->currency; @endphp
 <div>
-    <a href="{{ route('finances.pledges', $pledge->campaign_id ? ['campagne' => $pledge->campaign_id] : []) }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Promesses') }}</a>
+    <a href="{{ route('finances.pledges', $pledge->project_id ? ['projet' => $pledge->project_id] : []) }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Promesses') }}</a>
 
     <section class="wax wax-veil wax-veil-strong mb-5 overflow-hidden rounded-[22px] p-5 text-white sm:p-6">
         <div class="flex flex-wrap items-center gap-5">
             <span class="ring-progress size-20" style="--v: {{ $progress['percent'] }}"><span class="size-14 text-sm">{{ $progress['percent'] }} %</span></span>
             <div class="min-w-0 flex-1">
-                <p class="text-sm text-ochre-300">{{ $pledge->campaign?->name ?? __('Promesse générale') }} · {{ __(\App\Models\Pledge::STATUSES[$pledge->status]) }}</p>
+                <p class="text-sm text-ochre-300">{{ $pledge->project?->name ?? __('Promesse générale') }} · {{ __(\App\Models\Pledge::STATUSES[$pledge->status]) }}</p>
                 <h1 class="text-2xl font-semibold text-white">{{ $pledge->pledgerName() }}</h1>
                 <p class="text-sm text-ink-100">
                     @if ($pledge->kind === 'in_kind') {{ $pledge->in_kind_description }} · {{ __('valeur :v', ['v' => Money::format($pledge->amount, $c)]) }}

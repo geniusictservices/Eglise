@@ -50,7 +50,7 @@
                             @endif
                             <div class="min-w-0 flex-1">
                                 <p @class(['text-sm text-ink-800', 'line-through opacity-60' => $d->is_done])>{{ $d->text }}</p>
-                                <p class="text-xs text-sand-700">{{ collect([$d->responsible, $d->due_on ? __('pour le :d', ['d' => $d->due_on->translatedFormat('j M Y')]) : null, $d->action ? __('action : :a', ['a' => $d->action->title]) : null])->filter()->implode(' · ') }}</p>
+                                <p class="text-xs text-sand-700">{{ collect([$d->responsible, $d->due_on ? __('pour le :d', ['d' => $d->due_on->translatedFormat('j M Y')]) : null, $d->project ? __('projet : :a', ['a' => $d->project->name]) : null])->filter()->implode(' · ') }}</p>
                             </div>
                             @if ($canManage)<button type="button" wire:click="removeDecision({{ $d->id }})" wire:confirm="{{ __('Supprimer cette décision ?') }}" class="rounded-lg p-1.5 text-sand-500 hover:bg-terra-50 hover:text-terra-600" aria-label="{{ __('Supprimer') }}"><x-icon name="trash-2" class="size-4" /></button>@endif
                         </li>
@@ -65,8 +65,8 @@
                             <div><label for="dc-resp" class="label">{{ __('Qui la porte') }}</label><input wire:model="decision.responsible" id="dc-resp" class="input"></div>
                             <div><label for="dc-due" class="label">{{ __('Pour le') }}</label><input wire:model="decision.due_on" id="dc-due" type="date" class="input"></div>
                         </div>
-                        @if ($actions->isNotEmpty())
-                            <div><label for="dc-action" class="label">{{ __('Action du plan liée (facultatif)') }}</label><select wire:model="decision.plan_action_id" id="dc-action" class="input"><option value="">{{ __('Aucune') }}</option>@foreach ($actions as $a)<option value="{{ $a->id }}">{{ $a->title }}</option>@endforeach</select></div>
+                        @if ($projects->isNotEmpty())
+                            <div><label for="dc-project" class="label">{{ __('Projet lié (facultatif)') }}</label><select wire:model="decision.project_id" id="dc-project" class="input"><option value="">{{ __('Aucun') }}</option>@foreach ($projects as $pj)<option value="{{ $pj->id }}">{{ $pj->name }}</option>@endforeach</select></div>
                         @endif
                         <div class="flex justify-end"><button class="btn-primary"><x-icon name="plus" class="size-4" /> {{ __('Ajouter la décision') }}</button></div>
                     </form>

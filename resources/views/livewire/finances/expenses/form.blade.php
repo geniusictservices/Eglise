@@ -49,6 +49,14 @@
                     <p class="rounded-xl bg-sand-50 p-3 text-sm text-ink-800">{{ __('Budget de cette ligne : :a disponibles.', ['a' => \App\Support\Money::format($budgetLine['available'], 'USD')]) }}</p>
                 @endif
             @endif
+            @if ($projects->isNotEmpty())
+                <div>
+                    <label for="projectId" class="label">{{ __('Projet') }} <span class="font-normal text-sand-700">{{ __('(facultatif)') }}</span></label>
+                    <select wire:model.live="projectId" id="projectId" class="input"><option value="">{{ __('Aucun : dépense ordinaire') }}</option>@foreach ($projects as $pj)<option value="{{ $pj->id }}">{{ $pj->name }}</option>@endforeach</select>
+                    @error('projectId') <p class="error">{{ $message }}</p> @enderror
+                    @if ($projectAvailable !== null)<p class="hint">{{ __('Ce projet a :m disponibles : la dépense est payée avec son argent.', ['m' => \App\Support\Money::format($projectAvailable, 'USD')]) }}</p>@endif
+                </div>
+            @endif
             <div class="grid gap-4 sm:grid-cols-[1fr_7rem]">
                 <div><label for="amount" class="label">{{ __('Montant') }}</label><input wire:model="amount" id="amount" type="number" step="0.01" min="0" class="input text-lg font-semibold tabular">@error('amount') <p class="error">{{ $message }}</p> @enderror</div>
                 <div><label for="currency" class="label">{{ __('Devise') }}</label><select wire:model="currency" id="currency" class="input">@foreach ($currencies as $c)<option value="{{ $c }}">{{ $c }}</option>@endforeach</select></div>

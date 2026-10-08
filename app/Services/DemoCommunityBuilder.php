@@ -5,8 +5,10 @@ namespace App\Services;
 use App\Models\AttachmentRequest;
 use App\Models\Budget;
 use App\Models\ExpenseRequest;
+use App\Models\FinanceTransaction;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
+use App\Models\Project;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\CurrentOrganization;
@@ -151,7 +153,7 @@ class DemoCommunityBuilder
         return $siege;
     }
 
-    /** Les dépenses de la démo suivent leur ligne du budget adopté ; les rafraîchissements de la réunion des diacres sont un imprévu. */
+    /** Les dépenses de la démo suivent leur ligne du budget adopté et leur projet ; les rafraîchissements de la réunion des diacres sont un imprévu. */
     private function linkExpensesToBudget(Organization $himbi): void
     {
         app(CurrentOrganization::class)->within($himbi, function () use ($himbi) {
@@ -168,6 +170,17 @@ class DemoCommunityBuilder
                 $line = $lines?->firstWhere('label', $expense->title) ?? $lines?->first();
                 if ($line) {
                     $expense->update(['budget_line_id' => $line->id]);
+                }
+                // Les dépenses de projet portent sa marque, et leur argent aussi.
+                $project = match (true) {
+                    str_contains($expense->title, 'Sake') => Project::where('name', 'Évangélisation à Sake')->first(),
+                    str_contains($expense->title, 'toiture') => Project::where('name', 'Réparation de la toiture de la sacristie')->first(),
+                    str_contains($expense->title, 'convention') => Project::where('name', 'Convention des jeunes')->first(),
+                    default => null,
+                };
+                if ($project) {
+                    $expense->update(['project_id' => $project->id]);
+                    FinanceTransaction::where('expense_request_id', $expense->id)->update(['project_id' => $project->id]);
                 }
             }
         });

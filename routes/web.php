@@ -169,7 +169,10 @@ Route::middleware(['auth', SetCurrentOrganization::class, EnsurePasswordChanged:
     Route::get('/finances/rapports/imprimer', [FinanceReportController::class, 'print'])->name('finances.reports.print');
     Route::get('/finances/rapports/excel', [FinanceReportController::class, 'excel'])->name('finances.reports.excel');
     Route::get('/finances/comptes', Livewire\Finances\Settings::class)->name('finances.settings');
-    Route::get('/plan', Livewire\Plan\Index::class)->name('plan.index');
+    // Le plan d'action est devenu la liste des projets, sous la vision.
+    Route::redirect('/plan', '/projets')->name('plan.index');
+    Route::get('/projets', Livewire\Projects\Index::class)->name('projects.index');
+    Route::get('/projets/{projet}', Livewire\Projects\Show::class)->whereNumber('projet')->name('projects.show');
     Route::get('/paie', Livewire\Payroll\Index::class)->name('payroll.index');
     Route::get('/paie/beneficiaires', Livewire\Payroll\Payees::class)->name('payroll.payees');
     Route::get('/paie/reglages', Livewire\Payroll\Settings::class)->name('payroll.settings');

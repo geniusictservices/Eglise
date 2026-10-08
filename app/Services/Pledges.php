@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Campaign;
 use App\Models\CashAccount;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
@@ -86,16 +85,17 @@ class Pledges
     /** Enregistre un versement : une recette rattachée à la promesse, convertie dans sa devise. */
     public function pay(Pledge $pledge, CashAccount $account, string $currency, string $amount, array $extra = []): FinanceTransaction
     {
-        $pledge->loadMissing(['campaign', 'household', 'organization']);
+        $pledge->loadMissing(['project', 'household', 'organization']);
 
         return DB::transaction(function () use ($pledge, $account, $currency, $amount, $extra) {
             $transaction = $this->ledger->record($account, $currency, 'income', [
                 'amount' => $amount,
-                'category_id' => $pledge->campaign?->category_id ?? $this->defaultCategory($pledge),
+                'category_id' => $pledge->project?->category_id ?? $this->defaultCategory($pledge),
                 'member_id' => $pledge->member_id,
                 'department_id' => $pledge->department_id,
                 'payer_name' => $pledge->member_id ? null : ($pledge->household?->name ?? $pledge->pledger_name),
-                'description' => $pledge->campaign ? __('Promesse : :c', ['c' => $pledge->campaign->name]) : __('Versement sur promesse'),
+                'description' => $pledge->project ? __('Promesse : :c', ['c' => $pledge->project->name]) : __('Versement sur promesse'),
+                'project_id' => $pledge->project_id,
             ] + $extra);
 
             $transaction->update(['pledge_id' => $pledge->id, 'pledge_amount' => (string) $this->toPledgeCurrency($pledge, $transaction)]);
@@ -135,39 +135,10 @@ class Pledges
         return BigDecimal::of((string) $t->usd_amount)->multipliedBy($rate)->toScale(2, RoundingMode::HalfUp);
     }
 
-    /** Totaux d'une campagne, en dollars au taux du jour. */
-    public function campaignTotals(Campaign $campaign): array
-    {
-        $organization = $campaign->loadMissing('organization')->organization;
-        $usd = fn (BigDecimal $amount, string $currency) => $currency === 'USD' ? $amount
-            : (($rate = $this->rates->rate($organization, $currency)) ? $amount->dividedBy($rate, 2, RoundingMode::HalfUp) : BigDecimal::zero());
-
-        $promised = BigDecimal::zero();
-        $received = BigDecimal::zero();
-        $count = 0;
-        foreach ($campaign->pledges()->where('status', '!=', 'cancelled')->get() as $pledge) {
-            $p = $this->progress($pledge);
-            $promised = $promised->plus($usd($p['promised'], $pledge->currency));
-            $received = $received->plus($usd($p['received'], $pledge->currency));
-            $count++;
-        }
-        // Les dons sans promesse comptent aussi pour l'objectif.
-        $direct = BigDecimal::of((string) (FinanceTransaction::valid()->whereNull('pledge_id')->where('category_id', $campaign->category_id ?: 0)->sum('usd_amount') ?: '0'));
-        $goal = $campaign->goal_amount ? $usd(BigDecimal::of((string) $campaign->goal_amount), $campaign->goal_currency) : null;
-
-        return [
-            'promised' => $promised,
-            'received' => $received->plus($direct),
-            'goal' => $goal,
-            'count' => $count,
-            'percent' => $goal && ! $goal->isZero() ? min(100, (int) round((float) (string) $received->plus($direct)->dividedBy($goal, 4, RoundingMode::HalfUp) * 100)) : null,
-        ];
-    }
-
     /** Message de relance prêt à envoyer. */
     public function reminderMessage(Pledge $pledge): string
     {
-        $pledge->loadMissing(['organization', 'member', 'household', 'department', 'campaign']);
+        $pledge->loadMissing(['organization', 'member', 'household', 'department', 'project']);
         $p = $this->progress($pledge);
         $organization = $pledge->organization;
         $template = $organization->settings['finance']['pledge_reminder'] ?? $organization->root()->settings['finance']['pledge_reminder'] ?? config('waumini.finance.pledge_reminder');
@@ -176,7 +147,7 @@ class Pledges
         return strtr($template, [
             ':name' => $first,
             ':promised' => $pledge->kind === 'in_kind' ? $pledge->in_kind_description : Money::format($p['promised'], $pledge->currency),
-            ':campaign' => $pledge->campaign?->name ?? __('l’œuvre de Dieu'),
+            ':campaign' => $pledge->project?->name ?? __('l’œuvre de Dieu'),
             ':received' => Money::format($p['received'], $pledge->currency),
             ':remaining' => Money::format($p['remaining'], $pledge->currency),
             ':church' => $organization->displayName(),

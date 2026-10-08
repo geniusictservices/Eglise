@@ -7,8 +7,7 @@ use App\Models\Meeting;
 use App\Models\MeetingDecision;
 use App\Models\MeetingParticipant;
 use App\Models\Member;
-use App\Models\PlanAction;
-use App\Support\FiscalYear;
+use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -94,7 +93,7 @@ class Show extends Component
 
     private function resetDecision(): void
     {
-        $this->decision = ['text' => '', 'responsible' => '', 'due_on' => '', 'plan_action_id' => ''];
+        $this->decision = ['text' => '', 'responsible' => '', 'due_on' => '', 'project_id' => ''];
     }
 
     public function addDecision(): void
@@ -104,7 +103,7 @@ class Show extends Component
             'decision.text' => 'required|string|max:2000',
             'decision.responsible' => 'nullable|string|max:150',
             'decision.due_on' => 'nullable|date',
-            'decision.plan_action_id' => ['nullable', Rule::exists('plan_actions', 'id')->where('organization_id', $this->organization()->id)],
+            'decision.project_id' => ['nullable', Rule::exists('projects', 'id')->where('organization_id', $this->organization()->id)],
         ], attributes: ['decision.text' => __('décision')])['decision'];
         MeetingDecision::create(array_map(fn ($v) => $v === '' ? null : $v, $data) + ['meeting_id' => $this->meeting->id]);
         $this->resetDecision();
@@ -131,14 +130,13 @@ class Show extends Component
 
     public function render()
     {
-        $this->meeting->refresh()->load(['department', 'participants.member', 'decisions.action', 'author']);
-        $year = FiscalYear::of($this->organization(), $this->meeting->held_at);
+        $this->meeting->refresh()->load(['department', 'participants.member', 'decisions.project', 'author']);
         $taken = $this->meeting->participants->pluck('member_id')->filter()->all();
 
         return view('livewire.meetings.show', [
             'canManage' => $this->canManage(),
             'candidates' => trim($this->participantSearch) !== '' ? Member::search($this->participantSearch)->whereNotIn('id', $taken)->orderBy('last_name')->limit(5)->get() : collect(),
-            'actions' => PlanAction::whereHas('objective', fn ($q) => $q->whereIn('fiscal_year', [$year, $year + 1]))->orderBy('title')->get(),
+            'projects' => Project::whereIn('status', ['planned', 'ongoing'])->orderBy('name')->get(),
             'counts' => $this->meeting->participants->countBy('attendance'),
         ])->title($this->meeting->title);
     }

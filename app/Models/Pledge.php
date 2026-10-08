@@ -24,9 +24,9 @@ class Pledge extends Model
         return ['pledged_on' => 'date', 'first_due_on' => 'date', 'amount' => 'decimal:2'];
     }
 
-    public function campaign(): BelongsTo
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(Campaign::class);
+        return $this->belongsTo(Project::class);
     }
 
     public function member(): BelongsTo

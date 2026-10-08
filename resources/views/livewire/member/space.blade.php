@@ -93,7 +93,7 @@
                     @forelse ($pledges as $row)
                         @php $p = $row['pledge']; $pr = $row['progress']; @endphp
                         <li>
-                            <div class="flex items-baseline justify-between gap-2"><span class="truncate text-sm font-semibold text-ink-800">{{ $p->campaign?->name ?? ($p->in_kind_description ?: __('Promesse')) }}</span><span class="text-sm text-sand-700 tabular">{{ Money::format((string) $pr['received'], $p->currency) }} / {{ Money::format((string) $pr['promised'], $p->currency) }}</span></div>
+                            <div class="flex items-baseline justify-between gap-2"><span class="truncate text-sm font-semibold text-ink-800">{{ $p->project?->name ?? ($p->in_kind_description ?: __('Promesse')) }}</span><span class="text-sm text-sand-700 tabular">{{ Money::format((string) $pr['received'], $p->currency) }} / {{ Money::format((string) $pr['promised'], $p->currency) }}</span></div>
                             <div class="mt-1 h-2 overflow-hidden rounded-full bg-sand-100"><div class="h-full rounded-full bg-leaf-500" style="width: {{ $pr['percent'] }}%"></div></div>
                             @if (! $pr['remaining']->isZero())<p class="mt-1 text-xs text-sand-700">{{ __('Reste :m', ['m' => Money::format((string) $pr['remaining'], $p->currency)]) }}@if ($pr['next_due']) · {{ __('prochaine échéance le :d', ['d' => $pr['next_due']->translatedFormat('j M')]) }}@endif</p>@else<p class="mt-1 text-xs font-semibold text-leaf-600">{{ __('Honorée. Merci !') }}</p>@endif
                         </li>
@@ -149,7 +149,7 @@
                     <div class="grid gap-3 sm:grid-cols-2">
                         <div><label for="ms-g-cat" class="label">{{ __('Pour') }}</label><select wire:model="gift.category_id" id="ms-g-cat" class="input"><option value="">{{ __('Offrande') }}</option>@foreach ($giftCategories as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select></div>
                         @if ($pledges->isNotEmpty())
-                            <div><label for="ms-g-pl" class="label">{{ __('Ou pour ma promesse') }}</label><select wire:model="gift.pledge_id" id="ms-g-pl" class="input"><option value="">—</option>@foreach ($pledges as $row)<option value="{{ $row['pledge']->id }}">{{ $row['pledge']->campaign?->name ?? __('Promesse') }}</option>@endforeach</select></div>
+                            <div><label for="ms-g-pl" class="label">{{ __('Ou pour ma promesse') }}</label><select wire:model="gift.pledge_id" id="ms-g-pl" class="input"><option value="">—</option>@foreach ($pledges as $row)<option value="{{ $row['pledge']->id }}">{{ $row['pledge']->project?->name ?? __('Promesse') }}</option>@endforeach</select></div>
                         @endif
                     </div>
                     <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'gift' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Déclarer') }}</button></div>

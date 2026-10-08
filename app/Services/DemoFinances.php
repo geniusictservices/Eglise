@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Campaign;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\CollectionEnvelope;
@@ -15,6 +14,8 @@ use App\Models\Member;
 use App\Models\Organization;
 use App\Models\PaymentDeclaration;
 use App\Models\Pledge;
+use App\Models\Project;
+use App\Models\ProjectYear;
 use App\Models\User;
 use App\Support\CurrentOrganization;
 use App\Support\OrganizationLogo;
@@ -129,17 +130,28 @@ class DemoFinances
                 'counters' => ['Gloire Kasereka'], 'counts' => ['USD' => ['10' => 1, '5' => 2]]]);
             CollectionLine::create(['collection_id' => $draft->id, 'category_id' => $offrande, 'currency' => 'USD', 'amount' => 20]);
 
-            // Campagnes et promesses.
+            // Les projets qui reçoivent des promesses : le temple, sur trois exercices ; Sake, sur un seul.
             $pledgeService = app(Pledges::class);
-            $temple = Campaign::create(['name' => 'Construction du nouveau temple', 'kind' => 'project', 'goal_amount' => 25000, 'goal_currency' => 'USD',
-                'description' => 'Agrandir le temple de Himbi pour accueillir 600 fidèles.', 'starts_on' => now()->subMonths(4)->startOfMonth(),
+            $year = now()->year;
+            $temple = Project::create(['name' => 'Construction du nouveau temple', 'kind' => 'project', 'goal_amount' => 25000, 'goal_currency' => 'USD', 'status' => 'ongoing',
+                'description' => 'Agrandir le temple de Himbi pour accueillir 600 fidèles : le terrain voisin et les plans cette année, les murs l’an prochain, la toiture ensuite.',
+                'theme' => 'Entretenir et agrandir le temple', 'responsible_name' => 'Comité des travaux',
+                'starts_on' => now()->subMonths(4)->startOfMonth(), 'ends_on' => ($year + 2).'-12-31',
                 'category_id' => FinanceCategory::create(['name' => 'Construction du nouveau temple', 'type' => 'income', 'nature' => 'personal', 'position' => 60])->id]);
-            $sake = Campaign::create(['name' => 'Évangélisation à Sake', 'kind' => 'campaign', 'goal_amount' => 2000, 'goal_currency' => 'USD',
+            foreach ([[$year, 9000, 2500, 'Terrain voisin et plans de l’architecte'], [$year + 1, 10000, 14000, 'Fondations et murs'], [$year + 2, 6000, 8500, 'Toiture et finitions']] as [$y, $in, $out, $note]) {
+                ProjectYear::create(['project_id' => $temple->id, 'fiscal_year' => $y, 'income_planned' => $in, 'expense_planned' => $out, 'note' => $note]);
+            }
+            $sake = Project::create(['name' => 'Évangélisation à Sake', 'kind' => 'campaign', 'goal_amount' => 2000, 'goal_currency' => 'USD', 'status' => 'ongoing',
+                'theme' => 'Former et envoyer les jeunes', 'department_id' => Department::where('name', 'Jeunesse')->value('id'),
                 'starts_on' => now()->subMonth(), 'ends_on' => now()->addMonths(2),
                 'category_id' => FinanceCategory::create(['name' => 'Évangélisation à Sake', 'type' => 'income', 'nature' => 'personal', 'position' => 61])->id]);
+            ProjectYear::create(['project_id' => $sake->id, 'fiscal_year' => $year, 'income_planned' => 2000, 'expense_planned' => 1500, 'note' => 'Transport, repas et matériel pour douze jeunes']);
+            // Une collecte spéciale au culte des jeunes, marquée pour Sake.
+            $ledger->record($caisse, 'USD', 'income', ['amount' => '180', 'occurred_on' => now()->subWeeks(2)->toDateString(), 'category_id' => $sake->category_id,
+                'description' => 'Collecte spéciale pour Sake, culte des jeunes', 'payment_method' => 'cash', 'project_id' => $sake->id]);
 
             foreach ($members->take(8)->values() as $i => $m) {
-                $pledge = Pledge::create(['campaign_id' => $temple->id, 'member_id' => $m->id, 'amount' => [600, 300, 1200, 240, 500, 150, 900, 360][$i],
+                $pledge = Pledge::create(['project_id' => $temple->id, 'member_id' => $m->id, 'amount' => [600, 300, 1200, 240, 500, 150, 900, 360][$i],
                     'currency' => 'USD', 'frequency' => 'monthly', 'installments' => [6, 6, 12, 12, 10, 3, 6, 12][$i],
                     'pledged_on' => now()->subMonths(3), 'first_due_on' => now()->subMonths(3)->startOfMonth()->addDays(14)]);
                 $paidMonths = [3, 2, 1, 3, 0, 3, 2, 1][$i];
@@ -148,11 +160,11 @@ class DemoFinances
                         ['occurred_on' => now()->subMonths(3 - $k)->startOfMonth()->addDays(16)->toDateString(), 'payment_method' => $k % 2 ? 'mobile' : 'cash', 'external_reference' => $k % 2 ? 'MP'.mt_rand(10000000, 99999999) : null]);
                 }
             }
-            $ciment = Pledge::create(['campaign_id' => $temple->id, 'household_id' => Household::where('name', 'Famille PALUKU')->value('id'),
+            $ciment = Pledge::create(['project_id' => $temple->id, 'household_id' => Household::where('name', 'Famille PALUKU')->value('id'),
                 'kind' => 'in_kind', 'in_kind_description' => '40 sacs de ciment', 'amount' => 600, 'currency' => 'USD', 'pledged_on' => now()->subMonths(2)]);
             $pledgeService->deliver($ciment, '20 sacs de ciment', '300', now()->subWeeks(3));
-            Pledge::create(['campaign_id' => $sake->id, 'department_id' => $chorale, 'amount' => 400, 'currency' => 'USD', 'pledged_on' => now()->subWeeks(3), 'first_due_on' => now()->addMonth()]);
-            Pledge::create(['campaign_id' => $sake->id, 'pledger_name' => 'Frère Kasongo (visiteur de Bukavu)', 'pledger_phone' => '+243997001122',
+            Pledge::create(['project_id' => $sake->id, 'department_id' => $chorale, 'amount' => 400, 'currency' => 'USD', 'pledged_on' => now()->subWeeks(3), 'first_due_on' => now()->addMonth()]);
+            Pledge::create(['project_id' => $sake->id, 'pledger_name' => 'Frère Kasongo (visiteur de Bukavu)', 'pledger_phone' => '+243997001122',
                 'amount' => 150000, 'currency' => 'CDF', 'pledged_on' => now()->subWeeks(2), 'first_due_on' => now()->subDays(3)]);
 
             // Paiements mobile money déclarés, à vérifier par la trésorière.

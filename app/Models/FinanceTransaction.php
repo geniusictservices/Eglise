@@ -71,6 +71,11 @@ class FinanceTransaction extends Model
         return in_array($this->type, self::INFLOWS, true);
     }
 
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class)->withoutGlobalScope('organization');
+    }
+
     public function scopeValid(Builder $query): Builder
     {
         return $query->whereNull('cancelled_at');

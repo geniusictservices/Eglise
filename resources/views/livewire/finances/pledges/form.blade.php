@@ -6,10 +6,10 @@
         <div class="space-y-5">
             <section class="card space-y-4 p-5 sm:p-6">
                 <div>
-                    <label for="campaignId" class="label">{{ __('Pour') }}</label>
-                    <select wire:model="campaignId" id="campaignId" class="input">
-                        <option value="">{{ __('Sans campagne (promesse générale)') }}</option>
-                        @foreach ($campaigns as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach
+                    <label for="projectId" class="label">{{ __('Pour') }}</label>
+                    <select wire:model="projectId" id="projectId" class="input">
+                        <option value="">{{ __('Sans projet (promesse générale)') }}</option>
+                        @foreach ($projects as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach
                     </select>
                 </div>
                 <fieldset>

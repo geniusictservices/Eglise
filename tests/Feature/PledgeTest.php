@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Livewire;
-use App\Models\Campaign;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\Household;
@@ -13,6 +12,7 @@ use App\Models\PledgeReminder;
 use App\Models\User;
 use App\Services\ExchangeRateService;
 use App\Services\Pledges;
+use App\Services\Projects;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire as LivewireTest;
 use Tests\TestCase;
@@ -38,20 +38,15 @@ class PledgeTest extends TestCase
         }
     }
 
-    public function test_a_campaign_collects_pledges_paid_in_installments(): void
+    public function test_a_project_collects_pledges_paid_in_installments(): void
     {
-        LivewireTest::test(Livewire\Finances\Pledges\Index::class)
-            ->call('editCampaign')
-            ->set('form.name', 'Construction du temple')
-            ->set('form.goal_amount', '10000')
-            ->call('saveCampaign')
-            ->assertHasNoErrors();
-        $campaign = Campaign::sole();
+        $campaign = app(Projects::class)->save(current_organization(),
+            ['name' => 'Construction du temple', 'goal_amount' => 10000, 'status' => 'ongoing']);
         $this->assertNotNull($campaign->category_id);
 
         $member = Member::create(['last_name' => 'BAHATI', 'first_name' => 'Isaac', 'phone' => '+243812345678']);
         LivewireTest::test(Livewire\Finances\Pledges\Form::class)
-            ->set('campaignId', (string) $campaign->id)
+            ->set('projectId', (string) $campaign->id)
             ->call('choose', 'member', $member->id)
             ->set('amount', '600')
             ->set('frequency', 'monthly')
@@ -79,7 +74,7 @@ class PledgeTest extends TestCase
         $this->assertSame('300.00', (string) $p['paid']);
         $this->assertSame('0.00', (string) $p['late']);
         $this->assertSame(50, $p['percent']);
-        $this->assertSame('300.00', (string) $service->campaignTotals($campaign)['received']);
+        $this->assertSame(300.0, app(Projects::class)->totals($campaign)['received']);
 
         $this->get(route('finances.pledges'))->assertOk()->assertSee('Construction du temple');
         $this->get(route('finances.pledges.show', $pledge))->assertOk()->assertSee('Isaac BAHATI');

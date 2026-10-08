@@ -3,11 +3,11 @@
 namespace App\Livewire\Finances\Pledges;
 
 use App\Livewire\Concerns\WritesInOrganization;
-use App\Models\Campaign;
 use App\Models\Department;
 use App\Models\Household;
 use App\Models\Member;
 use App\Models\Pledge;
+use App\Models\Project;
 use App\Services\Ledger;
 use App\Services\Pledges;
 use App\Support\Phone;
@@ -21,7 +21,7 @@ class Form extends Component
 
     public ?Pledge $pledge = null;
 
-    public string $campaignId = '';
+    public string $projectId = '';
 
     public string $pledgerType = 'member'; // member, household, department, other
 
@@ -59,13 +59,13 @@ class Form extends Component
     {
         $this->authorize('finance.pledges');
         $this->pledgedOn = today()->toDateString();
-        $this->campaignId = (string) request('campagne', '');
+        $this->projectId = (string) request('projet', '');
 
         if ($id) {
             $p = Pledge::findOrFail($id);
             $this->pledge = $p;
             $this->fill([
-                'campaignId' => (string) $p->campaign_id,
+                'projectId' => (string) $p->project_id,
                 'pledgerType' => $p->member_id ? 'member' : ($p->household_id ? 'household' : ($p->department_id ? 'department' : 'other')),
                 'memberId' => $p->member_id, 'householdId' => $p->household_id, 'departmentId' => (string) $p->department_id,
                 'pledgerName' => (string) $p->pledger_name, 'pledgerPhone' => Phone::format($p->pledger_phone),
@@ -102,7 +102,7 @@ class Form extends Component
     {
         $this->authorizeWrite('finance.pledges');
         $this->validate([
-            'campaignId' => ['nullable', Rule::exists('campaigns', 'id')->where('organization_id', $this->organization()->id)],
+            'projectId' => ['nullable', Rule::exists('projects', 'id')->where('organization_id', $this->organization()->id)],
             'pledgerType' => 'required|in:member,household,department,other',
             'memberId' => [Rule::requiredIf($this->pledgerType === 'member')],
             'householdId' => [Rule::requiredIf($this->pledgerType === 'household')],
@@ -125,7 +125,7 @@ class Form extends Component
         ], ['amount' => $this->kind === 'in_kind' ? __('valeur estimée') : __('montant'), 'pledgerName' => __('nom'), 'inKindDescription' => __('description')]);
 
         $data = [
-            'campaign_id' => $this->campaignId ?: null,
+            'project_id' => $this->projectId ?: null,
             'member_id' => $this->pledgerType === 'member' ? $this->memberId : null,
             'household_id' => $this->pledgerType === 'household' ? $this->householdId : null,
             'department_id' => $this->pledgerType === 'department' ? (int) $this->departmentId : null,
@@ -158,7 +158,7 @@ class Form extends Component
         }
 
         return view('livewire.finances.pledges.form', [
-            'campaigns' => Campaign::where('status', 'active')->orWhere('id', $this->campaignId ?: 0)->orderBy('name')->get(),
+            'projects' => Project::whereIn('status', ['planned', 'ongoing'])->orWhere('id', $this->projectId ?: 0)->orderBy('name')->get(),
             'departments' => Department::where('is_active', true)->orderBy('name')->get(),
             'currencies' => app(Ledger::class)->currencies($this->organization()),
             'results' => $results,

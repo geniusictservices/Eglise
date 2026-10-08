@@ -103,6 +103,10 @@ class Expenses
         if ($missing = app(BudgetControl::class)->shortfall($request)) {
             throw new InvalidArgumentException(__('Cette dépense dépasse le budget de :m : demandez l’autorisation de dépassement, en disant d’où viendra l’argent.', ['m' => Money::format($missing, 'USD')]));
         }
+        // Une dépense de projet ne passe pas si le projet n'a pas encore l'argent.
+        if ($missing = app(Projects::class)->shortfall($request)) {
+            throw new InvalidArgumentException(__('Le projet n’a pas encore l’argent de cette dépense : il manque :m. Attendez les contributions, ou réduisez la dépense.', ['m' => Money::format($missing, 'USD')]));
+        }
         $request->update(['status' => 'checked', 'checked_by' => auth()->id(), 'checked_at' => now(), 'check_note' => $note]);
         app(CircuitNotices::class)->expenseChecked($request);
     }
@@ -154,6 +158,7 @@ class Expenses
                 'description' => $request->number.' · '.$request->title,
                 'payment_method' => $account->kind,
                 'expense_request_id' => $request->id,
+                'project_id' => $request->project_id,
             ]);
 
             $request->update([
@@ -187,6 +192,7 @@ class Expenses
                         ['nature' => 'collective', 'position' => 90])->id,
                     'description' => __('Reste non dépensé : :n', ['n' => $request->number]),
                     'expense_request_id' => $request->id,
+                    'project_id' => $request->project_id,
                 ]);
             }
             $request->update([

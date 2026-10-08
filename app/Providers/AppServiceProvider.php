@@ -10,7 +10,6 @@ use App\Models\AttendanceRecord;
 use App\Models\Budget;
 use App\Models\BudgetOverrun;
 use App\Models\BudgetProposal;
-use App\Models\Campaign;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\CollectionSheet;
@@ -49,6 +48,7 @@ use App\Models\PlanObjective;
 use App\Models\PlanPrice;
 use App\Models\Pledge;
 use App\Models\PledgeDelivery;
+use App\Models\Project;
 use App\Models\QuotaRule;
 use App\Models\Register;
 use App\Models\RegisterEntry;
@@ -107,7 +107,8 @@ class AppServiceProvider extends ServiceProvider
             'member_import' => MemberImport::class,
             'cash_account' => CashAccount::class,
             'collection' => CollectionSheet::class,
-            'campaign' => Campaign::class,
+            'project' => Project::class,
+            'campaign' => Project::class, // les campagnes d'avant les projets, dans le journal
             'pledge' => Pledge::class,
             'pledge_delivery' => PledgeDelivery::class,
             'expense_request' => ExpenseRequest::class,

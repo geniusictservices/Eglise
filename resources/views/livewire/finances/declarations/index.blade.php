@@ -18,7 +18,7 @@
             <li wire:key="d-{{ $d->id }}" class="card flex flex-wrap items-center gap-x-4 gap-y-2 p-4">
                 <span class="icon-tile bg-leaf-50 text-leaf-600"><x-icon name="smartphone" class="size-5" /></span>
                 <div class="min-w-0 flex-1">
-                    <p class="font-semibold text-ink-800">{{ $d->declarantName() }} <span class="font-normal text-sand-700">· {{ $d->pledge ? __('Promesse : :c', ['c' => $d->pledge->campaign?->name ?? __('générale')]) : $d->category?->name }}</span></p>
+                    <p class="font-semibold text-ink-800">{{ $d->declarantName() }} <span class="font-normal text-sand-700">· {{ $d->pledge ? __('Promesse : :c', ['c' => $d->pledge->project?->name ?? __('générale')]) : $d->category?->name }}</span></p>
                     <p class="text-sm text-sand-700">{{ $d->operator }} · <span class="font-mono">{{ $d->transaction_reference }}</span> · {{ __('payé le :d', ['d' => $d->paid_on->translatedFormat('j M Y')]) }}@if ($d->source === 'member') · {{ __('déclaré par le membre') }}@elseif ($d->source === 'website') · {{ __('déclaré sur le site') }}@endif</p>
                     @if ($d->status === 'rejected')<p class="text-sm text-terra-600">{{ __('Rejeté : :r', ['r' => $d->reject_reason]) }}</p>@endif
                     @if ($d->status === 'validated')<p class="text-xs text-sand-700">{{ __('Validé le :d par :n', ['d' => $d->reviewed_at->translatedFormat('j M'), 'n' => $d->reviewer?->name]) }}</p>@endif
@@ -63,7 +63,7 @@
             <div>
                 <label for="dc-purpose" class="label">{{ __('Pour') }}</label>
                 <select wire:model="form.purpose" id="dc-purpose" class="input">
-                    @foreach ($pledges as $p)<option value="pledge:{{ $p->id }}">{{ __('Promesse : :c', ['c' => $p->campaign?->name ?? __('générale')]) }}</option>@endforeach
+                    @foreach ($pledges as $p)<option value="pledge:{{ $p->id }}">{{ __('Promesse : :c', ['c' => $p->project?->name ?? __('générale')]) }}</option>@endforeach
                     @foreach ($categories as $c)<option value="category:{{ $c->id }}">{{ $c->name }}</option>@endforeach
                 </select>
             </div>
@@ -98,7 +98,7 @@
                         <div class="flex justify-between gap-3"><dt class="text-sand-700">{{ __('Opérateur') }}</dt><dd>{{ $review->operator }}</dd></div>
                         <div class="flex justify-between gap-3"><dt class="text-sand-700">{{ __('ID') }}</dt><dd class="font-mono font-semibold">{{ $review->transaction_reference }}</dd></div>
                         <div class="flex justify-between gap-3"><dt class="text-sand-700">{{ __('Date') }}</dt><dd>{{ $review->paid_on->translatedFormat('j F Y') }}</dd></div>
-                        <div class="flex justify-between gap-3"><dt class="text-sand-700">{{ __('Pour') }}</dt><dd class="text-right">{{ $review->pledge ? __('Promesse : :c', ['c' => $review->pledge->campaign?->name ?? __('générale')]) : $review->category?->name }}</dd></div>
+                        <div class="flex justify-between gap-3"><dt class="text-sand-700">{{ __('Pour') }}</dt><dd class="text-right">{{ $review->pledge ? __('Promesse : :c', ['c' => $review->pledge->project?->name ?? __('générale')]) : $review->category?->name }}</dd></div>
                         @if ($review->message)<div class="text-sand-700">« {{ $review->message }} »</div>@endif
                     </dl>
                     @if ($duplicates['declarations'] || $duplicates['transactions'])
