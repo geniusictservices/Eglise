@@ -184,7 +184,10 @@ class Show extends Component
         $this->authorizeWrite('finance.disburse');
         abort_unless($this->record->isRelay(), 404);
         $toSend = $network->overview($this->record->parentProject)['rows']->firstWhere('relay.id', $this->record->id)['to_send'] ?? 0;
-        $this->remit = ['account_id' => (string) ($this->record->cash_account_id ?: CashAccount::where('is_active', true)->orderBy('position')->value('id')),
+        // Le compte du projet s'il en a un, sinon le compte en dollars qui a le plus d'argent.
+        $best = app(Ledger::class)->balances($this->organization())->where('currency', 'USD')->filter(fn ($b) => $b['account']->is_active)
+            ->sortByDesc(fn ($b) => (float) (string) $b['balance'])->first();
+        $this->remit = ['account_id' => (string) ($this->record->cash_account_id ?: ($best['account']->id ?? CashAccount::where('is_active', true)->orderBy('position')->value('id'))),
             'currency' => 'USD', 'amount' => $toSend > 0 ? (string) $toSend : '', 'reference' => ''];
         $this->resetValidation();
         $this->dispatch('open-modal', name: 'remit');

@@ -1,4 +1,4 @@
-# 33. Le réseau : consolidation, quotes-parts et transferts
+# 33. Le réseau : consolidation, quotes-parts, projets du siège et transferts
 
 Une dénomination a un siège, des régions, des secteurs et des paroisses. Chaque paroisse tient son registre et sa caisse dans Waumini, et ses chiffres **remontent tout seuls** aux niveaux supérieurs. Personne ne recopie un rapport papier : le secteur voit ses paroisses, la région ses secteurs, le siège toute la dénomination.
 
@@ -56,7 +56,7 @@ Chaque niveau choisit ce que ses niveaux **directement en dessous** lui reversen
 
 ### Ce que nous versons au niveau supérieur
 
-Pour chaque mois depuis l'entrée en vigueur de la règle : les **recettes** du mois (hors quotes-parts reçues), le montant **dû**, ce qui a été **versé**, et le **reste**. « À confirmer » signale un versement que le niveau supérieur n'a pas encore reçu.
+Pour chaque mois depuis l'entrée en vigueur de la règle : les **recettes** du mois (hors quotes-parts reçues et hors argent des projets), le montant **dû**, ce qui a été **versé**, et le **reste**. « À confirmer » signale un versement que le niveau supérieur n'a pas encore reçu.
 
 ① **Verser** : choisissez le compte d'où part l'argent (la caisse, le compte mobile money), la devise, le montant (Waumini propose le reste dû) et la référence du transfert. La dépense est enregistrée dans le journal de la paroisse, dans la catégorie « Quote-part versée au niveau supérieur ». Le trésorier du niveau supérieur est prévenu dans ses [nouveautés](25-nouveautes.md).
 
@@ -65,7 +65,7 @@ Pour chaque mois depuis l'entrée en vigueur de la règle : les **recettes** du 
 ② **La règle** :
 
 - **Aucune quote-part** ;
-- **Un pourcentage des recettes** : 10 % des recettes du mois, par exemple. Les quotes-parts que le niveau a lui-même reçues ne comptent pas dans ses recettes ;
+- **Un pourcentage des recettes** : 10 % des recettes du mois, par exemple. Les quotes-parts que le niveau a lui-même reçues ne comptent pas dans ses recettes, ni **l'argent des projets** (un don pour le temple ne fait pas monter la quote-part) ;
 - **Un montant fixe par mois**, en dollars ou en francs congolais.
 
 La règle vaut **à partir du mois où elle est enregistrée** : les mois d'avant ne deviennent pas dus. La changer plus tard (passer de 10 % à 12 %) garde ce mois de départ.
@@ -73,6 +73,36 @@ La règle vaut **à partir du mois où elle est enregistrée** : les mois d'avan
 **Versements à confirmer** : quand l'argent est arrivé, touchez **Confirmer la réception** et choisissez le compte où il est entré. La recette est enregistrée dans la catégorie « Quotes-parts reçues », avec la référence du versement.
 
 **Suivi par niveau** : pour chaque niveau en dessous, sur les trois derniers mois, ce qu'il a versé sur ce qu'il doit, et ce qui reste.
+
+## Les projets du siège
+
+Le siège (ou une région) peut confier un projet à ses paroisses : un bureau national, une école, un hôpital. Chaque paroisse a **sa part**, la collecte chez elle, puis la verse au siège.
+
+> Permissions : **Gérer la vision et les projets** au siège pour répartir ; **Décaisser et enregistrer les justificatifs** dans la paroisse pour verser ; **Saisir les recettes et la collecte du culte** au siège pour confirmer la réception.
+
+Sur la fiche du projet du siège, l'onglet **Paroisses** :
+
+<table><tr>
+<td width="68%"><img src="captures/bureau/102b-projet-siege.png" alt="Le projet du siège sur ordinateur"></td>
+<td width="32%"><img src="captures/mobile/102b-projet-siege.png" alt="Le projet du siège sur téléphone"></td>
+</tr></table>
+
+① **Répartir entre les paroisses** : la part de chaque niveau, en dollars. Chaque paroisse reçoit aussitôt le projet chez elle, avec sa part comme objectif, des tranches au prorata de celles du siège, et deux indicateurs : sa part collectée et sa part versée.
+
+② et ③ **Chaque paroisse** : sa part, ce qu'elle a **collecté** sur place, ce qu'elle a **versé**, ce que le siège a **reçu**, et ce qu'elle **garde sur place** (collecté mais pas encore versé). En haut, les totaux et ce qui **reste à collecter**.
+
+**Versements à confirmer** : quand l'argent est arrivé, choisissez le compte et touchez **Confirmer la réception**. L'argent entre dans le projet du siège.
+
+Dans la paroisse, le projet se trouve dans **Projets**, sous « Projets de » suivi du nom du siège. On y fait des promesses et on y reçoit des dons comme pour tout projet ; le bandeau rappelle la part, ce qui est collecté et ce qui reste à verser. **Verser à** (le nom du siège) :
+
+<table><tr>
+<td width="68%"><img src="captures/bureau/102c-verser.png" alt="Verser au siège sur ordinateur"></td>
+<td width="32%"><img src="captures/mobile/102c-verser.png" alt="Verser au siège sur téléphone"></td>
+</tr></table>
+
+① **Le montant** : Waumini propose ce qui est collecté et pas encore versé, et refuse de verser davantage. ② **La référence** du transfert (ID mobile money, bordereau). L'argent sort du compte choisi ; le siège est prévenu dans ses [nouveautés](25-nouveautes.md).
+
+Ces versements sont **internes au réseau** : ils ne gonflent ni les recettes ni les dépenses de la consolidation, et ne comptent pas dans les quotes-parts. Le budget de la paroisse reprend la collecte de sa part et son versement au siège.
 
 ## Les transferts de membres
 

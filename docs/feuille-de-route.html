@@ -258,6 +258,10 @@ const BLOCKS = [
       goal: "L’année de la communauté, préparée ensemble et suivie.",
       items: ["Exercice choisi par chaque église (janvier à décembre, juillet à juin…) ; clôture et rapport annuel alignés", "Propositions des départements : besoins et recettes prévues, avec justification ; un responsable ne gère que ses départements, par sa fiche de membre reliée à son compte", "Arbitrage par la finance, présentation au pasteur, approbation par une autre personne ; budget imprimable", "Révisions : nouvelle version approuvée de la même façon, versions précédentes conservées", "Suivi : prévu, dépensé, engagé et disponible par ligne ; dépenses et recettes hors budget", "Contrôle de chaque dépense ; dépassement autorisé par le pasteur, avec la source de l’argent (autre ligne, réserves ou recette nouvelle)", "Vision pluriannuelle, objectifs avec indicateur, actions avec responsable, échéance, coût et avancement ; retards signalés", "Réunions : participants, ordre du jour, procès-verbal imprimable, décisions suivies ; 3 nouveaux chapitres du manuel"],
       demo: "Livré : de la proposition de la Jeunesse au budget adopté puis révisé, une dépense au-delà du budget autorisée, et le conseil qui suit ses décisions ; 155 tests automatiques." },
+    { status: "done", title: "Projets reliés au budget et aux finances",
+      goal: "Savoir pour chaque projet ce qui est prévu, promis, reçu, dépensé et où il en est.",
+      items: ["Projets annuels ou pluriannuels sous la vision, avec leurs tranches par exercice, leur responsable et leur compte facultatif", "Promesses, dons, collectes et dépenses marqués pour leur projet ; disponible du projet contrôlé avant chaque dépense", "Budget : reprise des tranches et du solde reporté, équilibre recettes-dépenses, part de chaque ligne en pour cent, promesses en cours proposées comme recette", "Indicateurs d’avancement : chiffres, étapes, argent collecté ou dépensé, avec mesures datées", "Projets du siège répartis entre les paroisses : parts, collecte locale, versements et réception", "Argent réservé aux projets visible sur les comptes, exclu des quotes-parts"],
+      demo: "Livré : le temple sur trois exercices, la toiture payée par les recettes ordinaires, et le bureau national porté par Himbi et Katindo ; 245 tests automatiques." },
     { status: "done", title: "Paie",
       goal: "Rémunérer les serviteurs selon les règles de chaque communauté.",
       items: ["Rythmes de paie créés par chaque église : tous les N mois, toutes les N semaines, ou à la prestation (prédication, culte, journée)", "Bénéficiaires : membres ou personnes extérieures, avec leur département pour le budget", "Éléments de paie créés par l’église : gains et retenues, fixes ou en pourcentage, pour tous ou pour certains ; cotisations légales facultatives", "Paie préparée et présentée par la finance, approuvée par le pasteur, payée depuis la caisse ; primes et retenues ponctuelles", "Paiement dans une autre devise : l’équivalent au taux du jour", "Avances sur salaire approuvées par le pasteur, retenues automatiquement sur les paies suivantes", "Salaires dans le budget : masse salariale reprise en un clic, paie engagée et contrôlée à la présentation, dépassement autorisé par le pasteur avec la source de l’argent", "État de paie et bulletins imprimables ; la paie apparaît dans les opérations, les rapports et le suivi du budget ; 1 nouveau chapitre du manuel"],
@@ -345,13 +349,13 @@ const DECISIONS = [
     "Un don déclaré sur le site n’entre en caisse qu’après vérification de l’ID de la transaction par la trésorerie."
   ]],
   ["Promesses", [
-    "Une promesse peut porter sur un projet, une campagne, une contribution régulière ou une demande ponctuelle.",
+    "Une promesse porte sur un projet (la parcelle, le temple, la convention) ou reste générale.",
     "Elle peut venir d’un membre, d’un ménage, d’un département ou d’une personne extérieure.",
     "Paiement en une fois ou par échéances, en argent ou en nature ; suivi promis, versé, reste.",
     "Recouvrement par WhatsApp, envoyé manuellement depuis un message préparé ; pas de SMS.",
     "Montants confidentiels par défaut ; tableau public d’un projet possible, nominatif ou anonyme."
   ]],
-  ["Budget et plan d’action", [
+  ["Budget et projets", [
     "Les départements proposent leurs besoins et leurs recettes prévues en début d’année.",
     "La finance arbitre librement ; Waumini produit le rapport.",
     "Le budget est révisable en cours d’année, chaque version est conservée.",
@@ -360,9 +364,16 @@ const DECISIONS = [
     "Un dépassement n’est autorisé qu’en disant d’où vient l’argent : une autre ligne du budget, les réserves ou une recette nouvelle.",
     "Le budget se tient en dollars ; un besoin chiffré en francs est converti au taux du jour.",
     "Toute dépense hors budget ou au-delà demande une autorisation.",
-    "Le module s’appelle « Plan d’action » : vision pluriannuelle, objectifs, actions, avancement en pourcentage.",
+    "Les projets remplacent le plan d’action et les campagnes : une vision pluriannuelle, puis des projets d’un an ou de plusieurs années, avec une tranche par exercice reprise par le budget.",
+    "L’argent d’un projet porte sa marque, quel que soit le compte ; le compte propre du projet est facultatif. Cet argent ne paie que ce projet ; ce qui n’est pas dépensé passe sur l’année suivante.",
+    "Ce qui manque à un projet est pris sur les recettes ordinaires, et n’est débloqué qu’au rythme des recettes réellement rentrées.",
+    "Le budget ne relie pas chaque dépense à une recette : les recettes prévues doivent couvrir les dépenses prévues, sinon il ne peut pas être présenté ; chaque ligne dit en pour cent ce qu’elle apporte ou consomme.",
+    "L’avancement d’un projet se calcule par ses indicateurs (chiffre à atteindre, étape, argent collecté ou dépensé), jamais par un pourcentage saisi.",
+    "Une dépense de projet suit le même circuit de signatures, et ne passe pas si le projet n’a pas l’argent.",
+    "Un projet du siège est réparti entre les paroisses : chacune collecte sa part, la verse au siège, qui confirme la réception ; ces versements sont internes au réseau.",
+    "Les quotes-parts ne se calculent pas sur l’argent des projets ; les comptes montrent ce qui est réservé aux projets et ce qui reste libre.",
     "Les réunions sont enregistrées avec participants, procès-verbal et décisions.",
-    "Plan d’action et budget existent à chaque niveau, y compris au siège et dans les régions."
+    "Projets et budget existent à chaque niveau, y compris au siège et dans les régions."
   ]],
   ["Paie", [
     "La finance désigne les personnes payées.",

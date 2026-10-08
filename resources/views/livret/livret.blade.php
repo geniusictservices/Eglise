@@ -360,8 +360,8 @@ table.roles td .icon { vertical-align: -1.2mm; margin-right: 1.4mm; color: var(-
                 <li>Le trésorier reçoit une notification, <strong>vérifie</strong> sur le téléphone de l’église que l’argent est bien arrivé.</li>
                 <li>Il <strong>valide</strong>&nbsp;: la recette entre dans le bon compte et le fidèle reçoit son reçu. Un même identifiant ne peut pas servir deux fois.</li>
             </ol>
-            <h3 style="margin-top: 3mm">Les promesses et campagnes</h3>
-            <p>Construction, véhicule, convention&nbsp;: chaque promesse est suivie, versement après versement, avec ce qui reste à donner.</p>
+            <h3 style="margin-top: 3mm">Les promesses pour les projets</h3>
+            <p>Construction, véhicule, convention&nbsp;: chaque promesse va à son projet et se suit versement après versement, avec ce qui reste à donner.</p>
         </div>
     </div>
     <div style="margin: auto auto 4mm; width: 104mm">{!! $laptop('110-site-don', 'La page des dons du site de l’église') !!}<p class="caption">La page «&nbsp;Faire un don&nbsp;» du site de l’église&nbsp;: les numéros mobile money, puis la déclaration.</p></div>
@@ -389,24 +389,24 @@ table.roles td .icon { vertical-align: -1.2mm; margin-right: 1.4mm; color: var(-
     <footer class="folio"><span>Waumini · Livret de présentation</span><span class="n"></span></footer>
 </section>
 
-{{-- 12. Budget et plan d'action --}}
+{{-- 12. Projets et budget --}}
 <section class="page">
-    <div class="kicker">Budget et plan d’action</div>
-    <h2>Une vision, un budget, un suivi</h2>
-    <p class="lead">Waumini relie ce que l’église veut accomplir à l’argent qu’elle y consacre.</p>
+    <div class="kicker">Projets et budget</div>
+    <h2>Une vision, des projets, un budget</h2>
+    <p class="lead">La parcelle, le temple, la convention&nbsp;: pour chaque projet, Waumini sait ce qui est prévu, promis, reçu, dépensé, et où il en est.</p>
     <div class="grid2" style="gap: 4mm">
         <div>
-            <h3>Le budget de l’exercice</h3>
-            <p>Chaque département propose ses besoins&nbsp;; la finance arbitre et présente le budget&nbsp;; le pasteur l’approuve. Chaque révision garde la trace de la version précédente. Ensuite, recettes et dépenses sont comparées au budget, ligne par ligne.</p>
+            <h3>Les projets</h3>
+            <p>Sur un an ou plusieurs, chaque projet a ses tranches, ses promesses et son argent, qui ne paie que lui. Son avancement se calcule par ses indicateurs&nbsp;: jeunes formés, terrain acheté, argent collecté. Le siège peut confier un projet à ses paroisses, chacune avec sa part.</p>
         </div>
         <div>
-            <h3>Le plan d’action</h3>
-            <p>La vision de l’église, ses objectifs et les actions qui les réalisent, avec leurs responsables, leurs échéances et leur avancement. Les actions en retard sont signalées&nbsp;; les décisions des réunions sont notées.</p>
+            <h3>Le budget de l’exercice</h3>
+            <p>Les départements proposent, la finance arbitre, le pasteur approuve. Chaque recette dit ce qu’elle apporte, chaque dépense ce qu’elle consomme&nbsp;; un budget en déficit ne se présente pas. Ensuite, chaque dépense est contrôlée.</p>
         </div>
     </div>
     <div class="shots" style="--w: 49mm">
-        <div>{!! $phone('62-budget', 'Le budget') !!}<p class="caption">Le budget adopté</p></div>
-        <div>{!! $phone('68-plan', 'Le plan d’action') !!}<p class="caption">La vision et son avancement</p></div>
+        <div>{!! $phone('68-projets', 'Les projets') !!}<p class="caption">La vision et ses projets</p></div>
+        <div>{!! $phone('69-indicateurs', 'Les indicateurs d’un projet') !!}<p class="caption">L’avancement par les indicateurs</p></div>
     </div>
     <footer class="folio"><span>Waumini · Livret de présentation</span><span class="n"></span></footer>
 </section>

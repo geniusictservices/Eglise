@@ -26,7 +26,7 @@ Chaque carte indique la description du rôle, son nombre de permissions et le no
 </tr></table>
 
 1. Donnez un **nom** et une courte **description** (ce que fait cette personne).
-2. Cochez les **permissions**, regroupées par module ① : Communauté, Membres, Finances, Plan d'action et budget, Paie, Groupes, Documents, Suivi pastoral, Consolidation. **Tout cocher** coche tout un module d'un coup.
+2. Cochez les **permissions**, regroupées par module ① : Communauté, Membres, Finances, Projets et budget, Paie, Groupes, Documents, Suivi pastoral, Consolidation. **Tout cocher** coche tout un module d'un coup.
 3. Touchez **Enregistrer le rôle**.
 
 Le changement s'applique **immédiatement** à toutes les personnes qui ont ce rôle.

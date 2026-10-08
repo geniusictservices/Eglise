@@ -36,15 +36,15 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 
 9. [Comptes, recettes, reçus, virements et opérations](16-finances.md)
 10. [La collecte du culte](17-collecte.md)
-11. [Promesses, campagnes et paiements déclarés](18-promesses.md)
+11. [Promesses et paiements déclarés](18-promesses.md)
 12. [Les dépenses et les avances](19-depenses.md)
 13. [Clôtures et rapports financiers](20-clotures-rapports.md)
 
-### Plan d'action, budget et paie
+### Projets, budget et paie
 
 14. [Le budget : propositions, arbitrage, approbation, révisions](21-budget.md)
 15. [Le suivi du budget et les dépassements](22-suivi-budget.md)
-16. [Le plan d'action et les réunions](23-plan-action-reunions.md)
+16. [Les projets et les réunions](23-projets-reunions.md)
 17. [La paie : rythmes, bénéficiaires, paies et avances sur salaire](24-paie.md)
 
 ### Vie de la communauté
@@ -66,7 +66,7 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 
 ### Le réseau et le site
 
-26. [Consolidation, quotes-parts et transferts de membres](33-consolidation.md)
+26. [Consolidation, quotes-parts, projets du siège et transferts de membres](33-consolidation.md)
 27. [Le site vitrine : pages, prédications et dons par mobile money](34-site-vitrine.md)
 
 ### Pour l'administrateur et les responsables
@@ -91,7 +91,7 @@ Waumini fournit des **rôles modèles**. Votre administrateur peut les adapter o
 | Rôle | Ce qu'il fait dans Waumini |
 |---|---|
 | **Administrateur** | Tout. Attribué à la personne qui a créé le compte de la communauté. |
-| **Pasteur** | Vue d'ensemble, plan d'action, approbation du budget, des dépenses, des dépassements, de la paie et des avances sur salaire, suivi pastoral, rapports. |
+| **Pasteur** | Vue d'ensemble, projets, approbation du budget, des dépenses, des dépassements, de la paie et des avances sur salaire, suivi pastoral, rapports. |
 | **Secrétaire** | Registre des membres, départements, groupes, calendrier, présences, annonces, documents et anciens registres, site vitrine. Ne voit pas les dîmes nominatives. |
 | **Trésorier** | Caisses, recettes, promesses, dépenses, taux du jour, paie, rapports. |
 | **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, avancement de ses actions, groupes, activités et annonces du département. |

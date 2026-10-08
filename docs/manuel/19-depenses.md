@@ -44,6 +44,8 @@ Un responsable de département ne voit que **ses propres demandes**.
 
 Si la dépense n'était pas prévue (une toiture qui cède, un deuil, une réunion convoquée en urgence), choisissez **Imprévu** : indiquez le département et la catégorie, et dites **pourquoi ce n'était pas prévu**. La dépense est marquée **Imprévu** dans la liste et sur sa fiche. S'il ne reste rien pour ce département et cette catégorie, elle passera par une [autorisation de dépassement](22-suivi-budget.md) du pasteur, qui dit d'où viendra l'argent.
 
+**Le projet** (facultatif) : une dépense pour le temple, la convention ou la parcelle se rattache à son [projet](23-projets-reunions.md), avec ce qu'il a de **disponible**. Une ligne du budget qui appartient à un projet y rattache la dépense d'elle-même.
+
 Sans budget adopté pour l'exercice, la dépense est simplement classée par département (*Administration générale* pour les dépenses communes) et par catégorie.
 
 ② **Avance à justifier** : cochez-la quand l'argent est remis **avant** l'achat (le transport d'une mission, les courses d'une fête). Indiquez la personne qui reçoit l'argent et rapportera les factures et le reste.
@@ -55,6 +57,8 @@ Ajoutez la date souhaitée et les **devis** (photo ou PDF). La demande reçoit u
 La trésorière vérifie le montant, les pièces et que la dépense est prévue, puis touche **Contrôlée, à approuver**, avec une remarque si besoin. Elle peut aussi **Refuser**, avec un motif que le demandeur verra.
 
 Quand un budget est adopté pour l'exercice, Waumini montre la ligne du budget de la dépense (prévu, dépensé, engagé, disponible). Une dépense qui dépasse le disponible, ou qui n'est pas prévue, demande d'abord une **autorisation de dépassement** du pasteur, qui dit d'où viendra l'argent. Voir [Le suivi du budget et les dépassements](22-suivi-budget.md).
+
+Une **dépense de projet** ne passe pas non plus si **le projet n'a pas encore l'argent** : Waumini dit ce qui manque. Il faut attendre les contributions, ou réduire la dépense.
 
 ## Approuver
 
@@ -76,7 +80,9 @@ L'**historique**, à droite (en bas sur téléphone), garde chaque geste : qui, 
 <td width="32%"><img src="captures/mobile/52-depense-decaisser.png" alt="Décaisser sur téléphone"></td>
 </tr></table>
 
-① **Le compte** d'où sort l'argent. Seuls les comptes qui tiennent la devise de la demande sont proposés, avec leur solde ; un solde trop faible s'affiche en rouge.
+① **Le compte** d'où sort l'argent. Seuls les comptes qui tiennent la devise de la demande sont proposés, avec leur solde ; un solde trop faible s'affiche en rouge. Pour une dépense de projet, le compte du projet est proposé en premier.
+
+Pour une dépense ordinaire, si l'argent libre ne suffit pas et que le décaissement prendrait sur **l'argent réservé aux projets**, Waumini avertit avant de décaisser.
 
 ② **L'historique** de la demande.
 

@@ -11,7 +11,7 @@ Waumini tient la caisse de la communauté comme un cahier de caisse qui ne s'eff
 <td width="32%"><img src="captures/mobile/39-finances.png" alt="Tableau des finances sur téléphone"></td>
 </tr></table>
 
-① **La trésorerie totale**, devise par devise, avec son équivalent en dollars au taux du jour. Les boutons mènent à la collecte du culte, aux recettes, aux virements et au change, aux dépenses, aux opérations et aux rapports.
+① **La trésorerie totale**, devise par devise, avec son équivalent en dollars au taux du jour. Dessous, **ce qui est réservé aux projets** (l'argent reçu pour le temple, la parcelle… et pas encore dépensé) et **ce qui reste libre** pour le fonctionnement. Si les comptes contiennent moins que l'argent des projets, un bandeau rouge le signale : cet argent a servi à autre chose et doit être remis. Les boutons mènent à la collecte du culte, aux recettes, aux virements et au change, aux dépenses, aux opérations et aux rapports.
 
 ② **Chaque compte** et son solde dans chacune de ses devises. Touchez un compte pour voir ses opérations.
 

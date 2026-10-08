@@ -22,7 +22,7 @@ const SITE_OUT = new URL('../../public/images/site/', import.meta.url).pathname;
 // --livret : captures propres pour le livret de présentation (docs/livret), en version ordinateur et téléphone.
 const LIVRET = process.argv.includes('--livret');
 const LIVRET_SCENES = ['03-tableau-de-bord', '05-menu-telephone', '22-acces-support', '27-membres', '29-membre-fiche', '36-carte',
-    '39-finances', '42-recu', '45-collecte', '48-declarations', '49-depenses', '51-depense-signature', '57-rapport', '62-budget', '68-plan',
+    '39-finances', '42-recu', '45-collecte', '48-declarations', '49-depenses', '51-depense-signature', '57-rapport', '62-budget', '68-projets', '69-indicateurs',
     '76-bulletin', '82-calendrier', '84-presences-culte', '86-annonces', '90-document-imprime', '91-verification', '95-registre',
     '96-suivi-pastoral', '99-espace-membre', '102-consolidation', '109-site-accueil', '110-site-don'];
 const LIVRET_OUT = new URL('../../docs/livret/captures/', import.meta.url).pathname;
@@ -630,7 +630,7 @@ const SCENES = [
         run: async (page) => {
             await page.goto(`${BASE}/finances/promesses`);
             await settle(page);
-            await mark(page, [{ selector: 'main section.wax', label: '1' }, { selector: 'main a[href$="/finances/promesses/nouvelle"]', label: '2' }]);
+            await mark(page, [{ selector: 'main button.w-64', label: '1' }, { selector: 'main a[href$="/finances/promesses/nouvelle"]', label: '2' }]);
         },
     },
     {
@@ -819,6 +819,30 @@ const SCENES = [
         },
     },
     {
+        id: '64b-budget-recettes', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/budget`);
+            await page.click('main a:has-text("Voir le budget adopté")');
+            await page.waitForURL(/\/budget\/version\/\d+$/);
+            await page.click('main [role=tablist] button:has-text("Recettes prévues")');
+            await page.waitForSelector('main li[wire\\:key^="bl-"]');
+            await settle(page);
+            await mark(page, [{ selector: 'main section.card h2', text: 'Équilibre', label: '1' }, { selector: 'main li[wire\\:key^="bl-"]', text: 'Offrandes des cultes', label: '2' }]);
+        },
+    },
+    {
+        id: '64c-budget-projets', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/budget`);
+            await page.click('main a:has-text("Voir le budget adopté")');
+            await page.waitForURL(/\/budget\/version\/\d+$/);
+            await page.click('main [role=tablist] button:has-text("Projets de l")');
+            await page.waitForSelector('main li[wire\\:key^="bp-"]');
+            await settle(page);
+            await mark(page, [{ selector: 'main li[wire\\:key^="bp-"]', text: 'nouveau temple', label: '1' }, { selector: 'main li[wire\\:key^="bp-"]', text: 'toiture', label: '2' }]);
+        },
+    },
+    {
         id: '65-suivi-budget', user: '0990000006',
         run: async (page) => {
             await page.goto(`${BASE}/budget/suivi`);
@@ -853,23 +877,50 @@ const SCENES = [
         },
     },
     {
-        id: '68-plan', user: '0990000006',
+        id: '68-projets', user: '0990000006',
         run: async (page) => {
-            await page.goto(`${BASE}/plan`);
+            await page.goto(`${BASE}/projets`);
             await settle(page);
-            await mark(page, [{ selector: 'main section.wax .ring-progress', label: '1' }, { selector: 'main section.card .ring-progress', label: '2' }, { selector: 'main li.border-terra-200', label: '3' }]);
+            await mark(page, [{ selector: 'main section.wax .ring-progress', label: '1' }, { selector: 'main section h2', text: 'Entretenir', label: '2' }, { selector: 'main li a.card', text: 'nouveau temple', label: '3' }]);
         },
     },
     {
-        id: '69-avancement', user: '0990000009',
+        id: '68b-projet', user: '0990000006',
         run: async (page) => {
-            await page.goto(`${BASE}/plan`);
-            await page.click('main li:has-text("Tournoi de la paix") button[wire\\:click^=editProgress]');
-            await page.waitForSelector('[role=dialog] #pg-value');
-            await page.fill('#pg-note', 'Terrain réservé, six équipes inscrites.');
-            await page.evaluate(() => { const r = document.querySelector('#pg-value'); r.value = 25; r.dispatchEvent(new Event('input', { bubbles: true })); });
+            await page.goto(`${BASE}/projets`);
+            await page.click('main li a.card:has-text("Construction du nouveau temple")');
+            await page.waitForURL(/\/projets\/\d+$/);
             await settle(page);
-            await mark(page, [{ selector: '#pg-value', label: '1' }]);
+            await mark(page, [{ selector: 'main section.wax .ring-progress', label: '1' }, { selector: 'main section.card .grid', label: '2' }, { selector: 'main [role=tablist]', label: '3' }]);
+        },
+    },
+    {
+        id: '69-indicateurs', user: '0990000009',
+        run: async (page) => {
+            await page.goto(`${BASE}/projets`);
+            await page.click('main li a.card:has-text("Évangélisation à Sake")');
+            await page.waitForURL(/\/projets\/\d+$/);
+            await page.click('main [role=tablist] button:has-text("Indicateurs")');
+            await page.waitForSelector('main li[wire\\:key^="ind-"]');
+            await page.evaluate(() => document.querySelector('main li[wire\\:key^="ind-"]').closest('section').scrollIntoView({ block: 'start' }));
+            await settle(page);
+            await mark(page, [{ selector: 'main li[wire\\:key^="ind-"]', text: 'Argent collecté', label: '1' }, { selector: 'main li[wire\\:key^="ind-"]', text: 'Jeunes formés', label: '2' },
+                { selector: 'main li[wire\\:key^="ind-"]', text: 'Reconnaissance', label: '3' }]);
+        },
+    },
+    {
+        id: '69b-mesure', user: '0990000009',
+        run: async (page) => {
+            await page.goto(`${BASE}/projets`);
+            await page.click('main li a.card:has-text("Évangélisation à Sake")');
+            await page.waitForURL(/\/projets\/\d+$/);
+            await page.click('main [role=tablist] button:has-text("Indicateurs")');
+            await page.click('main li[wire\\:key^="ind-"]:has-text("Jeunes formés") button[wire\\:click^=openMeasure]');
+            await page.waitForSelector('[role=dialog] #ms-val');
+            await page.fill('#ms-val', '15');
+            await page.fill('#ms-note', 'Trois nouveaux jeunes formés samedi.');
+            await settle(page);
+            await mark(page, [{ selector: '#ms-val', label: '1' }, { selector: '#ms-date', label: '2' }]);
         },
     },
     {
@@ -1232,6 +1283,33 @@ const SCENES = [
                 { selector: isMobile(page) ? 'main ul.md\\:hidden button' : 'main table button', label: '2' },
                 { selector: 'main section h2', text: 'Saisies en retard', label: '3' },
             ]);
+        },
+    },
+    {
+        id: '102b-projet-siege', user: '0990000001',
+        run: async (page) => {
+            await page.goto(`${BASE}/projets`);
+            await page.click('main li a.card:has-text("Bureau national")');
+            await page.waitForURL(/\/projets\/\d+/);
+            await page.click('main [role=tablist] button:has-text("Paroisses")');
+            await page.waitForSelector('main li[wire\\:key^="relay-"]');
+            await settle(page);
+            await mark(page, isMobile(page)
+                ? [{ selector: 'main li[wire\\:key^="relay-"]', text: 'Himbi', label: '2' }, { selector: 'main li[wire\\:key^="relay-"]', text: 'Katindo', label: '3' }]
+                : [{ selector: 'main button[wire\\:click=editShares]', label: '1' }, { selector: 'main li[wire\\:key^="relay-"]', text: 'Himbi', label: '2' }, { selector: 'main li[wire\\:key^="relay-"]', text: 'Katindo', label: '3' }]);
+        },
+    },
+    {
+        id: '102c-verser', user: '0990000007',
+        run: async (page) => {
+            await page.goto(`${BASE}/projets`);
+            await page.click('main li a.card:has-text("Bureau national")');
+            await page.waitForURL(/\/projets\/\d+/);
+            await page.click('main button[wire\\:click=openRemit]');
+            await page.waitForSelector('[role=dialog] #rm-amount');
+            await page.fill('#rm-ref', 'MP84120577');
+            await settle(page);
+            await mark(page, [{ selector: '#rm-amount', label: '1' }, { selector: '#rm-ref', label: '2' }]);
         },
     },
     {

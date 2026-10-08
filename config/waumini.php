@@ -291,10 +291,10 @@ return [
             ],
         ],
         'planning' => [
-            'label' => 'Plan d’action et budget',
+            'label' => 'Projets et budget',
             'items' => [
-                'planning.view' => 'Voir le plan d’action et le budget',
-                'planning.manage' => 'Gérer la vision, les objectifs et les actions',
+                'planning.view' => 'Voir les projets et le budget',
+                'planning.manage' => 'Gérer la vision et les projets',
                 'budget.propose' => 'Proposer les besoins d’un département',
                 'budget.arbitrate' => 'Arbitrer le budget et le présenter',
                 'budget.approve' => 'Approuver le budget et ses révisions',
