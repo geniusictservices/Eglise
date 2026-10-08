@@ -125,9 +125,7 @@ class BudgetTest extends TestCase
             ->set('line.category_id', (string) $this->category('income', 'Offrande du culte'))
             ->set('line.amount', '5000')
             ->call('saveLine')->assertHasNoErrors()
-            // Chaque dépense prévue dit quelles recettes la paient, avant la présentation.
-            ->call('submit')->assertHasErrors('note')
-            ->call('autoFund')
+            ->assertSee('D’où viendra l’argent')->assertSee('Les dépenses prévues sont couvertes.')
             ->call('submit')->assertHasNoErrors();
         $budget->refresh();
         $this->assertSame('submitted', $budget->status);
@@ -184,7 +182,6 @@ class BudgetTest extends TestCase
         $v2 = Budget::where('version', 2)->sole();
         $this->assertSame('draft', $v2->status);
         $this->assertSame(2, $v2->lines()->count());
-        $this->assertSame('1500.00', (string) $v2->fundings()->sole()->amount); // le financement suit dans la nouvelle version
         // Le budget adopté reste en vigueur pendant la révision.
         $this->assertSame($v1->id, $budgets->adopted($this->eglise, 2026)->id);
 

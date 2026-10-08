@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Un projet : la parcelle, le temple, la convention des jeunes, les uniformes de la chorale.
  * Il a un objectif, des tranches annuelles reprises par le budget, et tout l'argent qui le
  * concerne (promesses, dons, dépenses) porte sa marque. Il peut durer un an ou plusieurs.
+ * Son avancement se calcule à partir de ses indicateurs.
  */
 class Project extends Model
 {
@@ -42,6 +43,12 @@ class Project extends Model
         return $this->hasMany(ProjectYear::class)->orderBy('fiscal_year');
     }
 
+    public function indicators(): HasMany
+    {
+        return $this->hasMany(ProjectIndicator::class)->orderBy('position')->orderBy('id');
+    }
+
+    /** Les anciens points d'avancement (avant les indicateurs), gardés pour l'historique. */
     public function updates(): HasMany
     {
         return $this->hasMany(ProjectUpdate::class)->latest()->latest('id');

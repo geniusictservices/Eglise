@@ -46,7 +46,7 @@
                         <li wire:key="p-{{ $p->id }}">
                             <a href="{{ route('projects.show', $p) }}" @class(['card block h-full p-4 transition hover:border-ochre-300', 'border-terra-300' => $p->isLate(), 'opacity-70' => ! $p->isActive()])>
                                 <div class="flex items-start gap-3">
-                                    <span class="ring-progress size-12 shrink-0" style="--v: {{ $p->progress }}"><span class="size-9 text-[10px]">{{ $p->progress }} %</span></span>
+                                    <span class="ring-progress size-12 shrink-0" style="--v: {{ $row['progress'] ?? 0 }}"><span class="size-9 text-[10px]">{{ $row['progress'] === null ? '—' : $row['progress'].' %' }}</span></span>
                                     <span class="min-w-0 flex-1">
                                         <span class="block font-semibold text-ink-800">{{ $p->name }}</span>
                                         <span class="block text-xs text-sand-700">{{ collect([__(Project::KINDS[$p->kind] ?? ''), $p->span(), $p->department?->name, $p->responsibleName()])->filter()->implode(' · ') }}</span>

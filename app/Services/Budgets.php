@@ -12,6 +12,7 @@ use App\Models\Payee;
 use App\Models\PaySlip;
 use App\Models\Project;
 use App\Models\User;
+use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -164,7 +165,6 @@ class Budgets
         $organization = $budget->organization()->firstOrFail();
         $year = $budget->fiscal_year;
         $projects = app(Projects::class);
-        $fundings = app(BudgetFundings::class);
         $general = Department::withoutGlobalScope('organization')->where('organization_id', $organization->id)->where('is_system', true)->value('id');
         $expenseCategory = FinanceCategory::withoutOrganizationScope()->firstOrCreate(
             ['organization_id' => $organization->id, 'type' => 'expense', 'name' => 'Projets et travaux'], ['position' => 55])->id;
@@ -192,12 +192,7 @@ class Budgets
                 }
                 $values = ['type' => $type, 'department_id' => $department, 'category_id' => $category, 'label' => mb_substr($label, 0, 190),
                     'amount' => round($amount, 2), 'project_id' => $project->id, 'source' => $source, 'note' => $source === 'project' ? $tranche->note : null];
-                if ($line) {
-                    $line->update($values);
-                    $fundings->trim($line);
-                } else {
-                    BudgetLine::create($values + ['budget_id' => $budget->id]);
-                }
+                $line ? $line->update($values) : BudgetLine::create($values + ['budget_id' => $budget->id]);
                 $count++;
             }
         }
@@ -217,12 +212,10 @@ class Budgets
             $version = (int) Budget::withoutOrganizationScope()->where('organization_id', $organization->id)->where('fiscal_year', $year)->max('version') + 1;
             $budget = Budget::create(['organization_id' => $organization->id, 'fiscal_year' => $year, 'version' => $version, 'status' => 'draft',
                 'reason' => $reason, 'prepared_by' => auth()->id()]);
-            $map = [];
             foreach ($adopted->lines as $line) {
-                $map[$line->id] = BudgetLine::create($line->only(['type', 'department_id', 'category_id', 'label', 'amount', 'proposed_amount', 'proposal_line_id', 'payee_id', 'project_id', 'source', 'note'])
-                    + ['budget_id' => $budget->id])->id;
+                BudgetLine::create($line->only(['type', 'department_id', 'category_id', 'label', 'amount', 'proposed_amount', 'proposal_line_id', 'payee_id', 'project_id', 'source', 'note'])
+                    + ['budget_id' => $budget->id]);
             }
-            app(BudgetFundings::class)->copy($adopted, $budget, $map);
 
             return $budget;
         });
@@ -235,12 +228,10 @@ class Budgets
         if (! $budget->lines()->exists()) {
             throw new InvalidArgumentException(__('Le budget est vide.'));
         }
-        // Chaque dépense prévue dit d'où viendra son argent.
-        $unfunded = app(BudgetFundings::class)->unfunded($budget->unsetRelation('lines')->unsetRelation('fundings'));
-        if ($unfunded->isNotEmpty()) {
-            throw new InvalidArgumentException(trans_choice(
-                ':count dépense prévue n’a pas encore de financement complet (:l) : dites quelles recettes la paient, ou réduisez-la.|:count dépenses prévues n’ont pas encore de financement complet (:l…) : dites quelles recettes les paient, ou réduisez-les.',
-                $unfunded->count(), ['l' => $unfunded->first()->label]));
+        // Il faut savoir d'où viendra l'argent : les recettes prévues couvrent les dépenses prévues.
+        $gap = app(BudgetSources::class)->summary($budget->unsetRelation('lines'))['gap'];
+        if ($gap > 0) {
+            throw new InvalidArgumentException(__('Les dépenses prévues dépassent de :m les recettes sur lesquelles on peut compter : dites d’où viendra cet argent (une recette prévue de plus) ou réduisez des dépenses.', ['m' => Money::format($gap, 'USD')]));
         }
         $budget->update(['status' => 'submitted', 'submitted_by' => auth()->id(), 'submitted_at' => now(), 'return_note' => null]);
         app(CircuitNotices::class)->budgetSubmitted($budget);

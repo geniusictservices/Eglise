@@ -14,7 +14,6 @@ use App\Models\MemberStatus;
 use App\Models\MemberStatusChange;
 use App\Models\Organization;
 use App\Models\Project;
-use App\Models\ProjectUpdate;
 use App\Models\User;
 use App\Models\Vision;
 use App\Support\CurrentOrganization;
@@ -107,8 +106,6 @@ class DemoPlanning
             ] as [$type, $department, $category, $label, $amount]) {
                 BudgetLine::create(['budget_id' => $budget->id, 'type' => $type, 'department_id' => $department, 'category_id' => $cat[$category], 'label' => $label, 'amount' => $amount]);
             }
-            // Chaque dépense prévue dit quelles recettes la paient.
-            app(BudgetFundings::class)->auto($budget->fresh());
             app(Budgets::class)->submit($budget);
         });
         $as($pasteur, ($year).'-01-11', fn () => $service->approve($budget->fresh(), $pasteur, 'Approuvé en conseil le 11 janvier.'));
@@ -118,10 +115,7 @@ class DemoPlanning
         $as($tresoriere, $year.'-07-06', function () use ($revision, $cat, $general) {
             BudgetLine::create(['budget_id' => $revision->id, 'type' => 'expense', 'department_id' => $general, 'category_id' => $cat['Entretien et réparations'],
                 'label' => 'Réparation de la toiture de la sacristie', 'amount' => 400, 'note' => 'Financée par la réduction de la convention']);
-            $convention = $revision->lines()->where('label', 'Convention des jeunes')->first();
-            $convention->update(['amount' => 400]);
-            app(BudgetFundings::class)->trim($convention);
-            app(BudgetFundings::class)->auto($revision->fresh());
+            $revision->lines()->where('label', 'Convention des jeunes')->update(['amount' => 400]);
             app(Budgets::class)->submit($revision);
         });
         $as($pasteur, $year.'-07-09', fn () => $service->approve($revision->fresh(), $pasteur));
@@ -161,41 +155,91 @@ class DemoPlanning
         Vision::create(['title' => 'Une église qui grandit, forme ses jeunes et sert son quartier', 'starts_year' => $year - 1, 'ends_year' => $year + 3,
             'statement' => 'D’ici 2029 : 600 fidèles dans un temple agrandi, une jeunesse formée et envoyée, des familles accompagnées et un quartier qui voit l’Évangile en actes.']);
 
-        // Les projets de l'exercice, rangés par axe de la vision. Sake et le temple existent déjà (avec leurs promesses) : on les complète.
+        // Les projets de l'exercice, rangés par axe de la vision, avec les indicateurs qui mesurent leur avancement.
+        // Sake et le temple existent déjà (avec leurs promesses) : on les complète.
+        // Indicateurs : [measure, nom, unité, départ, cible, [jours => valeur relevée]], [milestone, nom, franchie il y a n jours ou null, pour le],
+        // [collected|spent, nom, poids].
+        $next = $year + 1;
         $projects = [
             ['Former et envoyer les jeunes', [
-                ['Évangélisation à Sake', $dept['Jeunesse'], 'Gloire', null, null, null, 45, 'Douze jeunes inscrits ; le transport de la reconnaissance est payé.'],
-                ['Convention des jeunes', $dept['Jeunesse'], 'Gloire', '-09-01', '-12-20', 400, 40, 'Salle réservée, orateurs confirmés.'],
-                ['Tournoi de la paix', $dept['Jeunesse'], 'Josué', '-11-01', '-12-15', 300, 0, null],
+                ['Évangélisation à Sake', $dept['Jeunesse'], 'Gloire', null, null, null, [
+                    ['collected', 'Argent collecté', 1],
+                    ['measure', 'Jeunes formés pour l’évangélisation', 'jeunes', 0, 30, [60 => 5, 20 => 12]],
+                    ['milestone', 'Reconnaissance du terrain à Sake', 40, null],
+                    ['milestone', 'Campagne de trois jours à Sake', null, $year.'-11-15'],
+                ]],
+                ['Convention des jeunes', $dept['Jeunesse'], 'Gloire', '-09-01', '-12-20', 400, [
+                    ['milestone', 'Salle réservée', 30, null],
+                    ['milestone', 'Orateurs confirmés', 12, null],
+                    ['measure', 'Jeunes inscrits', 'jeunes', 0, 150, [25 => 18, 6 => 45]],
+                ]],
+                ['Tournoi de la paix', $dept['Jeunesse'], 'Josué', '-11-01', '-12-15', 300, [
+                    ['milestone', 'Équipes du quartier inscrites', null, $year.'-11-10'],
+                    ['milestone', 'Ballons et maillots achetés', null, $year.'-11-20'],
+                    ['measure', 'Matchs joués', 'matchs', 0, 12, []],
+                ]],
             ]],
             ['Accueillir et intégrer les nouveaux venus', [
-                ['Cours des nouveaux convertis, un samedi sur deux', null, 'Samuel', '-02-01', '-11-30', null, 60, '18 participants réguliers.'],
-                ['Baptêmes de Pâques', null, 'Samuel', '-03-01', '-04-05', null, 100, '23 baptisés au lac.'],
-                ['Équipe d’accueil à chaque culte', null, 'Rebecca', '-01-15', '-12-31', null, 75, null],
+                ['Cours des nouveaux convertis, un samedi sur deux', null, 'Samuel', '-02-01', '-11-30', null, [
+                    ['measure', 'Sessions tenues', 'sessions', 0, 20, [120 => 8, 45 => 13, 10 => 16]],
+                    ['measure', 'Participants réguliers', 'personnes', 0, 25, [90 => 11, 10 => 18]],
+                ]],
+                ['Baptêmes de Pâques', null, 'Samuel', '-03-01', '-04-05', null, [
+                    ['measure', 'Baptisés au lac', 'baptisés', 0, 20, [186 => 23]],
+                ]],
+                ['Équipe d’accueil à chaque culte', null, 'Rebecca', '-01-15', '-12-31', null, [
+                    ['measure', 'Cultes avec l’équipe d’accueil', 'cultes', 0, 50, [100 => 22, 4 => 38]],
+                    ['measure', 'Membres de l’équipe', 'membres', 4, 12, [150 => 6, 30 => 9]],
+                ]],
             ]],
             ['Entretenir et agrandir le temple', [
-                ['Réparation de la toiture de la sacristie', $general, 'Jérémie', '-07-10', '-10-31', 400, 30, 'Devis retenu, tôles commandées.'],
-                ['Construction du nouveau temple', $general, null, null, null, null, 35, 'Promesses : 8 950 $ ; terrain voisin en négociation.'],
+                ['Réparation de la toiture de la sacristie', $general, 'Jérémie', '-07-10', '-10-31', 400, [
+                    ['milestone', 'Devis retenu en conseil', 95, null],
+                    ['milestone', 'Tôles achetées', 20, null],
+                    ['milestone', 'Toiture posée', null, $year.'-10-31'],
+                    ['spent', 'Dépenses de la toiture', 1],
+                ]],
+                ['Construction du nouveau temple', $general, null, null, null, null, [
+                    ['collected', 'Argent collecté', 2],
+                    ['milestone', 'Plans de l’architecte approuvés', 50, null],
+                    ['milestone', 'Terrain voisin acheté', null, $year.'-12-15'],
+                    ['milestone', 'Fondations coulées', null, $next.'-06-30'],
+                    ['milestone', 'Murs montés', null, $next.'-12-15'],
+                    ['milestone', 'Toiture et finitions', null, ($year + 2).'-11-30'],
+                ]],
             ]],
         ];
         $service = app(Projects::class);
+        $previous = Auth::user();
+        Auth::setUser($users['Pasteur Daniel Paluku']);
         foreach ($projects as [$theme, $items]) {
-            foreach ($items as [$label, $department, $responsible, $start, $due, $cost, $progress, $note]) {
+            foreach ($items as [$label, $department, $responsible, $start, $due, $cost, $indicators]) {
                 $project = Project::where('name', $label)->first();
                 $data = ['name' => $label, 'theme' => $theme, 'department_id' => $department, 'kind' => $project->kind ?? 'project',
                     'responsible_member_id' => $responsible ? $member($responsible) : null, 'responsible_name' => $responsible ? null : 'Comité des travaux',
                     'starts_on' => $start ? $year.$start : $project?->starts_on?->toDateString(), 'ends_on' => $due ? $year.$due : $project?->ends_on?->toDateString(),
                     'goal_amount' => $project?->goal_amount, 'goal_currency' => 'USD', 'cash_account_id' => $project?->cash_account_id,
-                    'status' => $progress >= 100 ? 'done' : ($progress > 0 ? 'ongoing' : 'planned')];
+                    'status' => $project?->status ?? ($start && $year.$start <= today()->toDateString() ? 'ongoing' : 'planned')];
                 $years = $cost && ! $project ? [['fiscal_year' => $year, 'income_planned' => 0, 'expense_planned' => $cost]] : [];
                 $project = $service->save($himbi, $data, $years, $project);
-                $project->update(['progress' => $progress]);
-                if ($note) {
-                    ProjectUpdate::create(['project_id' => $project->id, 'user_id' => $users['Pasteur Daniel Paluku']->id, 'progress' => $progress, 'note' => $note,
-                        'created_at' => now()->subDays(mt_rand(3, 25))]);
+                foreach ($indicators as $spec) {
+                    $kind = $spec[0];
+                    $indicator = $service->saveIndicator($project, match ($kind) {
+                        'measure' => ['kind' => 'measure', 'name' => $spec[1], 'unit' => $spec[2], 'baseline' => $spec[3], 'target' => $spec[4]],
+                        'milestone' => ['kind' => 'milestone', 'name' => $spec[1], 'due_on' => $spec[3]],
+                        default => ['kind' => $kind, 'name' => $spec[1], 'weight' => $spec[2]],
+                    });
+                    if ($kind === 'measure') {
+                        foreach ($spec[5] as $daysAgo => $value) {
+                            $service->measure($indicator, $value, today()->subDays($daysAgo)->toDateString());
+                        }
+                    } elseif ($kind === 'milestone' && $spec[2] !== null) {
+                        $service->measure($indicator, 1, today()->subDays($spec[2])->toDateString());
+                    }
                 }
             }
         }
+        Auth::setUser($previous);
 
         // La convention et la toiture sont payées par les recettes ordinaires : leurs lignes du budget portent leur marque.
         foreach (['Convention des jeunes', 'Réparation de la toiture de la sacristie'] as $label) {

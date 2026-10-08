@@ -38,11 +38,6 @@ class Budget extends Model
         return $this->hasMany(BudgetLine::class)->orderBy('type')->orderBy('id');
     }
 
-    public function fundings(): HasMany
-    {
-        return $this->hasMany(BudgetFunding::class);
-    }
-
     public function preparer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'prepared_by');

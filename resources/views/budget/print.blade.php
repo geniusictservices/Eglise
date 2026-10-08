@@ -22,10 +22,20 @@
         <p class="mb-6 text-center text-sm text-sand-700">{{ __('Du :a au :b · version :v', ['a' => $bounds[0]->translatedFormat('j F Y'), 'b' => $bounds[1]->translatedFormat('j F Y'), 'v' => $b->version]) }}@if ($b->reason) · {{ $b->reason }}@endif</p>
 
         <div class="mb-6 grid grid-cols-3 gap-3 text-sm">
-            @foreach ([[__('Recettes prévues'), $income], [__('Dépenses prévues'), $expense], [$income - $expense < 0 ? __('Déficit') : __('Excédent'), $income - $expense]] as [$label, $value])
+            @foreach ([[__('Recettes prévues'), $income], [__('Dépenses prévues'), $expense], [$summary['gap'] > 0 ? __('Déficit') : __('Excédent'), $summary['gap'] > 0 ? -$summary['gap'] : $summary['surplus']]] as [$label, $value])
                 <div class="rounded-xl border border-sand-200 p-3"><p class="text-xs text-sand-700">{{ $label }}</p><p class="text-lg font-semibold tabular text-ink-800">{{ Money::format($value, 'USD') }}</p></div>
             @endforeach
         </div>
+
+        <h2 class="mb-2 text-base font-semibold text-ink-800">{{ __('D’où viendra l’argent') }}</h2>
+        <table class="mb-2 w-full border-collapse text-sm">
+            <tbody>
+                @foreach ($summary['sources'] as $src)
+                    <tr class="border-b border-sand-100"><td class="px-2 py-1.5">{{ $src['label'] }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($src['amount'], 'USD') }}</td><td class="w-16 px-2 py-1.5 text-right tabular text-sand-700">{{ $src['share'] }} %</td></tr>
+                @endforeach
+            </tbody>
+        </table>
+        <p class="mb-2 text-xs text-sand-700">{{ __('Part de chaque source dans les :m de dépenses prévues.', ['m' => Money::format($summary['expense'], 'USD')]) }}@if ($summary['reserved'] > 0) {{ __(':m de collectes de projets leur restent réservés pour les années suivantes.', ['m' => Money::format($summary['reserved'], 'USD')]) }}@endif</p>
 
         @foreach (['income' => __('Recettes prévues'), 'expense' => __('Dépenses prévues')] as $type => $title)
             <h2 class="mb-2 mt-6 text-base font-semibold text-ink-800">{{ $title }}</h2>
@@ -35,7 +45,7 @@
                     @foreach ($groups[$type] as $group => $lines)
                         <tr class="bg-sand-50 font-semibold break-inside-avoid"><td class="px-2 py-1.5" colspan="2">{{ $group }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</td></tr>
                         @foreach ($lines as $l)
-                            <tr class="border-b border-sand-100"><td class="px-2 py-1.5 pl-5">{{ $l->label }}@if ($type === 'expense' && $state['expense'][$l->id]['sources']->isNotEmpty())<span class="block text-xs text-sand-700">{{ __('Financée par') }} {{ $state['expense'][$l->id]['sources']->map(fn ($src) => $src['line']->label.' '.Money::format($src['amount'], 'USD'))->implode(' · ') }}</span>@endif</td><td class="px-2 py-1.5 text-sand-700">{{ $l->category?->name }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($l->amount, 'USD') }}</td></tr>
+                            <tr class="border-b border-sand-100"><td class="px-2 py-1.5 pl-5">{{ $l->label }}</td><td class="px-2 py-1.5 text-sand-700">{{ $l->category?->name }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($l->amount, 'USD') }}</td></tr>
                         @endforeach
                     @endforeach
                     <tr class="font-semibold"><td class="px-2 py-2" colspan="2">{{ __('Total') }}</td><td class="whitespace-nowrap px-2 py-2 text-right tabular">{{ Money::format($b->total($type), 'USD') }}</td></tr>

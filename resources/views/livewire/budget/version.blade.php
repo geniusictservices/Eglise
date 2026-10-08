@@ -1,4 +1,4 @@
-@php use App\Support\Money; use App\Models\Budget; $b = $budget; $income = $b->total('income'); $expense = $b->total('expense'); $solde = $income - $expense; @endphp
+@php use App\Support\Money; use App\Models\Budget; $b = $budget; $income = $b->total('income'); $expense = $b->total('expense'); $solde = $summary['gap'] > 0 ? -$summary['gap'] : $summary['surplus']; @endphp
 <div>
     <a href="{{ route('budget.index', ['exercice' => $b->fiscal_year]) }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Budget') }}</a>
 
@@ -10,9 +10,8 @@
                 <div class="min-w-0"><p class="text-xs text-ink-100">{{ $label }}</p><p class="text-base font-semibold tabular text-white sm:text-2xl">{{ Money::format($value, 'USD') }}</p></div>
             @endforeach
         </div>
-        @php $reserved = $b->lines->where('type', 'income')->whereNotNull('project_id')->sum(fn ($l) => max(0, $state['income'][$l->id]['free'])); @endphp
-        @if ($reserved > 0.004)
-            <p class="mt-2 text-xs text-ink-100">{{ __('Dont :m réservés aux projets : leur argent non dépensé cette année passe sur l’année suivante.', ['m' => Money::format($reserved, 'USD')]) }}</p>
+        @if ($summary['reserved'] > 0.004)
+            <p class="mt-2 text-xs text-ink-100">{{ __(':m de recettes des projets ne sont pas comptés dans l’excédent : ils leur restent réservés pour les années suivantes.', ['m' => Money::format($summary['reserved'], 'USD')]) }}</p>
         @endif
         @if ($adopted)
             <p class="mt-2 text-xs text-ink-100">{{ __('Budget en vigueur (version :v) : :i de recettes, :e de dépenses.', ['v' => $adopted->version, 'i' => Money::format($adopted->total('income'), 'USD'), 'e' => Money::format($adopted->total('expense'), 'USD')]) }}</p>
@@ -22,7 +21,6 @@
                 <button type="button" wire:click="importProposals" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="download" class="size-4" /> {{ __('Reprendre les propositions') }}</button>
                 <button type="button" wire:click="importPayroll" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="briefcase" class="size-4" /> {{ __('Reprendre la masse salariale') }}</button>
                 <button type="button" wire:click="importProjects" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="target" class="size-4" /> {{ __('Reprendre les projets') }}</button>
-                <button type="button" wire:click="autoFund" class="btn !min-h-0 bg-ochre-500 !py-2 text-on-accent hover:bg-ochre-400"><x-icon name="git-merge" class="size-4" /> {{ __('Répartir les recettes') }}</button>
             @endif
             @if ($b->status === 'adopted' || $b->status === 'superseded')
                 <a href="{{ route('budget.print', $b) }}" target="_blank" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="printer" class="size-4" /> {{ __('Imprimer ou PDF') }}</a>
@@ -30,18 +28,28 @@
         </div>
     </section>
 
-    @if ($solde < 0)
-        <p class="mb-4 rounded-2xl border border-terra-100 bg-terra-50 p-4 text-sm font-semibold text-terra-700"><x-icon name="triangle-alert" class="mr-1 inline size-4" /> {{ __('Les dépenses prévues dépassent les recettes de :m : il faut dire d’où viendra l’argent, ou réduire des besoins.', ['m' => Money::format(-$solde, 'USD')]) }}</p>
-    @endif
-    @if ($state['unfunded'] > 0)
-        <div class="mb-4 rounded-2xl border border-ochre-300 bg-ochre-50 p-4 text-sm text-ink-800">
-            <p class="font-semibold"><x-icon name="unlink" class="mr-1 inline size-4 text-ochre-600" /> {{ trans_choice(':count dépense prévue n’a pas encore de financement complet (il manque :m).|:count dépenses prévues n’ont pas encore de financement complet (il manque :m).', $state['unfunded'], ['m' => Money::format($state['missing'], 'USD')]) }}</p>
-            <p class="mt-1">{{ __('Chaque dépense prévue dit quelles recettes prévues la paient : dîmes, offrandes, promesses, collecte d’un projet… Le budget ne peut pas être présenté avant.') }}</p>
-            @if ($canArbitrate)<button type="button" wire:click="autoFund" class="btn-secondary mt-3 !min-h-0 !py-1.5 text-sm"><x-icon name="git-merge" class="size-4" /> {{ __('Répartir automatiquement') }}</button>@endif
-        </div>
-    @elseif ($b->lines->where('type', 'expense')->isNotEmpty())
-        <p class="mb-4 rounded-2xl border border-leaf-100 bg-leaf-50 p-3 text-sm text-leaf-600"><x-icon name="link" class="mr-1 inline size-4" /> {{ __('Chaque dépense prévue est financée par des recettes prévues.') }}</p>
-    @endif
+    {{-- D'où viendra l'argent : la part de chaque source dans le total des dépenses prévues. --}}
+    <section class="card mb-5 p-5 sm:p-6">
+        <h2 class="mb-1 text-lg">{{ __('D’où viendra l’argent') }}</h2>
+        <p class="mb-3 text-sm text-sand-700">{{ __('Les :m de dépenses prévues seront couverts par :', ['m' => Money::format($summary['expense'], 'USD')]) }}</p>
+        <ul class="space-y-2.5">
+            @forelse ($summary['sources'] as $src)
+                <li>
+                    <div class="flex items-baseline gap-2 text-sm"><span class="min-w-0 flex-1 font-semibold text-ink-800">{{ $src['label'] }}</span><span class="tabular">{{ Money::format($src['amount'], 'USD') }}</span><span class="w-12 text-right text-xs font-semibold tabular text-sand-700">{{ $src['share'] }} %</span></div>
+                    <div class="mt-1 h-2 overflow-hidden rounded-full bg-sand-100"><div class="h-full rounded-full bg-leaf-500" style="width: {{ min(100, $src['share']) }}%"></div></div>
+                    @if ($src['lines']->count() > 1 || $src['lines']->first() !== $src['label'])<p class="mt-0.5 text-xs text-sand-700">{{ $src['lines']->implode(' · ') }}</p>@endif
+                </li>
+            @empty
+                <li class="text-sm text-sand-700">{{ __('Aucune recette prévue pour le moment.') }}</li>
+            @endforelse
+        </ul>
+        @if ($summary['gap'] > 0)
+            <p class="mt-4 rounded-xl border border-terra-100 bg-terra-50 p-3 text-sm font-semibold text-terra-700"><x-icon name="triangle-alert" class="mr-1 inline size-4" /> {{ __('Il manque :m : dites d’où viendra cet argent (une recette prévue de plus), ou réduisez des dépenses. Le budget ne peut pas être présenté avant.', ['m' => Money::format($summary['gap'], 'USD')]) }}</p>
+        @elseif ($summary['expense'] > 0)
+            <p class="mt-4 text-sm font-semibold text-leaf-600"><x-icon name="badge-check" class="mr-1 inline size-4" /> {{ __('Les dépenses prévues sont couvertes.') }}@if ($summary['surplus'] > 0) {{ __('Il reste :m de marge.', ['m' => Money::format($summary['surplus'], 'USD')]) }}@endif</p>
+        @endif
+    </section>
+
     @if ($b->return_note && $b->status === 'draft')
         <p class="mb-4 rounded-2xl border border-terra-100 bg-terra-50 p-4 text-sm text-terra-700"><span class="font-semibold">{{ __('Renvoyé par le pasteur :') }}</span> {{ $b->return_note }}</p>
     @endif
@@ -83,20 +91,20 @@
                 <h2 class="flex-1 text-lg">{{ __('Projets de l’exercice') }}</h2>
                 @if ($canArbitrate)<button type="button" wire:click="importProjects" class="btn-secondary !min-h-0 !py-1.5 text-sm"><x-icon name="download" class="size-4" /> {{ __('Reprendre les projets') }}</button>@endif
             </div>
-            <p class="mb-4 text-sm text-sand-700">{{ __('La tranche de l’année de chaque projet : ce qu’il prévoit de collecter, ce qui lui reste des années précédentes, ce qu’il prévoit de dépenser, et ce que les recettes ordinaires lui apportent.') }}</p>
+            <p class="mb-4 text-sm text-sand-700">{{ __('La tranche de l’année de chaque projet : ce qu’il prévoit de collecter, ce qui lui reste des années précédentes, ce qu’il prévoit de dépenser. Ce qui lui manque est pris sur les recettes ordinaires ; ce qu’il collecte en plus lui reste réservé.') }}</p>
             <ul class="space-y-3">
-                @forelse ($projectRows as $row)
+                @forelse ($summary['projects'] as $row)
                     @php $pr = $row['project']; @endphp
                     <li wire:key="bp-{{ $pr->id }}" class="rounded-xl border border-sand-200 p-3">
                         <div class="flex flex-wrap items-baseline gap-x-3">
                             <a href="{{ route('projects.show', $pr) }}" class="min-w-0 flex-1 font-semibold text-ink-800 hover:underline">{{ $pr->name }}</a>
-                            @if ($row['missing'] > 0.004)<span class="badge bg-ochre-100 text-ochre-700">{{ __('Il manque :m', ['m' => Money::format($row['missing'], 'USD')]) }}</span>@else<span class="badge bg-leaf-50 text-leaf-600">{{ __('Financé') }}</span>@endif
+                            @if ($row['ordinary'] > 0)<span class="badge bg-ochre-100 text-ochre-700">{{ __(':m pris sur les recettes ordinaires', ['m' => Money::format($row['ordinary'], 'USD')]) }}</span>@elseif ($row['expense'] > 0)<span class="badge bg-leaf-50 text-leaf-600">{{ __('Payé par son argent') }}</span>@endif
                         </div>
                         <dl class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm sm:grid-cols-4">
                             <div><dt class="text-xs text-sand-700">{{ __('Collecte prévue') }}</dt><dd class="tabular text-leaf-600">{{ Money::format($row['income'], 'USD') }}</dd></div>
                             <div><dt class="text-xs text-sand-700">{{ __('Solde reporté') }}</dt><dd class="tabular">{{ Money::format($row['carried'], 'USD') }}</dd></div>
                             <div><dt class="text-xs text-sand-700">{{ __('Dépenses prévues') }}</dt><dd class="tabular text-terra-600">{{ Money::format($row['expense'], 'USD') }}</dd></div>
-                            <div><dt class="text-xs text-sand-700">{{ __('Recettes ordinaires') }}</dt><dd class="tabular">{{ Money::format($row['ordinary'], 'USD') }}</dd></div>
+                            <div><dt class="text-xs text-sand-700">{{ __('Reste réservé au projet') }}</dt><dd class="tabular">{{ Money::format($row['reserved'], 'USD') }}</dd></div>
                         </dl>
                     </li>
                 @empty
@@ -122,17 +130,6 @@
                             <span class="min-w-0 flex-1">
                                 <span class="block text-sm font-semibold text-ink-800">{{ $l->label }}</span>
                                 <span class="block text-xs text-sand-700">@if ($l->project)<span class="font-semibold text-ochre-700">{{ $l->source ? __(\App\Models\BudgetLine::SOURCES[$l->source]) : __('Projet') }}</span> · @endif{{ $l->category?->name }}@if ($l->proposed_amount !== null && (float) $l->proposed_amount !== (float) $l->amount) · {{ __('proposé : :m', ['m' => Money::format($l->proposed_amount, 'USD')]) }}@endif @if ($l->note) · {{ $l->note }}@endif</span>
-                                @if ($type === 'expense')
-                                    @php $f = $state['expense'][$l->id]; @endphp
-                                    <span class="mt-0.5 block text-xs">
-                                        @if ($f['sources']->isNotEmpty())<span class="text-ink-700">{{ __('Financée par') }} {{ $f['sources']->map(fn ($src) => $src['line']->label.' '.Money::format($src['amount'], 'USD'))->implode(' · ') }}</span>@endif
-                                        @if ($f['missing'] > 0.004)<span class="font-semibold text-terra-600">@if ($f['sources']->isNotEmpty()) · @endif{{ __('Sans financement : :m', ['m' => Money::format($f['missing'], 'USD')]) }}</span>@endif
-                                        @if ($canArbitrate)<button type="button" wire:click="editFunding({{ $l->id }})" class="ml-1 font-semibold text-ink-700 underline">{{ __('Financement') }}</button>@endif
-                                    </span>
-                                @else
-                                    @php $f = $state['income'][$l->id]; @endphp
-                                    <span class="mt-0.5 block text-xs text-ink-700">{{ __('Finance :a des dépenses · libre :f', ['a' => Money::format($f['allocated'], 'USD'), 'f' => Money::format($f['free'], 'USD')]) }}</span>
-                                @endif
                             </span>
                             @if ($canArbitrate)
                                 <input wire:model.blur="amounts.{{ $l->id }}" type="number" step="0.01" min="0" class="input !w-32 !py-1.5 text-right tabular" aria-label="{{ __('Montant arrêté') }}">
@@ -151,36 +148,6 @@
     </section>
     @endif
 
-    <x-modal name="funding" :title="__('Financement de la dépense')">
-        @if ($fundingLine)
-            @php $taken = collect($funding)->sum(fn ($a) => (float) $a); $rest = (float) $fundingLine->amount - $taken; @endphp
-            <p class="text-sm font-semibold text-ink-800">{{ $fundingLine->label }} · <span class="tabular text-terra-600">{{ Money::format($fundingLine->amount, 'USD') }}</span></p>
-            <p class="mb-3 text-xs text-sand-700">{{ __('Dites quelle part de chaque recette prévue paie cette dépense. Une recette ne finance pas plus que ce qu’elle prévoit.') }}@if ($fundingLine->project_id) {{ __('L’argent du projet passe en premier.') }}@endif</p>
-            <form wire:submit="saveFunding" class="space-y-2">
-                <ul class="max-h-[50vh] divide-y divide-sand-100 overflow-y-auto rounded-xl border border-sand-200">
-                    @forelse ($fundingSources as $src)
-                        @php $own = (float) ($b->fundings->where('expense_line_id', $fundingLine->id)->firstWhere('income_line_id', $src->id)?->amount ?? 0); $free = $state['income'][$src->id]['free'] + $own; @endphp
-                        <li wire:key="fs-{{ $src->id }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
-                            <span class="min-w-0 flex-1">
-                                <span class="block text-sm font-semibold text-ink-800">{{ $src->label }}</span>
-                                <span class="block text-xs text-sand-700">{{ __('Prévu :p · libre :f', ['p' => Money::format($src->amount, 'USD'), 'f' => Money::format(max(0, $free), 'USD')]) }}@if ($src->project) · <span class="text-ochre-700">{{ __('argent du projet') }}</span>@endif</span>
-                            </span>
-                            <input wire:model.live.debounce.400ms="funding.{{ $src->id }}" type="number" step="0.01" min="0" class="input !w-28 !py-1.5 text-right tabular" aria-label="{{ __('Part de :r', ['r' => $src->label]) }}">
-                            <button type="button" wire:click="fundFrom({{ $src->id }})" class="rounded-lg px-2 py-1 text-xs font-semibold text-ink-700 hover:bg-sand-100">{{ __('Tout') }}</button>
-                        </li>
-                    @empty
-                        <li class="px-3 py-2 text-sm text-sand-700">{{ __('Aucune recette prévue ne peut financer cette dépense : ajoutez d’abord les recettes prévues.') }}</li>
-                    @endforelse
-                </ul>
-                <p @class(['text-sm font-semibold', 'text-leaf-600' => abs($rest) < 0.005, 'text-terra-600' => abs($rest) >= 0.005])>
-                    {{ $rest >= 0.005 ? __('Reste à financer : :m', ['m' => Money::format($rest, 'USD')]) : ($rest <= -0.005 ? __('Trop financé de :m', ['m' => Money::format(-$rest, 'USD')]) : __('Dépense entièrement financée.')) }}
-                </p>
-                @error('funding') <p class="error">{{ $message }}</p> @enderror
-                @error('funding.*') <p class="error">{{ $message }}</p> @enderror
-                <div class="flex justify-end gap-2 pt-1"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'funding' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Enregistrer') }}</button></div>
-            </form>
-        @endif
-    </x-modal>
 
     <x-modal name="line" :title="($line['type'] ?? 'expense') === 'expense' ? ($lineId ? __('Modifier la dépense prévue') : __('Nouvelle dépense prévue')) : ($lineId ? __('Modifier la recette prévue') : __('Nouvelle recette prévue'))">
         <form wire:submit="saveLine" class="space-y-4">

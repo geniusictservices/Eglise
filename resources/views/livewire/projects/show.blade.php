@@ -4,7 +4,7 @@
 
     <section class="wax wax-veil wax-veil-strong mb-5 overflow-hidden rounded-[22px] p-5 text-white sm:p-6">
         <div class="flex flex-wrap items-center gap-5">
-            <span class="ring-progress size-20" style="--v: {{ $p->progress }}"><span class="size-14 text-sm">{{ $p->progress }} %</span></span>
+            <span class="ring-progress size-20" style="--v: {{ $progress['percent'] ?? 0 }}"><span class="size-14 text-sm">{{ $progress['percent'] === null ? '—' : $progress['percent'].' %' }}</span></span>
             <div class="min-w-0 flex-1">
                 <p class="text-sm text-ochre-300">{{ collect([__(Project::KINDS[$p->kind] ?? ''), $p->span(), $p->theme, $p->department?->name])->filter()->implode(' · ') }}</p>
                 <h1 class="text-2xl font-semibold text-white">{{ $p->name }}</h1>
@@ -13,10 +13,11 @@
                     @if ($p->ends_on) · {{ __('fin prévue le :d', ['d' => $p->ends_on->translatedFormat('j M Y')]) }}@endif
                 </p>
                 @if ($p->account)<p class="mt-1 text-sm text-ink-100"><x-icon name="wallet" class="mr-1 inline size-4" /> {{ __('Compte du projet : :a', ['a' => $p->account->name]) }}</p>@endif
+                <p class="mt-1 text-xs text-ink-100">{{ $progress['percent'] === null ? __('Pas encore d’indicateur : l’avancement se calcule à partir des indicateurs du projet.') : trans_choice('Avancement calculé sur :count indicateur.|Avancement calculé sur :count indicateurs.', $progress['rows']->count()) }}</p>
             </div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
-            @if ($canUpdate)<button type="button" wire:click="editProgress" class="btn-accent !min-h-0 !py-2"><x-icon name="refresh-cw" class="size-4" /> {{ __('Mettre à jour l’avancement') }}</button>@endif
+            @if ($canUpdate)<button type="button" wire:click="$set('tab', 'avancement')" class="btn-accent !min-h-0 !py-2"><x-icon name="target" class="size-4" /> {{ $progress['percent'] === null ? __('Définir les indicateurs') : __('Relever une mesure') }}</button>@endif
             @if ($canPledge)<a href="{{ route('finances.pledges.create', ['projet' => $p->id]) }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="handshake" class="size-4" /> {{ __('Nouvelle promesse') }}</a>@endif
             @if ($canRecord)<button type="button" wire:click="openGift" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="hand-coins" class="size-4" /> {{ __('Recevoir un don') }}</button>@endif
             @if ($canRequest)<a href="{{ route('finances.expenses.create', ['projet' => $p->id]) }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="upload" class="size-4" /> {{ __('Demander une dépense') }}</a>@endif
@@ -35,7 +36,7 @@
     @endif
 
     <div class="mb-5 flex gap-1 overflow-x-auto rounded-2xl border border-sand-200 bg-white p-1" role="tablist">
-        @foreach (['annees' => __('Années'), 'promesses' => __('Promesses'), 'argent' => __('Recettes et dépenses'), 'avancement' => __('Avancement')] as $key => $label)
+        @foreach (['annees' => __('Années'), 'promesses' => __('Promesses'), 'argent' => __('Recettes et dépenses'), 'avancement' => __('Indicateurs')] as $key => $label)
             <button type="button" role="tab" wire:click="$set('tab', '{{ $key }}')" aria-selected="{{ $tab === $key ? 'true' : 'false' }}" @class(['flex-1 whitespace-nowrap rounded-xl px-4 py-2 text-sm font-semibold', 'bg-ink-700 text-white' => $tab === $key, 'text-ink-600 hover:bg-sand-50' => $tab !== $key])>{{ $label }}</button>
         @endforeach
     </div>
@@ -135,13 +136,58 @@
             </section>
         @endif
     @else
-        <section class="card p-5 sm:p-6">
-            <h2 class="mb-3 text-lg">{{ __('Avancement') }}</h2>
+        <section class="card mb-5 p-5 sm:p-6">
+            <div class="mb-1 flex flex-wrap items-center gap-3">
+                <h2 class="flex-1 text-lg">{{ __('Indicateurs') }}</h2>
+                @if ($canUpdate)<button type="button" wire:click="editIndicator" class="btn-secondary !min-h-0 !py-1.5 text-sm"><x-icon name="plus" class="size-4" /> {{ __('Ajouter un indicateur') }}</button>@endif
+            </div>
+            <p class="mb-4 text-sm text-sand-700">{{ __('Ce sont eux qui disent où en est le projet : un chiffre à atteindre, une étape à franchir, l’argent collecté ou dépensé. L’avancement est leur moyenne, selon le poids de chacun.') }}</p>
             <ul class="space-y-3">
-                @forelse ($p->updates as $u)
-                    <li class="flex gap-3 text-sm"><span class="w-12 shrink-0 font-semibold tabular text-ink-800">{{ $u->progress }} %</span><span class="min-w-0 flex-1"><span class="block text-sand-700">{{ $u->created_at->translatedFormat('j M Y') }}@if ($u->user) · {{ $u->user->name }}@endif</span>@if ($u->note)<span class="block text-ink-800">{{ $u->note }}</span>@endif</span></li>
+                @forelse ($progress['rows'] as $row)
+                    @php $ind = $row['indicator']; @endphp
+                    <li wire:key="ind-{{ $ind->id }}" class="rounded-xl border border-sand-200 p-3">
+                        <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                            <span class="min-w-0 flex-1">
+                                <span class="block font-semibold text-ink-800">{{ $ind->name }}</span>
+                                <span class="block text-xs text-sand-700">{{ __(\App\Models\ProjectIndicator::KINDS[$ind->kind]) }}@if ($ind->weight > 1) · {{ __('poids :w', ['w' => $ind->weight]) }}@endif @if ($ind->due_on) · {{ __('pour le :d', ['d' => $ind->due_on->translatedFormat('j M Y')]) }}@endif @if ($ind->isAutomatic()) · {{ __('calculé tout seul') }}@endif</span>
+                            </span>
+                            <span @class(['text-sm font-semibold tabular', 'text-leaf-600' => $row['percent'] >= 100, 'text-terra-600' => $row['late'], 'text-ink-800' => $row['percent'] < 100 && ! $row['late']])>{{ $row['percent'] }} %</span>
+                        </div>
+                        <div class="mt-2 h-2 overflow-hidden rounded-full bg-sand-100"><div @class(['h-full rounded-full', 'bg-leaf-500' => $row['percent'] >= 100, 'bg-terra-500' => $row['late'], 'bg-ochre-500' => $row['percent'] < 100 && ! $row['late']]) style="width: {{ $row['percent'] }}%"></div></div>
+                        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                            <span class="min-w-0 basis-full text-ink-800 sm:basis-auto sm:flex-1">
+                                @if ($ind->kind === 'milestone')
+                                    {{ $ind->reached_on ? __('Franchie le :d', ['d' => $ind->reached_on->translatedFormat('j M Y')]) : ($row['late'] ? __('En retard') : __('Pas encore franchie')) }}
+                                @elseif ($ind->isAutomatic())
+                                    {{ Money::format($row['value'], 'USD') }} <span class="text-sand-700">/ {{ $row['target'] ? Money::format($row['target'], 'USD') : '—' }}</span>
+                                @else
+                                    {{ $ind->format($row['value']) }} <span class="text-sand-700">/ {{ $ind->format($row['target']) }}@if ((float) $ind->baseline != 0) · {{ __('départ : :v', ['v' => $ind->format($ind->baseline)]) }}@endif</span>
+                                @endif
+                            </span>
+                            @if ($canUpdate)
+                                <span class="flex-1 sm:hidden"></span>
+                                @unless ($ind->isAutomatic())<button type="button" wire:click="openMeasure({{ $ind->id }})" class="btn-secondary !min-h-0 !py-1 text-xs">{{ $ind->kind === 'milestone' ? ($ind->reached_on ? __('Annuler l’étape') : __('Marquer franchie')) : __('Nouvelle mesure') }}</button>@endunless
+                                <button type="button" wire:click="editIndicator({{ $ind->id }})" class="rounded-lg p-1.5 text-sand-500 hover:bg-sand-100" aria-label="{{ __('Modifier') }}"><x-icon name="pencil" class="size-4" /></button>
+                                <button type="button" wire:click="deleteIndicator({{ $ind->id }})" wire:confirm="{{ __('Retirer cet indicateur et ses mesures ?') }}" class="rounded-lg p-1.5 text-sand-500 hover:bg-terra-50 hover:text-terra-600" aria-label="{{ __('Retirer') }}"><x-icon name="trash-2" class="size-4" /></button>
+                            @endif
+                        </div>
+                    </li>
                 @empty
-                    <li class="text-sm text-sand-700">{{ __('Aucun point d’avancement pour le moment.') }}</li>
+                    <li class="rounded-xl border border-dashed border-sand-300 p-4 text-sm text-sand-700">{{ __('Aucun indicateur. Exemples : « Jeunes formés : 30 », « Terrain acheté » (étape), « Argent collecté » (calculé tout seul).') }}</li>
+                @endforelse
+            </ul>
+        </section>
+
+        <section class="card p-5 sm:p-6">
+            <h2 class="mb-3 text-lg">{{ __('Mesures relevées') }}</h2>
+            <ul class="space-y-3">
+                @forelse ($history as $v)
+                    <li class="flex gap-3 text-sm">
+                        <span class="w-24 shrink-0 font-semibold tabular text-ink-800">{{ $v->indicator->kind === 'milestone' ? ((float) $v->value > 0 ? __('Franchie') : __('Annulée')) : $v->indicator->format($v->value) }}</span>
+                        <span class="min-w-0 flex-1"><span class="block text-ink-800">{{ $v->indicator->name }}</span><span class="block text-xs text-sand-700">{{ $v->measured_on->translatedFormat('j M Y') }}@if ($v->user) · {{ $v->user->name }}@endif</span>@if ($v->note)<span class="block text-ink-800">{{ $v->note }}</span>@endif</span>
+                    </li>
+                @empty
+                    <li class="text-sm text-sand-700">{{ __('Aucune mesure pour le moment.') }}</li>
                 @endforelse
             </ul>
         </section>
@@ -149,11 +195,43 @@
 
     @include('livewire.projects.partials.form')
 
-    <x-modal name="progress" :title="__('Avancement du projet')">
-        <form wire:submit="saveProgress" class="space-y-4">
-            <div><label for="pr-val" class="label">{{ __('Avancement : :p %', ['p' => $progress]) }}</label><input wire:model.live="progress" id="pr-val" type="range" min="0" max="100" step="5" class="w-full"></div>
-            <div><label for="pr-note" class="label">{{ __('Où en est-on ?') }}</label><textarea wire:model="progressNote" id="pr-note" rows="3" class="input" placeholder="{{ __('Devis reçus, fondations coulées…') }}"></textarea></div>
-            <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'progress' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Enregistrer') }}</button></div>
+    <x-modal name="indicator" :title="$indicatorId ? __('Modifier l’indicateur') : __('Nouvel indicateur')">
+        <form wire:submit="saveIndicator" class="space-y-4">
+            <div><label for="in-kind" class="label">{{ __('Genre') }}</label><select wire:model.live="indicator.kind" id="in-kind" class="input">@foreach (\App\Models\ProjectIndicator::KINDS as $k => $label)<option value="{{ $k }}">{{ __($label) }}</option>@endforeach</select>
+                <p class="mt-1 text-xs text-sand-700">{{ match ($indicator['kind'] ?? 'measure') {
+                    'milestone' => __('Une étape est franchie ou ne l’est pas : terrain acheté, plans approuvés, salle réservée.'),
+                    'collected' => __('L’argent reçu pour le projet (versements, dons, dons en nature) par rapport à l’objectif. Calculé tout seul.'),
+                    'spent' => __('Ce qui a été dépensé par rapport aux dépenses prévues : utile pour des travaux. Calculé tout seul.'),
+                    default => __('Un chiffre qu’on relève de temps en temps : jeunes formés, participants, mètres de mur, baptisés.'),
+                } }}</p></div>
+            <div><label for="in-name" class="label">{{ __('Indicateur') }}</label><input wire:model="indicator.name" id="in-name" class="input" placeholder="{{ ($indicator['kind'] ?? '') === 'milestone' ? __('Terrain acheté') : __('Jeunes formés') }}">@error('indicator.name') <p class="error">{{ $message }}</p> @enderror</div>
+            @if (($indicator['kind'] ?? '') === 'measure')
+                <div class="grid grid-cols-3 gap-3">
+                    <div><label for="in-base" class="label">{{ __('Départ') }}</label><input wire:model="indicator.baseline" id="in-base" type="number" step="any" class="input tabular"></div>
+                    <div><label for="in-target" class="label">{{ __('Cible') }}</label><input wire:model="indicator.target" id="in-target" type="number" step="any" class="input tabular">@error('indicator.target') <p class="error">{{ $message }}</p> @enderror</div>
+                    <div><label for="in-unit" class="label">{{ __('Unité') }}</label><input wire:model="indicator.unit" id="in-unit" class="input" placeholder="{{ __('jeunes') }}"></div>
+                </div>
+            @elseif (in_array($indicator['kind'] ?? '', ['collected', 'spent'], true))
+                <div><label for="in-target2" class="label">{{ __('Somme visée en dollars (facultatif)') }}</label><input wire:model="indicator.target" id="in-target2" type="number" step="any" class="input tabular" placeholder="{{ ($indicator['kind'] ?? '') === 'collected' ? __('L’objectif du projet') : __('Les dépenses prévues du projet') }}">@error('indicator.target') <p class="error">{{ $message }}</p> @enderror</div>
+            @endif
+            <div class="grid grid-cols-2 gap-3">
+                <div><label for="in-weight" class="label">{{ __('Poids') }}</label><select wire:model="indicator.weight" id="in-weight" class="input">@foreach (range(1, 5) as $w)<option value="{{ $w }}">{{ $w === 1 ? __('1 (normal)') : $w }}</option>@endforeach</select></div>
+                <div><label for="in-due" class="label">{{ __('Pour le (facultatif)') }}</label><input wire:model="indicator.due_on" id="in-due" type="date" class="input"></div>
+            </div>
+            <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'indicator' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Enregistrer') }}</button></div>
+        </form>
+    </x-modal>
+
+    <x-modal name="measure" :title="$measured?->name ?? __('Mesure')">
+        <form wire:submit="saveMeasure" class="space-y-4">
+            @if ($measured?->kind === 'milestone')
+                <p class="text-sm text-ink-800">{{ ($measure['value'] ?? '1') === '1' ? __('L’étape est franchie à la date ci-dessous.') : __('L’étape n’est finalement pas franchie.') }}</p>
+            @else
+                <div><label for="ms-val" class="label">{{ __('Valeur relevée') }}@if ($measured?->target !== null) <span class="font-normal text-sand-700">({{ __('cible : :v', ['v' => $measured->format($measured->target)]) }})</span>@endif</label><input wire:model="measure.value" id="ms-val" type="number" step="any" class="input tabular">@error('measure.value') <p class="error">{{ $message }}</p> @enderror</div>
+            @endif
+            <div><label for="ms-date" class="label">{{ __('Date') }}</label><input wire:model="measure.measured_on" id="ms-date" type="date" class="input">@error('measure.measured_on') <p class="error">{{ $message }}</p> @enderror</div>
+            <div><label for="ms-note" class="label">{{ __('Note (facultatif)') }}</label><textarea wire:model="measure.note" id="ms-note" rows="2" class="input" placeholder="{{ __('Devis reçus, fondations coulées…') }}"></textarea></div>
+            <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'measure' })">{{ __('Annuler') }}</button><button class="btn-primary">{{ __('Enregistrer') }}</button></div>
         </form>
     </x-modal>
 

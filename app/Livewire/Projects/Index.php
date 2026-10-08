@@ -72,14 +72,18 @@ class Index extends Component
     public function render(Projects $projects, Ledger $ledger)
     {
         $organization = $this->organization();
-        $list = Project::with(['years', 'department', 'responsible', 'account'])
+        $list = Project::with(['years', 'department', 'responsible', 'account', 'indicators'])
             ->when($this->department !== '', fn ($q) => $q->where('department_id', $this->department))
             ->when($this->state === 'ouverts', fn ($q) => $q->whereIn('status', ['planned', 'ongoing']))
             ->when($this->state === 'annee', fn ($q) => $q->where(fn ($q) => $q->whereHas('years', fn ($q) => $q->where('fiscal_year', $this->year))
                 ->orWhere(fn ($q) => $q->whereIn('status', ['planned', 'ongoing'])->whereDoesntHave('years'))))
             ->when($this->state === 'finis', fn ($q) => $q->whereIn('status', ['done', 'cancelled']))
             ->orderByRaw("FIELD(status, 'ongoing', 'planned', 'done', 'cancelled')")->orderBy('theme')->orderBy('name')->get()
-            ->map(fn (Project $p) => ['project' => $p, 'totals' => $projects->totals($p)]);
+            ->map(function (Project $p) use ($projects) {
+                $totals = $projects->totals($p);
+
+                return ['project' => $p, 'totals' => $totals, 'progress' => $projects->progressOf($p, $totals)['percent']];
+            });
         $open = $list->filter(fn ($r) => $r['project']->isActive());
         $current = FiscalYear::current($organization);
 
@@ -87,7 +91,8 @@ class Index extends Component
             'rows' => $list,
             'themes' => $list->groupBy(fn ($r) => $r['project']->theme ?: ''),
             'currentVision' => $this->currentVision(),
-            'overall' => $open->isEmpty() ? 0 : (int) round($open->avg(fn ($r) => $r['project']->progress)),
+            // L'avancement d'ensemble : la moyenne des projets ouverts qui ont des indicateurs.
+            'overall' => (int) round($open->whereNotNull('progress')->avg('progress') ?? 0),
             'late' => $open->filter(fn ($r) => $r['project']->isLate())->count(),
             'yearLabel' => FiscalYear::label($organization, $this->year),
             'years' => collect(range($current + 2, $current - 3))->mapWithKeys(fn ($y) => [$y => FiscalYear::label($organization, $y)])->all(),

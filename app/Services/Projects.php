@@ -2,17 +2,19 @@
 
 namespace App\Services;
 
-use App\Models\BudgetFunding;
+use App\Models\BudgetLine;
 use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Organization;
 use App\Models\Project;
-use App\Models\ProjectUpdate;
+use App\Models\ProjectIndicator;
+use App\Models\ProjectIndicatorValue;
 use App\Models\ProjectYear;
 use App\Support\FiscalYear;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -140,9 +142,6 @@ class Projects
                 'goal_amount', 'goal_currency', 'starts_on', 'ends_on', 'cash_account_id', 'status'])
                 ->map(fn ($v) => is_string($v) ? (trim($v) === '' ? null : trim($v)) : $v)->all();
             $values['goal_currency'] ??= 'USD';
-            if (($values['status'] ?? null) === 'done') {
-                $values['progress'] = 100;
-            }
 
             $project ??= new Project(['organization_id' => $organization->id]);
             $project->fill($values);
@@ -172,20 +171,124 @@ class Projects
         });
     }
 
-    /** Un point d'avancement ; à 100 %, le projet est terminé. */
-    public function progress(Project $project, int $progress, ?string $note = null): void
+    /**
+     * L'avancement d'un projet, calculé par ses indicateurs : chaque indicateur donne un pourcentage
+     * (chiffre atteint par rapport à sa cible, étape franchie ou non, argent collecté ou dépensé),
+     * et l'avancement est leur moyenne, pondérée par le poids de chacun. Sans indicateur, pas d'avancement.
+     * L'avancement enregistré et l'état du projet suivent (en cours dès qu'il bouge, terminé à 100 %).
+     *
+     * @param  array|null  $totals  les chiffres du projet, s'ils sont déjà calculés
+     * @return array{percent: ?int, rows: Collection<int, array{indicator: ProjectIndicator, value: ?float, target: ?float, percent: int, late: bool}>}
+     */
+    public function progressOf(Project $project, ?array $totals = null, bool $sync = true): array
     {
-        if ($progress < 0 || $progress > 100) {
-            throw new InvalidArgumentException(__('L’avancement va de 0 à 100 %.'));
+        $indicators = $project->relationLoaded('indicators') ? $project->indicators : $project->indicators()->get();
+        if ($indicators->isEmpty()) {
+            return ['percent' => null, 'rows' => collect()];
         }
-        DB::transaction(function () use ($project, $progress, $note) {
-            ProjectUpdate::create(['project_id' => $project->id, 'user_id' => auth()->id(), 'progress' => $progress, 'note' => trim((string) $note) ?: null]);
-            $project->update(['progress' => $progress, 'status' => match (true) {
-                $project->status === 'cancelled' => 'cancelled',
-                $progress >= 100 => 'done',
-                $progress > 0 => 'ongoing',
-                default => $project->status,
-            }]);
+        if ($indicators->contains(fn (ProjectIndicator $i) => $i->isAutomatic())) {
+            $totals ??= $this->totals($project);
+        }
+
+        $rows = $indicators->map(function (ProjectIndicator $i) use ($project, $totals) {
+            [$value, $target] = match ($i->kind) {
+                'milestone' => [$i->reached_on ? 1.0 : 0.0, 1.0],
+                'collected' => [$totals['received'] + $totals['in_kind'], $i->target !== null ? (float) $i->target : $totals['goal']],
+                'spent' => [$totals['spent'], $i->target !== null ? (float) $i->target : ((float) $project->years()->sum('expense_planned') ?: null)],
+                default => [$i->current !== null ? (float) $i->current : null, $i->target !== null ? (float) $i->target : null],
+            };
+            $baseline = $i->kind === 'measure' ? (float) $i->baseline : 0.0;
+            $percent = $value === null || ! $target || abs($target - $baseline) < 0.0001 ? 0
+                : (int) max(0, min(100, round(($value - $baseline) / ($target - $baseline) * 100)));
+            $late = $percent < 100 && (($i->due_on && $i->due_on->isPast()));
+
+            return ['indicator' => $i, 'value' => $value, 'target' => $target, 'percent' => $percent, 'late' => $late];
+        });
+        $weights = $rows->sum(fn ($r) => max(1, $r['indicator']->weight));
+        $percent = (int) round($rows->sum(fn ($r) => $r['percent'] * max(1, $r['indicator']->weight)) / $weights);
+
+        if ($sync) {
+            $this->syncProgress($project, $percent);
+        }
+
+        return ['percent' => $percent, 'rows' => $rows];
+    }
+
+    /** L'avancement enregistré suit le calcul ; l'état aussi, sauf pour un projet abandonné. */
+    private function syncProgress(Project $project, int $percent): void
+    {
+        $status = match (true) {
+            $project->status === 'cancelled' => 'cancelled',
+            $percent >= 100 => 'done',
+            $percent > 0 || $project->status === 'done' => 'ongoing',
+            default => $project->status,
+        };
+        if ($project->progress !== $percent || $project->status !== $status) {
+            $project->forceFill(['progress' => $percent, 'status' => $status])->save();
+        }
+    }
+
+    /**
+     * Ajoute ou modifie un indicateur.
+     *
+     * @param  array{name: string, kind: string, unit?: ?string, baseline?: mixed, target?: mixed, weight?: mixed, due_on?: ?string}  $data
+     */
+    public function saveIndicator(Project $project, array $data, ?ProjectIndicator $indicator = null): ProjectIndicator
+    {
+        if (! isset(ProjectIndicator::KINDS[$data['kind'] ?? ''])) {
+            throw new InvalidArgumentException(__('Choisissez le genre d’indicateur.'));
+        }
+        if ($data['kind'] === 'measure' && ! is_numeric($data['target'] ?? null)) {
+            throw new InvalidArgumentException(__('Un chiffre à atteindre a besoin de sa cible.'));
+        }
+        $values = [
+            'name' => trim($data['name']), 'kind' => $data['kind'],
+            'unit' => $data['kind'] === 'measure' ? (trim((string) ($data['unit'] ?? '')) ?: null) : null,
+            'baseline' => $data['kind'] === 'measure' ? (float) ($data['baseline'] ?? 0) : 0,
+            'target' => is_numeric($data['target'] ?? null) && $data['kind'] !== 'milestone' ? (float) $data['target'] : null,
+            'weight' => max(1, min(10, (int) ($data['weight'] ?? 1))),
+            'due_on' => ($data['due_on'] ?? null) ?: null,
+        ];
+        $indicator ??= new ProjectIndicator(['project_id' => $project->id,
+            'position' => (int) ProjectIndicator::where('project_id', $project->id)->max('position') + 1]);
+        $indicator->fill($values)->save();
+        $this->progressOf($project->unsetRelation('indicators'));
+
+        return $indicator;
+    }
+
+    public function deleteIndicator(ProjectIndicator $indicator): void
+    {
+        $project = $indicator->project;
+        $indicator->delete();
+        $this->progressOf($project->unsetRelation('indicators'));
+    }
+
+    /**
+     * Une mesure : le chiffre relevé à une date (jeunes formés, mètres de mur), ou, pour une
+     * étape, franchie (1) ou pas encore (0). L'avancement du projet se recalcule.
+     */
+    public function measure(ProjectIndicator $indicator, float $value, ?string $on = null, ?string $note = null): ProjectIndicatorValue
+    {
+        if ($indicator->isAutomatic()) {
+            throw new InvalidArgumentException(__('Cet indicateur se calcule tout seul, à partir de l’argent du projet.'));
+        }
+        $on = Carbon::parse($on ?? today())->toDateString();
+        if ($on > today()->toDateString()) {
+            throw new InvalidArgumentException(__('Une mesure ne se fait pas dans le futur.'));
+        }
+
+        return DB::transaction(function () use ($indicator, $value, $on, $note) {
+            $record = ProjectIndicatorValue::create(['project_indicator_id' => $indicator->id, 'value' => $indicator->kind === 'milestone' ? ($value > 0 ? 1 : 0) : $value,
+                'measured_on' => $on, 'note' => trim((string) $note) ?: null, 'user_id' => auth()->id()]);
+            // La valeur actuelle est la mesure la plus récente.
+            $latest = $indicator->values()->first();
+            $indicator->update($indicator->kind === 'milestone'
+                ? ['reached_on' => (float) $latest->value > 0 ? $latest->measured_on : null]
+                : ['current' => $latest->value]);
+            $this->progressOf($indicator->project()->firstOrFail());
+
+            return $record;
         });
     }
 
@@ -225,17 +328,19 @@ class Projects
             $byYear->put($year, $current);
         }
 
-        // Ce que le budget adopté de chaque exercice finance pour le projet sur les recettes ordinaires.
-        $budgeted = BudgetFunding::query()
-            ->join('budgets', 'budgets.id', '=', 'budget_fundings.budget_id')
-            ->join('budget_lines as e', 'e.id', '=', 'budget_fundings.expense_line_id')
-            ->join('budget_lines as i', 'i.id', '=', 'budget_fundings.income_line_id')
-            ->where('budgets.status', 'adopted')->where('e.project_id', $project->id)->whereNull('i.project_id')
-            ->groupBy('budgets.fiscal_year')->selectRaw('budgets.fiscal_year as year, sum(budget_fundings.amount) as usd')->pluck('usd', 'year');
-        foreach ($budgeted as $year => $usd) {
-            $current = $byYear->get((int) $year, $empty);
-            $current['budgeted'] += (float) $usd;
-            $byYear->put((int) $year, $current);
+        // Ce que le budget adopté de chaque exercice prend aux recettes ordinaires pour le projet :
+        // ses dépenses prévues de l'année moins ses ressources propres (collecte, solde reporté).
+        $net = BudgetLine::query()->join('budgets', 'budgets.id', '=', 'budget_lines.budget_id')
+            ->where('budgets.status', 'adopted')->where('budget_lines.project_id', $project->id)
+            ->groupBy('budgets.fiscal_year')
+            ->selectRaw("budgets.fiscal_year as year, sum(case when budget_lines.type = 'expense' then budget_lines.amount else -budget_lines.amount end) as net")
+            ->pluck('net', 'year');
+        foreach ($net as $year => $usd) {
+            if ((float) $usd > 0.004) {
+                $current = $byYear->get((int) $year, $empty);
+                $current['budgeted'] += (float) $usd;
+                $byYear->put((int) $year, $current);
+            }
         }
 
         return $byYear->sortKeys();

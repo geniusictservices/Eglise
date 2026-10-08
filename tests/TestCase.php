@@ -8,7 +8,6 @@ use App\Models\FinanceCategory;
 use App\Models\Organization;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\BudgetFundings;
 use App\Services\OrganizationProvisioner;
 use App\Support\CurrentOrganization;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -43,11 +42,10 @@ abstract class TestCase extends BaseTestCase
         app(CurrentOrganization::class)->set($organization);
     }
 
-    /** Des offrandes prévues assez grandes pour financer toutes les dépenses prévues du budget. */
+    /** Des offrandes prévues assez grandes pour couvrir toutes les dépenses prévues du budget. */
     protected function fundBudget(Budget $budget, float $offerings = 100000): void
     {
         $category = FinanceCategory::withoutOrganizationScope()->where('organization_id', $budget->organization_id)->where('type', 'income')->where('name', 'Offrande du culte')->value('id');
         BudgetLine::create(['budget_id' => $budget->id, 'type' => 'income', 'category_id' => $category, 'label' => 'Offrandes', 'amount' => $offerings]);
-        app(BudgetFundings::class)->auto($budget->fresh());
     }
 }

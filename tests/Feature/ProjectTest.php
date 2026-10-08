@@ -3,21 +3,20 @@
 namespace Tests\Feature;
 
 use App\Livewire;
+use App\Models\CashAccount;
+use App\Models\CashAccountCurrency;
 use App\Models\Department;
+use App\Models\FinanceCategory;
 use App\Models\Meeting;
 use App\Models\Member;
 use App\Models\Organization;
-use App\Models\CashAccount;
-use App\Models\CashAccountCurrency;
-use App\Models\ExpenseRequest;
 use App\Models\Pledge;
 use App\Models\Project;
-use App\Services\Expenses;
+use App\Models\User;
 use App\Services\ExchangeRateService;
+use App\Services\Expenses;
 use App\Services\Pledges;
 use App\Services\Projects;
-use App\Models\User;
-use App\Models\Vision;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Livewire\Livewire as LivewireTest;
@@ -88,23 +87,43 @@ class ProjectTest extends TestCase
         $this->get('/plan')->assertRedirect('/projets');
     }
 
-    public function test_a_department_head_updates_the_progress_of_their_projects_only(): void
+    public function test_progress_comes_from_the_indicators_measured_by_the_department_head(): void
     {
         $mine = Project::create(['name' => 'Tournoi', 'department_id' => $this->jeunesse->id, 'ends_on' => '2026-12-15', 'status' => 'planned']);
-        $other = Project::create(['name' => 'Plans de l’architecte', 'ends_on' => '2026-09-30', 'progress' => 20, 'status' => 'ongoing']);
+        $other = Project::create(['name' => 'Plans de l’architecte', 'ends_on' => '2026-09-30', 'status' => 'ongoing']);
         $this->assertTrue($other->isLate());
         $this->assertFalse($mine->isLate());
 
         $this->actingAs($this->responsable);
-        LivewireTest::test(Livewire\Projects\Show::class, ['projet' => $other])->call('editProgress')->assertForbidden();
-        LivewireTest::test(Livewire\Projects\Show::class, ['projet' => $mine])
-            ->call('editProgress')->set('progress', 40)->set('progressNote', 'Terrain réservé')
-            ->call('saveProgress')->assertHasNoErrors();
+        LivewireTest::test(Livewire\Projects\Show::class, ['projet' => $other])->call('editIndicator')->assertForbidden();
+        $page = LivewireTest::test(Livewire\Projects\Show::class, ['projet' => $mine])
+            ->assertSee('Pas encore d’indicateur')
+            ->call('editIndicator')->set('indicator.kind', 'measure')->set('indicator.name', 'Équipes inscrites')
+            ->call('saveIndicator')->assertHasErrors('indicator.target')
+            ->set('indicator.target', '8')->set('indicator.unit', 'équipes')->call('saveIndicator')->assertHasNoErrors()
+            ->call('editIndicator')->set('indicator.kind', 'milestone')->set('indicator.name', 'Terrain réservé')->call('saveIndicator')->assertHasNoErrors()
+            ->call('editIndicator')->set('indicator.kind', 'collected')->set('indicator.name', 'Argent collecté')->call('saveIndicator')->assertHasErrors('indicator.target');
+        [$teams, $field] = $mine->indicators()->get()->all();
+        $this->assertSame(0, $mine->fresh()->progress);
 
-        $mine->refresh();
-        $this->assertSame(40, $mine->progress);
-        $this->assertSame('ongoing', $mine->status);
-        $this->assertSame('Terrain réservé', $mine->updates()->first()->note);
+        // Les mesures font l'avancement : 4 équipes sur 8 (50 %), étape pas franchie (0 %) : 25 %.
+        $page->call('openMeasure', $teams->id)->set('measure.value', '4')->set('measure.measured_on', '2026-10-30')->call('saveMeasure')->assertHasErrors('measure.measured_on')
+            ->set('measure.measured_on', '2026-10-05')->set('measure.note', 'Quatre quartiers')->call('saveMeasure')->assertHasNoErrors();
+        $this->assertSame(25, $mine->fresh()->progress);
+        $this->assertSame('ongoing', $mine->fresh()->status);
+
+        // L'étape compte double : (50 + 100 × 2) / 3 = 83 %.
+        $page->call('editIndicator', $field->id)->set('indicator.weight', '2')->call('saveIndicator')
+            ->call('openMeasure', $field->id)->call('saveMeasure')->assertHasNoErrors();
+        $this->assertSame(83, $mine->fresh()->progress);
+        $this->assertSame('2026-10-06', $field->fresh()->reached_on->toDateString());
+
+        // Toutes les cibles atteintes : le projet est terminé, sans cliquer sur « terminé ».
+        $page->call('openMeasure', $teams->id)->set('measure.value', '8')->call('saveMeasure');
+        $this->assertSame(100, $mine->fresh()->progress);
+        $this->assertSame('done', $mine->fresh()->status);
+        $page->set('tab', 'avancement')->assertSee('Quatre quartiers')->assertSee('8 équipes');
+
         // Un responsable ne crée pas de projet.
         LivewireTest::test(Livewire\Projects\Index::class)->call('editProject')->assertForbidden();
     }
@@ -138,11 +157,14 @@ class ProjectTest extends TestCase
 
         $totals = $projects->totals($parcelle);
         $this->assertSame([1000.0, 600.0, 300.0, 0.0, 300.0], [$totals['goal'], $totals['promised'], $totals['received'], $totals['spent'], $totals['available']]);
+        // L'argent collecté est un indicateur qui se calcule tout seul : 300 $ sur 1 000 $.
+        $projects->saveIndicator($parcelle, ['kind' => 'collected', 'name' => 'Argent collecté']);
+        $this->assertSame(30, $projects->progressOf($parcelle->fresh())['percent']);
 
         // Une dépense de projet ne passe le contrôle que si le projet a l'argent.
         $expenses = app(Expenses::class);
         $acompte = $expenses->submit($this->eglise, ['title' => 'Acompte au vendeur', 'amount' => 500, 'currency' => 'USD', 'project_id' => $parcelle->id,
-            'department_id' => $this->jeunesse->id, 'category_id' => \App\Models\FinanceCategory::where('type', 'expense')->value('id')]);
+            'department_id' => $this->jeunesse->id, 'category_id' => FinanceCategory::where('type', 'expense')->value('id')]);
         try {
             $expenses->check($acompte);
             $this->fail('La dépense aurait dû être bloquée.');
@@ -150,7 +172,7 @@ class ProjectTest extends TestCase
             $this->assertStringContainsString('il manque 200,00', $e->getMessage());
         }
         $petite = $expenses->submit($this->eglise, ['title' => 'Frais du cadastre', 'amount' => 120, 'currency' => 'USD', 'project_id' => $parcelle->id,
-            'department_id' => $this->jeunesse->id, 'category_id' => \App\Models\FinanceCategory::where('type', 'expense')->value('id')]);
+            'department_id' => $this->jeunesse->id, 'category_id' => FinanceCategory::where('type', 'expense')->value('id')]);
         $expenses->check($petite);
         $this->assertSame(180.0, $projects->totals($parcelle)['available']); // 120 $ engagés
         $tresorier = User::factory()->create();

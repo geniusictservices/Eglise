@@ -9,6 +9,8 @@ use App\Models\ExpenseRequest;
 use App\Models\FinanceTransaction;
 use App\Models\Member;
 use App\Models\Project;
+use App\Models\ProjectIndicator;
+use App\Models\ProjectIndicatorValue;
 use App\Services\Ledger;
 use App\Services\Pledges;
 use App\Services\Projects;
@@ -29,9 +31,15 @@ class Show extends Component
     #[Url(as: 'onglet', except: 'annees')]
     public string $tab = 'annees';
 
-    public int $progress = 0;
+    /** L'indicateur en cours de modification. */
+    public ?int $indicatorId = null;
 
-    public string $progressNote = '';
+    public array $indicator = [];
+
+    /** La mesure qu'on relève pour un indicateur. */
+    public ?int $measureId = null;
+
+    public array $measure = [];
 
     /** Un don reçu directement pour le projet, sans promesse. */
     public array $gift = [];
@@ -44,29 +52,90 @@ class Show extends Component
         $this->record = $projet;
     }
 
-    /** Le responsable du département du projet met aussi à jour son avancement. */
+    /** Le responsable du département du projet définit aussi ses indicateurs et relève les mesures. */
     private function canUpdate(): bool
     {
         return ! $this->organization()->isReadOnly() && (Gate::allows('planning.manage')
             || ($this->record->department_id && DepartmentScope::allows(auth()->user(), $this->organization(), $this->record->department_id)));
     }
 
-    public function editProgress(): void
+    private function findIndicator(int $id): ProjectIndicator
     {
-        abort_unless($this->canUpdate(), 403);
-        $this->progress = $this->record->progress;
-        $this->progressNote = '';
-        $this->resetValidation();
-        $this->dispatch('open-modal', name: 'progress');
+        return ProjectIndicator::where('project_id', $this->record->id)->findOrFail($id);
     }
 
-    public function saveProgress(Projects $projects): void
+    public function editIndicator(?int $id = null): void
     {
         abort_unless($this->canUpdate(), 403);
-        $this->validate(['progress' => 'required|integer|between:0,100', 'progressNote' => 'nullable|string|max:1000'], attributes: ['progress' => __('avancement')]);
-        $projects->progress($this->record, $this->progress, $this->progressNote);
-        $this->dispatch('close-modal', name: 'progress');
-        $this->notify(__('Avancement enregistré.'));
+        $i = $id ? $this->findIndicator($id) : null;
+        $this->indicatorId = $i?->id;
+        $this->indicator = [
+            'name' => $i->name ?? '', 'kind' => $i->kind ?? 'measure', 'unit' => $i->unit ?? '',
+            'baseline' => $i ? (string) (float) $i->baseline : '0', 'target' => $i?->target !== null ? (string) (float) $i->target : '',
+            'weight' => (string) ($i->weight ?? 1), 'due_on' => $i?->due_on?->toDateString() ?? '',
+        ];
+        $this->resetValidation();
+        $this->dispatch('open-modal', name: 'indicator');
+    }
+
+    public function saveIndicator(Projects $projects): void
+    {
+        abort_unless($this->canUpdate(), 403);
+        $data = $this->validate([
+            'indicator.name' => 'required|string|max:150',
+            'indicator.kind' => ['required', Rule::in(array_keys(ProjectIndicator::KINDS))],
+            'indicator.unit' => 'nullable|string|max:30',
+            'indicator.baseline' => 'nullable|numeric',
+            'indicator.target' => [Rule::requiredIf(($this->indicator['kind'] ?? '') === 'measure'), 'nullable', 'numeric'],
+            'indicator.weight' => 'required|integer|between:1,10',
+            'indicator.due_on' => 'nullable|date',
+        ], attributes: ['indicator.name' => __('indicateur'), 'indicator.target' => __('cible'), 'indicator.weight' => __('poids')])['indicator'];
+        if ($data['kind'] === 'collected' && ! $data['target'] && ! $projects->totals($this->record)['goal']) {
+            $this->addError('indicator.target', __('Le projet n’a pas d’objectif chiffré : indiquez la somme à collecter.'));
+
+            return;
+        }
+        $projects->saveIndicator($this->record, $data, $this->indicatorId ? $this->findIndicator($this->indicatorId) : null);
+        $this->dispatch('close-modal', name: 'indicator');
+        $this->notify(__('Indicateur enregistré.'));
+    }
+
+    public function deleteIndicator(int $id, Projects $projects): void
+    {
+        abort_unless($this->canUpdate(), 403);
+        $projects->deleteIndicator($this->findIndicator($id));
+        $this->notify(__('Indicateur retiré.'));
+    }
+
+    public function openMeasure(int $id): void
+    {
+        abort_unless($this->canUpdate(), 403);
+        $i = $this->findIndicator($id);
+        abort_if($i->isAutomatic(), 403);
+        $this->measureId = $i->id;
+        $this->measure = ['value' => $i->kind === 'milestone' ? ($i->reached_on ? '0' : '1') : (string) ($i->current !== null ? (float) $i->current : ''),
+            'measured_on' => today()->toDateString(), 'note' => ''];
+        $this->resetValidation();
+        $this->dispatch('open-modal', name: 'measure');
+    }
+
+    public function saveMeasure(Projects $projects): void
+    {
+        abort_unless($this->canUpdate(), 403);
+        $data = $this->validate([
+            'measure.value' => 'required|numeric',
+            'measure.measured_on' => 'required|date|before_or_equal:today',
+            'measure.note' => 'nullable|string|max:1000',
+        ], attributes: ['measure.value' => __('valeur'), 'measure.measured_on' => __('date')])['measure'];
+        try {
+            $projects->measure($this->findIndicator($this->measureId), (float) $data['value'], $data['measured_on'], $data['note']);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('measure.value', $e->getMessage());
+
+            return;
+        }
+        $this->dispatch('close-modal', name: 'measure');
+        $this->notify(__('Mesure enregistrée : l’avancement est recalculé.'));
     }
 
     public function openGift(Ledger $ledger): void
@@ -120,13 +189,17 @@ class Show extends Component
     public function render(Projects $projects, Pledges $pledges, Ledger $ledger)
     {
         $organization = $this->organization();
-        $this->record->refresh()->load(['years', 'department', 'responsible', 'account', 'updates.user']);
+        $this->record->refresh()->load(['years', 'department', 'responsible', 'account', 'indicators', 'updates.user']);
         $seesMoney = Gate::any(['finance.view', 'planning.view', 'planning.manage']);
         $seesNames = Gate::any(['finance.pledges', 'finance.contributions.view']);
 
         return view('livewire.projects.show', $this->projectFormData() + [
             'p' => $this->record,
-            'totals' => $projects->totals($this->record),
+            'totals' => $totals = $projects->totals($this->record),
+            'progress' => $projects->progressOf($this->record, $totals),
+            'history' => $this->tab === 'avancement' ? ProjectIndicatorValue::with(['indicator', 'user'])
+                ->whereHas('indicator', fn ($q) => $q->where('project_id', $this->record->id))->latest('measured_on')->latest('id')->limit(50)->get() : collect(),
+            'measured' => $this->measureId ? ProjectIndicator::find($this->measureId) : null,
             'yearRows' => $projects->years($this->record),
             'pledgeRows' => $this->tab === 'promesses' ? $this->record->pledges()->with(['member', 'household', 'department'])->where('status', '!=', 'cancelled')->latest('pledged_on')->get()
                 ->map(fn ($pl) => ['pledge' => $pl, 'progress' => $pledges->progress($pl)]) : collect(),
