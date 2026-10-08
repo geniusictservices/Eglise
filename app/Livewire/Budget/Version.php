@@ -202,7 +202,9 @@ class Version extends Component
             'missingProjects' => $this->tab === 'projets' ? $projects->forYear($this->budget->fiscal_year)
                 ->filter(fn ($p) => $p->years->contains('fiscal_year', $this->budget->fiscal_year) && ! $lines->contains('project_id', $p->id))->values() : collect(),
             'openProjects' => Project::whereIn('status', ['planned', 'ongoing'])->orderBy('name')->get(['id', 'name']),
-            'groups' => $lines->where('type', $type)->groupBy(fn ($l) => $l->department?->name ?? __('Recettes générales'))->sortKeys(),
+            // Dans chaque groupe, les lignes de la plus grande à la plus petite.
+            'groups' => $lines->where('type', $type)->groupBy(fn ($l) => $l->department?->name ?? __('Recettes générales'))->sortKeys()
+                ->map(fn ($group) => $group->sortByDesc(fn ($l) => (float) $l->amount)->values()),
             'yearLabel' => FiscalYear::label($organization, $this->budget->fiscal_year),
             'canArbitrate' => $this->canArbitrate(),
             'canSubmit' => $this->canArbitrate() && $lines->isNotEmpty(),

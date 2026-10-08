@@ -1,4 +1,7 @@
-@php use App\Support\Money; use App\Models\Budget; $b = $budget; $income = $b->total('income'); $expense = $b->total('expense'); $solde = $summary['gap'] > 0 ? -$summary['gap'] : $summary['surplus']; @endphp
+@php use App\Support\Money; use App\Models\Budget; $b = $budget; $income = $b->total('income'); $expense = $b->total('expense'); $solde = $summary['gap'] > 0 ? -$summary['gap'] : $summary['surplus'];
+    // Chaque ligne en pour cent des recettes prévues : ce qu'une recette apporte, ce qu'une dépense consomme.
+    $pct = fn ($amount) => $income > 0 ? (float) $amount / $income * 100 : 0.0;
+    $pctLabel = fn ($amount) => ($v = $pct($amount)) > 0 && $v < 0.5 ? '< 1 %' : number_format($v, 0, ',', ' ').' %'; @endphp
 <div>
     <a href="{{ route('budget.index', ['exercice' => $b->fiscal_year]) }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Budget') }}</a>
 
@@ -28,27 +31,18 @@
         </div>
     </section>
 
-    {{-- D'où viendra l'argent : la part de chaque source dans le total des dépenses prévues. --}}
+    {{-- L'équilibre : ce que les dépenses prévues consomment des recettes prévues. --}}
     <section class="card mb-5 p-5 sm:p-6">
-        <h2 class="mb-1 text-lg">{{ __('D’où viendra l’argent') }}</h2>
-        <p class="mb-3 text-sm text-sand-700">{{ __('Les :m de dépenses prévues seront couverts par :', ['m' => Money::format($summary['expense'], 'USD')]) }}</p>
-        <ul class="space-y-2.5">
-            @forelse ($summary['sources'] as $src)
-                <li>
-                    <div class="flex items-baseline gap-2 text-sm"><span class="min-w-0 flex-1 font-semibold text-ink-800">{{ $src['label'] }}</span><span class="tabular">{{ Money::format($src['amount'], 'USD') }}</span><span class="w-12 text-right text-xs font-semibold tabular text-sand-700">{{ $src['share'] }} %</span></div>
-                    <div class="mt-1 h-2 overflow-hidden rounded-full bg-sand-100"><div class="h-full rounded-full bg-leaf-500" style="width: {{ min(100, $src['share']) }}%"></div></div>
-                    @if ($src['lines']->count() > 1 || $src['lines']->first() !== $src['label'])<p class="mt-0.5 text-xs text-sand-700">{{ $src['lines']->implode(' · ') }}</p>@endif
-                </li>
-            @empty
-                <li class="text-sm text-sand-700">{{ __('Aucune recette prévue pour le moment.') }}</li>
-            @endforelse
-        </ul>
+        <div class="flex items-baseline gap-2"><h2 class="flex-1 text-lg">{{ __('Équilibre du budget') }}</h2><span @class(['text-lg font-semibold tabular', 'text-terra-600' => $summary['gap'] > 0, 'text-ink-800' => $summary['gap'] <= 0])>{{ $pctLabel($expense) }}</span></div>
+        <p class="mb-2 text-sm text-sand-700">{{ __('Les dépenses prévues (:e) consomment cette part des recettes prévues (:i).', ['e' => Money::format($expense, 'USD'), 'i' => Money::format($income, 'USD')]) }}</p>
+        <div class="h-2.5 overflow-hidden rounded-full bg-sand-100"><div @class(['h-full rounded-full', 'bg-terra-500' => $summary['gap'] > 0, 'bg-ochre-500' => $summary['gap'] <= 0]) style="width: {{ min(100, $pct($expense)) }}%"></div></div>
         @if ($summary['gap'] > 0)
-            <p class="mt-4 rounded-xl border border-terra-100 bg-terra-50 p-3 text-sm font-semibold text-terra-700"><x-icon name="triangle-alert" class="mr-1 inline size-4" /> {{ __('Il manque :m : dites d’où viendra cet argent (une recette prévue de plus), ou réduisez des dépenses. Le budget ne peut pas être présenté avant.', ['m' => Money::format($summary['gap'], 'USD')]) }}</p>
+            <p class="mt-3 rounded-xl border border-terra-100 bg-terra-50 p-3 text-sm font-semibold text-terra-700"><x-icon name="triangle-alert" class="mr-1 inline size-4" /> {{ __('Il manque :m : dites d’où viendra cet argent (une recette prévue de plus), ou réduisez des dépenses. Le budget ne peut pas être présenté avant.', ['m' => Money::format($summary['gap'], 'USD')]) }}</p>
         @elseif ($summary['expense'] > 0)
-            <p class="mt-4 text-sm font-semibold text-leaf-600"><x-icon name="badge-check" class="mr-1 inline size-4" /> {{ __('Les dépenses prévues sont couvertes.') }}@if ($summary['surplus'] > 0) {{ __('Il reste :m de marge.', ['m' => Money::format($summary['surplus'], 'USD')]) }}@endif</p>
+            <p class="mt-3 text-sm font-semibold text-leaf-600"><x-icon name="badge-check" class="mr-1 inline size-4" /> {{ __('Les dépenses prévues sont couvertes.') }}@if ($summary['surplus'] > 0) {{ __('Il reste :m de marge.', ['m' => Money::format($summary['surplus'], 'USD')]) }}@endif</p>
         @endif
     </section>
+
 
     @if ($b->return_note && $b->status === 'draft')
         <p class="mb-4 rounded-2xl border border-terra-100 bg-terra-50 p-4 text-sm text-terra-700"><span class="font-semibold">{{ __('Renvoyé par le pasteur :') }}</span> {{ $b->return_note }}</p>
@@ -121,15 +115,20 @@
             <h2 class="flex-1 text-lg">{{ $type === 'expense' ? __('Dépenses prévues') : __('Recettes prévues') }}</h2>
             @if ($canArbitrate)<button type="button" wire:click="editLine" class="btn-secondary !min-h-0 !py-1.5 text-sm"><x-icon name="plus" class="size-4" /> {{ $type === 'expense' ? __('Ajouter une dépense') : __('Ajouter une recette') }}</button>@endif
         </div>
+        <p class="-mt-1 mb-3 text-sm text-sand-700">{{ $type === 'expense' ? __('Pour chaque dépense : la part des recettes prévues qu’elle consomme.') : __('Pour chaque recette : la part qu’elle apporte aux recettes prévues.') }}</p>
         @forelse ($groups as $group => $lines)
             <div class="mb-4 last:mb-0">
-                <h3 class="mb-1 flex items-baseline gap-2 text-sm font-semibold text-ink-700"><span class="flex-1">{{ $group }}</span><span class="tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</span></h3>
+                <h3 class="mb-1 flex items-baseline gap-2 text-sm font-semibold text-ink-700"><span class="flex-1">{{ $group }}</span><span class="tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</span><span class="w-12 text-right text-xs tabular text-sand-700">{{ $pctLabel($lines->sum('amount')) }}</span></h3>
                 <ul class="divide-y divide-sand-100 rounded-xl border border-sand-200">
                     @foreach ($lines as $l)
                         <li wire:key="bl-{{ $l->id }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
                             <span class="min-w-0 flex-1">
                                 <span class="block text-sm font-semibold text-ink-800">{{ $l->label }}</span>
                                 <span class="block text-xs text-sand-700">@if ($l->project)<span class="font-semibold text-ochre-700">{{ $l->source ? __(\App\Models\BudgetLine::SOURCES[$l->source]) : __('Projet') }}</span> · @endif{{ $l->category?->name }}@if ($l->proposed_amount !== null && (float) $l->proposed_amount !== (float) $l->amount) · {{ __('proposé : :m', ['m' => Money::format($l->proposed_amount, 'USD')]) }}@endif @if ($l->note) · {{ $l->note }}@endif</span>
+                                <span class="mt-1 flex items-center gap-2">
+                                    <span class="h-1.5 flex-1 overflow-hidden rounded-full bg-sand-100"><span @class(['block h-full rounded-full', 'bg-terra-500' => $type === 'expense', 'bg-leaf-500' => $type === 'income']) style="width: {{ min(100, $pct($l->amount)) }}%"></span></span>
+                                    <span @class(['shrink-0 text-xs font-semibold tabular', 'text-terra-600' => $type === 'expense', 'text-leaf-600' => $type === 'income'])>{{ $type === 'expense' ? __('consomme :p', ['p' => $pctLabel($l->amount)]) : __('apporte :p', ['p' => $pctLabel($l->amount)]) }}</span>
+                                </span>
                             </span>
                             @if ($canArbitrate)
                                 <input wire:model.blur="amounts.{{ $l->id }}" type="number" step="0.01" min="0" class="input !w-32 !py-1.5 text-right tabular" aria-label="{{ __('Montant arrêté') }}">

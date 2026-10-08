@@ -125,7 +125,7 @@ class BudgetTest extends TestCase
             ->set('line.category_id', (string) $this->category('income', 'Offrande du culte'))
             ->set('line.amount', '5000')
             ->call('saveLine')->assertHasNoErrors()
-            ->assertSee('D’où viendra l’argent')->assertSee('Les dépenses prévues sont couvertes.')
+            ->assertSee('Équilibre du budget')->assertSee('Les dépenses prévues sont couvertes.')
             ->call('submit')->assertHasNoErrors();
         $budget->refresh();
         $this->assertSame('submitted', $budget->status);

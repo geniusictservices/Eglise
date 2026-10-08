@@ -1,4 +1,5 @@
-@php use App\Support\Money; $income = $b->total('income'); $expense = $b->total('expense'); @endphp
+@php use App\Support\Money; $income = $b->total('income'); $expense = $b->total('expense');
+    $pctLabel = fn ($amount) => $income <= 0 ? '—' : (($v = (float) $amount / $income * 100) > 0 && $v < 0.5 ? '< 1 %' : number_format($v, 0, ',', ' ').' %'); @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
@@ -27,28 +28,20 @@
             @endforeach
         </div>
 
-        <h2 class="mb-2 text-base font-semibold text-ink-800">{{ __('D’où viendra l’argent') }}</h2>
-        <table class="mb-2 w-full border-collapse text-sm">
-            <tbody>
-                @foreach ($summary['sources'] as $src)
-                    <tr class="border-b border-sand-100"><td class="px-2 py-1.5">{{ $src['label'] }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($src['amount'], 'USD') }}</td><td class="w-16 px-2 py-1.5 text-right tabular text-sand-700">{{ $src['share'] }} %</td></tr>
-                @endforeach
-            </tbody>
-        </table>
-        <p class="mb-2 text-xs text-sand-700">{{ __('Part de chaque source dans les :m de dépenses prévues.', ['m' => Money::format($summary['expense'], 'USD')]) }}@if ($summary['reserved'] > 0) {{ __(':m de collectes de projets leur restent réservés pour les années suivantes.', ['m' => Money::format($summary['reserved'], 'USD')]) }}@endif</p>
+        <p class="mb-2 text-sm text-ink-800">{{ __('Les dépenses prévues consomment :p des recettes prévues.', ['p' => $pctLabel($expense)]) }}@if ($summary['reserved'] > 0) {{ __(':m de collectes de projets leur restent réservés pour les années suivantes.', ['m' => Money::format($summary['reserved'], 'USD')]) }}@endif</p>
 
         @foreach (['income' => __('Recettes prévues'), 'expense' => __('Dépenses prévues')] as $type => $title)
             <h2 class="mb-2 mt-6 text-base font-semibold text-ink-800">{{ $title }}</h2>
             <table class="w-full border-collapse text-sm">
-                <thead class="border-b-2 border-ink-700 text-xs text-ink-700"><tr><th class="px-2 py-1.5 text-left font-semibold">{{ __('Objet') }}</th><th class="px-2 py-1.5 text-left font-semibold">{{ __('Catégorie') }}</th><th class="px-2 py-1.5 text-right font-semibold">{{ __('Montant') }}</th></tr></thead>
+                <thead class="border-b-2 border-ink-700 text-xs text-ink-700"><tr><th class="px-2 py-1.5 text-left font-semibold">{{ __('Objet') }}</th><th class="px-2 py-1.5 text-left font-semibold">{{ __('Catégorie') }}</th><th class="px-2 py-1.5 text-right font-semibold">{{ __('Montant') }}</th><th class="w-20 px-2 py-1.5 text-right font-semibold">{{ $type === 'income' ? __('Apporte') : __('Consomme') }}</th></tr></thead>
                 <tbody>
                     @foreach ($groups[$type] as $group => $lines)
-                        <tr class="bg-sand-50 font-semibold break-inside-avoid"><td class="px-2 py-1.5" colspan="2">{{ $group }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</td></tr>
+                        <tr class="bg-sand-50 font-semibold break-inside-avoid"><td class="px-2 py-1.5" colspan="2">{{ $group }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($lines->sum('amount'), 'USD') }}</td><td class="px-2 py-1.5 text-right tabular">{{ $pctLabel($lines->sum('amount')) }}</td></tr>
                         @foreach ($lines as $l)
-                            <tr class="border-b border-sand-100"><td class="px-2 py-1.5 pl-5">{{ $l->label }}</td><td class="px-2 py-1.5 text-sand-700">{{ $l->category?->name }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($l->amount, 'USD') }}</td></tr>
+                            <tr class="border-b border-sand-100"><td class="px-2 py-1.5 pl-5">{{ $l->label }}</td><td class="px-2 py-1.5 text-sand-700">{{ $l->category?->name }}</td><td class="whitespace-nowrap px-2 py-1.5 text-right tabular">{{ Money::format($l->amount, 'USD') }}</td><td class="px-2 py-1.5 text-right tabular text-sand-700">{{ $pctLabel($l->amount) }}</td></tr>
                         @endforeach
                     @endforeach
-                    <tr class="font-semibold"><td class="px-2 py-2" colspan="2">{{ __('Total') }}</td><td class="whitespace-nowrap px-2 py-2 text-right tabular">{{ Money::format($b->total($type), 'USD') }}</td></tr>
+                    <tr class="font-semibold"><td class="px-2 py-2" colspan="2">{{ __('Total') }}</td><td class="whitespace-nowrap px-2 py-2 text-right tabular">{{ Money::format($b->total($type), 'USD') }}</td><td class="px-2 py-2 text-right tabular">{{ $pctLabel($b->total($type)) }}</td></tr>
                 </tbody>
             </table>
         @endforeach

@@ -77,12 +77,15 @@ class BudgetSourcesTest extends TestCase
         } catch (InvalidArgumentException $e) {
             $this->assertStringContainsString('000,00', $e->getMessage());
         }
-        LivewireTest::test(Livewire\Budget\Version::class, ['budget' => $budget])->assertSee('D’où viendra l’argent')->assertSee('Il manque');
+        LivewireTest::test(Livewire\Budget\Version::class, ['budget' => $budget])->assertSee('Équilibre du budget')->assertSee('Il manque');
 
         $this->line($budget, 'income', 'Promesses et projets', 'Promesses des familles', 4500);
         $summary = app(BudgetSources::class)->summary($budget->fresh());
         $this->assertSame([20000.0, 0.0, 500.0], [$summary['expense'], $summary['gap'], $summary['surplus']]);
-        $this->assertSame(['Dîme' => 45, 'Offrande du culte' => 35, 'Promesses et projets' => 23], $summary['sources']->pluck('share', 'label')->all());
+        // Chaque recette dit ce qu'elle apporte, chaque dépense ce qu'elle consomme, en pour cent des 20 500 $ de recettes.
+        LivewireTest::test(Livewire\Budget\Version::class, ['budget' => $budget])->set('tab', 'recettes')
+            ->assertSee('apporte 44 %')->assertSee('apporte 34 %')->assertSee('apporte 22 %')
+            ->set('tab', 'depenses')->assertSee('consomme 59 %')->assertSee('consomme 39 %')->assertSee('Équilibre du budget');
 
         $budgets->submit($budget->fresh());
         $this->assertSame('submitted', $budget->fresh()->status);

@@ -6,9 +6,9 @@ use App\Models\Budget;
 use Illuminate\Support\Collection;
 
 /**
- * D'où viendra l'argent du budget. On ne relie pas chaque dépense à une recette : on dit,
- * pour le total des dépenses prévues, quelles recettes le couvriront (dîmes, offrandes,
- * promesses, collectes des projets…) et quelle part chacune apporte.
+ * L'équilibre du budget. On ne relie pas chaque dépense à une recette : les recettes prévues
+ * (dîmes, offrandes, promesses, collectes des projets…) doivent couvrir le total des dépenses
+ * prévues ; chaque ligne dit, en pour cent des recettes prévues, ce qu'elle apporte ou consomme.
  *
  * L'argent d'un projet (sa collecte, son solde reporté) ne paie que ce projet : ce qui en
  * dépasse ses dépenses de l'année lui reste réservé. Ce qui manque à un projet est pris sur
@@ -17,7 +17,7 @@ use Illuminate\Support\Collection;
 class BudgetSources
 {
     /**
-     * @return array{expense: float, ordinary_income: float, usable: float, gap: float, surplus: float, reserved: float, sources: Collection, projects: Collection}
+     * @return array{expense: float, ordinary_income: float, usable: float, gap: float, surplus: float, reserved: float, projects: Collection}
      */
     public function summary(Budget $budget): array
     {
@@ -40,20 +40,6 @@ class BudgetSources
         $expense = round((float) $lines->where('type', 'expense')->sum('amount'), 2);
         $usable = round($ordinaryIncome + $projects->sum('own'), 2);
 
-        // Les sources, de la plus grande à la plus petite : chaque catégorie de recettes ordinaires,
-        // puis l'argent des projets qui paie leurs propres dépenses.
-        $sources = $ordinaryLines->groupBy('category_id')->map(fn (Collection $group) => [
-            'label' => $group->first()->category?->name ?? $group->first()->label,
-            'amount' => round((float) $group->sum('amount'), 2),
-            'lines' => $group->pluck('label')->unique()->values(),
-        ])->values();
-        foreach ($projects->where('own', '>', 0) as $p) {
-            $sources->push(['label' => __('Projet : :p', ['p' => $p['project']->name]), 'amount' => $p['own'],
-                'lines' => collect([$p['carried'] > 0 ? __('collecte et solde reporté') : __('collecte du projet')])]);
-        }
-        $sources = $sources->sortByDesc('amount')->values()
-            ->map(fn ($s) => $s + ['share' => $expense > 0 ? (int) round($s['amount'] / $expense * 100) : 0]);
-
         return [
             'expense' => $expense,
             'ordinary_income' => $ordinaryIncome,
@@ -61,7 +47,6 @@ class BudgetSources
             'gap' => round(max(0, $expense - $usable), 2),
             'surplus' => round(max(0, $usable - $expense), 2),
             'reserved' => round((float) $projects->sum('reserved'), 2),
-            'sources' => $sources,
             'projects' => $projects,
         ];
     }
