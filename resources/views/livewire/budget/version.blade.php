@@ -98,7 +98,7 @@
                     @php $pr = $row['project']; @endphp
                     <li wire:key="bp-{{ $pr->id }}" class="rounded-xl border border-sand-200 p-3">
                         <div class="flex flex-wrap items-baseline gap-x-3">
-                            <a href="{{ route('projects.show', $pr) }}" class="min-w-0 flex-1 font-semibold text-ink-800 hover:underline">{{ $pr->name }}</a>
+                            <a href="{{ route('projects.show', $pr) }}" class="min-w-0 basis-full font-semibold text-ink-800 hover:underline sm:basis-auto sm:flex-1">{{ $pr->name }}</a>
                             @if ($row['ordinary'] > 0)<span class="badge bg-ochre-100 text-ochre-700">{{ __(':m pris sur les recettes ordinaires', ['m' => Money::format($row['ordinary'], 'USD')]) }}</span>@elseif ($row['expense'] > 0)<span class="badge bg-leaf-50 text-leaf-600">{{ __('Payé par son argent') }}</span>@endif
                         </div>
                         <dl class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-sm sm:grid-cols-4">
