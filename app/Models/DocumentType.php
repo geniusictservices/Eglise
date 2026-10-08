@@ -26,11 +26,11 @@ class DocumentType extends Model
 
     protected $guarded = ['id'];
 
-    protected $attributes = ['subject' => 'member', 'is_active' => true, 'position' => 0, 'number_format' => '{CODE}/{SIGLE}/{ANNEE}/{NUMERO}'];
+    protected $attributes = ['subject' => 'member', 'is_active' => true, 'position' => 0, 'number_format' => '{CODE}/{SIGLE}/{ANNEE}/{NUMERO}', 'show_photo' => false];
 
     protected function casts(): array
     {
-        return ['fields' => 'array', 'is_active' => 'boolean'];
+        return ['fields' => 'array', 'is_active' => 'boolean', 'show_photo' => 'boolean'];
     }
 
     public function organization(): BelongsTo

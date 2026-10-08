@@ -22,7 +22,7 @@
         </div>
     </div>
     <main class="px-3 py-6 print:p-0">
-        @include('documents.sheet', ['organization' => $document->organization, 'identity' => $identity, 'title' => $document->title, 'number' => $document->number,
+        @include('documents.sheet', ['organization' => $document->organization, 'identity' => $identity, 'title' => $document->title, 'number' => $document->number, 'photo' => $document->photoDataUri(),
             'body' => $document->body, 'date' => $document->issued_on->translatedFormat('j F Y'), 'signatory' => $document->signatory, 'signatoryTitle' => $document->signatory_title,
             'qr' => $qr, 'cancelled' => $document->isCancelled()])
         <p class="no-print mx-auto mt-4 max-w-[210mm] text-center text-sm text-sand-700">{{ __('Imprimez, faites signer à la main et apposez le cachet. Le QR code permet à quiconque de vérifier le document.') }}</p>

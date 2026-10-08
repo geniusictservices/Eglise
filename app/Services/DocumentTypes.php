@@ -54,7 +54,7 @@ class DocumentTypes
         }
         $existing = DocumentType::where('organization_id', $organization->id)->where('replaces_id', $type->id)->first();
 
-        return $existing ?? DocumentType::create($type->only(['key', 'name', 'title', 'subject', 'life_event_type', 'body', 'fields', 'code', 'number_format', 'signatory_title', 'position'])
+        return $existing ?? DocumentType::create($type->only(['key', 'name', 'title', 'subject', 'life_event_type', 'body', 'fields', 'code', 'number_format', 'signatory_title', 'show_photo', 'position'])
             + ['organization_id' => $organization->id, 'replaces_id' => $type->id]);
     }
 
@@ -80,6 +80,7 @@ class DocumentTypes
             'subject' => array_key_exists($data['subject'] ?? '', DocumentType::SUBJECTS) ? $data['subject'] : 'member',
             'life_event_type' => ($data['life_event_type'] ?? null) ?: null, 'body' => trim($data['body']), 'fields' => $fields,
             'number_format' => trim($data['number_format']), 'signatory_title' => trim((string) ($data['signatory_title'] ?? '')) ?: null,
+            'show_photo' => ($data['subject'] ?? 'member') !== 'free' && (bool) ($data['show_photo'] ?? false),
         ];
         if ($type) {
             $type->update($values);

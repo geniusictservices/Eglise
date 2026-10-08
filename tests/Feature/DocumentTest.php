@@ -13,8 +13,11 @@ use App\Services\Documents;
 use App\Services\DocumentTypes;
 use App\Services\MemberRegistry;
 use App\Support\DocumentTemplate;
+use App\Support\MemberPhoto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
 use Livewire\Livewire as LivewireTest;
 use Tests\TestCase;
@@ -172,5 +175,47 @@ class DocumentTest extends TestCase
         $this->get(route('documents.index'))->assertForbidden();
         $this->get(route('documents.issue'))->assertForbidden();
         $this->get(route('documents.templates'))->assertForbidden();
+    }
+
+    public function test_the_member_photo_is_printed_frozen_and_shown_when_verifying(): void
+    {
+        Storage::fake('local');
+        $image = UploadedFile::fake()->image('esther.jpg', 600, 800);
+        $this->esther->update(['photo_path' => MemberPhoto::store($image->getRealPath(), $this->esther)]);
+        $membership = $this->type('membership');
+        $this->assertTrue($membership->show_photo);
+        $this->assertFalse($this->type('letter')->show_photo);
+
+        // L'aperçu montre la photo de la fiche.
+        LivewireTest::test(Livewire\Documents\Issue::class)->call('chooseType', $membership->id)->call('chooseMember', $this->esther->id)
+            ->assertSee(route('members.photo', $this->esther), false)->assertDontSee('sa fiche n’en a pas');
+
+        $document = app(Documents::class)->issue($this->paroisse, $membership, ['member_id' => $this->esther->id, 'signatory' => 'Pasteur Daniel Paluku']);
+        $this->assertNotNull($document->photo_path);
+        $this->assertNotSame($this->esther->photo_path, $document->photo_path);
+
+        // Une nouvelle photo dans la fiche ne change pas le document déjà délivré.
+        Storage::disk('local')->delete($this->esther->photo_path);
+        $this->get(route('documents.print', $document))->assertOk()->assertSee('data:image/jpeg;base64,', false);
+
+        // La page de vérification montre la photo, pour la comparer avec le papier.
+        auth()->logout();
+        $this->get(route('documents.verify', $document->token))->assertOk()->assertSee(route('documents.verify.photo', $document->token));
+        $this->get(route('documents.verify.photo', $document->token))->assertOk();
+
+        // Un document annulé ne montre plus de photo.
+        $this->actingAs($this->admin);
+        app(Documents::class)->cancel($document, 'Erreur de prénom');
+        $this->get(route('documents.verify.photo', $document->token))->assertNotFound();
+
+        // Sans photo dans la fiche, le secrétariat est prévenu, et le document part sans photo.
+        $josue = Member::create(['last_name' => 'Kakule', 'first_name' => 'Josué', 'gender' => 'M']);
+        LivewireTest::test(Livewire\Documents\Issue::class)->call('chooseType', $membership->id)->call('chooseMember', $josue->id)->assertSee('sa fiche n’en a pas');
+        $this->assertNull(app(Documents::class)->issue($this->paroisse, $membership, ['member_id' => $josue->id])->photo_path);
+
+        // Le modèle se règle : la case se décoche.
+        LivewireTest::test(Livewire\Documents\TemplateEditor::class, ['type' => app(DocumentTypes::class)->adapt($membership, $this->paroisse)])
+            ->assertSee('Mettre la photo du membre')->set('form.show_photo', false)->call('save')->assertHasNoErrors();
+        $this->assertFalse($this->type('membership')->show_photo);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\IssuedDocument;
 use App\Support\QrCode;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentController extends Controller
 {
@@ -19,6 +20,15 @@ class DocumentController extends Controller
             'identity' => $document->organization->documentIdentity(),
             'qr' => QrCode::svg($document->verifyUrl(), 200),
         ]);
+    }
+
+    /** La photo figée d'un document, pour la comparer avec le papier présenté (pas pour un document annulé). */
+    public function photo(string $token)
+    {
+        $document = IssuedDocument::withoutOrganizationScope()->where('token', $token)->whereNull('cancelled_at')->firstOrFail();
+        abort_unless($document->photo_path && Storage::disk('local')->exists($document->photo_path), 404);
+
+        return Storage::disk('local')->response($document->photo_path, null, ['Cache-Control' => 'private, max-age=3600', 'X-Robots-Tag' => 'noindex']);
     }
 
     /** Page publique ouverte en scannant le QR code : seulement de quoi authentifier le papier. */

@@ -28,10 +28,10 @@ class TemplateEditor extends Component
         $this->type = $type;
         $this->form = $type ? $type->only(['name', 'title', 'code', 'subject', 'body', 'number_format']) + [
             'life_event_type' => $type->life_event_type ?? '', 'signatory_title' => (string) $type->signatory_title,
-            'fields' => $type->customFields(),
+            'fields' => $type->customFields(), 'show_photo' => $type->show_photo,
         ] : [
             'name' => '', 'title' => '', 'code' => '', 'subject' => 'member', 'life_event_type' => '', 'signatory_title' => __('Pasteur'),
-            'number_format' => '{CODE}/{SIGLE}/{ANNEE}/{NUMERO}', 'fields' => [],
+            'number_format' => '{CODE}/{SIGLE}/{ANNEE}/{NUMERO}', 'fields' => [], 'show_photo' => false,
             'body' => __("Je soussigné(e), **{signataire}**, {qualite_signataire} de {communaute}, atteste que **{civilite} {nom_officiel}**, {né} le {date_naissance} à {lieu_naissance}, …\n\nEn foi de quoi, la présente attestation lui est délivrée pour servir et valoir ce que de droit."),
         ];
     }
@@ -91,7 +91,7 @@ class TemplateEditor extends Component
             'name' => $this->form['name'], 'title' => $this->form['title'] ?: __('Titre du document'), 'code' => strtoupper($this->form['code'] ?: 'XXX'),
             'subject' => $this->form['subject'], 'life_event_type' => $this->form['life_event_type'] ?: null, 'body' => $this->form['body'],
             'number_format' => str_contains($this->form['number_format'], '{NUMERO}') ? $this->form['number_format'] : '{CODE}/{NUMERO}',
-            'signatory_title' => $this->form['signatory_title'],
+            'signatory_title' => $this->form['signatory_title'], 'show_photo' => $this->form['subject'] !== 'free' && (bool) ($this->form['show_photo'] ?? false),
             'fields' => collect($this->form['fields'])->filter(fn ($f) => trim($f['label'] ?? '') !== '')
                 ->map(fn ($f) => $f + ['key' => DocumentTemplate::fieldKey($f['label'])])->values()->all(),
         ]);

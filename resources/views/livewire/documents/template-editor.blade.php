@@ -24,6 +24,12 @@
                     <div><label for="t-number" class="label">{{ __('Format du numéro') }}</label><input wire:model.live.debounce.500ms="form.number_format" id="t-number" class="input font-mono">
                         @error('form.number_format') <p class="error">{{ $message }}</p> @else <p class="mt-1 text-xs text-sand-700">{{ __('Exemple : :n', ['n' => $values['numero_document']]) }} · {CODE} {SIGLE} {SIEGE} {ANNEE} {AN} {NUMERO}</p> @enderror</div>
                 </div>
+                @if ($form['subject'] !== 'free')
+                    <label class="flex items-start gap-3 rounded-xl border border-sand-200 p-3 text-sm">
+                        <input type="checkbox" wire:model.live="form.show_photo" class="mt-0.5 size-4">
+                        <span><span class="font-semibold text-ink-800">{{ __('Mettre la photo du membre') }}</span><br><span class="text-sand-700">{{ __('Au format identité, en haut à droite, prise dans sa fiche au moment de la délivrance. Elle paraît aussi sur la page de vérification du QR code.') }}</span></span>
+                    </label>
+                @endif
             </section>
 
             <section class="card space-y-3 p-5 sm:p-6">
@@ -77,7 +83,8 @@
                 <div class="overflow-hidden rounded-xl bg-sand-100 p-3 sm:p-5">
                     <div class="origin-top-left">
                         @include('documents.sheet', ['organization' => $organization, 'identity' => $identity, 'title' => $draft->title, 'number' => $values['numero_document'],
-                            'body' => $preview, 'date' => $values['date'], 'signatory' => $values['signataire'], 'signatoryTitle' => $values['qualite_signataire'], 'qr' => \App\Support\QrCode::svg(url('/verifier/document/exemple'))])
+                            'body' => $preview, 'date' => $values['date'], 'signatory' => $values['signataire'], 'signatoryTitle' => $values['qualite_signataire'], 'qr' => \App\Support\QrCode::svg(url('/verifier/document/exemple')),
+                            'photoFrame' => $draft->show_photo])
                     </div>
                 </div>
             </div>

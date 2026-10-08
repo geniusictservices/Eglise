@@ -29,9 +29,9 @@ class DemoFinances
     {
         mt_srand(77);
 
-        // Taux plus anciens, pour les opérations des mois passés.
-        foreach (range(13, 3) as $weeksAgo) {
-            app(ExchangeRateService::class)->setRate($siege, 'CDF', (string) (2790 + (13 - $weeksAgo) * 4), now()->subWeeks($weeksAgo));
+        // Taux plus anciens, pour les opérations des mois passés : au moins quatre mois, quel que soit le jour du mois.
+        foreach (range(18, 3) as $weeksAgo) {
+            app(ExchangeRateService::class)->setRate($siege, 'CDF', (string) (2770 + (18 - $weeksAgo) * 4), now()->subWeeks($weeksAgo));
         }
 
         $siege->update([

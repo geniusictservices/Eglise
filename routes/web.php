@@ -44,6 +44,7 @@ Route::view('/installer', 'install')->name('install');
 Route::get('/logo/{organization}', OrganizationLogoController::class)->whereNumber('organization')->name('organizations.logo');
 Route::get('/verifier/carte/{token}', CardVerificationController::class)->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('cards.verify');
 Route::get('/verifier/document/{token}', [DocumentController::class, 'verify'])->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('documents.verify');
+Route::get('/verifier/document/{token}/photo', [DocumentController::class, 'photo'])->where('token', '[A-Za-z0-9]{32}')->middleware('throttle:30,1')->name('documents.verify.photo');
 Route::view('/hors-ligne', 'offline')->name('offline');
 
 // Les sites vitrines des communautés.

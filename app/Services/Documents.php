@@ -10,6 +10,7 @@ use App\Models\RegisterEntry;
 use App\Support\DocumentTemplate;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -54,7 +55,15 @@ class Documents
             throw new InvalidArgumentException(__('Un document ne se date pas dans l’avenir.'));
         }
 
-        return DB::transaction(function () use ($organization, $type, $data, $member, $entry, $person, $beneficiary, $issuedOn) {
+        // La photo est copiée au moment de la délivrance : changer la photo du membre ne change pas un document déjà remis.
+        $photo = null;
+        $source = $member?->photo_path ?? ($entry?->member_id ? Member::withoutOrganizationScope()->find($entry->member_id)?->photo_path : null);
+        if ($type->show_photo && $source && Storage::disk('local')->exists($source)) {
+            $photo = 'documents/'.$organization->id.'/photo-'.Str::random(16).'.jpg';
+            Storage::disk('local')->copy($source, $photo);
+        }
+
+        return DB::transaction(function () use ($organization, $type, $data, $member, $entry, $person, $beneficiary, $issuedOn, $photo) {
             $year = $issuedOn->year;
             $sequence = (int) IssuedDocument::withoutOrganizationScope()->where('organization_id', $organization->id)
                 ->whereHas('type', fn ($q) => $q->where('code', $type->code))->where('year', $year)->lockForUpdate()->max('sequence') + 1;
@@ -73,7 +82,7 @@ class Documents
             return IssuedDocument::create([
                 'organization_id' => $organization->id, 'document_type_id' => $type->id, 'number' => $number, 'year' => $year, 'sequence' => $sequence,
                 'member_id' => $member?->id ?? $entry?->member_id, 'register_entry_id' => $entry?->id, 'beneficiary' => $beneficiary, 'title' => $type->title,
-                'body' => DocumentTemplate::render($type->body, $values),
+                'body' => DocumentTemplate::render($type->body, $values), 'photo_path' => $photo,
                 'data' => ['fields' => $data['fields'] ?? []] + ($data['data'] ?? []),
                 'signatory' => $values['signataire'], 'signatory_title' => $values['qualite_signataire'],
                 'issued_on' => $issuedOn->toDateString(), 'token' => Str::random(32), 'issued_by' => auth()->id(),

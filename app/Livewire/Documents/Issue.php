@@ -160,7 +160,12 @@ class Issue extends Component
             ];
         }
 
+        // La photo du membre, si le modèle la demande : celle de sa fiche, ou celle du membre relié à l'acte.
+        $photoMember = $type?->show_photo ? ($member ?? ($entry?->member_id ? Member::find($entry->member_id) : null)) : null;
+
         return view('livewire.documents.issue', $data + [
+            'photo' => $photoMember?->photo_path ? route('members.photo', $photoMember) : null,
+            'photoMissing' => $type?->show_photo && ($member || $entry) && ! $photoMember?->photo_path,
             'types' => $types->available($organization),
             'type' => $type,
             'member' => $member,

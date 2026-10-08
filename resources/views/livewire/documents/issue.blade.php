@@ -80,6 +80,10 @@
                         <p class="mt-1 text-sand-700">{{ __('Elles resteront en pointillés, à compléter à la main. Mieux : complétez la fiche, puis revenez.') }}@if ($member) <a href="{{ route('members.edit', $member->id) }}" class="font-semibold text-ink-700 underline">{{ __('Compléter la fiche') }}</a>@endif</p>
                     </div>
                 @endif
+                @if ($photoMissing)
+                    <p class="flex gap-2 rounded-2xl border border-sand-200 bg-sand-50 p-4 text-sm text-ink-800"><x-icon name="camera" class="mt-0.5 size-4 shrink-0 text-sand-500" />
+                        <span>{{ __('Ce modèle porte la photo du membre, mais sa fiche n’en a pas : le document sera imprimé sans photo.') }}@if ($member) <a href="{{ route('members.edit', $member->id) }}" class="font-semibold text-ink-700 underline">{{ __('Ajouter la photo') }}</a>@endif</span></p>
+                @endif
                 @error('issue') <p class="rounded-xl bg-terra-50 px-4 py-3 text-sm font-semibold text-terra-700">{{ $message }}</p> @enderror
 
                 <div class="flex flex-wrap justify-end gap-2">
@@ -94,7 +98,8 @@
                     <p class="mb-2 text-sm font-semibold text-sand-700">{{ __('Aperçu') }}</p>
                     <div class="overflow-hidden rounded-xl bg-sand-100 p-3 sm:p-5">
                         @include('documents.sheet', ['organization' => $organization, 'identity' => $identity, 'title' => $type->title, 'number' => $values['numero_document'],
-                            'body' => $preview, 'date' => $values['date'], 'signatory' => $values['signataire'], 'signatoryTitle' => $values['qualite_signataire'], 'qr' => \App\Support\QrCode::svg(url('/verifier/document/exemple'))])
+                            'body' => $preview, 'date' => $values['date'], 'signatory' => $values['signataire'], 'signatoryTitle' => $values['qualite_signataire'], 'qr' => \App\Support\QrCode::svg(url('/verifier/document/exemple')),
+                            'photo' => $photo, 'photoFrame' => $type->show_photo])
                     </div>
                 </div>
             </aside>

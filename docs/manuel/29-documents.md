@@ -56,6 +56,8 @@ Le texte est **figé** dès la délivrance : corriger ensuite la fiche ne change
 <td width="32%"><img src="captures/mobile/90-document-imprime.png" alt="Document à imprimer sur téléphone"></td>
 </tr></table>
 
+**La photo du membre.** Les modèles qui la demandent (d'office : attestation d'appartenance, lettre de recommandation, attestation de service, ordre de mission) impriment la **photo de la fiche**, au format identité, en haut à droite. Elle est **copiée au moment de la délivrance** : changer la photo de la fiche ensuite ne change pas un document déjà remis. Si la fiche n'a pas de photo, Waumini le signale avant la délivrance, avec un lien pour l'ajouter ; sinon, le document part sans photo.
+
 Le document porte l'en-tête de la communauté (nom, identité juridique, adresse, devise, choisis dans [Paramètres › Identité et documents](08-parametres.md), avec le texte du bas propre aux documents), son numéro, son titre, le texte, le lieu et la date, la qualité et le nom du signataire, et, en bas, le **QR code**. Touchez **Imprimer**, en A4.
 
 ① **Page de vérification** montre ce que verra la personne qui scannera le QR code.
@@ -65,7 +67,7 @@ Le document porte l'en-tête de la communauté (nom, identité juridique, adress
 <td width="32%"><img src="captures/mobile/91-verification.png" alt="Vérification sur téléphone"></td>
 </tr></table>
 
-Une école, une ambassade, une autre église scanne le QR code avec n'importe quel téléphone, sans compte Waumini. La page indique **Document authentique** ou **Document annulé**, avec la sorte de document, le numéro, le nom, la date, la communauté et le signataire. Pour protéger la vie privée, le texte complet n'y figure pas : on compare avec le papier présenté. Un faux, dont le QR code ne correspond à rien, affiche **Document inconnu**.
+Une école, une ambassade, une autre église scanne le QR code avec n'importe quel téléphone, sans compte Waumini. La page indique **Document authentique** ou **Document annulé**, avec la sorte de document, le numéro, le nom, la date, la communauté et le signataire. Pour protéger la vie privée, le texte complet n'y figure pas : on compare avec le papier présenté. Si le document porte une photo, la page la montre aussi : la photo imprimée doit être la même, ce qui déjoue un faux fait avec la photo de quelqu'un d'autre. Un faux, dont le QR code ne correspond à rien, affiche **Document inconnu**.
 
 ## Les modèles
 
@@ -94,6 +96,7 @@ Un modèle de la communauté peut être **mis de côté** : il n'est plus propos
 - Le **nom** du modèle, le **titre imprimé**, et un **code** court (ABA, ODM…) qui entre dans le numéro.
 - **Délivré à** : un membre ; un membre ou une personne d'un ancien registre ; ou un destinataire libre (une lettre à la mairie).
 - **Étape de vie reprise** : le baptême, le mariage… dont le document cite la date, le lieu et l'officiant.
+- **Mettre la photo du membre** : la photo de sa fiche, au format identité (pas pour un destinataire libre).
 - **Format du numéro** : par exemple `{CODE}/{SIGLE}/{ANNEE}/{NUMERO}`. `{SIGLE}` est le sigle de la paroisse, `{SIEGE}` celui du siège, `{AN}` l'année sur deux chiffres. La numérotation repart à 1 chaque année.
 
 ① **Les champs à remplir** : ce que la personne qui délivre doit indiquer. Chaque champ devient une variable : le champ « Voix » s'écrit `{voix}` dans le texte.

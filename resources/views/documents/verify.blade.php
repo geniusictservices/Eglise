@@ -16,6 +16,13 @@
                         <p class="text-sm text-white/85">{{ __('Vérifié le :date', ['date' => now()->translatedFormat('j F Y à H:i')]) }}</p>
                     </div>
                 </div>
+                @if ($document->photo_path && $valid)
+                    {{-- La photo du papier présenté doit être celle-ci. --}}
+                    <div class="flex items-center gap-4 border-b border-sand-100 px-5 py-4">
+                        <img src="{{ route('documents.verify.photo', $document->token) }}" alt="{{ __('Photo du titulaire') }}" class="h-28 w-[5.5rem] shrink-0 rounded-lg object-cover">
+                        <p class="text-sm text-sand-700">{{ __('La photo imprimée sur le document doit être la même.') }}</p>
+                    </div>
+                @endif
                 <dl class="divide-y divide-sand-100 px-5 text-sm">
                     @foreach ([__('Document') => $document->title, __('Numéro') => $document->number, __('Délivré à') => $document->beneficiary,
                         __('Délivré le') => $document->issued_on->translatedFormat('j F Y'), __('Par') => $document->organization->name,

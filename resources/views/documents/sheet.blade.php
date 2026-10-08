@@ -6,7 +6,15 @@
 <article class="document-sheet relative mx-auto flex aspect-[210/297] w-full max-w-[210mm] flex-col bg-white p-[8%] text-[11pt] leading-relaxed text-ink-900 shadow-lg shadow-ink-900/10 print:aspect-auto print:min-h-[273mm] print:max-w-none print:p-0 print:shadow-none">
     <x-documents.header :identity="$identity" :organization="$organization" />
 
-    <p class="mt-4 text-right text-sm text-ink-700">{{ __('N° :n', ['n' => $number]) }}</p>
+    <div class="mt-4 flex items-start justify-end gap-4">
+        <p class="text-sm text-ink-700">{{ __('N° :n', ['n' => $number]) }}</p>
+        {{-- La photo du membre, au format identité (30 × 38 mm) ; dans l'aperçu, un cadre vide si le membre n'en a pas. --}}
+        @if ($photo ?? null)
+            <img src="{{ $photo }}" alt="" class="h-[38mm] w-[30mm] shrink-0 border border-sand-300 object-cover p-[1mm]">
+        @elseif ($photoFrame ?? false)
+            <span class="grid h-[38mm] w-[30mm] shrink-0 place-items-center border border-dashed border-sand-300 text-center text-[8pt] text-sand-500 print:hidden">{{ __('Photo du membre') }}</span>
+        @endif
+    </div>
     <h1 class="mb-8 mt-6 text-center text-xl font-semibold uppercase tracking-wide text-ink-800 underline decoration-ochre-500 decoration-2 underline-offset-8">{{ $title }}</h1>
 
     <div class="document-body flex-1 text-justify">{!! $body !!}</div>
