@@ -9,6 +9,11 @@ use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
 use App\Models\Organization;
 use App\Models\OrganizationCurrency;
+use App\Models\PaymentDeclaration;
+use App\Models\Pledge;
+use App\Models\ProjectRemittance;
+use App\Models\QuotaPayment;
+use App\Models\SalaryAdvance;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
@@ -101,7 +106,11 @@ class Ledger
             FinanceClosing::assertOpen($account->organization_id, $on);
             $amount = $this->amount($data['amount'], $currency);
 
-            if ($type === 'expense' && $this->balance($account, $currency)->isLessThan($amount)) {
+            // La ligne de la devise sous verrou : deux sorties simultanées ne mettent pas la caisse en négatif.
+            if ($type === 'expense') {
+                CashAccountCurrency::where('cash_account_id', $account->id)->where('currency', $currency)->lockForUpdate()->first();
+            }
+            if ($type === 'expense' && $this->lowestFrom($account, $currency, $on)->isLessThan($amount)) {
                 throw new InvalidArgumentException(__('Solde insuffisant : :account (:currency).', ['account' => $account->name, 'currency' => $currency]));
             }
 
@@ -139,7 +148,8 @@ class Ledger
         $in = $exchange ? $this->amount($amountIn ?? throw new InvalidArgumentException(__('Indiquez le montant reçu.')), $toCurrency) : $out;
 
         return DB::transaction(function () use ($from, $fromCurrency, $to, $toCurrency, $out, $in, $exchange, $description, $on) {
-            if ($this->balance($from, $fromCurrency)->isLessThan($out)) {
+            CashAccountCurrency::where('cash_account_id', $from->id)->where('currency', $fromCurrency)->lockForUpdate()->first();
+            if ($this->lowestFrom($from, $fromCurrency, $on)->isLessThan($out)) {
                 throw new InvalidArgumentException(__('Solde insuffisant : :account (:currency).', ['account' => $from->name, 'currency' => $fromCurrency]));
             }
 
@@ -157,9 +167,55 @@ class Ledger
         });
     }
 
-    /** Annule une opération (et l'autre côté d'un virement). Rien n'est effacé. */
-    public function cancel(FinanceTransaction $transaction, string $reason): void
+    /**
+     * Le plus bas solde du compte à partir d'une date : une sortie antidatée doit être couverte ce
+     * jour-là ET les jours suivants, sinon un rapport passé afficherait une caisse en négatif.
+     */
+    public function lowestFrom(CashAccount $account, string $currency, Carbon $on): BigDecimal
     {
+        $running = $this->balance($account, $currency, $on);
+        $lowest = $running;
+        $later = FinanceTransaction::withoutOrganizationScope()->valid()->where('cash_account_id', $account->id)->where('currency', $currency)
+            ->whereDate('occurred_on', '>', $on->toDateString())->orderBy('occurred_on')
+            ->selectRaw("occurred_on, sum(case when type in ('income','transfer_in','exchange_in') then amount else -amount end) as delta")
+            ->groupBy('occurred_on')->get();
+        foreach ($later as $day) {
+            $running = $running->plus((string) $day->delta);
+            $lowest = $running->isLessThan($lowest) ? $running : $lowest;
+        }
+
+        return $lowest;
+    }
+
+    /**
+     * Le document auquel appartient une opération, s'il y en a un. Elle s'annule alors depuis
+     * l'écran de ce document, qui le remet à jour ; sinon une dépense annulée resterait « décaissée »,
+     * une paie « payée », un versement « envoyé », et l'argent serait compté deux fois.
+     */
+    public function owner(FinanceTransaction $transaction): ?string
+    {
+        $id = $transaction->id;
+
+        return match (true) {
+            $transaction->collection_id !== null => __('Cette opération vient d’une feuille de collecte : annulez la feuille.'),
+            $transaction->expense_request_id !== null => __('Cette opération appartient à une demande de dépense : annulez-la depuis la demande.'),
+            $transaction->pay_slip_id !== null => __('Cette opération appartient à une paie : annulez la paie.'),
+            SalaryAdvance::withoutOrganizationScope()->where('finance_transaction_id', $id)->exists() => __('Cette opération est le paiement d’une avance sur salaire : annulez l’avance.'),
+            QuotaPayment::query()->where(fn ($q) => $q->where('expense_transaction_id', $id)->orWhere('income_transaction_id', $id))->exists() => __('Cette opération est un versement de quote-part, déjà pris en compte par l’autre niveau : elle ne s’annule pas.'),
+            ProjectRemittance::query()->where(fn ($q) => $q->where('expense_transaction_id', $id)->orWhere('income_transaction_id', $id))->exists() => __('Cette opération est un versement pour un projet du siège, suivi par les deux niveaux : elle ne s’annule pas.'),
+            default => null,
+        };
+    }
+
+    /**
+     * Annule une opération (et l'autre côté d'un virement). Rien n'est effacé.
+     * $fromOwner : l'appel vient du service du document qui la possède, qui se remet à jour lui-même.
+     */
+    public function cancel(FinanceTransaction $transaction, string $reason, bool $fromOwner = false): void
+    {
+        if (! $fromOwner && ($owner = $this->owner($transaction))) {
+            throw new InvalidArgumentException($owner);
+        }
         // Annuler une opération changerait les soldes d'une période clôturée.
         FinanceClosing::assertOpen($transaction->organization_id, $transaction->occurred_on);
 
@@ -168,9 +224,27 @@ class Ledger
                 ? FinanceTransaction::withoutOrganizationScope()->where('group_uuid', $transaction->group_uuid)->get()
                 : collect([$transaction]);
 
+            // Retirer une entrée d'argent ne doit pas laisser une caisse en négatif.
+            foreach ($legs->filter(fn ($leg) => in_array($leg->type, ['income', 'transfer_in', 'exchange_in'], true)) as $leg) {
+                $account = CashAccount::withoutOrganizationScope()->findOrFail($leg->cash_account_id);
+                CashAccountCurrency::where('cash_account_id', $account->id)->where('currency', $leg->currency)->lockForUpdate()->first();
+                if ($this->balance($account, $leg->currency)->isLessThan(BigDecimal::of((string) $leg->amount))) {
+                    throw new InvalidArgumentException(__('Impossible : :account n’a plus ces :currency (l’argent a déjà été dépensé ou viré).', ['account' => $account->name, 'currency' => $leg->currency]));
+                }
+            }
+
             foreach ($legs as $leg) {
                 $leg->update(['cancelled_at' => now(), 'cancelled_by' => auth()->id(), 'cancel_reason' => $reason]);
             }
+
+            // Une promesse se remet à jour ; un paiement déclaré validé redevient rejeté, avec la raison.
+            foreach ($legs->whereNotNull('pledge_id') as $leg) {
+                if ($pledge = Pledge::withoutOrganizationScope()->find($leg->pledge_id)) {
+                    app(Pledges::class)->refreshStatus($pledge);
+                }
+            }
+            PaymentDeclaration::withoutOrganizationScope()->whereIn('finance_transaction_id', $legs->pluck('id'))->where('status', 'validated')->get()
+                ->each(fn ($d) => $d->update(['status' => 'rejected', 'reject_reason' => Str::limit(__('Opération annulée dans le journal : :r', ['r' => $reason]), 250)]));
         });
     }
 

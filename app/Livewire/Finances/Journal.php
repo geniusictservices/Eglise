@@ -8,6 +8,7 @@ use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Services\Closings;
 use App\Services\Ledger;
+use App\Support\FiscalYear;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -77,13 +78,18 @@ class Journal extends Component
         $start = Carbon::createFromFormat('Y-m-d', $this->month.'-01');
 
         return once(fn () => app(Closings::class)->isClosed($this->organization(), $start->year, $start->month)
-            || app(Closings::class)->isClosed($this->organization(), $start->year, 0));
+            || app(Closings::class)->isClosed($this->organization(), FiscalYear::of($this->organization(), $start), 0)); // l'exercice, pas l'année civile
     }
 
     public function askCancel(int $id): void
     {
         $t = FinanceTransaction::findOrFail($id);
         abort_unless($this->canCancel($t), 403);
+        if ($owner = app(Ledger::class)->owner($t)) {
+            $this->notify($owner, 'error');
+
+            return;
+        }
         $this->cancelId = $t->id;
         $this->cancelReason = '';
         $this->resetValidation();

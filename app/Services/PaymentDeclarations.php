@@ -27,6 +27,10 @@ class PaymentDeclarations
         }
 
         DB::transaction(function () use ($declaration, $account) {
+            // Relue sous verrou : un double clic ne passe pas deux fois.
+            if (PaymentDeclaration::withoutOrganizationScope()->lockForUpdate()->findOrFail($declaration->id)->status !== 'pending') {
+                throw new InvalidArgumentException(__('Cette déclaration a déjà été traitée.'));
+            }
             $extra = [
                 'occurred_on' => $declaration->paid_on->toDateString(),
                 'payment_method' => 'mobile',

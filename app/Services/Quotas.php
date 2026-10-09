@@ -73,12 +73,14 @@ class Quotas
             return null;
         }
         $base = $this->base($child, $period);
-        $due = $rule->mode === 'percent' ? round($base * (float) $rule->percent / 100, 2) : $this->safeUsd($child, (float) $rule->amount, $rule->currency);
+        $due = $rule->mode === 'percent' ? round($base * (float) $rule->percent / 100, 2) : $this->safeUsd($child, (float) $rule->amount, $rule->currency, $parent);
+        $rateMissing = $due === null;
+        $due ??= 0.0;
         $payments = QuotaPayment::where('from_organization_id', $child->id)->where('to_organization_id', $parent->id)->where('period', $period)->get();
 
         return ['period' => $period, 'base' => $base, 'due' => $due, 'sent' => round((float) $payments->sum('usd_amount'), 2),
             'received' => round((float) $payments->where('status', 'received')->sum('usd_amount'), 2),
-            'remaining' => max(0, round($due - (float) $payments->sum('usd_amount'), 2))];
+            'remaining' => max(0, round($due - (float) $payments->sum('usd_amount'), 2)), 'rate_missing' => $rateMissing];
     }
 
     /** Le niveau inférieur verse sa quote-part depuis l'un de ses comptes. */
@@ -111,6 +113,10 @@ class Quotas
             throw new InvalidArgumentException(__('Cette quote-part est déjà reçue.'));
         }
         DB::transaction(function () use ($payment, $account) {
+            // Relue sous verrou : un double clic ne passe pas deux fois.
+            if (QuotaPayment::lockForUpdate()->findOrFail($payment->id)->status === 'received') {
+                throw new InvalidArgumentException(__('Cette quote-part est déjà reçue.'));
+            }
             $payment->loadMissing('from');
             $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(['organization_id' => $payment->to_organization_id, 'type' => 'income', 'name' => 'Quotes-parts reçues'],
                 ['nature' => 'collective', 'position' => 95]);
@@ -134,12 +140,17 @@ class Quotas
         return [$from->toDateString(), $from->copy()->endOfMonth()->toDateString()];
     }
 
-    private function safeUsd(Organization $organization, float $amount, ?string $currency): float
+    /** En dollars, au taux du niveau inférieur, sinon de celui qui fixe la règle ; sans taux : null (jamais le montant brut). */
+    private function safeUsd(Organization $organization, float $amount, ?string $currency, ?Organization $fallback = null): ?float
     {
-        try {
-            return round($this->control->usd($organization, (string) $amount, $currency ?: 'USD'), 2);
-        } catch (InvalidArgumentException) {
-            return $amount;
+        foreach (array_filter([$organization, $fallback]) as $org) {
+            try {
+                return round($this->control->usd($org, (string) $amount, $currency ?: 'USD'), 2);
+            } catch (InvalidArgumentException) {
+                // pas de taux ici : on essaie le niveau suivant
+            }
         }
+
+        return null;
     }
 }

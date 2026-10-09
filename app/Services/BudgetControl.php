@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Support\FiscalYear;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -87,21 +88,26 @@ class BudgetControl
         }
         foreach ($base()->where('type', 'income')->whereNull('expense_request_id')->select('department_id', 'category_id', DB::raw('sum(usd_amount) as usd'))->groupBy('department_id', 'category_id')->get() as $r) {
             $key = self::key($r->department_id, (int) $r->category_id);
-            // Une recette d'un département sans ligne à son nom va à la ligne générale de sa catégorie.
-            if (! isset($rows['income'][$key]) && isset($rows['income'][self::key(null, (int) $r->category_id)])) {
-                $key = self::key(null, (int) $r->category_id);
+            // Une recette sans ligne à son nom (département) va à la ligne générale de sa catégorie, sinon
+            // à une ligne de la même catégorie : la collecte d'un projet arrive sans département, alors que
+            // sa ligne de recette porte celui du projet.
+            if (! isset($rows['income'][$key])) {
+                $key = isset($rows['income'][self::key(null, (int) $r->category_id)]) ? self::key(null, (int) $r->category_id)
+                    : (collect($rows['income'])->search(fn ($row) => (int) $row['category_id'] === (int) $r->category_id) ?: $key);
             }
             $actual['income'][$key] = ($actual['income'][$key] ?? 0) + (float) $r->usd;
         }
 
-        // L'engagé : dépenses contrôlées ou approuvées, pas encore décaissées.
-        foreach (ExpenseRequest::withoutOrganizationScope()->where('organization_id', $organization->id)->whereIn('status', ['checked', 'approved'])->get() as $r) {
+        // L'engagé : dépenses contrôlées ou approuvées, pas encore décaissées, prévues dans cet exercice.
+        $inYear = fn ($q) => $q->whereBetween('needed_on', [$from->toDateString(), $to->toDateString()])
+            ->orWhere(fn ($q) => $q->whereNull('needed_on')->whereBetween('created_at', [$from->copy()->startOfDay(), $to->copy()->endOfDay()]));
+        foreach (ExpenseRequest::withoutOrganizationScope()->where('organization_id', $organization->id)->whereIn('status', ['checked', 'approved'])->where($inYear)->get() as $r) {
             $key = self::key($r->department_id, (int) $r->category_id);
             $rows['expense'][$key]['committed'] = ($rows['expense'][$key]['committed'] ?? 0) + $this->usdOrZero($organization, $r);
         }
 
         // L'engagé de la paie : les paies présentées ou approuvées, pas encore payées.
-        foreach ($this->payrollCommitments($organization, $general) as $key => $usd) {
+        foreach ($this->payrollCommitments($organization, $general, $from, $to) as $key => $usd) {
             $rows['expense'][$key]['committed'] = ($rows['expense'][$key]['committed'] ?? 0) + $usd;
         }
 
@@ -283,7 +289,7 @@ class BudgetControl
     }
 
     /** @return array<string, float> clé de ligne => dollars engagés par la paie */
-    private function payrollCommitments(Organization $organization, ?int $general): array
+    private function payrollCommitments(Organization $organization, ?int $general, Carbon $from, Carbon $to): array
     {
         $category = self::salaryCategoryId($organization);
         if (! $category) {
@@ -291,7 +297,8 @@ class BudgetControl
         }
         $commitments = [];
         $slips = PaySlip::with('payee')->whereNull('paid_at')->where('net', '>', 0)
-            ->whereHas('run', fn ($q) => $q->where('organization_id', $organization->id)->whereIn('status', ['submitted', 'approved']))->get();
+            ->whereHas('run', fn ($q) => $q->where('organization_id', $organization->id)->whereIn('status', ['submitted', 'approved'])
+                ->whereBetween('period_end', [$from->toDateString(), $to->toDateString()]))->get();
         foreach ($slips as $slip) {
             $key = self::key($slip->payee->department_id ?? $general, $category);
             $commitments[$key] = ($commitments[$key] ?? 0) + $this->slipUsd($organization, $slip);

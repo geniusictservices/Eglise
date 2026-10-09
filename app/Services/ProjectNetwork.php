@@ -63,7 +63,8 @@ class ProjectNetwork
         }
 
         return DB::transaction(function () use ($project, $unit, $share, $relay) {
-            $goal = $project->goal_amount !== null ? (float) $project->goal_amount : (float) $project->years()->sum('income_planned');
+            // L'objectif en dollars, comme la part : un objectif en francs serait sinon pris pour des dollars.
+            $goal = $project->goal_amount !== null ? (float) $this->projects->totals($project)['goal'] : (float) $project->years()->sum('income_planned');
             $ratio = $goal > 0 ? $share / $goal : 0;
             $years = $project->years()->get()->map(fn ($y) => [
                 'fiscal_year' => $y->fiscal_year,
@@ -144,12 +145,15 @@ class ProjectNetwork
             throw new InvalidArgumentException(__('Saisissez d’abord le taux du jour pour :currency.', ['currency' => $currency]));
         }
         $usd = $currency === 'USD' ? (float) $amount : (float) $amount / (float) (string) $rate;
-        $held = $this->projects->reserved($organization)['projects']->firstWhere('project.id', $relay->id)['amount'] ?? 0;
-        if ($usd > $held + 0.01) {
-            throw new InvalidArgumentException(__('La paroisse n’a que :m collectés pour ce projet, pas encore versés.', ['m' => Money::format($held, 'USD')]));
-        }
 
-        return DB::transaction(function () use ($relay, $parent, $account, $currency, $amount, $reference, $organization) {
+        return DB::transaction(function () use ($relay, $parent, $account, $currency, $amount, $reference, $organization, $usd) {
+            // Le projet relais sous verrou : deux versements simultanés ne dépassent pas ce qui est collecté.
+            Project::withoutOrganizationScope()->lockForUpdate()->findOrFail($relay->id);
+            $held = $this->projects->reserved($organization)['projects']->firstWhere('project.id', $relay->id)['amount'] ?? 0;
+            if ($usd > $held + 0.01) {
+                throw new InvalidArgumentException(__('La paroisse n’a que :m collectés pour ce projet, pas encore versés.', ['m' => Money::format($held, 'USD')]));
+            }
+
             $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(['organization_id' => $organization->id, 'type' => 'expense', 'name' => self::SENT_CATEGORY], ['position' => 96]);
             $expense = $this->ledger->record($account, $currency, 'expense', ['amount' => $amount, 'category_id' => $category->id, 'project_id' => $relay->id,
                 'description' => __('Versement à :o : :p', ['o' => $parent->organization->displayName(), 'p' => $parent->name]), 'external_reference' => $reference]);
@@ -176,6 +180,10 @@ class ProjectNetwork
             throw new InvalidArgumentException(__('Choisissez un compte de :o.', ['o' => $remittance->to?->displayName()]));
         }
         DB::transaction(function () use ($remittance, $account) {
+            // Relue sous verrou : un double clic ne passe pas deux fois.
+            if (ProjectRemittance::lockForUpdate()->findOrFail($remittance->id)->status === 'received') {
+                throw new InvalidArgumentException(__('Ce versement est déjà reçu.'));
+            }
             $remittance->loadMissing(['from', 'parentProject']);
             $income = $this->ledger->record($account, $remittance->currency, 'income', ['amount' => (string) $remittance->amount,
                 'category_id' => $remittance->parentProject->category_id, 'project_id' => $remittance->parent_project_id,

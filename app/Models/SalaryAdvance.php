@@ -64,7 +64,7 @@ class SalaryAdvance extends Model
     /** Ce qui est retenu à chaque paie : le montant divisé par le nombre de retenues, sans dépasser le reste. */
     public function installmentAmount(): float
     {
-        $each = round((float) $this->amount / max(1, $this->installments), $this->currency === 'CDF' ? 0 : 2);
+        $each = round((float) $this->amount / max(1, $this->installments), (int) config("waumini.currencies.{$this->currency}.decimals", 2));
 
         return min($each, $this->remaining());
     }

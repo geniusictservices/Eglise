@@ -16,6 +16,7 @@
                                 <div class="min-w-0 flex-1 basis-56">
                                     <p class="font-semibold text-ink-800">{{ $quotas->label($o['period']) }}</p>
                                     <p class="text-sm text-sand-700 tabular">{{ __('Recettes :r · dû :d · versé :v', ['r' => $usd($o['base']), 'd' => $usd($o['due']), 'v' => $usd($o['sent'])]) }}@if ($o['sent'] > $o['received']) <span class="text-ochre-700">· {{ __('à confirmer') }}</span>@endif</p>
+                                    @if ($o['rate_missing'] ?? false)<p class="text-sm font-semibold text-terra-700">{{ __('Montant dû inconnu : saisissez le taux du jour de la devise de la quote-part.') }}</p>@endif
                                 </div>
                                 <span @class(['font-semibold tabular', 'text-terra-700' => $o['remaining'] > 0, 'text-leaf-600' => $o['remaining'] == 0])>{{ $o['remaining'] > 0 ? __('Reste :m', ['m' => $usd($o['remaining'])]) : __('À jour') }}</span>
                                 @if ($canSend && $o['remaining'] > 0)<button type="button" wire:click="askSend('{{ $o['period'] }}')" class="btn-secondary !min-h-0 !py-1.5 text-sm">{{ __('Verser') }}</button>@endif

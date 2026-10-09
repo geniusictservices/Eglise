@@ -62,7 +62,7 @@ class Consolidation
             ->where(fn ($q) => $q->whereNull('status_id')->orWhereHas('status', fn ($q) => $q->where('counts_as_member', true)));
         $last = $this->lastEntry($ids);
         $closed = FinanceClosing::withoutOrganizationScope()->whereIn('organization_id', $ids)->where('status', 'closed')
-            ->where('year', $from->year)->where('month', $from->month)->count();
+            ->where('year', $to->year)->where('month', $to->month)->count(); // le dernier mois de la période : sur une année, décembre
 
         return [
             'organization' => $unit, 'own' => $own, 'count' => count($ids),

@@ -136,9 +136,11 @@ class Show extends Component
 
     public function cancel(Expenses $expenses): void
     {
-        abort_unless(Gate::allows('finance.disburse') || $this->expense->requested_by === auth()->id(), 403);
+        // Une demande déjà décaissée ne s'annule que par la finance : l'argent revient au compte.
+        $paid = in_array($this->expense->status, ['disbursed', 'justified'], true);
+        abort_unless(Gate::allows('finance.disburse') || (! $paid && $this->expense->requested_by === auth()->id()), 403);
         abort_if($this->organization()->isReadOnly(), 403, __('Cette communauté est en lecture seule.'));
-        $this->run(fn () => $expenses->cancel($this->expense), __('Demande annulée.'));
+        $this->run(fn () => $expenses->cancel($this->expense), $paid ? __('Demande annulée : son décaissement est annulé et l’argent revient au compte.') : __('Demande annulée.'));
     }
 
     public function askOverrun(BudgetControl $control): void
@@ -254,7 +256,8 @@ class Show extends Component
             'canReject' => $writable && in_array($e->status, ['submitted', 'checked'], true) && Gate::any(['finance.expenses.approve', 'finance.disburse']),
             'canDisburse' => $writable && $e->status === 'approved' && Gate::allows('finance.disburse'),
             'canJustify' => $writable && $e->status === 'disbursed' && Gate::allows('finance.disburse'),
-            'canCancel' => $writable && in_array($e->status, ['submitted', 'checked', 'approved'], true) && (Gate::allows('finance.disburse') || $e->requested_by === $me),
+            'canCancel' => $writable && ((in_array($e->status, ['submitted', 'checked', 'approved'], true) && (Gate::allows('finance.disburse') || $e->requested_by === $me))
+                || (in_array($e->status, ['disbursed', 'justified'], true) && Gate::allows('finance.disburse'))),
             'canAttach' => $writable && ! in_array($e->status, ['rejected', 'cancelled'], true) && (Gate::any(['finance.disburse', 'finance.expenses.approve']) || $e->requested_by === $me),
             'ownRequest' => $e->requested_by === $me,
             'settings' => $expenses->settings($this->organization()),

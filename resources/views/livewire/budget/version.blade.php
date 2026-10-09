@@ -1,7 +1,10 @@
 @php use App\Support\Money; use App\Models\Budget; $b = $budget; $income = $b->total('income'); $expense = $b->total('expense'); $solde = $summary['gap'] > 0 ? -$summary['gap'] : $summary['surplus'];
     // Chaque ligne en pour cent des recettes prévues : ce qu'une recette apporte, ce qu'une dépense consomme.
     $pct = fn ($amount) => $income > 0 ? (float) $amount / $income * 100 : 0.0;
-    $pctLabel = fn ($amount) => ($v = $pct($amount)) > 0 && $v < 0.5 ? '< 1 %' : number_format($v, 0, ',', ' ').' %'; @endphp
+    $pctLabel = fn ($amount) => ($v = $pct($amount)) > 0 && $v < 0.5 ? '< 1 %' : number_format($v, 0, ',', ' ').' %';
+    // L'équilibre se mesure sur les recettes utilisables cette année : le surplus réservé aux projets n'en fait pas partie,
+    // comme pour le déficit affiché à côté.
+    $balancePct = $summary['usable'] > 0 ? $summary['expense'] / $summary['usable'] * 100 : ($summary['expense'] > 0 ? 100.0 : 0.0); @endphp
 <div>
     <a href="{{ route('budget.index', ['exercice' => $b->fiscal_year]) }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Budget') }}</a>
 
@@ -33,9 +36,9 @@
 
     {{-- L'équilibre : ce que les dépenses prévues consomment des recettes prévues. --}}
     <section class="card mb-5 p-5 sm:p-6">
-        <div class="flex items-baseline gap-2"><h2 class="flex-1 text-lg">{{ __('Équilibre du budget') }}</h2><span @class(['text-lg font-semibold tabular', 'text-terra-600' => $summary['gap'] > 0, 'text-ink-800' => $summary['gap'] <= 0])>{{ $pctLabel($expense) }}</span></div>
-        <p class="mb-2 text-sm text-sand-700">{{ __('Les dépenses prévues (:e) consomment cette part des recettes prévues (:i).', ['e' => Money::format($expense, 'USD'), 'i' => Money::format($income, 'USD')]) }}</p>
-        <div class="h-2.5 overflow-hidden rounded-full bg-sand-100"><div @class(['h-full rounded-full', 'bg-terra-500' => $summary['gap'] > 0, 'bg-ochre-500' => $summary['gap'] <= 0]) style="width: {{ min(100, $pct($expense)) }}%"></div></div>
+        <div class="flex items-baseline gap-2"><h2 class="flex-1 text-lg">{{ __('Équilibre du budget') }}</h2><span @class(['text-lg font-semibold tabular', 'text-terra-600' => $summary['gap'] > 0, 'text-ink-800' => $summary['gap'] <= 0])>{{ number_format($balancePct, 0, ',', ' ') }} %</span></div>
+        <p class="mb-2 text-sm text-sand-700">{{ __('Les dépenses prévues (:e) consomment cette part des recettes utilisables cette année (:i).', ['e' => Money::format($expense, 'USD'), 'i' => Money::format($summary['usable'], 'USD')]) }}</p>
+        <div class="h-2.5 overflow-hidden rounded-full bg-sand-100"><div @class(['h-full rounded-full', 'bg-terra-500' => $summary['gap'] > 0, 'bg-ochre-500' => $summary['gap'] <= 0]) style="width: {{ min(100, $balancePct) }}%"></div></div>
         @if ($summary['gap'] > 0)
             <p class="mt-3 rounded-xl border border-terra-100 bg-terra-50 p-3 text-sm font-semibold text-terra-700"><x-icon name="triangle-alert" class="mr-1 inline size-4" /> {{ __('Il manque :m : dites d’où viendra cet argent (une recette prévue de plus), ou réduisez des dépenses. Le budget ne peut pas être présenté avant.', ['m' => Money::format($summary['gap'], 'USD')]) }}</p>
         @elseif ($summary['expense'] > 0)

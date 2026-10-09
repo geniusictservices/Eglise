@@ -241,6 +241,9 @@
     <x-modal name="cancel" :title="__('Annuler la demande')">
         <form wire:submit="cancel" class="space-y-4">
             <p class="text-sm text-ink-800">{{ __('La demande :n sera annulée. Elle reste visible dans l’historique.', ['n' => $e->number]) }}</p>
+            @if (in_array($e->status, ['disbursed', 'justified'], true))
+                <p class="rounded-xl bg-ochre-50 px-3 py-2 text-sm text-ochre-800">{{ __('Elle est déjà décaissée : son opération (et le retour d’avance, s’il y en a un) sera annulée dans le journal, et l’argent reviendra au compte. Possible seulement si le mois n’est pas clôturé.') }}</p>
+            @endif
             <div class="flex justify-end gap-2"><button type="button" class="btn-ghost" @click="$dispatch('close-modal', { name: 'cancel' })">{{ __('Retour') }}</button><button class="btn-danger">{{ __('Annuler la demande') }}</button></div>
         </form>
     </x-modal>

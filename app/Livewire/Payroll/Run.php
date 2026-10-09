@@ -242,7 +242,7 @@ class Run extends Component
             'canEdit' => $this->canEdit(),
             'canApprove' => $writable && $run->status === 'submitted' && Gate::allows('payroll.approve') && $run->submitted_by !== auth()->id(),
             'canPay' => $writable && $run->status === 'approved' && Gate::allows('payroll.manage'),
-            'canCancel' => $writable && in_array($run->status, ['draft', 'submitted', 'approved'], true) && Gate::allows('payroll.manage') && $run->slips->whereNotNull('paid_at')->isEmpty(),
+            'canCancel' => $writable && in_array($run->status, ['draft', 'submitted', 'approved', 'paid'], true) && Gate::allows('payroll.manage'),
             'accounts' => CashAccount::with('currencies')->where('is_active', true)->orderBy('position')->get(),
         ])->title(__('Paie : :p', ['p' => $run->label()]));
     }

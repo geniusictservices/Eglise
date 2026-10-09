@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CashAccount;
 use App\Models\FinanceCategory;
+use App\Models\FinanceTransaction;
 use App\Models\Payee;
 use App\Models\SalaryAdvance;
 use App\Models\User;
@@ -58,6 +59,10 @@ class SalaryAdvances
             ['organization_id' => $advance->organization_id, 'type' => 'expense', 'name' => 'Rémunérations et motivations'], ['position' => 50])->id;
 
         DB::transaction(function () use ($advance, $account, $payCurrency, $category) {
+            // Relue sous verrou : un double clic ne passe pas deux fois.
+            if (SalaryAdvance::withoutOrganizationScope()->lockForUpdate()->findOrFail($advance->id)->status !== 'approved') {
+                throw new InvalidArgumentException(__('Cette avance n’est pas approuvée.'));
+            }
             $transaction = $this->ledger->record($account, $payCurrency, 'expense', [
                 'amount' => $this->runs->convert($advance->organization, (float) $advance->amount, $advance->currency, $payCurrency),
                 'category_id' => $category, 'department_id' => $advance->payee->department_id,
@@ -70,12 +75,19 @@ class SalaryAdvances
         app(CircuitNotices::class)->advanceClosed($advance);
     }
 
+    /** Annule une avance ; payée mais pas encore retenue, son paiement est annulé avec elle. */
     public function cancel(SalaryAdvance $advance): void
     {
-        if (! in_array($advance->status, ['requested', 'approved'], true)) {
-            throw new InvalidArgumentException(__('Une avance déjà payée ne s’annule pas : elle se rembourse par les retenues.'));
+        $paidUntouched = $advance->status === 'paid' && ! $advance->repayments()->exists();
+        if (! in_array($advance->status, ['requested', 'approved'], true) && ! $paidUntouched) {
+            throw new InvalidArgumentException(__('Cette avance a déjà commencé à être retenue sur la paie : elle ne s’annule plus.'));
         }
-        $advance->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($advance) {
+            if ($advance->finance_transaction_id && ($t = FinanceTransaction::withoutOrganizationScope()->whereNull('cancelled_at')->find($advance->finance_transaction_id))) {
+                $this->ledger->cancel($t, __('Avance sur salaire annulée'), fromOwner: true);
+            }
+            $advance->update(['status' => 'cancelled']);
+        });
         app(CircuitNotices::class)->advanceClosed($advance);
     }
 }

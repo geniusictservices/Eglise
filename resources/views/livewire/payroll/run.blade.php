@@ -14,7 +14,7 @@
         <div class="mt-4 flex flex-wrap gap-2">
             <a href="{{ route('payroll.print', $r) }}" target="_blank" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="printer" class="size-4" /> {{ __('État de paie') }}</a>
             @if ($canEdit)<button type="button" wire:click="recomputeAll" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25"><x-icon name="refresh-cw" class="size-4" /> {{ __('Mettre à jour les bulletins') }}</button>@endif
-            @if ($canCancel)<button type="button" wire:click="cancel" wire:confirm="{{ __('Annuler cette paie ?') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25 sm:ml-auto">{{ __('Annuler la paie') }}</button>@endif
+            @if ($canCancel)<button type="button" wire:click="cancel" wire:confirm="{{ $run->slips->whereNotNull('paid_at')->isNotEmpty() ? __('Annuler cette paie ? Ses paiements seront annulés dans le journal, l’argent reviendra au compte, et les retenues d’avances seront rendues.') : __('Annuler cette paie ?') }}" class="btn !min-h-0 bg-white/15 !py-2 text-white hover:bg-white/25 sm:ml-auto">{{ __('Annuler la paie') }}</button>@endif
         </div>
     </section>
 

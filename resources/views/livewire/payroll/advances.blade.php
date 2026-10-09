@@ -38,8 +38,8 @@
                     @if ($a->status === 'approved' && $canManage)
                         <button type="button" wire:click="askPay({{ $a->id }})" class="btn-primary !min-h-0 !py-1.5 text-sm"><x-icon name="banknote" class="size-4" /> {{ __('Payer l’avance') }}</button>
                     @endif
-                    @if (in_array($a->status, ['requested', 'approved'], true) && $canManage)
-                        <button type="button" wire:click="cancel({{ $a->id }})" wire:confirm="{{ __('Annuler cette avance ?') }}" class="btn-ghost !min-h-0 !py-1.5 text-sm text-terra-600">{{ __('Annuler') }}</button>
+                    @if ((in_array($a->status, ['requested', 'approved'], true) || ($a->status === 'paid' && $a->repayments->isEmpty())) && $canManage)
+                        <button type="button" wire:click="cancel({{ $a->id }})" wire:confirm="{{ $a->status === 'paid' ? __('Annuler cette avance ? Son paiement sera annulé dans le journal et l’argent reviendra au compte.') : __('Annuler cette avance ?') }}" class="btn-ghost !min-h-0 !py-1.5 text-sm text-terra-600">{{ __('Annuler') }}</button>
                     @endif
                 </div>
             </li>

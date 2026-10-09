@@ -83,6 +83,10 @@ class Collections
         }
 
         DB::transaction(function () use ($sheet) {
+            // Relue sous verrou : un double clic ne passe pas deux fois.
+            if (! CollectionSheet::withoutOrganizationScope()->lockForUpdate()->findOrFail($sheet->id)->isDraft()) {
+                throw new InvalidArgumentException(__('Cette feuille a déjà été validée.'));
+            }
             $account = $sheet->account;
             $label = $sheet->service_label.' · '.$sheet->service_date->translatedFormat('j F Y');
             $base = ['occurred_on' => $sheet->service_date->toDateString(), 'collection_id' => $sheet->id, 'payment_method' => 'cash'];
@@ -106,7 +110,7 @@ class Collections
     {
         DB::transaction(function () use ($sheet, $reason) {
             foreach ($sheet->transactions()->whereNull('cancelled_at')->get() as $t) {
-                $this->ledger->cancel($t, __('Feuille de collecte annulée : :r', ['r' => $reason]));
+                $this->ledger->cancel($t, __('Feuille de collecte annulée : :r', ['r' => $reason]), fromOwner: true);
             }
             $sheet->update(['status' => 'cancelled', 'cancel_reason' => $reason]);
         });

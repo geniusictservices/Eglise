@@ -12,6 +12,7 @@ use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * Promesses : ce qui est promis, ce qui est attendu à ce jour selon les
@@ -130,7 +131,10 @@ class Pledges
         if ($t->currency === $pledge->currency) {
             return BigDecimal::of((string) $t->amount);
         }
-        $rate = $this->rates->rate($pledge->loadMissing('organization')->organization, $pledge->currency, $t->occurred_on) ?? BigDecimal::one();
+        $organization = $pledge->loadMissing('organization')->organization;
+        // Le taux du jour du versement, sinon le dernier connu ; jamais 1 par défaut (des dollars comptés comme des francs).
+        $rate = $this->rates->rate($organization, $pledge->currency, $t->occurred_on) ?? $this->rates->rate($organization, $pledge->currency)
+            ?? throw new InvalidArgumentException(__('Saisissez d’abord le taux du jour pour :currency.', ['currency' => $pledge->currency]));
 
         return BigDecimal::of((string) $t->usd_amount)->multipliedBy($rate)->toScale(2, RoundingMode::HalfUp);
     }

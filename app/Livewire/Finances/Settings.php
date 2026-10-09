@@ -8,6 +8,7 @@ use App\Models\CashAccountCurrency;
 use App\Models\FinanceCategory;
 use App\Models\FinanceClosing;
 use App\Models\FinanceTransaction;
+use App\Models\Organization;
 use App\Services\Expenses;
 use App\Services\Ledger;
 use App\Support\FiscalYear;
@@ -61,7 +62,9 @@ class Settings extends Component
         $this->authorizeWrite('finance.settings');
         $this->validate(['fiscalStart' => 'required|integer|between:1,12']);
         $organization = $this->organization();
-        if (FinanceClosing::where('month', 0)->exists() && $this->fiscalStart !== FiscalYear::startMonth($organization)) {
+        // Les niveaux inférieurs qui suivent ce réglage comptent aussi : leurs exercices clôturés seraient réinterprétés.
+        $heirs = Organization::query()->subtreeOf($organization)->pluck('id');
+        if (FinanceClosing::withoutOrganizationScope()->whereIn('organization_id', $heirs)->where('month', 0)->exists() && $this->fiscalStart !== FiscalYear::startMonth($organization)) {
             $this->addError('fiscalStart', __('Un exercice est déjà clôturé : le mois de début ne peut plus changer.'));
 
             return;

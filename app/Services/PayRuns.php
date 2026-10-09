@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\CashAccount;
 use App\Models\FinanceCategory;
+use App\Models\FinanceTransaction;
 use App\Models\Organization;
 use App\Models\Payee;
 use App\Models\PayRun;
@@ -90,7 +91,7 @@ class PayRuns
     public function submit(PayRun $run): void
     {
         $this->expect($run, 'draft');
-        if (! $run->slips()->where('net', '>', 0)->exists()) {
+        if (! $run->slips()->where(fn ($q) => $q->where('net', '>', 0)->orWhere('advance_total', '>', 0))->exists()) {
             throw new InvalidArgumentException(__('Aucun montant à payer dans cette paie.'));
         }
         // Le contrôle budgétaire : au-delà du disponible des salaires, il faut un dépassement autorisé.
@@ -119,12 +120,31 @@ class PayRuns
         app(CircuitNotices::class)->payRunDecided($run, false, $note);
     }
 
+    /**
+     * Annule une paie. Déjà payée (en tout ou en partie), ses paiements sont annulés dans le journal
+     * et les retenues d'avances sont rendues : les avances redeviennent à rembourser.
+     */
     public function cancel(PayRun $run): void
     {
-        if (! in_array($run->status, ['draft', 'submitted', 'approved'], true) || $run->slips()->whereNotNull('paid_at')->exists()) {
-            throw new InvalidArgumentException(__('Une paie déjà payée ne s’annule pas : annulez les opérations dans le journal.'));
+        if (! in_array($run->status, ['draft', 'submitted', 'approved', 'paid'], true)) {
+            throw new InvalidArgumentException(__('Cette paie est déjà annulée.'));
         }
-        $run->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($run) {
+            $run = PayRun::withoutOrganizationScope()->lockForUpdate()->findOrFail($run->id);
+            foreach ($run->slips()->whereNotNull('paid_at')->get() as $slip) {
+                if ($slip->finance_transaction_id && ($t = FinanceTransaction::withoutOrganizationScope()->whereNull('cancelled_at')->find($slip->finance_transaction_id))) {
+                    $this->ledger->cancel($t, __('Paie :p annulée', ['p' => $run->label()]), fromOwner: true);
+                }
+                foreach (SalaryAdvanceRepayment::where('pay_slip_id', $slip->id)->get() as $repayment) {
+                    $advance = SalaryAdvance::withoutOrganizationScope()->find($repayment->salary_advance_id);
+                    $repayment->delete();
+                    if ($advance?->status === 'repaid') {
+                        $advance->update(['status' => 'paid']);
+                    }
+                }
+            }
+            $run->update(['status' => 'cancelled']);
+        });
         app(CircuitNotices::class)->payRunClosed($run);
     }
 
@@ -155,8 +175,18 @@ class PayRuns
             ['organization_id' => $run->organization_id, 'type' => 'expense', 'name' => 'Rémunérations et motivations'], ['position' => 50])->id;
 
         return DB::transaction(function () use ($run, $slipCurrency, $account, $payCurrency, $category) {
-            $slips = $run->slips()->with('payee.member')->where('currency', $slipCurrency)->whereNull('paid_at')->where('net', '>', 0)->get();
+            // Relue sous verrou : deux clics sur « Payer » ne paient pas deux fois.
+            $this->expect(PayRun::withoutOrganizationScope()->lockForUpdate()->findOrFail($run->id), 'approved');
+            $pending = fn ($q) => $q->where('net', '>', 0)->orWhere('advance_total', '>', 0);
+            $slips = $run->slips()->with('payee.member')->where('currency', $slipCurrency)->whereNull('paid_at')->where($pending)->get();
             foreach ($slips as $slip) {
+                $this->settleAdvances($slip);
+                if ((float) $slip->net <= 0) {
+                    // Tout le salaire rembourse une avance : rien ne sort de la caisse, mais le bulletin est réglé.
+                    $slip->update(['paid_currency' => $payCurrency, 'paid_amount' => 0, 'paid_at' => now()]);
+
+                    continue;
+                }
                 $amount = $this->convert($run->organization, (float) $slip->net, $slipCurrency, $payCurrency);
                 $transaction = $this->ledger->record($account, $payCurrency, 'expense', [
                     'amount' => $amount, 'category_id' => $category, 'department_id' => $slip->payee->department_id,
@@ -166,24 +196,47 @@ class PayRuns
                 ]);
                 $slip->update(['cash_account_id' => $account->id, 'paid_currency' => $payCurrency, 'paid_amount' => $amount,
                     'finance_transaction_id' => $transaction->id, 'paid_at' => now()]);
-
-                // Les avances retenues sur ce bulletin.
-                foreach ($slip->details['advances'] ?? [] as $a) {
-                    SalaryAdvanceRepayment::create(['salary_advance_id' => $a['advance_id'], 'pay_slip_id' => $slip->id, 'amount' => $a['amount']]);
-                    $advance = SalaryAdvance::withoutOrganizationScope()->with('repayments')->find($a['advance_id']);
-                    if ($advance && $advance->remaining() <= 0) {
-                        $advance->update(['status' => 'repaid']);
-                    }
-                }
             }
 
-            if (! $run->slips()->whereNull('paid_at')->where('net', '>', 0)->exists()) {
+            if (! $run->slips()->whereNull('paid_at')->where($pending)->exists()) {
                 $run->update(['status' => 'paid', 'paid_at' => now()]);
                 app(CircuitNotices::class)->payRunClosed($run);
             }
 
             return $slips->count();
         });
+    }
+
+    /**
+     * Enregistre les retenues d'avances d'un bulletin, relues sous verrou au moment de payer :
+     * une retenue ne dépasse jamais ce qui reste dû (une autre paie a pu déjà la retenir).
+     * Ce qui n'est plus à retenir revient au net du bulletin.
+     */
+    private function settleAdvances(PaySlip $slip): void
+    {
+        $planned = $slip->details['advances'] ?? [];
+        if ($planned === []) {
+            return;
+        }
+        $kept = [];
+        $given = 0.0;
+        foreach ($planned as $a) {
+            $advance = SalaryAdvance::withoutOrganizationScope()->with('repayments')->lockForUpdate()->find($a['advance_id']);
+            $amount = $advance && $advance->status === 'paid' ? round(min((float) $a['amount'], $advance->remaining()), 2) : 0.0;
+            $given += (float) $a['amount'] - $amount;
+            if ($amount <= 0) {
+                continue;
+            }
+            SalaryAdvanceRepayment::create(['salary_advance_id' => $advance->id, 'pay_slip_id' => $slip->id, 'amount' => $amount]);
+            if ($advance->load('repayments')->remaining() <= 0.004) {
+                $advance->update(['status' => 'repaid']);
+            }
+            $kept[] = ['amount' => $amount] + $a;
+        }
+        if ($given > 0.004) {
+            $slip->update(['advance_total' => round((float) $slip->advance_total - $given, 2), 'deductions' => round((float) $slip->deductions - $given, 2),
+                'net' => round((float) $slip->net + $given, 2), 'details' => ['advances' => $kept] + ($slip->details ?? [])]);
+        }
     }
 
     private function expect(PayRun $run, string $status): void

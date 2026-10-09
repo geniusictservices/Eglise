@@ -7,6 +7,7 @@ use App\Models\CashAccount;
 use App\Models\ExpenseApproval;
 use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
+use App\Models\FinanceTransaction;
 use App\Models\Organization;
 use App\Models\User;
 use App\Support\Money;
@@ -149,6 +150,8 @@ class Expenses
         $request->loadMissing('organization');
 
         DB::transaction(function () use ($request, $account) {
+            // Relue sous verrou : un double clic ne passe pas deux fois.
+            $this->expect(ExpenseRequest::withoutOrganizationScope()->lockForUpdate()->findOrFail($request->id), 'approved');
             $transaction = $this->ledger->record($account, $request->currency, 'expense', [
                 'amount' => (string) $request->amount,
                 'category_id' => $request->category_id,
@@ -183,6 +186,7 @@ class Expenses
         $request->loadMissing('account');
 
         DB::transaction(function () use ($request, $spent, $amount, $note) {
+            $this->expect(ExpenseRequest::withoutOrganizationScope()->lockForUpdate()->findOrFail($request->id), 'disbursed');
             $return = null;
             if ($amount - $spent > 0.004) {
                 $return = $this->ledger->record($request->account, $request->currency, 'income', [
@@ -202,12 +206,24 @@ class Expenses
         });
     }
 
-    public function cancel(ExpenseRequest $request): void
+    /**
+     * Annule une demande. Déjà décaissée (ou justifiée), ses opérations sont annulées avec elle :
+     * l'argent revient au compte, et la demande ne peut plus être justifiée.
+     */
+    public function cancel(ExpenseRequest $request, ?string $reason = null): void
     {
-        if (! in_array($request->status, ['submitted', 'checked', 'approved'], true)) {
-            throw new InvalidArgumentException(__('Une dépense décaissée ne s’annule pas : annulez l’opération dans le journal.'));
+        if (! in_array($request->status, ['submitted', 'checked', 'approved', 'disbursed', 'justified'], true)) {
+            throw new InvalidArgumentException(__('Cette demande ne peut plus être annulée.'));
         }
-        $request->update(['status' => 'cancelled']);
+        DB::transaction(function () use ($request, $reason) {
+            $request = ExpenseRequest::withoutOrganizationScope()->lockForUpdate()->findOrFail($request->id);
+            $transactions = FinanceTransaction::withoutOrganizationScope()->where('expense_request_id', $request->id)->whereNull('cancelled_at')->get();
+            // Le retour d'avance d'abord : c'est une entrée, puis la sortie du décaissement.
+            foreach ($transactions->sortByDesc(fn ($t) => $t->type === 'income') as $transaction) {
+                $this->ledger->cancel($transaction, __('Demande :n annulée', ['n' => $request->number]).($reason ? ' : '.$reason : ''), fromOwner: true);
+            }
+            $request->update(['status' => 'cancelled']);
+        });
         app(CircuitNotices::class)->expenseClosed($request);
     }
 

@@ -47,7 +47,7 @@ class Payroll
      */
     public function compute(Payee $payee, float $quantity = 1, array $adjustments = [], array $advances = []): array
     {
-        $round = fn (float $v) => round($v, $payee->currency === 'CDF' ? 0 : 2);
+        $round = fn (float $v) => round($v, (int) config("waumini.currencies.{$payee->currency}.decimals", 2));
         $base = $round((float) $payee->base_amount * ($payee->schedule?->isPerService() ? $quantity : 1));
         $lines = [];
         $items = $this->itemsFor($payee);
