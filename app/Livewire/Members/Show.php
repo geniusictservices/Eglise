@@ -252,8 +252,17 @@ class Show extends Component
     public function archive(): void
     {
         $this->authorizeMemberWrite($this->member);
+        // Un groupe a toujours un responsable : on lui donne d'abord un successeur.
+        if ($group = Group::withoutOrganizationScope()->where('leader_member_id', $this->member->id)->first()) {
+            $this->dispatch('notify', message: __(':n est responsable du groupe « :g » : donnez-lui d’abord un successeur.', ['n' => $this->member->fullName(), 'g' => $group->name]), type: 'error');
+
+            return;
+        }
 
         DB::transaction(function () {
+            // Une demande de transfert en attente n'a plus d'objet.
+            MemberTransfer::where('member_id', $this->member->id)->where('status', 'pending')->get()
+                ->each(fn ($t) => $t->update(['status' => 'cancelled']));
             Household::withoutOrganizationScope()->where('head_member_id', $this->member->id)->update(['head_member_id' => null]);
             $this->member->delete();
         });

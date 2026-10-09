@@ -1,6 +1,6 @@
 @php use App\Support\Money; @endphp
 <div>
-    <a href="{{ route('finances.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Finances') }}</a>
+    @can('finance.view')<a href="{{ route('finances.index') }}" class="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-ink-600 hover:underline"><x-icon name="chevron-left" class="size-4" /> {{ __('Finances') }}</a>@endcan
     <x-page-header :title="__('Dépenses')" :description="__('Chaque dépense suit le circuit : demande, contrôle, approbation, décaissement, justification.')">
         <x-slot:actions>
             @if ($canRequest)<a href="{{ route('finances.expenses.create') }}" class="btn-primary"><x-icon name="plus" class="size-4" /> {{ __('Demander une dépense') }}</a>@endif

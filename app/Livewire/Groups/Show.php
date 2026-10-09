@@ -135,7 +135,7 @@ class Show extends Component
         $this->authorizeManage();
         $existing = $id ? GroupMeeting::where('group_id', $this->group->id)->with('attendances')->findOrFail($id) : null;
         $this->meeting = [
-            'held_on' => ($existing?->held_on ?? today())->toDateString(), 'topic' => $existing->topic ?? '',
+            'id' => $existing?->id, 'held_on' => ($existing?->held_on ?? today())->toDateString(), 'topic' => $existing->topic ?? '',
             'visitors' => $existing->visitors ?? 0, 'notes' => $existing->notes ?? '',
         ];
         $this->attendance = $groups->people($this->group)->mapWithKeys(fn (Member $m) => [
@@ -159,7 +159,13 @@ class Show extends Component
             'meeting.visitors' => 'nullable|integer|min:0|max:5000',
             'meeting.notes' => 'nullable|string|max:3000',
         ], attributes: ['meeting.held_on' => __('date'), 'meeting.visitors' => __('visiteurs')]);
-        $meeting = $groups->recordMeeting($this->group, $this->meeting, $this->attendance);
+        try {
+            $meeting = $groups->recordMeeting($this->group, $this->meeting, $this->attendance);
+        } catch (InvalidArgumentException $e) {
+            $this->addError('meeting.held_on', $e->getMessage());
+
+            return;
+        }
         $meeting->load('attendances');
         $this->dispatch('close-modal', name: 'meeting');
         $this->notify(__('Rencontre notée : :p présents sur :t.', ['p' => $meeting->presentCount(), 't' => $meeting->attendances->count()]));

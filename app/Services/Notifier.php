@@ -83,10 +83,13 @@ class Notifier
     }
 
     /** L'utilisateur a ouvert cette page : ses nouveautés qui y mènent sont lues. */
-    public function opened(User $user, string $path): void
+    public function opened(User $user, string $path, ?Organization $organization = null): void
     {
+        // Seules les nouveautés de la communauté affichée : ouvrir /transferts chez B ne règle pas une demande de A.
         DatabaseNotification::where('notifiable_type', 'user')->where('notifiable_id', $user->id)
-            ->whereNull('read_at')->where('path', '/'.ltrim($path, '/'))->update(['read_at' => now()]);
+            ->whereNull('read_at')->where('path', '/'.ltrim($path, '/'))
+            ->when($organization, fn ($q) => $q->where(fn ($q) => $q->whereNull('organization_id')->orWhere('organization_id', $organization->id)))
+            ->update(['read_at' => now()]);
     }
 
     public function unreadCount(User $user): int

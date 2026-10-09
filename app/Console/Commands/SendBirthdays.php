@@ -25,7 +25,8 @@ class SendBirthdays extends Command
                     return;
                 }
                 $names = $today->map(fn ($b) => $b['member']->fullName().' ('.$b['age'].')')->implode(', ');
-                $sent += $notifier->send($organization, $notifier->withPermission($organization, 'pastoral.view'), 'birthdays.'.today()->toDateString(), [
+                // Une liste par communauté : la clé porte la communauté, sinon la liste d'une paroisse remplacerait celle d'une autre.
+                $sent += $notifier->send($organization, $notifier->withPermission($organization, 'pastoral.view'), "birthdays.{$organization->id}.".today()->toDateString(), [
                     'title' => trans_choice('Un anniversaire aujourd’hui|:count anniversaires aujourd’hui', $today->count()),
                     'body' => $names, 'url' => route('pastoral.index', ['onglet' => 'anniversaires']), 'icon' => 'cake']);
             });

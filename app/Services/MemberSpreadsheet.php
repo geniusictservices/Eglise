@@ -579,7 +579,10 @@ class MemberSpreadsheet
             DB::transaction(function () use ($import, $results, $includeDuplicates, $organization, $default, &$created, &$householdsCreated) {
                 $households = Household::withoutOrganizationScope()->where('organization_id', $organization->id)->get()->keyBy(fn ($h) => self::normalize($h->name));
 
-                foreach ($results as $row) {
+                // Les lignes qui apportent leur numéro d'abord : un numéro attribué à une ligne sans numéro
+                // ne peut plus prendre celui qu'une ligne suivante du fichier apporte.
+                $ordered = collect($results)->sortBy(fn ($row) => filled($row['data']['number'] ?? null) ? 0 : 1)->all();
+                foreach ($ordered as $row) {
                     if ($row['errors'] || ($row['duplicate'] && ! $includeDuplicates)) {
                         continue;
                     }

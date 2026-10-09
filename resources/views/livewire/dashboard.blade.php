@@ -32,12 +32,13 @@
     {{-- Chiffres clés --}}
     <div class="relative z-10 -mt-9 grid grid-cols-2 gap-3 lg:mt-0 lg:grid-cols-4 lg:gap-4">
         @foreach ($stats as $stat)
-            <a href="{{ route($stat['route']) }}" class="card group grid content-start gap-0.5 p-3.5 shadow-sm shadow-ink-900/5 transition hover:border-ochre-300 lg:gap-1 lg:p-5">
+            @php $tileTag = auth()->user()->can($allowed[$stat['route']] ?? 'organization.view') ? 'a' : 'div'; @endphp
+            <{{ $tileTag }} @if ($tileTag === 'a') href="{{ route($stat['route']) }}" @endif @class(['card group grid content-start gap-0.5 p-3.5 shadow-sm shadow-ink-900/5 transition lg:gap-1 lg:p-5', 'hover:border-ochre-300' => $tileTag === 'a'])>
                 <span class="icon-tile size-9 lg:size-10 {{ $tones[$stat['tone']] }}"><x-icon :name="$stat['icon']" class="size-5" /></span>
                 <span class="mt-2 text-xs text-sand-700 sm:text-sm">{{ $stat['label'] }}</span>
                 <span class="text-xl font-semibold text-ink-800 tabular lg:text-2xl">{{ $stat['value'] }}</span>
                 @if (! empty($stat['hint']))<span class="text-xs text-sand-700">{{ $stat['hint'] }}</span>@endif
-            </a>
+            </{{ $tileTag }}>
         @endforeach
     </div>
 

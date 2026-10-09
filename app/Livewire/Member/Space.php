@@ -130,8 +130,10 @@ class Space extends Component
 
         $gifts = FinanceTransaction::where('member_id', $member->id)->where('type', 'income')->whereNull('cancelled_at')
             ->with('category')->latest('occurred_on')->latest('id')->limit(30)->get();
-        $year = $gifts->filter(fn ($t) => $t->occurred_on->year === now()->year)->groupBy('currency')
-            ->map(fn ($ts, $currency) => Money::format($ts->sum('amount'), $currency))->values();
+        // Le total de l'année sur tous ses dons, pas seulement les 30 derniers affichés.
+        $year = FinanceTransaction::where('member_id', $member->id)->where('type', 'income')->whereNull('cancelled_at')
+            ->whereYear('occurred_on', now()->year)->selectRaw('currency, sum(amount) as total')->groupBy('currency')->pluck('total', 'currency')
+            ->map(fn ($total, $currency) => Money::format($total, $currency))->values();
 
         return view('livewire.member.space', [
             'member' => $member,

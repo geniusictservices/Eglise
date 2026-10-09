@@ -50,7 +50,7 @@
                         <input wire:model.live.debounce.500ms="form.fields.{{ $i }}.label" class="input min-w-0 flex-1 basis-40" placeholder="{{ __('Libellé, ex. Destination') }}" aria-label="{{ __('Libellé du champ') }}">
                         <select wire:model="form.fields.{{ $i }}.type" class="input w-auto" aria-label="{{ __('Type') }}">@foreach (DocumentType::FIELD_TYPES as $k => $l)<option value="{{ $k }}">{{ __($l) }}</option>@endforeach</select>
                         <label class="flex items-center gap-1.5 text-sm"><input type="checkbox" wire:model="form.fields.{{ $i }}.required" class="size-4"> {{ __('Obligatoire') }}</label>
-                        @if (trim($f['label'] ?? '') !== '')<code class="rounded bg-sand-100 px-1.5 py-0.5 text-xs">{{ '{'.\App\Support\DocumentTemplate::fieldKey($f['label']).'}' }}</code>@endif
+                        @if (trim($f['label'] ?? '') !== '')<code class="rounded bg-sand-100 px-1.5 py-0.5 text-xs">{{ '{'.($f['key'] ?? \App\Support\DocumentTemplate::fieldKey($f['label'])).'}' }}</code>@endif
                         <button type="button" wire:click="removeField({{ $i }})" class="rounded-lg p-2 text-sand-500 hover:bg-terra-50 hover:text-terra-600" aria-label="{{ __('Retirer') }}"><x-icon name="x" class="size-4" /></button>
                     </div>
                 @empty

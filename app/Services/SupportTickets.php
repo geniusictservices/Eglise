@@ -23,9 +23,12 @@ class SupportTickets
     {
         $ticket = DB::transaction(function () use ($organization, $by, $subject, $category, $body) {
             $year = now()->year;
-            $count = SupportTicket::whereYear('created_at', $year)->lockForUpdate()->count();
+            // Le plus grand numéro de l'année, toutes communautés confondues : compter les demandes ne suffit pas,
+            // celles d'une démo supprimée disparaissent et le compte retomberait sur un numéro déjà pris.
+            $last = SupportTicket::query()->withoutGlobalScopes()->where('number', 'like', "T{$year}-%")->lockForUpdate()
+                ->pluck('number')->map(fn ($n) => (int) substr($n, strlen("T{$year}-")))->max() ?? 0;
             $ticket = SupportTicket::create([
-                'organization_id' => $organization->id, 'number' => sprintf('T%d-%04d', $year, $count + 1), 'subject' => trim($subject),
+                'organization_id' => $organization->id, 'number' => sprintf('T%d-%04d', $year, $last + 1), 'subject' => trim($subject),
                 'category' => array_key_exists($category, SupportTicket::CATEGORIES) ? $category : 'question',
                 'opened_by' => $by->id, 'last_activity_at' => now(),
             ]);

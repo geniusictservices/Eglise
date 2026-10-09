@@ -5,7 +5,7 @@
     </div>
 
     <div class="px-3">
-        <livewire:organization-switcher />
+        @if (current_organization())<livewire:organization-switcher />@endif {{-- l’équipe Genius ICT sans communauté n’en a pas --}}
     </div>
 
     <nav class="mt-4 flex-1 space-y-6 overflow-y-auto px-3 pb-6" aria-label="{{ __('Menu') }}">

@@ -46,6 +46,10 @@ class Documents
         if ($beneficiary === '') {
             throw new InvalidArgumentException(__('Indiquez le destinataire du document.'));
         }
+        // Destinataire libre : son nom remplit {nom_complet} et {nom_officiel}, comme dans l'aperçu.
+        if ($type->subject === 'free' && ! $member && ! $person) {
+            $person = ['official_name' => $beneficiary, 'full_name' => $beneficiary];
+        }
         foreach ($type->customFields() as $field) {
             if ($field['required'] && trim((string) ($data['fields'][$field['key']] ?? '')) === '') {
                 throw new InvalidArgumentException(__('Remplissez le champ « :f ».', ['f' => $field['label']]));

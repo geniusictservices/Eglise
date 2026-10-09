@@ -83,11 +83,15 @@ class Subscriptions
         $paidUntil = $latest?->ends_on;
         $trialUntil = $root->trial_ends_at;
 
+        // La dernière échéance : fin de la période payée ou de l'essai (un essai prolongé par Genius ICT
+        // après un abonnement expiré compte aussi).
+        $lastEnd = collect([$paidUntil, $trialUntil])->filter()->max();
+
         $status = match (true) {
             $paidUntil && $paidUntil->gte(today()) && $latest->starts_on->lte(today()) => 'active',
             $paidUntil && $paidUntil->gte(today()) => 'active', // période payée d'avance
-            ! $paidUntil && $trialUntil && $trialUntil->gte(now()) => 'trial',
-            ($paidUntil ?? $trialUntil) && ($paidUntil ?? $trialUntil)->copy()->addDays($grace)->gte(now()) => 'grace',
+            $trialUntil && $trialUntil->gte(now()) => 'trial',
+            $lastEnd && $lastEnd->copy()->addDays($grace)->endOfDay()->gte(now()) => 'grace', // le dernier jour de grâce compte en entier
             default => 'read_only',
         };
 

@@ -94,7 +94,7 @@
                     <li class="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
                         <span class="min-w-0 flex-1">
                             <span class="block font-semibold text-ink-800">{{ Money::format($o->amount, 'USD') }} · {{ $o->department?->name }} · {{ $o->category?->name }}</span>
-                            <span class="block text-xs text-sand-700">{{ $o->sourceLabel() }}@if ($o->expense) · <a href="{{ route('finances.expenses.show', $o->expense) }}" class="font-semibold hover:underline">{{ $o->expense->number }}</a>@endif@if ($o->payRun) · <a href="{{ route('payroll.run', $o->payRun) }}" class="font-semibold hover:underline">{{ __('paie :p', ['p' => $o->payRun->label()]) }}</a>@endif</span>
+                            <span class="block text-xs text-sand-700">{{ $o->sourceLabel() }}@if ($o->expense) · @if (\Illuminate\Support\Facades\Gate::any(['finance.view', 'finance.expenses.approve', 'finance.disburse']) || $o->expense->requested_by === auth()->id())<a href="{{ route('finances.expenses.show', $o->expense) }}" class="font-semibold hover:underline">{{ $o->expense->number }}</a> @else {{ $o->expense->number }} @endif @endif@if ($o->payRun) · <a href="{{ route('payroll.run', $o->payRun) }}" class="font-semibold hover:underline">{{ __('paie :p', ['p' => $o->payRun->label()]) }}</a>@endif</span>
                         </span>
                         <span @class(['badge', 'bg-ochre-100 text-ochre-700' => $o->status === 'pending', 'bg-leaf-50 text-leaf-600' => $o->status === 'authorized', 'bg-terra-50 text-terra-600' => $o->status === 'refused'])>{{ __(\App\Models\BudgetOverrun::STATUSES[$o->status]) }}</span>
                     </li>

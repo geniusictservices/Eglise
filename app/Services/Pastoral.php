@@ -123,9 +123,16 @@ class Pastoral
                 if ($m->birth_date->format('m-d') === '02-29' && ! $next->isLeapYear()) {
                     $next = $next->setDate($from->year, 2, 28);
                 }
-                $next = $next->lt($from->copy()->startOfDay()) ? $next->addYear() : $next;
+                if ($next->lt($from->copy()->startOfDay())) {
+                    // L'an prochain : un 29 février retrouve son jour quand l'année est bissextile.
+                    $year = $from->year + 1;
+                    $next = $m->birth_date->format('m-d') === '02-29'
+                        ? $next->setDate($year, 2, Carbon::create($year)->isLeapYear() ? 29 : 28)
+                        : $next->addYear();
+                }
 
-                return ['member' => $m, 'date' => $next, 'age' => (int) $m->birth_date->diffInYears($next)];
+                // L'âge en années révolues ce jour-là (un 29 février fêté le 28 compte aussi).
+                return ['member' => $m, 'date' => $next, 'age' => $next->year - $m->birth_date->year];
             })
             ->filter(fn ($b) => $b['date']->lte($to))->sortBy(fn ($b) => $b['date']->format('Y-m-d').$b['member']->last_name)->values();
     }

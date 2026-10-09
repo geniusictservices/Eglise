@@ -1,6 +1,7 @@
 <div>
     <x-page-header :title="__('Site vitrine')" :description="__('Le site de la communauté sur Internet. Vous écrivez quelques textes ; le programme, les événements, les annonces et les prédications viennent de Waumini et se mettent à jour tout seuls.')">
-        <x-slot:actions><a href="{{ $address }}" target="_blank" rel="noopener" class="btn-secondary"><x-icon name="external-link" class="size-4" /> {{ $website?->is_published ? __('Voir le site') : __('Aperçu') }}</a></x-slot:actions>
+        {{-- L'aperçu n'existe qu'une fois le site enregistré une première fois. --}}
+        <x-slot:actions>@if ($website?->exists) <a href="{{ $address }}" target="_blank" rel="noopener" class="btn-secondary"><x-icon name="external-link" class="size-4" /> {{ $website->is_published ? __('Voir le site') : __('Aperçu') }}</a> @endif</x-slot:actions>
     </x-page-header>
 
     <section @class(['mb-5 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl p-4', 'bg-leaf-50' => $website?->is_published, 'bg-ochre-50' => ! $website?->is_published])>

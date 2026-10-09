@@ -70,6 +70,9 @@ class Dashboard extends Component
                     ? ['label' => __('Taux du jour'), 'value' => Money::format($cdf['rate'], 'CDF'), 'icon' => 'arrow-left-right', 'route' => 'currencies.index', 'tone' => 'terra', 'hint' => __('pour 1 $')]
                     : null,
             ])),
+            // Une tuile ne mène qu'à une page permise : sinon elle reste un simple chiffre.
+            'allowed' => ['users.index' => 'users.manage', 'currencies.index' => 'currencies.manage', 'hierarchy.index' => 'organization.view',
+                'members.index' => 'members.view', 'households.index' => 'members.view'],
             'actions' => array_values(array_filter([
                 auth()->user()->can('members.manage') ? ['label' => __('Membre'), 'icon' => 'user-plus', 'url' => route('members.create'), 'color' => 'text-ochre-600'] : null,
                 auth()->user()->can('users.manage') ? ['label' => __('Utilisateur'), 'icon' => 'key-round', 'url' => route('users.create'), 'color' => 'text-leaf-500'] : null,

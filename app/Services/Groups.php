@@ -106,10 +106,16 @@ class Groups
         $people = $this->people($group)->pluck('id')->all();
 
         return DB::transaction(function () use ($group, $data, $attendance, $heldOn, $people) {
-            $meeting = GroupMeeting::withoutOrganizationScope()->updateOrCreate(['group_id' => $group->id, 'held_on' => $heldOn->toDateString()], [
-                'organization_id' => $group->organization_id, 'topic' => trim((string) ($data['topic'] ?? '')) ?: null,
-                'notes' => trim((string) ($data['notes'] ?? '')) ?: null, 'visitors' => max(0, (int) ($data['visitors'] ?? 0)), 'recorded_by' => auth()->id(),
-            ]);
+            $values = ['organization_id' => $group->organization_id, 'topic' => trim((string) ($data['topic'] ?? '')) ?: null,
+                'notes' => trim((string) ($data['notes'] ?? '')) ?: null, 'visitors' => max(0, (int) ($data['visitors'] ?? 0)), 'recorded_by' => auth()->id()];
+            $sameDay = GroupMeeting::withoutOrganizationScope()->where('group_id', $group->id)->whereDate('held_on', $heldOn)->first();
+            // Une rencontre rouverte et redatée se corrige elle-même : elle ne crée pas un doublon.
+            $edited = ($data['id'] ?? null) ? GroupMeeting::withoutOrganizationScope()->where('group_id', $group->id)->find($data['id']) : null;
+            if ($edited && $sameDay && ! $sameDay->is($edited)) {
+                throw new InvalidArgumentException(__('Une rencontre est déjà notée le :d : ouvrez-la pour la corriger.', ['d' => $heldOn->translatedFormat('j F Y')]));
+            }
+            $meeting = $edited ?? $sameDay ?? new GroupMeeting(['group_id' => $group->id]);
+            $meeting->fill($values + ['held_on' => $heldOn->toDateString()])->save();
             $meeting->attendances()->delete();
             foreach ($people as $memberId) {
                 $status = $attendance[$memberId] ?? 'absent';

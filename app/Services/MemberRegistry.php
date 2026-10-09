@@ -2,11 +2,15 @@
 
 namespace App\Services;
 
+use App\Models\DocumentType;
 use App\Models\Member;
 use App\Models\MemberField;
 use App\Models\MemberFunction;
+use App\Models\MemberFunctionTerm;
 use App\Models\MemberStatus;
 use App\Models\Organization;
+use App\Models\Role;
+use App\Models\RoleAssignment;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -166,7 +170,7 @@ class MemberRegistry
         $target = MemberStatus::where('organization_id', $root->id)->get()->keyBy(fn ($s) => Str::lower(Str::ascii($s->name)));
         $subtree = Organization::query()->subtreeOf($joined)->pluck('id');
 
-        DB::transaction(function () use ($joined, $target, $subtree) {
+        DB::transaction(function () use ($joined, $target, $subtree, $root) {
             foreach (MemberStatus::whereIn('organization_id', $subtree)->get() as $status) {
                 $match = $target->get(Str::lower(Str::ascii($status->name)));
 
@@ -179,10 +183,43 @@ class MemberRegistry
                 }
             }
 
+            // Les fonctions de même nom que celles du siège sont fusionnées, comme les statuts.
+            $functions = MemberFunction::where('organization_id', $root->id)->get()->keyBy(fn ($f) => Str::lower(Str::ascii($f->name)));
+            foreach (MemberFunction::whereIn('organization_id', $subtree)->get() as $function) {
+                if ($match = $functions->get(Str::lower(Str::ascii($function->name)))) {
+                    MemberFunctionTerm::where('function_id', $function->id)->update(['function_id' => $match->id]);
+                    $function->delete();
+                }
+            }
+
+            // Les rôles modèles identiques à ceux du siège : les utilisateurs passent au rôle du siège.
+            // Un rôle modifié par l'église reste le sien.
+            $roles = Role::where('organization_id', $root->id)->whereNotNull('key')->get()->keyBy('key');
+            foreach (Role::whereIn('organization_id', $subtree)->whereNotNull('key')->get() as $role) {
+                $match = $roles->get($role->key);
+                if ($match && collect($role->grantedPermissions())->sort()->values()->all() === collect($match->grantedPermissions())->sort()->values()->all()) {
+                    foreach (RoleAssignment::where('role_id', $role->id)->get() as $assignment) {
+                        $twin = RoleAssignment::where('role_id', $match->id)->where('user_id', $assignment->user_id)->where('organization_id', $assignment->organization_id)->exists();
+                        $twin ? $assignment->delete() : $assignment->update(['role_id' => $match->id]);
+                    }
+                    $role->delete();
+                }
+            }
+
+            // Les modèles de documents de l'église deviennent ses copies de ceux du siège : un seul de chaque sorte.
+            $types = DocumentType::where('organization_id', $root->id)->whereNotNull('key')->get()->keyBy('key');
+            foreach (DocumentType::whereIn('organization_id', $subtree)->whereNotNull('key')->whereNull('replaces_id')->get() as $type) {
+                if ($match = $types->get($type->key)) {
+                    $type->update(['replaces_id' => $match->id]);
+                }
+            }
+
             // Le format du numéro du siège s'applique désormais : on retire l'ancien réglage.
             $settings = $joined->settings ?? [];
             unset($settings['members']);
             $joined->update(['settings' => $settings ?: null]);
         });
+        // L'abonnement du siège couvre désormais cette église.
+        app(Subscriptions::class)->refreshStatus($root);
     }
 }

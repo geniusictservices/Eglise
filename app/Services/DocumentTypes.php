@@ -64,12 +64,17 @@ class DocumentTypes
         if ($type && $type->organization_id !== $organization->id) {
             throw new InvalidArgumentException(__('Ce modèle appartient à un niveau supérieur : adaptez-le d’abord pour votre communauté.'));
         }
+        // Un champ qui existait garde sa clé, même si son libellé change : le texte du modèle l'utilise
+        // ({destinataire}, {objet}…). Seul un champ nouveau reçoit une clé tirée de son libellé.
+        $known = collect($type?->fields ?? [])->pluck('key')->filter()->all();
         $fields = collect($data['fields'] ?? [])->filter(fn ($f) => trim((string) ($f['label'] ?? '')) !== '')
-            ->map(fn ($f) => ['key' => DocumentTemplate::fieldKey($f['label']), 'label' => trim($f['label']),
-                'type' => array_key_exists($f['type'] ?? '', DocumentType::FIELD_TYPES) ? $f['type'] : 'text', 'required' => (bool) ($f['required'] ?? false)])
-            ->unique('key')->values()->all();
+            ->map(fn ($f) => ['key' => in_array($f['key'] ?? null, $known, true) ? $f['key'] : DocumentTemplate::fieldKey($f['label']), 'label' => trim($f['label']),
+                'type' => array_key_exists($f['type'] ?? '', DocumentType::FIELD_TYPES) ? $f['type'] : 'text', 'required' => (bool) ($f['required'] ?? false), 'new' => ! in_array($f['key'] ?? null, $known, true)])
+            ->unique('key')->values();
         $reserved = collect(DocumentTemplate::variables())->flatMap(fn ($group) => array_keys($group))->all();
-        if ($clash = collect($fields)->first(fn ($f) => in_array($f['key'], $reserved, true))) {
+        $clash = $fields->first(fn ($f) => $f['new'] && in_array($f['key'], $reserved, true));
+        $fields = $fields->map(fn ($f) => array_diff_key($f, ['new' => true]))->all();
+        if ($clash) {
             throw new InvalidArgumentException(__('Le champ « :l » porte le nom d’une variable de Waumini : donnez-lui un autre nom.', ['l' => $clash['label']]));
         }
         if (! str_contains($data['number_format'] ?? '', '{NUMERO}')) {
@@ -111,7 +116,8 @@ class DocumentTypes
      */
     public function values(DocumentType $type, Organization $organization, array $context): array
     {
-        $date = fn ($d) => $d ? Carbon::parse($d)->translatedFormat('j F Y') : null;
+        // Le document est rédigé en français : ses dates aussi, quelle que soit la langue de celui qui le délivre.
+        $date = fn ($d) => $d ? Carbon::parse($d)->locale(config('app.locale', 'fr'))->translatedFormat('j F Y') : null;
         $member = $context['member'] ?? null;
         $person = $context['person'] ?? ($member ? $this->personOf($member) : []);
         $event = $context['event'] ?? ($member && $type->life_event_type
@@ -155,6 +161,8 @@ class DocumentTypes
             ? Member::withoutOrganizationScope()->where('household_id', $member->household_id)->whereKeyNot($member->id)
                 ->whereIn('household_role', $member->household_role === 'spouse' ? ['head'] : ['spouse'])->first()
             : null;
+        // Seuls le chef de ménage et son conjoint ont un conjoint : pour un enfant, ce serait sa mère.
+        $spouse = in_array($member->household_role, ['head', 'spouse'], true) ? $spouse : null;
 
         return [
             'gender' => $member->gender, 'full_name' => $member->fullName(), 'official_name' => $member->officialName(),
