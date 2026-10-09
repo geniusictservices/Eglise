@@ -94,7 +94,7 @@ Un budget de 20 000 $ de dépenses doit dire **d'où viendront ces 20 000 $**. O
 <td width="32%"><img src="captures/mobile/64b-budget-recettes.png" alt="Les recettes prévues sur téléphone"></td>
 </tr></table>
 
-① **L'équilibre du budget** : la part des recettes prévues que les dépenses prévues consomment (63 % dans la démo), et la marge qui reste. Si les dépenses dépassent les recettes sur lesquelles on peut compter, Waumini dit **ce qui manque**, et le budget **ne peut pas être présenté** : il faut ajouter une recette prévue, ou réduire des dépenses.
+① **L'équilibre du budget** : la part des recettes utilisables cette année que les dépenses prévues consomment, et la marge qui reste. Les recettes d'un projet qui dépassent ses dépenses de l'année lui restent réservées : elles ne comptent pas dans ce calcul. Si les dépenses dépassent les recettes sur lesquelles on peut compter, Waumini dit **ce qui manque**, et le budget **ne peut pas être présenté** : il faut ajouter une recette prévue, ou réduire des dépenses.
 
 ② **Chaque ligne**, avec une barre et son pourcentage des recettes prévues : une recette dit ce qu'elle **apporte** (« Offrandes des cultes, apporte 31 % »), une dépense ce qu'elle **consomme** (« Paie du pasteur, consomme 20 % »). Les recettes et les dépenses se présentent de la même façon.
 

@@ -101,7 +101,7 @@ Pour une dépense ordinaire, si l'argent libre ne suffit pas et que le décaisse
 
 Pour une dépense ordinaire, la justification consiste à joindre la facture. Des pièces peuvent être ajoutées à tout moment depuis le bloc **Pièces**.
 
-**Annuler la demande** : possible jusqu'au décaissement, par le demandeur ou la finance. Une dépense déjà décaissée s'annule dans les **Opérations**.
+**Annuler la demande** : jusqu'au décaissement, par le demandeur ou la finance. Une dépense déjà décaissée (ou justifiée) s'annule aussi depuis la demande, par la finance seulement : son opération et le retour d'avance éventuel sont annulés, et l'argent revient au compte (si le mois n'est pas clôturé).
 
 ## Régler le circuit
 

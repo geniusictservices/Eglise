@@ -120,6 +120,10 @@ Le pasteur voit aussi le budget des salaires de la paie ; s'il y a une demande d
 
 Une fois la paie approuvée, la finance choisit, pour chaque devise de bulletins, **le compte** et **la devise payée**. Si elle diffère (des bulletins en francs payés en dollars, faute de francs en caisse), Waumini calcule **l'équivalent au taux du jour**. Chaque bulletin devient une sortie « Rémunérations et motivations » du département de la personne, visible dans les opérations, les rapports et le suivi du budget.
 
+**Annuler la paie** reste possible après le paiement, si le mois n'est pas clôturé : les sorties de caisse sont annulées, l'argent revient au compte et les retenues d'avances sont rendues.
+
+Un bulletin dont **toute la paie rembourse une avance** (net à zéro) est réglé sans sortie de caisse : la retenue est bien enregistrée.
+
 L'**état de paie** s'imprime (format paysage) avec une colonne pour la signature de chaque bénéficiaire, et les signatures de la finance et du pasteur.
 
 ## Le bulletin de paie
@@ -141,4 +145,4 @@ L'icône à droite de chaque bulletin l'ouvre, prêt à imprimer ou à enregistr
 
 ① **Le pasteur approuve** l'avance, ou la refuse avec un motif.
 
-La finance **paie l'avance** depuis un compte. Ensuite, elle est **retenue automatiquement** sur les paies suivantes, sans jamais rendre le net négatif. ② La barre montre ce qui est déjà retenu ; à la dernière retenue, l'avance est **remboursée**.
+La finance **paie l'avance** depuis un compte. Ensuite, elle est **retenue automatiquement** sur les paies suivantes, sans jamais rendre le net négatif, et jamais plus que ce qui reste dû, même si plusieurs paies ont été préparées d'avance. ② La barre montre ce qui est déjà retenu ; à la dernière retenue, l'avance est **remboursée**. Une avance payée par erreur s'annule tant qu'aucune retenue n'a été faite : son paiement est annulé et l'argent revient au compte.

@@ -63,7 +63,7 @@ Après chaque rencontre, le responsable (ou un adjoint) touche **Noter une renco
 - ② Pour chaque personne : **Présent**, **Excusé** ou **Absent**. Une personne excusée n'est pas signalée « à visiter ».
 - Ajoutez le nombre de **visiteurs** et des **notes** (sujets de prière, nouvelles).
 
-Une seule rencontre notée par jour : noter de nouveau la même date **corrige** la rencontre. Pour la modifier plus tard, touchez-la dans la liste des rencontres ; **Supprimer** l'efface avec ses présences.
+Une seule rencontre notée par jour : noter de nouveau la même date **corrige** la rencontre. Pour la modifier plus tard, touchez-la dans la liste des rencontres (changer sa date la déplace, sans créer de doublon) ; **Supprimer** l'efface avec ses présences.
 
 ## Les cotisations
 

@@ -109,6 +109,10 @@ Un virement ou un change n'est ni une recette ni une dépense : il ne modifie pa
 
 **Annuler une opération** : la flèche de retour, puis le motif. L'opération reste visible, barrée, avec la date, l'auteur et le motif de l'annulation. Les deux côtés d'un virement ou d'un change sont annulés ensemble. Dans un mois clôturé, plus rien ne s'annule.
 
+Une opération qui appartient à un document s'annule **depuis ce document**, pour qu'il reste juste : la demande de dépense (**Annuler la demande**), la paie (**Annuler la paie**), l'avance sur salaire, la feuille de collecte. Waumini le rappelle si vous essayez depuis les opérations. Les versements de quote-part et de projet, suivis par deux niveaux, ne s'annulent pas. Annuler une recette n'est possible que si l'argent est encore dans la caisse ; annuler le versement d'une promesse la remet à jour, et un paiement déclaré redevient **rejeté**.
+
+**Une sortie antidatée** doit être couverte par le solde de la caisse à sa date et les jours suivants : sinon le rapport du mois passé montrerait une caisse en négatif.
+
 ## Questions fréquentes
 
 **Le solde d'une caisse ne correspond pas à l'argent compté.** Regardez les opérations du compte depuis le dernier comptage : une recette oubliée, une dépense saisie dans le mauvais compte ou la mauvaise devise. Corrigez en annulant l'opération fausse et en la saisissant de nouveau.

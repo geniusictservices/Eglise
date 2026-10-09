@@ -52,7 +52,7 @@ En haut de la fiche : la photo, le numéro, le nom officiel (NOM Post-nom Préno
 - **Carte** ① prépare la [carte de membre](#la-carte-de-membre) à imprimer.
 - **Document** délivre une attestation, une lettre ou un ordre de mission à cette personne (voir [Les documents](29-documents.md)).
 - **Statut** ② change le statut de la personne (voir ci-dessous).
-- **Modifier** ouvre le formulaire de la fiche. Le menu **⋯** permet de supprimer la fiche ; elle reste visible dans le [journal d'audit](09-journal.md).
+- **Modifier** ouvre le formulaire de la fiche. Le menu **⋯** permet de supprimer la fiche ; elle reste visible dans le [journal d'audit](09-journal.md). Le responsable d'un groupe ne se supprime pas : donnez d'abord un successeur au groupe.
 
 Les onglets ③ :
 

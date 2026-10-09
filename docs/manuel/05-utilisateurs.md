@@ -75,3 +75,5 @@ Quand une personne quitte sa fonction, décochez **Compte actif** puis **Enregis
 ## Réinitialiser un mot de passe
 
 Si une personne a oublié son mot de passe : ouvrez son compte, touchez **Réinitialiser le mot de passe** et confirmez. Waumini affiche un nouveau mot de passe provisoire, à communiquer comme lors de la création.
+
+**Un compte partagé avec un autre niveau.** Si la personne a aussi un rôle au siège (ou dans une autre communauté), ou si c'est un administrateur, la paroisse gère ses rôles chez elle mais ne change ni son nom, ni son téléphone, ni son mot de passe : c'est au niveau qui l'a nommée de le faire. Un encadré l'indique sur sa fiche.
