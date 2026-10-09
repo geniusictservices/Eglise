@@ -1,4 +1,4 @@
-# 18. Promesses et paiements déclarés
+# 11. Promesses et paiements déclarés
 
 ## Les promesses
 
@@ -6,7 +6,7 @@ Une **promesse**, c'est un engagement à donner : 600 $ pour la construction du 
 
 Une promesse se rattache, le plus souvent, à un **[projet](23-projets-reunions.md)** : la parcelle, le temple, la convention. Le projet rassemble ses promesses, son objectif, et tout l'argent reçu. Une promesse peut aussi être générale, sans projet.
 
-> Permission nécessaire : **Gérer les promesses**. Enregistrer un versement demande aussi **Saisir les recettes**.
+> Permission nécessaire : **Gérer les promesses**. Enregistrer un versement demande aussi **Saisir les recettes et la collecte du culte**.
 
 <table><tr>
 <td width="68%"><img src="captures/bureau/46-promesses.png" alt="Promesses sur ordinateur"></td>

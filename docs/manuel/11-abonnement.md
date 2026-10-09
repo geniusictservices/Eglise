@@ -1,4 +1,4 @@
-# 11. L'abonnement
+# 34. L'abonnement
 
 > Permission nécessaire : **Modifier les paramètres, le logo et les libellés** (rôle Administrateur par défaut).
 
@@ -18,7 +18,7 @@ Ouvrez **Abonnement** dans le menu, ou touchez le badge **Essai gratuit** du tab
 | Offre | Pour qui | Contenu |
 |---|---|---|
 | **Msingi** (*la base*) | La petite église qui veut d'abord un registre fiable | Registre des membres et des ménages, tableau de bord, utilisateurs, exports |
-| **Kawaida** (*le standard*) | L'église locale structurée | Msingi, plus finances et promesses, plan d'action et budget, groupes et activités |
+| **Kawaida** (*le standard*) | L'église locale structurée | Msingi, plus finances et promesses, projets et budget, groupes et activités |
 | **Kamili** (*le complet*) | La grande paroisse ou l'église exigeante | Kawaida, plus paie, communication, suivi pastoral, documents, site vitrine |
 | **Umoja** (*l'unité*) | Communautés, diocèses, églises à annexes | Kamili pour toutes les paroisses, consolidation, accompagnement ; sur devis |
 

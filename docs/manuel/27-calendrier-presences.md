@@ -1,4 +1,4 @@
-# 27. Le calendrier et les présences
+# 20. Le calendrier et les présences
 
 Le **calendrier** réunit les cultes, les prières, les enseignements et les événements de la communauté. Ouvrir une date permet d'y noter les **présences** et, pour un événement, de prendre les **inscriptions**.
 

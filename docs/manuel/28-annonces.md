@@ -1,4 +1,4 @@
-# 28. Les annonces
+# 21. Les annonces
 
 Une **annonce** informe la communauté, un département ou un groupe : un changement d'horaire, une collecte spéciale, une convention. Publiée dans Waumini, elle arrive dans les [nouveautés](25-nouveautes.md) de ceux qu'elle concerne, et sur leur téléphone s'ils l'ont activé. Comme beaucoup de fidèles n'ont pas de compte, chaque annonce se **partage aussi sur WhatsApp** en un geste.
 

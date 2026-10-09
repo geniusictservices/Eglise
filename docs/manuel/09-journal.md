@@ -1,4 +1,4 @@
-# 9. Le journal d'audit
+# 33. Le journal d'audit
 
 Le journal d'audit garde la trace de **tout ce qui se passe** dans la communauté : qui a fait quoi, quand, depuis quel appareil, avec les **valeurs avant et après** chaque modification.
 

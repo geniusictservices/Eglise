@@ -1,4 +1,4 @@
-# 8. Paramètres, apparence, libellés et accès du support
+# 32. Paramètres, identité et documents, apparence, libellés et accès du support
 
 > Permission nécessaire : **Modifier les paramètres, le logo et les libellés** (rôle Administrateur par défaut).
 
@@ -19,9 +19,9 @@ Les paramètres concernent **la communauté affichée**. Ils sont répartis en c
 
 Touchez **Enregistrer** en bas du formulaire.
 
-## Identité et documents : le statut juridique sur les reçus
+## Identité et documents : le statut juridique sur les reçus et les documents
 
-Une église est une personne morale : ses reçus, et plus tard ses attestations et ses lettres, portent son identité juridique. L'onglet **Identité et documents** la renseigne, et **l'église décide de ce qui s'affiche**.
+Une église est une personne morale : ses reçus, ses attestations et ses lettres portent son identité juridique. L'onglet **Identité et documents** la renseigne, et **l'église décide de ce qui s'affiche**.
 
 <table><tr>
 <td width="68%"><img src="captures/bureau/59-identite.png" alt="Identité et documents sur ordinateur"></td>
@@ -41,7 +41,7 @@ Une église est une personne morale : ses reçus, et plus tard ses attestations 
 
 ④ **Le style des documents** : Prestige, Solennel, Moderne, Classique ou Épuré, choisi sur des vignettes, toujours aux couleurs de l'église. Un modèle peut avoir son propre style (voir [Le style des documents](29-documents.md#le-style-des-documents)).
 
-**Dans une dénomination**, l'identité juridique est celle du **siège** : les paroisses la reçoivent telle quelle, avec le logo du siège si elles n'ont pas le leur. Chaque paroisse garde son nom, son adresse et son téléphone, et peut régler ce qui s'affiche sur ses propres documents ; sinon, elle suit le réglage de son niveau supérieur.
+**Dans une dénomination**, une paroisse reprend par défaut l'identité juridique du **siège** (case **Reprendre l'identité juridique de…**), avec le logo du siège si elle n'a pas le sien. Si elle a sa propre personnalité juridique, elle décoche la case et la saisit. Chaque paroisse garde son nom, son adresse et son téléphone, et peut régler ce qui s'affiche sur ses propres documents ; sinon, elle suit le réglage de son niveau supérieur.
 
 ## Apparence : les couleurs de votre espace
 

@@ -1,4 +1,4 @@
-# 21. Le budget
+# 14. Le budget
 
 Le budget se prépare ensemble, une fois par exercice :
 
@@ -10,7 +10,7 @@ En cours d'année, le budget peut être **révisé** : chaque révision est une 
 
 | Qui | Ce qu'il fait | Permission |
 |---|---|---|
-| Responsable de département | Propose les dépenses et les recettes de **ses** départements | Proposer le budget d'un département |
+| Responsable de département | Propose les dépenses et les recettes de **ses** départements | Proposer les besoins d'un département |
 | Finance (trésorier) | Arbitre, ajoute des lignes, présente le budget, renvoie une proposition | Arbitrer le budget et le présenter |
 | Pasteur | Approuve le budget et ses révisions, ou les renvoie | Approuver le budget et ses révisions |
 

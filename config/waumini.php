@@ -86,7 +86,7 @@ return [
             'name' => 'Kawaida',
             'meaning' => 'le standard',
             'for' => 'L’église locale structurée : le pack de référence.',
-            'modules' => ['Tout Msingi', 'Finances et promesses', 'Plan d’action et budget', 'Groupes, activités et présences'],
+            'modules' => ['Tout Msingi', 'Finances et promesses', 'Projets et budget', 'Groupes, activités et présences'],
             'prices' => ['small' => 25, 'medium' => 35, 'large' => 50],
             'featured' => true,
         ],

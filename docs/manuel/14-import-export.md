@@ -1,4 +1,4 @@
-# 14. Importer depuis Excel et exporter
+# 7. Importer depuis Excel et exporter
 
 Beaucoup d'églises tiennent déjà leur registre sur papier ou dans un fichier Excel. Waumini permet de le **reprendre en une fois**, avec l'aide de Genius ICT si besoin. Rien n'est enregistré avant que vous ayez vérifié chaque ligne, et un import peut être **annulé** pendant 30 jours.
 

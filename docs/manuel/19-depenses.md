@@ -1,4 +1,4 @@
-# 19. Les dépenses et les avances
+# 12. Les dépenses et les avances
 
 Aucune sortie d'argent ne se fait sans trace. Chaque dépense suit un **circuit** en cinq étapes :
 
@@ -101,7 +101,7 @@ Pour une dépense ordinaire, si l'argent libre ne suffit pas et que le décaisse
 
 Pour une dépense ordinaire, la justification consiste à joindre la facture. Des pièces peuvent être ajoutées à tout moment depuis le bloc **Pièces**.
 
-**Annuler une demande** : possible jusqu'au décaissement, par le demandeur ou la finance. Une dépense déjà décaissée s'annule dans les **Opérations**.
+**Annuler la demande** : possible jusqu'au décaissement, par le demandeur ou la finance. Une dépense déjà décaissée s'annule dans les **Opérations**.
 
 ## Régler le circuit
 

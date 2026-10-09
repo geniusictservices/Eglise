@@ -1,4 +1,4 @@
-# 10. Mon profil : langue, mot de passe et empreinte
+# 4. Mon profil : langue, mot de passe et empreinte
 
 Touchez votre nom ou vos initiales en haut à droite, puis **Mon profil**.
 

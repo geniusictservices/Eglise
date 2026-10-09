@@ -1,4 +1,4 @@
-# 34. Le site vitrine
+# 27. Le site vitrine
 
 Chaque communauté peut avoir **son site sur Internet**, sans rien saisir deux fois. Vous écrivez quelques textes une fois pour toutes : le mot d'accueil, votre histoire, le mot du pasteur. Le reste vient de Waumini et se met à jour **tout seul** :
 
@@ -38,11 +38,11 @@ En haut, l'**adresse** du site et son état : en ligne, ou pas encore publié. *
 - **Lumière** : clair et aéré, la photo d'accueil en grand ;
 - **Solennel** : sombre et élégant, avec des titres à empattements.
 
-Les **couleurs et le logo** sont ceux de la communauté, choisis dans [Paramètres › Apparence et Identité](08-parametres.md). Une paroisse sans logo propre prend celui du siège.
+Les **couleurs et le logo** sont ceux de la communauté, choisis dans [Paramètres › Apparence et Paramètres › Identité et documents](08-parametres.md). Une paroisse sans logo propre prend celui du siège.
 
 **La page d'accueil** : le grand titre, une ligne sous le nom (« Goma, Himbi II · Une famille qui prie »), un mot d'accueil de quelques lignes, et une **photo** facultative (l'église, l'assemblée, la chorale). Waumini réduit la photo pour qu'elle se charge vite, même avec une connexion lente.
 
-**Le verset du moment** (facultatif) : un verset et sa référence (« Matthieu 11.28 »), affichés en grand sous la photo d'accueil. Changez-le quand vous voulez : pour une fête, une campagne, le thème de l'année.
+**Le verset du moment** (facultatif) : un verset et sa référence (« Matthieu 11.28 »), affichés en grand sous la photo d'accueil. Changez-le quand vous voulez : pour une fête, une convention, le thème de l'année.
 
 ## Les pages
 
@@ -59,7 +59,7 @@ L'accueil est toujours là. Cochez les autres pages à montrer :
 | Événements | Les conventions, concerts, retraites à venir, avec un bouton pour les partager sur WhatsApp | Le calendrier |
 | Annonces | Les annonces choisies | Les annonces |
 | Prédications | Les messages en vidéo ou en audio | Site vitrine › Prédications |
-| Nos groupes | Les chorales, cellules, jeunesse, mamans… choisies, avec leur jour de rencontre | Les groupes |
+| Nos groupes | Les chorales, cellules, jeunesse, mamans… choisies, avec leurs jours et heures de rencontre | Les groupes |
 | Galerie photos | Les photos de la vie de la communauté | Onglet *Galerie* |
 | Qui sommes-nous | Votre histoire, ce que vous croyez, vos responsables, le mot du pasteur | Onglet *Qui sommes-nous* |
 | Nos paroisses | Les niveaux en dessous, avec un lien vers leur site | La hiérarchie |
@@ -76,7 +76,7 @@ L'accueil est toujours là. Cochez les autres pages à montrer :
 - une activité d'un **département** ou d'un **groupe** n'est pas sur le site, sauf si vous cochez la case (la convention des jeunes, ouverte à tous) ;
 - une **annonce** n'est sur le site que si vous cochez **Publier aussi sur le site vitrine**.
 
-**Nos groupes.** Sous la liste des pages, cochez les groupes à montrer. Le site affiche leur nom, leur genre (chorale, cellule…), leur description et leur jour de rencontre. **Ni le lieu ni le responsable ne sont publiés** : une cellule se réunit souvent chez une famille. Le visiteur intéressé est invité à se présenter, et l'équipe le met en contact avec le groupe.
+**Nos groupes.** Sous la liste des pages, cochez les groupes à montrer. Le site affiche leur nom, leur genre (chorale, cellule…), leur description et leurs rencontres de la semaine (« Mardi à 17:30 (répétition), samedi à 14:00 »). **Ni le lieu ni le responsable ne sont publiés** : une cellule se réunit souvent chez une famille. Le visiteur intéressé est invité à se présenter, et l'équipe le met en contact avec le groupe.
 
 ② **Faire un don** : voir plus bas.
 
@@ -139,7 +139,7 @@ Les deux autres mises en page, sur la communauté de démonstration : **Lumière
 
 ## Les dons par mobile money
 
-Dans l'onglet **Dons** : un texte (un verset, un mot sur les projets en cours), les **comptes montrés** (vos comptes mobile money et bancaires, avec leur numéro et leur titulaire, tels qu'ils sont réglés dans [Finances › Comptes](16-finances.md)), et ce que le donateur peut **choisir** (dîme, action de grâce, construction…) ; sans choix, c'est une offrande.
+Dans l'onglet **Dons** : un texte (un verset, un mot sur les projets en cours), les **comptes montrés** (vos comptes mobile money et bancaires, avec leur numéro et leur titulaire, tels qu'ils sont réglés dans [Finances › Comptes et catégories](16-finances.md)), et ce que le donateur peut **choisir** (dîme, action de grâce, construction…) ; sans choix, c'est une offrande.
 
 <table><tr>
 <td width="68%"><img src="captures/bureau/110-site-don.png" alt="Page des dons sur ordinateur"></td>

@@ -1,4 +1,4 @@
-# 30. Les registres officiels et les anciens cahiers
+# 25. Les registres officiels et les anciens cahiers
 
 Beaucoup de communautés gardent dans une armoire leurs **registres papier** : baptêmes, mariages, présentations d'enfants, parfois depuis cinquante ans. Ces cahiers s'abîment, se perdent, et retrouver un acte prend des heures. Waumini permet de les **recopier acte par acte**, de retrouver une personne en une seconde, et de **rééditer** une attestation moderne, avec son QR code, à partir d'un acte ancien.
 

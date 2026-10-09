@@ -84,9 +84,13 @@ class HelpController extends Controller
     /** @return array<string, string> slug => titre */
     private function chapters(): array
     {
+        // Dans l'ordre du sommaire, qui range les chapitres par thème ; un chapitre absent du sommaire va à la fin.
+        preg_match_all('/\]\(([a-z0-9-]+)\.md\)/', File::get(base_path(self::DIR.'/README.md')), $m);
+        $order = array_flip(array_values(array_unique($m[1])));
+
         return collect(File::files(base_path(self::DIR)))
             ->filter(fn ($f) => $f->getExtension() === 'md' && $f->getFilename() !== 'README.md')
-            ->sortBy(fn ($f) => $f->getFilename() === 'faq.md' ? 'zz' : $f->getFilename())
+            ->sortBy(fn ($f) => [$order[$f->getBasename('.md')] ?? PHP_INT_MAX, $f->getFilename()])
             ->mapWithKeys(fn ($f) => [
                 $f->getBasename('.md') => Str::of(File::get($f->getPathname()))->match('/^# (.+)$/m')->toString(),
             ])

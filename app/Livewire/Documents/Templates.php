@@ -24,7 +24,9 @@ class Templates extends Component
     public function adapt(DocumentTypes $types, int $id)
     {
         $this->authorizeWrite('documents.templates');
-        $copy = $types->adapt(DocumentType::findOrFail($id), $this->organization());
+        // Seulement un modèle d'un niveau supérieur de notre lignée, jamais celui d'une autre église.
+        $original = DocumentType::whereIn('organization_id', $this->organization()->ancestorIds())->findOrFail($id);
+        $copy = $types->adapt($original, $this->organization());
 
         return $this->redirectRoute('documents.templates.edit', $copy);
     }

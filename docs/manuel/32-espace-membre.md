@@ -1,4 +1,4 @@
-# 32. L'espace membre
+# 23. L'espace membre
 
 Chaque membre peut avoir **son espace** dans Waumini, sur son téléphone : sa carte de membre, ses dons et ses reçus, ses promesses, le programme de la communauté, les annonces, et ses demandes de prière ou d'attestation. Il ne voit rien d'autre : ni le registre, ni les finances de la communauté.
 

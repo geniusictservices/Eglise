@@ -1,4 +1,4 @@
-# 15. Réglages du registre
+# 8. Réglages du registre
 
 Les réglages du registre décident du **format du numéro de membre**, des **statuts**, des **fonctions** et des **champs de la fiche**.
 

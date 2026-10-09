@@ -1,4 +1,4 @@
-# 26. Les groupes
+# 19. Les groupes
 
 Cellules de quartier, chorales, groupes de prière, études bibliques, équipes de service : un **groupe** rassemble quelques membres qui se rencontrent régulièrement. À la différence d'un [département](13-menages-departements.md), qui organise un ministère de la communauté, un groupe est une **petite assemblée** dont on suit les rencontres et les présences.
 
@@ -63,7 +63,7 @@ Après chaque rencontre, le responsable (ou un adjoint) touche **Noter une renco
 - ② Pour chaque personne : **Présent**, **Excusé** ou **Absent**. Une personne excusée n'est pas signalée « à visiter ».
 - Ajoutez le nombre de **visiteurs** et des **notes** (sujets de prière, nouvelles).
 
-Une seule rencontre par jour : noter de nouveau la même date **corrige** la rencontre. Pour la modifier plus tard, touchez-la dans la liste des rencontres ; **Supprimer** l'efface avec ses présences.
+Une seule rencontre notée par jour : noter de nouveau la même date **corrige** la rencontre. Pour la modifier plus tard, touchez-la dans la liste des rencontres ; **Supprimer** l'efface avec ses présences.
 
 ## Les cotisations
 

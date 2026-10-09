@@ -1,4 +1,4 @@
-# 22. Le suivi du budget et les dépassements
+# 15. Le suivi du budget et les dépassements
 
 Une fois le budget adopté, Waumini le compare chaque jour aux opérations : ce qui est dépensé, ce qui est engagé, ce qui reste. Et il **contrôle chaque dépense** : au-delà de ce qui reste, il faut une autorisation qui dit **d'où viendra l'argent**.
 
@@ -13,7 +13,7 @@ Une fois le budget adopté, Waumini le compare chaque jour aux opérations : ce 
 
 En haut, **deux onglets séparés** : **Dépenses prévues** (avec ce qui est déjà dépensé) et **Recettes prévues** (avec ce qui est déjà reçu). Dessous, la part de l'exercice déjà écoulée.
 
-① Dans l'onglet **Dépenses**, **chaque ligne de dépenses** (département et catégorie) :
+① Dans l'onglet **Dépenses prévues**, **chaque ligne de dépenses** (département et catégorie) :
 
 - **Prévu** : le budget adopté, plus les dépassements autorisés, moins ce que la ligne a cédé à d'autres ;
 - **Dépensé** : les dépenses payées, moins ce qui est revenu des avances ;
@@ -21,7 +21,7 @@ En haut, **deux onglets séparés** : **Dépenses prévues** (avec ce qui est d�
 - **Disponible** : ce qui reste ;
 - la barre : verte tant que la ligne suit le rythme de l'année, orange quand elle va plus vite, rouge quand elle est épuisée.
 
-Dans l'onglet **Recettes**, chaque ligne de recettes : **Prévu**, **Reçu**, **Reste à recevoir** et une barre, orange quand les recettes prennent du retard sur le rythme de l'année. Chaque onglet montre aussi ce qui a été dépensé ou reçu **hors budget**. Plus bas, et ② **les dépassements** demandés, avec leur source et leur décision.
+Dans l'onglet **Recettes prévues**, chaque ligne de recettes : **Prévu**, **Reçu**, **Reste à recevoir** et une barre, orange quand les recettes prennent du retard sur le rythme de l'année. Chaque onglet montre aussi ce qui a été dépensé ou reçu **hors budget**. Plus bas, et ② **les dépassements** demandés, avec leur source et leur décision.
 
 Le solde reporté d'un projet n'est pas compté dans les recettes de l'exercice : c'est de l'argent reçu les années précédentes.
 
@@ -30,7 +30,7 @@ Le solde reporté d'un projet n'est pas compté dans les recettes de l'exercice 
 Quand la finance contrôle une demande de dépense (voir [Les dépenses](19-depenses.md)), Waumini montre la ligne du budget : prévu, dépensé, engagé, disponible.
 
 - Si la dépense **tient dans le disponible**, la finance la contrôle comme d'habitude.
-- Si elle **dépasse** le disponible, ou si elle **n'est pas prévue** au budget, le bouton **Contrôlée** disparaît : la finance doit **demander un dépassement**.
+- Si elle **dépasse** le disponible, ou si elle **n'est pas prévue** au budget, le bouton **Contrôlée, à approuver** disparaît : la finance doit **demander un dépassement**.
 
 En demandant une dépense, le responsable voit déjà le disponible de la ligne qu'il choisit.
 

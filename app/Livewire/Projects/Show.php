@@ -303,7 +303,7 @@ class Show extends Component
             'progress' => $projects->progressOf($this->record, $totals),
             'history' => $this->tab === 'avancement' ? ProjectIndicatorValue::with(['indicator', 'user'])
                 ->whereHas('indicator', fn ($q) => $q->where('project_id', $this->record->id))->latest('measured_on')->latest('id')->limit(50)->get() : collect(),
-            'measured' => $this->measureId ? ProjectIndicator::find($this->measureId) : null,
+            'measured' => $this->measureId ? ProjectIndicator::where('project_id', $this->record->id)->find($this->measureId) : null,
             'yearRows' => $projects->years($this->record),
             'pledgeRows' => $this->tab === 'promesses' ? $this->record->pledges()->with(['member', 'household', 'department'])->where('status', '!=', 'cancelled')->latest('pledged_on')->get()
                 ->map(fn ($pl) => ['pledge' => $pl, 'progress' => $pledges->progress($pl)]) : collect(),

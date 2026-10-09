@@ -148,7 +148,10 @@ class Settings extends Component
             $account = $this->accountId ? CashAccount::findOrFail($this->accountId) : new CashAccount(['position' => (int) CashAccount::max('position') + 1]);
             $account->fill(collect($data)->except('currencies')->map(fn ($v) => $v === '' ? null : $v)->all())->save();
 
+            // Recalculé ici : la valeur « locked » envoyée par le navigateur ne fait pas foi.
+            $used = FinanceTransaction::where('cash_account_id', $account->id)->distinct()->pluck('currency')->all();
             foreach ($data['currencies'] as $code => $c) {
+                $c['locked'] = in_array($code, $used, true);
                 $row = CashAccountCurrency::firstOrNew(['cash_account_id' => $account->id, 'currency' => $code]);
                 if (! $row->exists && ! $c['enabled']) {
                     continue;

@@ -3,7 +3,7 @@
         $modules = [
             ['icon' => 'users', 'tone' => 'bg-ink-700 text-white', 'title' => __('Membres et ménages'), 'text' => __('Chaque fidèle a sa fiche, son numéro, ses étapes de vie (baptême, mariage…). Le registre papier est repris une fois pour toutes.')],
             ['icon' => 'coins', 'tone' => 'bg-ochre-500 text-on-accent', 'title' => __('Finances'), 'text' => __('Caisses en dollars et en francs, collecte du culte, dîmes avec reçu, dépenses validées. Chaque franc a une caisse, une date et un auteur.')],
-            ['icon' => 'hand-coins', 'tone' => 'bg-terra-500 text-white', 'title' => __('Promesses'), 'text' => __('Promis, versé, reste à verser, pour un projet, une campagne ou une contribution régulière. Relance en un clic sur WhatsApp.')],
+            ['icon' => 'hand-coins', 'tone' => 'bg-terra-500 text-white', 'title' => __('Promesses'), 'text' => __('Promis, versé, reste à verser, pour un projet, une collecte ou une contribution régulière. Relance en un clic sur WhatsApp.')],
             ['icon' => 'scroll-text', 'tone' => 'bg-leaf-500 text-white', 'title' => __('Plan d’action et budget'), 'text' => __('Les départements proposent leurs besoins, la finance arbitre, le budget est adopté puis suivi. Les objectifs avancent en pourcentage.')],
             ['icon' => 'wallet', 'tone' => 'bg-ink-700 text-white', 'title' => __('Paie'), 'text' => __('Chaque communauté définit qui elle paie et comment : gains, retenues, devise, bulletins si elle le souhaite.')],
             ['icon' => 'calendar-days', 'tone' => 'bg-ochre-500 text-on-accent', 'title' => __('Groupes et activités'), 'text' => __('Chorales, jeunesse, mamans, cellules : réunions, présences, calendrier des cultes, notifications aux membres.')],

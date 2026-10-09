@@ -1,4 +1,4 @@
-# 7. Devises et taux du jour
+# 31. Devises et taux du jour
 
 Le **dollar américain (USD)** est la devise de base de Waumini : tous les totaux sont calculés en dollars. Votre communauté ajoute les autres devises qu'elle utilise (franc congolais, franc rwandais, shilling ougandais, euro…), et le trésorier saisit chaque jour leur **taux**.
 

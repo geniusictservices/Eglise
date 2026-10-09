@@ -1,12 +1,13 @@
-# 33. Le réseau : consolidation, quotes-parts, projets du siège et transferts
+# 26. Le réseau : consolidation, quotes-parts, projets du siège et transferts
 
 Une dénomination a un siège, des régions, des secteurs et des paroisses. Chaque paroisse tient son registre et sa caisse dans Waumini, et ses chiffres **remontent tout seuls** aux niveaux supérieurs. Personne ne recopie un rapport papier : le secteur voit ses paroisses, la région ses secteurs, le siège toute la dénomination.
 
-Ce chapitre présente trois écrans, regroupés dans le menu **Réseau** :
+Ce chapitre présente les trois écrans du menu **Réseau**, et les projets du siège portés par les paroisses :
 
 - **Consolidation** : les chiffres de chaque niveau, additionnés de ses niveaux inférieurs ;
 - **Quotes-parts** : ce que chaque niveau reverse au niveau supérieur ;
-- **Transferts de membres** : un fidèle qui déménage passe d'une paroisse à l'autre avec sa fiche.
+- **Transferts de membres** : un fidèle qui déménage passe d'une paroisse à l'autre avec sa fiche ;
+- **Projets du siège** : la part de chaque paroisse, collectée sur place puis versée au siège.
 
 | Qui | Ce qu'il fait | Permission |
 |---|---|---|

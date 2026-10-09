@@ -1,4 +1,4 @@
-# 13. Ménages et départements
+# 6. Ménages et départements
 
 ## Les ménages
 
@@ -32,7 +32,7 @@ Les **départements** sont les ministères (chorale, jeunesse, mamans, école du
 
 Chaque niveau a d'office un département **Administration générale**, pour les besoins et les dépenses communs (loyer, électricité, secrétariat, entretien). Il ne peut pas être supprimé.
 
-> Permissions nécessaires : **Voir le registre des membres** pour consulter, **Créer et gérer les départements** pour le reste. Par défaut, seul l'administrateur et le secrétaire peuvent créer des départements.
+> Permissions nécessaires : **Voir le registre des membres** pour consulter, **Créer et gérer les départements** pour le reste. Par défaut, seuls l'administrateur et le secrétaire peuvent créer des départements.
 
 <table><tr>
 <td width="68%"><img src="captures/bureau/32-departements.png" alt="Liste des départements sur ordinateur"></td>

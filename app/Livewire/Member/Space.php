@@ -56,7 +56,7 @@ class Space extends Component
         abort_if($this->organization()->isReadOnly(), 403);
         $member = $this->member() ?? abort(403);
         $this->validate(['prayer.subject' => 'required|string|max:160', 'prayer.body' => 'nullable|string|max:2000'], attributes: ['prayer.subject' => __('sujet')]);
-        $pastoral->pray($this->organization(), $this->prayer + ['member_id' => $member->id, 'is_private' => true]);
+        $pastoral->pray($this->organization(), ['subject' => $this->prayer['subject'], 'body' => $this->prayer['body'] ?? null, 'member_id' => $member->id, 'is_private' => true]);
         $this->prayer = ['subject' => '', 'body' => ''];
         $this->dispatch('close-modal', name: 'prayer');
         $this->notify(__('Votre demande est confiée à l’équipe pastorale. Elle reste confidentielle.'));

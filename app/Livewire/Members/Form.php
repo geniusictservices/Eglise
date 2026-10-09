@@ -217,7 +217,9 @@ class Form extends Component
 
         $canSensitive = Gate::allows('members.sensitive', $organization);
         $hidden = $registry->settings($organization)['hidden_fields'];
-        $data = collect($this->data)->map(fn ($v) => is_string($v) && trim($v) === '' ? null : (is_string($v) ? trim($v) : $v));
+        // Seules les clés du formulaire : le navigateur pourrait en ajouter d'autres (organisation, photo…).
+        $data = collect($this->data)->only(array_keys((new \ReflectionProperty(self::class, 'data'))->getDefaultValue()))
+            ->map(fn ($v) => is_string($v) && trim($v) === '' ? null : (is_string($v) ? trim($v) : $v));
 
         // Les champs masqués par le siège et les notes protégées ne sont pas modifiés.
         $skip = collect($hidden)->flatMap(fn ($f) => $f === 'emergency_contact' ? ['emergency_contact_name', 'emergency_contact_phone'] : [$f]);
@@ -320,7 +322,7 @@ class Form extends Component
             'canSensitive' => Gate::allows('members.sensitive', $organization),
             'duplicates' => $this->getErrorBag()->has('duplicates') ? $this->duplicates() : collect(),
             'households' => $households,
-            'chosenHousehold' => $this->householdId ? Household::withoutOrganizationScope()->find($this->householdId) : null,
+            'chosenHousehold' => $this->householdId ? Household::withoutOrganizationScope()->where('organization_id', $this->organization()->id)->find($this->householdId) : null,
             'nextNumber' => $this->member ? null : $registry->format($settings, $organization, (int) now()->format('Y'),
                 max((int) Member::withoutOrganizationScope()->withTrashed()->where('organization_id', $organization->id)
                     ->when($settings['yearly_reset'], fn ($q) => $q->where('number_year', now()->year))->max('number_sequence') + 1, (int) $settings['start_number'])),

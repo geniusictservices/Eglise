@@ -1,4 +1,4 @@
-# 16. Les finances : comptes, recettes, reçus et opérations
+# 9. Les finances : comptes, recettes, reçus et opérations
 
 Waumini tient la caisse de la communauté comme un cahier de caisse qui ne s'efface jamais : chaque entrée et chaque sortie est datée, signée par la personne qui l'a saisie, et ne peut être qu'**annulée**, avec un motif, jamais supprimée.
 

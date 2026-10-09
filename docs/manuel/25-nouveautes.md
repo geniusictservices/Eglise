@@ -1,4 +1,4 @@
-# 25. Les nouveautés et les notifications
+# 18. Les nouveautés et les notifications
 
 Waumini vous prévient de **ce qui attend votre attention** : une dépense à approuver, une paie à valider, une annonce, un groupe qui vous est confié. Ces nouveautés arrivent :
 

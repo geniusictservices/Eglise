@@ -1,4 +1,4 @@
-# 29. Les documents : attestations, lettres, ordres de mission
+# 24. Les documents : attestations, lettres, ordres de mission
 
 Waumini rédige les documents de la communauté **en une minute** : attestation d'appartenance, de baptême, de présentation d'enfant, de service, certificat de mariage religieux, lettre de recommandation, ordre de mission, convocation, lettre. Chaque document délivré reçoit :
 
@@ -60,11 +60,20 @@ Le texte est **figé** dès la délivrance : corriger ensuite la fiche ne change
 
 Le document porte l'en-tête de la communauté (nom, identité juridique, adresse, devise, choisis dans [Paramètres › Identité et documents](08-parametres.md), avec le texte du bas propre aux documents), son numéro, son titre, le texte, le lieu et la date, la qualité et le nom du signataire, et, en bas, le **QR code**. Touchez **Imprimer**, en A4 : le navigateur reçoit déjà la bonne orientation, paysage ou portrait.
 
-**Paysage ou portrait.** Les certificats et attestations (appartenance, baptême, mariage, présentation d'enfant, service) s'impriment en **paysage**, comme un diplôme : le nom de la personne en grand au centre, le texte dessous, puis la date, le sceau de l'église, le QR code et la signature. Les lettres (recommandation, transfert, ordre de mission, convocation) restent en **portrait**, avec l'en-tête en haut et le texte en paragraphes.
+**Paysage ou portrait.** Les certificats et attestations (appartenance, baptême, mariage, présentation d'enfant, service) s'impriment en **paysage**, comme un diplôme : le nom de la personne en grand au centre, le texte dessous, puis la date, le sceau de l'église, le QR code et la signature. Les lettres (recommandation, ordre de mission, convocation, lettre libre) restent en **portrait**, avec l'en-tête en haut et le texte en paragraphes.
+
+① **Page de vérification** montre ce que verra la personne qui scannera le QR code.
+
+<table><tr>
+<td width="68%"><img src="captures/bureau/91-verification.png" alt="Vérification sur ordinateur"></td>
+<td width="32%"><img src="captures/mobile/91-verification.png" alt="Vérification sur téléphone"></td>
+</tr></table>
+
+Une école, une ambassade, une autre église scanne le QR code avec n'importe quel téléphone, sans compte Waumini. La page indique **Document authentique** ou **Document annulé**, avec la sorte de document, le numéro, le nom, la date, la communauté et le signataire. Pour protéger la vie privée, le texte complet n'y figure pas : on compare avec le papier présenté. Si le document porte une photo, la page la montre aussi : la photo imprimée doit être la même, ce qui déjoue un faux fait avec la photo de quelqu'un d'autre. Un faux, dont le QR code ne correspond à rien, affiche **Document inconnu**.
 
 ## Le style des documents
 
-Cinq styles, tous **aux couleurs de l'église** (celles du thème choisi dans Paramètres) :
+Cinq styles, tous **aux couleurs de l'église** (celles du thème choisi dans **Paramètres › Apparence**) :
 
 | Style | Ce qu'il donne |
 |---|---|
@@ -79,16 +88,7 @@ Le style se choisit à deux endroits :
 - **Paramètres › Identité et documents › Style des attestations et certificats** : le style de toute l'église, choisi sur des vignettes. Par défaut, **Prestige**.
 - **Dans un modèle** (ci-dessous) : un style propre à ce modèle, par exemple **Prestige** pour le baptême et **Épuré** pour la convocation. Laissé sur « Celui de l'église », le modèle suit le réglage général.
 
-Le sceau rond porte le nom de l'église ; les couleurs suivent le thème : changer de thème change aussi les documents qui seront délivrés ensuite, sans toucher à ceux qui sont déjà imprimés.
-
-① **Page de vérification** montre ce que verra la personne qui scannera le QR code.
-
-<table><tr>
-<td width="68%"><img src="captures/bureau/91-verification.png" alt="Vérification sur ordinateur"></td>
-<td width="32%"><img src="captures/mobile/91-verification.png" alt="Vérification sur téléphone"></td>
-</tr></table>
-
-Une école, une ambassade, une autre église scanne le QR code avec n'importe quel téléphone, sans compte Waumini. La page indique **Document authentique** ou **Document annulé**, avec la sorte de document, le numéro, le nom, la date, la communauté et le signataire. Pour protéger la vie privée, le texte complet n'y figure pas : on compare avec le papier présenté. Si le document porte une photo, la page la montre aussi : la photo imprimée doit être la même, ce qui déjoue un faux fait avec la photo de quelqu'un d'autre. Un faux, dont le QR code ne correspond à rien, affiche **Document inconnu**.
+Le sceau rond porte le nom de l'église ; les couleurs suivent le thème : changer de thème change aussi l'allure des documents, à l'écran comme à la réimpression. Le texte d'un document délivré, lui, ne change jamais.
 
 ## Les modèles
 

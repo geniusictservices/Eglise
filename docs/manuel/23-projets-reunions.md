@@ -1,4 +1,4 @@
-# 23. Les projets et les réunions
+# 16. Les projets et les réunions
 
 ## Les projets
 
@@ -89,7 +89,7 @@ Le projet passe tout seul **En cours** dès qu'il avance, et **Terminé** quand 
 
 ### Les projets du siège
 
-Un projet décidé au siège (ou dans une région) peut être porté par les paroisses : un bureau national, une école, un hôpital. Voir [Consolidation, quotes-parts et transferts de membres](33-consolidation.md#les-projets-du-siège).
+Un projet décidé au siège (ou dans une région) peut être porté par les paroisses : un bureau national, une école, un hôpital. Voir [Le réseau : les projets du siège](33-consolidation.md#les-projets-du-siège).
 
 ## Les réunions
 

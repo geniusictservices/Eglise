@@ -23,7 +23,7 @@ class ExportBooklet extends Command
     /** Extraits découpés dans les captures : nom => [capture, x, y, largeur, hauteur]. */
     private const EXTRACTS = [
         'recu' => ['bureau/42-recu', 315, 101, 736, 472],
-        'attestation' => ['bureau/90-document-imprime', 286, 93, 794, 727],
+        'attestation' => ['bureau/90-document-imprime', 122, 93, 1122, 825], // le certificat en paysage, en entier
     ];
 
     public function handle(): int

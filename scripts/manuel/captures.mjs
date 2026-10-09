@@ -742,7 +742,7 @@ const SCENES = [
         },
     },
     {
-        id: '58-rapport-imprime', user: '0990000007',
+        id: '58-rapport-imprime', user: '0990000007', only: 'bureau',
         run: async (page) => {
             await page.goto(`${BASE}/finances/rapports/imprimer?annee=2026&mois=0`);
             await settle(page);
@@ -1156,6 +1156,8 @@ const SCENES = [
     {
         id: '90-document-imprime', user: '0990000008',
         run: async (page) => {
+            // Le certificat en paysage est plus haut que l'écran d'ordinateur habituel : on l'agrandit pour le montrer en entier.
+            if (!isMobile(page)) await page.setViewportSize({ width: 1366, height: 930 });
             await page.goto(`${BASE}/documents?q=Josias`);
             await page.click('main ul li a[href*="/imprimer"]');
             await page.waitForURL(/\/imprimer$/);
@@ -1389,14 +1391,14 @@ const SCENES = [
         },
     },
     {
-        id: '111-site-lumiere',
+        id: '111-site-lumiere', only: 'bureau',
         run: async (page) => {
             await page.goto(`${BASE}/site/cep-katindo`);
             await settle(page);
         },
     },
     {
-        id: '112-site-solennel',
+        id: '112-site-solennel', only: 'bureau',
         run: async (page) => {
             await page.goto(`${BASE}/site/cep-siege`);
             await settle(page);

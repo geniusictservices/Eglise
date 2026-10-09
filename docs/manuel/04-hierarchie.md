@@ -1,4 +1,4 @@
-# 4. Organiser la hiérarchie
+# 28. Organiser la hiérarchie
 
 La hiérarchie décrit l'organisation de votre communauté : **siège**, **régions**, **secteurs**, **paroisses**, **annexes**… avec **vos propres mots** (Diocèse, Doyenné, District, Église mère…).
 

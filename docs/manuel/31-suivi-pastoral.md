@@ -1,4 +1,4 @@
-# 31. Le suivi pastoral
+# 22. Le suivi pastoral
 
 Le **suivi pastoral** aide l'équipe pastorale à ne perdre personne de vue : la maman hospitalisée, la famille en deuil, le catéchumène qui prépare son baptême, la nouvelle venue du dimanche. Chaque personne accompagnée a son **suivi**, avec la date de la prochaine visite et le fil des visites, appels et notes.
 

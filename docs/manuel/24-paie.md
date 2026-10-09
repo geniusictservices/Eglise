@@ -1,4 +1,4 @@
-# 24. La paie
+# 17. La paie
 
 Waumini paie les serviteurs de la communauté selon **ses propres règles** : ses rythmes de paie, ses éléments (primes, indemnités, retenues, cotisations), ses devises. Chaque paie suit le même chemin :
 
@@ -114,9 +114,9 @@ Dans la paie, la finance :
 
 Plus bas, **chaque bulletin** : base, brut, retenues (avances comprises) et net.
 
-## Payer
-
 Le pasteur voit aussi le budget des salaires de la paie ; s'il y a une demande de dépassement, il l'autorise ou la refuse sur la même page.
+
+## Payer
 
 Une fois la paie approuvée, la finance choisit, pour chaque devise de bulletins, **le compte** et **la devise payée**. Si elle diffère (des bulletins en francs payés en dollars, faute de francs en caisse), Waumini calcule **l'équivalent au taux du jour**. Chaque bulletin devient une sortie « Rémunérations et motivations » du département de la personne, visible dans les opérations, les rapports et le suivi du budget.
 

@@ -1,4 +1,4 @@
-# 12. Le registre des membres
+# 5. Le registre des membres
 
 Le **registre** rassemble les fidèles de la communauté : identité, contacts, adresse, ménage, statut, fonctions et étapes de vie (baptême, mariage…). Chaque personne reçoit un **numéro de membre** qui ne change jamais.
 

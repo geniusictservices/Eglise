@@ -1,4 +1,4 @@
-# 20. Clôtures et rapports financiers
+# 13. Clôtures et rapports financiers
 
 ## Clôturer un mois
 

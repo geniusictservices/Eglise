@@ -199,7 +199,7 @@ table.roles td .icon { vertical-align: -1.2mm; margin-right: 1.4mm; color: var(-
             <li><b>9</b>Le culte du dimanche</li>
             <li><b>10</b>Mobile money et promesses</li>
             <li><b>11</b>Les dépenses</li>
-            <li><b>12</b>Budget et plan d’action</li>
+            <li><b>12</b>Projets et budget</li>
             <li><b>13</b>Rapports et paie</li>
             <li><b>14</b>La vie de la communauté</li>
             <li><b>15</b>Les documents officiels</li>
@@ -237,7 +237,7 @@ table.roles td .icon { vertical-align: -1.2mm; margin-right: 1.4mm; color: var(-
         <div class="mod"><div class="head"><span class="ico ink"><x-icon name="users" class="icon" /></span><h3>Registre des membres</h3></div><p>Fidèles, ménages, départements, parcours spirituel, carte de membre.</p></div>
         <div class="mod"><div class="head"><span class="ico"><x-icon name="coins" class="icon" /></span><h3>Finances</h3></div><p>Caisses, banques et mobile money, en dollars et en francs, avec reçus.</p></div>
         <div class="mod"><div class="head"><span class="ico"><x-icon name="clipboard-check" class="icon" /></span><h3>Dépenses à signatures</h3></div><p>Demande, contrôle, approbation, décaissement, justificatif.</p></div>
-        <div class="mod"><div class="head"><span class="ico leaf"><x-icon name="milestone" class="icon" /></span><h3>Budget et plan d’action</h3></div><p>La vision, les objectifs et le budget voté, suivis au jour le jour.</p></div>
+        <div class="mod"><div class="head"><span class="ico leaf"><x-icon name="milestone" class="icon" /></span><h3>Projets et budget</h3></div><p>La vision, des projets d’un an ou de plusieurs, l’avancement par indicateurs, un budget équilibré suivi au jour le jour.</p></div>
         <div class="mod"><div class="head"><span class="ico"><x-icon name="hand-coins" class="icon" /></span><h3>Paie des ouvriers</h3></div><p>Salaires, primes, retenues, avances et bulletins de paie.</p></div>
         <div class="mod"><div class="head"><span class="ico ink"><x-icon name="calendar-days" class="icon" /></span><h3>Vie de la communauté</h3></div><p>Groupes, calendrier, présences au culte, annonces partagées sur WhatsApp.</p></div>
         <div class="mod"><div class="head"><span class="ico ink"><x-icon name="badge-check" class="icon" /></span><h3>Documents officiels</h3></div><p>Attestations avec QR code vérifiable, anciens registres recopiés.</p></div>
@@ -458,12 +458,13 @@ table.roles td .icon { vertical-align: -1.2mm; margin-right: 1.4mm; color: var(-
     <p class="lead">Attestations de baptême, de mariage, de membre, lettres de recommandation&nbsp;: préparées en quelques secondes à partir du registre.</p>
     <ul class="points">
         <li>Les <strong>modèles</strong> de l’église, à son en-tête, se remplissent tout seuls avec les informations du fidèle.</li>
+        <li><strong>Cinq styles</strong> aux couleurs de l’église&nbsp;; les certificats s’impriment en paysage, comme un diplôme, avec la photo du membre.</li>
         <li>Chaque document reçoit un <strong>numéro</strong> et un <strong>QR code</strong>. Scanné avec n’importe quel téléphone, il confirme que le document est authentique et n’a pas été annulé.</li>
         <li>Les <strong>anciens registres papier</strong> (baptêmes, mariages) se recopient petit à petit&nbsp;; les actes anciens peuvent ensuite être réédités.</li>
         <li>Un membre peut <strong>demander son attestation</strong> depuis son espace&nbsp;; le secrétariat est prévenu.</li>
     </ul>
     <div class="shots" style="align-items: center">
-        <div style="width: 70mm"><figure class="paper fade"><img src="captures/extraits/attestation.jpg" alt="Une attestation de baptême"></figure><p class="caption">Une attestation, prête à imprimer</p></div>
+        <div style="width: 104mm"><figure class="paper fade"><img src="captures/extraits/attestation.jpg" alt="Une attestation de baptême"></figure><p class="caption">Une attestation, prête à imprimer</p></div>
         <div>{!! $phone('91-verification', 'La vérification d’un document', '40mm') !!}<p class="caption">Son QR code, scanné</p></div>
     </div>
     <footer class="folio"><span>Waumini · Livret de présentation</span><span class="n"></span></footer>

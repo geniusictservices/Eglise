@@ -6,6 +6,7 @@ use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\Role;
 use App\Support\Permissions;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -25,6 +26,7 @@ class Form extends Component
     #[Url(as: 'depuis')]
     public ?int $from = null;
 
+    #[Locked]
     public bool $readOnly = false;
 
     public function mount(?Role $role = null): void
@@ -58,7 +60,7 @@ class Form extends Component
 
     public function save()
     {
-        abort_if($this->readOnly, 403);
+        abort_if($this->readOnly || $this->notOurs(), 403);
         $this->authorizeWrite('roles.manage');
         $organization = $this->organization();
 
@@ -84,9 +86,15 @@ class Form extends Component
         return $this->redirectRoute('roles.index');
     }
 
+    /** Un rôle verrouillé ou défini par un niveau supérieur se consulte, il ne se modifie pas ici (vérifié côté serveur). */
+    private function notOurs(): bool
+    {
+        return $this->role && ($this->role->is_locked || $this->role->organization_id !== $this->organization()->id);
+    }
+
     public function delete()
     {
-        abort_if($this->readOnly || ! $this->role, 403);
+        abort_if($this->readOnly || ! $this->role || $this->notOurs(), 403);
         $this->authorizeWrite('roles.manage');
 
         if ($this->role->assignments()->exists()) {

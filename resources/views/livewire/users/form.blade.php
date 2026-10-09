@@ -21,8 +21,13 @@
     @endif
 
     <div class="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+        @php $identityLocked = ! $this->canEditIdentity(); @endphp
         <form wire:submit="save" class="card space-y-4 self-start p-5 sm:p-6">
             <h2 class="text-lg font-semibold">{{ __('Identité') }}</h2>
+            @if ($identityLocked)
+                <p class="rounded-xl bg-ochre-50 px-3 py-2 text-sm text-ochre-800">{{ __('Ce compte a aussi des rôles hors de votre communauté (ou c’est un administrateur) : son nom, son téléphone et son mot de passe ne se changent que là-haut. Vous gérez ici ses rôles chez vous.') }}</p>
+            @endif
+            <fieldset @disabled($identityLocked) class="space-y-4">
             <div>
                 <label for="name" class="label">{{ __('Nom complet') }}</label>
                 <input wire:model="name" id="name" class="input" autocomplete="off" required>
@@ -59,6 +64,9 @@
                 @error('isActive') <p class="error">{{ $message }}</p> @enderror
             @endunless
 
+            </fieldset>
+
+            @unless ($identityLocked)
             <div class="flex flex-wrap justify-end gap-2 pt-2">
                 @if ($user)
                     <button type="button" class="btn-ghost mr-auto" wire:click="resetPassword" wire:confirm="{{ __('Créer un nouveau mot de passe provisoire pour :name ?', ['name' => $user->name]) }}">
@@ -67,6 +75,7 @@
                 @endif
                 <button type="submit" class="btn-primary"><x-icon name="save" class="size-4" /> {{ $user ? __('Enregistrer') : __('Créer le compte') }}</button>
             </div>
+            @endunless
         </form>
 
         @if ($user)

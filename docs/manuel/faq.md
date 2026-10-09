@@ -18,7 +18,7 @@ Vérifiez la **communauté affichée** en haut de l'écran : vous êtes peut-êt
 
 ### Waumini affiche « Pas de connexion ».
 
-Waumini a besoin d'Internet. Vérifiez vos données mobiles ou le Wi-Fi, puis touchez **Réessayer**. La saisie du dimanche hors connexion (collecte, contributions, visiteurs) arrivera avec le module Finances.
+Waumini a besoin d'Internet. Vérifiez vos données mobiles ou le Wi-Fi, puis touchez **Réessayer**. La saisie hors connexion n'est pas encore possible : notez sur papier et saisissez dès le retour du réseau.
 
 ### Le bandeau « lecture seule » est apparu.
 
@@ -26,7 +26,7 @@ Votre abonnement est arrivé à échéance depuis plus d'un mois. Vos données r
 
 ### Waumini fonctionne-t-il pour une mosquée ?
 
-Oui. Renommez les libellés (*Pasteur* en *Imam*, *Culte* en *Prière*…) dans **Paramètres > Libellés**.
+Oui. Renommez les libellés (*Pasteur* en *Imam*, *Culte* en *Prière*…) dans **Paramètres › Libellés**.
 
 ### Mes données sont-elles en sécurité ?
 

@@ -29,18 +29,20 @@ class Login extends Component
     {
         $this->validate();
 
-        $key = 'login:'.Str::lower($this->phone).'|'.request()->ip();
+        // Le numéro normalisé : 0812…, +243 812… et les espaces comptent pour le même compte.
+        $phone = Phone::normalize($this->phone);
+        $key = 'login:'.($phone ?? Str::lower($this->phone)).'|'.request()->ip();
+        $account = 'login-account:'.($phone ?? Str::lower($this->phone)); // toutes adresses confondues
 
-        if (RateLimiter::tooManyAttempts($key, 5)) {
+        if (RateLimiter::tooManyAttempts($key, 5) || RateLimiter::tooManyAttempts($account, 20)) {
             throw ValidationException::withMessages([
-                'phone' => __('Trop de tentatives. Réessayez dans :seconds secondes.', ['seconds' => RateLimiter::availableIn($key)]),
+                'phone' => __('Trop de tentatives. Réessayez dans :seconds secondes.', ['seconds' => max(RateLimiter::availableIn($key), RateLimiter::availableIn($account))]),
             ]);
         }
 
-        $phone = Phone::normalize($this->phone);
-
         if (! $phone || ! Auth::attempt(['phone' => $phone, 'password' => $this->password, 'is_active' => true], $this->remember)) {
             RateLimiter::hit($key, 60);
+            RateLimiter::hit($account, 900);
 
             throw ValidationException::withMessages([
                 'phone' => __('Numéro de téléphone ou mot de passe incorrect.'),
@@ -48,6 +50,7 @@ class Login extends Component
         }
 
         RateLimiter::clear($key);
+        RateLimiter::clear($account);
         session()->regenerate();
 
         /** @var User $user */

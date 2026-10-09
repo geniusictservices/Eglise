@@ -1,8 +1,8 @@
-# 6. Rôles et permissions
+# 30. Rôles et permissions
 
 Un **rôle** est un ensemble de **permissions**, c'est-à-dire de choses qu'on a le droit de voir ou de faire : *Voir le registre des membres*, *Saisir les recettes*, *Approuver les dépenses*…
 
-Waumini installe des **rôles modèles** dans chaque nouvelle communauté : Administrateur, Pasteur, Secrétaire, Trésorier, Responsable de département, Conseil / comité, Responsable de niveau. Vous pouvez les modifier, ou créer les vôtres en cochant des cases.
+Waumini installe des **rôles modèles** dans chaque nouvelle communauté : Administrateur, Pasteur, Secrétaire, Trésorier, Responsable de département, Conseil / comité, Responsable de niveau, Membre. Vous pouvez les modifier, ou créer les vôtres en cochant des cases.
 
 > Permission nécessaire : **Créer et modifier les rôles** (rôle Administrateur par défaut).
 
@@ -26,7 +26,7 @@ Chaque carte indique la description du rôle, son nombre de permissions et le no
 </tr></table>
 
 1. Donnez un **nom** et une courte **description** (ce que fait cette personne).
-2. Cochez les **permissions**, regroupées par module ① : Communauté, Membres, Finances, Projets et budget, Paie, Groupes, Documents, Suivi pastoral, Consolidation. **Tout cocher** coche tout un module d'un coup.
+2. Cochez les **permissions**, regroupées par module ① : Communauté, Membres et départements, Finances, Projets et budget, Paie, Groupes, activités et communication, Documents et registres, Suivi pastoral, Consolidation et site web. **Tout cocher** coche tout un module d'un coup.
 3. Touchez **Enregistrer le rôle**.
 
 Le changement s'applique **immédiatement** à toutes les personnes qui ont ce rôle.

@@ -1,4 +1,4 @@
-# 17. La collecte du culte
+# 10. La collecte du culte
 
 La **feuille de collecte** remplace le cahier du comptage : les offrandes de la boîte, les enveloppes au nom des membres et le comptage des billets, devise par devise, puis un procès-verbal à signer.
 

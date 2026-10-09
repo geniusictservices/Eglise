@@ -119,7 +119,7 @@
             <div class="space-y-5">
                 <section class="card space-y-3 p-5 sm:p-6">
                     <h2 class="text-lg">{{ __('Ce qui s’affiche sur les documents') }}</h2>
-                    <p class="text-sm text-sand-700">{{ __('Reçus, et plus tard attestations et lettres. Seules les informations renseignées s’affichent.') }}</p>
+                    <p class="text-sm text-sand-700">{{ __('Reçus, attestations et lettres. Seules les informations renseignées s’affichent.') }}</p>
                     @foreach (\App\Support\DocumentIdentity::DISPLAY as $key => [$label])
                         @continue($key === 'parent' && $organization->isRoot())
                         <label class="flex items-center gap-3 text-sm"><input type="checkbox" wire:model="display.{{ $key }}" class="size-5"> {{ __($label) }}</label>

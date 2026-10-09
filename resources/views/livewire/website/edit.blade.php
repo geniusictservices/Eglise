@@ -128,7 +128,7 @@
                 </div>
                 <div class="mt-5">
                     <p class="label">{{ __('Les groupes montrés sur la page « Nos groupes »') }}</p>
-                    <p class="mb-2 text-sm text-sand-700">{{ __('Le nom, la description et le jour de rencontre. Le lieu et le responsable ne sont pas publiés.') }}</p>
+                    <p class="mb-2 text-sm text-sand-700">{{ __('Le nom, la description et les jours de rencontre. Le lieu et le responsable ne sont pas publiés.') }}</p>
                     <div class="flex flex-wrap gap-2">
                         @forelse ($groups as $g)
                             <label class="flex items-center gap-2 rounded-xl border border-sand-200 px-3 py-2 text-sm"><input type="checkbox" wire:model.live="form.public_groups" value="{{ $g->id }}" class="size-4"> {{ $g->name }}</label>

@@ -32,6 +32,9 @@ class MemberAccounts
         }
         $organization = $member->organization()->firstOrFail();
         $existing = User::where('phone', $phone)->first();
+        if ($existing?->is_platform_staff) {
+            throw new InvalidArgumentException(__('Ce numéro est celui d’un compte de l’équipe Waumini : choisissez un autre numéro.'));
+        }
         if ($existing && Member::withoutOrganizationScope()->where('organization_id', $organization->id)->where('user_id', $existing->id)->exists()) {
             throw new InvalidArgumentException(__('Ce numéro est déjà celui d’une autre fiche de la communauté.'));
         }

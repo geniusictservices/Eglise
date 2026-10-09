@@ -67,12 +67,31 @@ class Form extends Component
     {
         $ids = Organization::query()->subtreeOf($this->organization())->pluck('id');
 
-        return User::whereHas('roleAssignments', fn ($q) => $q->whereIn('organization_id', $ids));
+        return User::where('is_platform_staff', false)->whereHas('roleAssignments', fn ($q) => $q->whereIn('organization_id', $ids));
+    }
+
+    /**
+     * Le nom, le téléphone, le mot de passe et l'activation d'un compte ne se changent que si tous
+     * ses rôles sont dans notre communauté ou en dessous : un compte qui a aussi un rôle ailleurs
+     * (au siège, dans une autre église) n'appartient pas qu'à nous. Un administrateur ne se gère
+     * que par un administrateur.
+     */
+    public function canEditIdentity(): bool
+    {
+        if (! $this->user) {
+            return true;
+        }
+        $organization = $this->organization();
+        $assignments = $this->user->roleAssignments()->with(['role', 'organization'])->get();
+
+        return $assignments->every(fn ($a) => $a->organization->isSelfOrDescendantOf($organization))
+            && ($assignments->doesntContain(fn ($a) => $a->role->isAdministrator()) || $this->isAdministratorOf($organization));
     }
 
     public function save(): void
     {
         $this->authorizeWrite('users.manage');
+        abort_unless($this->canEditIdentity(), 403, __('Ce compte a aussi des rôles hors de votre communauté : seul son niveau supérieur peut changer son identité.'));
         $phone = Phone::normalize($this->phone);
 
         $this->validate([
@@ -180,6 +199,7 @@ class Form extends Component
     public function resetPassword(): void
     {
         $this->authorizeWrite('users.manage');
+        abort_unless($this->user && $this->canEditIdentity(), 403, __('Ce compte a aussi des rôles hors de votre communauté : seul son niveau supérieur peut changer son mot de passe.'));
         $password = $this->makePassword();
         $this->user->forceFill(['password' => $password, 'must_change_password' => true])->save();
         app(AuditLogger::class)->record('password_reset', $this->user, description: __('a réinitialisé le mot de passe de :name', ['name' => $this->user->name]));

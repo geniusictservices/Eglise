@@ -2,7 +2,7 @@
 
 Ce manuel accompagne les communautés qui utilisent Waumini : églises indépendantes, dénominations avec siège, régions, secteurs et paroisses, et toute autre communauté de foi.
 
-Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille-de-route.html) ajoute ses chapitres.
+Il grandit avec l'application. Chaque étape de la feuille de route ajoute ses chapitres.
 
 ## Comment lire ce manuel
 
@@ -51,7 +51,7 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 
 18. [Les nouveautés et les notifications sur le téléphone](25-nouveautes.md)
 19. [Les groupes : cellules, chorales, groupes de prière](26-groupes.md)
-20. [Le calendrier, les inscriptions et les présences](27-calendrier-presences.md)
+20. [Le calendrier et les présences](27-calendrier-presences.md)
 21. [Les annonces et le partage sur WhatsApp](28-annonces.md)
 
 ### Accompagner les personnes
@@ -66,7 +66,7 @@ Il grandit avec l'application. Chaque étape de la [feuille de route](../feuille
 
 ### Le réseau et le site
 
-26. [Consolidation, quotes-parts, projets du siège et transferts de membres](33-consolidation.md)
+26. [Le réseau : consolidation, quotes-parts, projets du siège et transferts](33-consolidation.md)
 27. [Le site vitrine : pages, prédications et dons par mobile money](34-site-vitrine.md)
 
 ### Pour l'administrateur et les responsables
@@ -94,7 +94,7 @@ Waumini fournit des **rôles modèles**. Votre administrateur peut les adapter o
 | **Pasteur** | Vue d'ensemble, projets, approbation du budget, des dépenses, des dépassements, de la paie et des avances sur salaire, suivi pastoral, rapports. |
 | **Secrétaire** | Registre des membres, départements, groupes, calendrier, présences, annonces, documents et anciens registres, site vitrine. Ne voit pas les dîmes nominatives. |
 | **Trésorier** | Caisses, recettes, promesses, dépenses, taux du jour, paie, rapports. |
-| **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, avancement de ses actions, groupes, activités et annonces du département. |
+| **Responsable de département** | Son département seulement : besoins budgétaires, demandes de dépense, indicateurs de ses projets, groupes, activités et annonces du département. |
 | **Membre** | Son espace seulement : sa carte, ses dons et reçus, ses promesses, le programme, les annonces, ses demandes de prière et d'attestation. |
 | **Conseil / comité** | Lecture des rapports, sans rien pouvoir modifier. |
 | **Responsable de niveau** | Secteur, région ou siège : consolidation des chiffres de ses paroisses, quotes-parts, transferts de membres. |
