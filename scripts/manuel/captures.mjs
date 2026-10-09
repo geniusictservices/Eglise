@@ -251,7 +251,7 @@ const SCENES = [
                 .find((a) => (a.closest('tr') ?? a).textContent.includes('Furaha')).href);
             await page.goto(href);
             await settle(page);
-            const panel = page.locator('main section.card');
+            const panel = page.locator('main section.card', { has: page.locator('#roleId') });
             await panel.scrollIntoViewIfNeeded();
             await page.selectOption('#roleId', { label: 'Responsable de département' });
             await mark(page, [{ selector: 'main section.card ul li', label: '1' }, { selector: '#roleId', label: '2' }, { selector: 'main section.card label:has(input[type=checkbox])', label: '3' }]);
@@ -666,8 +666,10 @@ const SCENES = [
             await page.goto(`${BASE}/finances/depenses/nouvelle`);
             await settle(page);
             await page.fill('#title', 'Location de bâches pour la convention des jeunes');
-            await page.selectOption('#departmentId', { label: 'Jeunesse' });
-            await page.selectOption('#categoryId', { label: 'Fournitures et matériel' });
+            // La dépense se rattache à une ligne du budget : celle de la Jeunesse, sinon la première.
+            const line = await page.locator('#budgetLineId option').evaluateAll((o) => (o.find((x) => /jeun|convention/i.test(x.textContent)) ?? o.find((x) => x.value))?.value);
+            await page.selectOption('#budgetLineId', line);
+            await page.waitForTimeout(400);
             await page.fill('#amount', '120');
             await page.check('main input[type=checkbox]');
             await page.waitForSelector('main input[placeholder^="Membre"]');
@@ -1298,6 +1300,12 @@ const SCENES = [
     {
         id: '102b-projet-siege', user: '0990000001',
         run: async (page) => {
+            // Le compte a pu rester sur une paroisse (scène 61) : on revient au siège.
+            await page.goto(`${BASE}/tableau-de-bord`);
+            await page.evaluate(async () => {
+                const token = document.querySelector('meta[name=csrf-token]').content;
+                await fetch('/communaute/1/ouvrir', { method: 'POST', headers: { 'X-CSRF-TOKEN': token } });
+            });
             await page.goto(`${BASE}/projets`);
             await page.click('main li a.card:has-text("Bureau national")');
             await page.waitForURL(/\/projets\/\d+/);

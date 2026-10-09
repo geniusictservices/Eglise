@@ -76,8 +76,11 @@ class AuditLogger
             'subject_type' => $subject ? $subject->getMorphClass() : null,
             'subject_id' => $subject?->getKey(),
             'description' => $description,
-            'old_values' => $old ?: null,
-            'new_values' => $new ?: null,
+            // Les valeurs telles que la base les relira : un montant entier en flottant (120000.0) est
+            // stocké « 120000 ». L'empreinte doit porter sur cette forme, sinon la vérification croirait
+            // le journal altéré alors que rien n'a changé.
+            'old_values' => $old ? json_decode(json_encode($old), true) : null,
+            'new_values' => $new ? json_decode(json_encode($new), true) : null,
             'ip_address' => $request?->ip(),
             'user_agent' => $request ? substr((string) $request->userAgent(), 0, 500) : null,
             'created_at' => now()->format('Y-m-d H:i:s'),
@@ -148,7 +151,7 @@ class AuditLogger
                 'created_at' => $log->getRawOriginal('created_at'),
             ];
 
-            if ($log->previous_hash !== $previous || ! hash_equals($log->hash, self::hash($data))) {
+            if ($log->previous_hash !== $previous || (! hash_equals($log->hash, self::hash($data)) && ! self::legacyMatches($log->hash, $data))) {
                 return $log->id;
             }
 
@@ -156,5 +159,38 @@ class AuditLogger
         }
 
         return null;
+    }
+
+    /**
+     * Les lignes écrites avant octobre 2026 ont pu être scellées avec un montant entier en flottant
+     * (« 120000.0 ») alors que la base le relit « 120000 ». On les reconnaît en essayant ces nombres
+     * entiers sous leur forme flottante : le montant lui-même ne peut pas avoir changé.
+     */
+    private static function legacyMatches(string $expected, array $data): bool
+    {
+        $paths = [];
+        foreach (['old_values', 'new_values'] as $column) {
+            foreach ($data[$column] ?? [] as $key => $value) {
+                if (is_int($value)) {
+                    $paths[] = [$column, $key];
+                }
+            }
+        }
+        if ($paths === [] || count($paths) > 10) {
+            return false;
+        }
+        for ($mask = 1; $mask < (1 << count($paths)); $mask++) {
+            $candidate = $data;
+            foreach ($paths as $i => [$column, $key]) {
+                if ($mask & (1 << $i)) {
+                    $candidate[$column][$key] = (float) $candidate[$column][$key];
+                }
+            }
+            if (hash_equals($expected, self::hash($candidate))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

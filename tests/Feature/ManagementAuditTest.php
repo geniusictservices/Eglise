@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Livewire;
+use App\Models\AuditLog;
 use App\Models\DocumentType;
 use App\Models\GroupMeeting;
 use App\Models\Household;
 use App\Models\Member;
 use App\Models\Organization;
 use App\Models\User;
+use App\Services\AuditLogger;
 use App\Services\Documents;
 use App\Services\DocumentTypes;
 use App\Services\Groups;
@@ -130,5 +132,17 @@ class ManagementAuditTest extends TestCase
         $t->open($this->paroisse, $this->admin, 'C', 'question', 'c');
         DB::table('support_tickets')->where('organization_id', $demo->id)->delete();
         $this->assertStringEndsWith('-0004', $t->open($this->paroisse, $this->admin, 'D', 'question', 'd')->number);
+    }
+
+    public function test_a_whole_amount_in_the_audit_log_still_verifies_and_tampering_is_caught(): void
+    {
+        $logger = app(AuditLogger::class);
+        $member = Member::create(['last_name' => 'Kambale', 'first_name' => 'Jean']);
+        $logger->record('updated', $member, ['amount' => null], ['amount' => 120000.0, 'note' => 'Reçu SNEL']);
+        $this->assertNull($logger->verify());
+
+        $last = AuditLog::where('chain', 'main')->orderByDesc('id')->first();
+        DB::table('audit_logs')->where('id', $last->id)->update(['new_values' => json_encode(['amount' => 1200, 'note' => 'Reçu SNEL'])]);
+        $this->assertSame($last->id, $logger->verify());
     }
 }
