@@ -4,6 +4,7 @@
     $date = now()->timezone($organization->timezone)->translatedFormat('l j F');
     $done = collect($checklist)->where('done', true)->count();
     $percent = count($checklist) ? (int) round($done / count($checklist) * 100) : 100;
+    $trialTag = auth()->user()->can('organization.settings') ? 'a' : 'span'; // l'abonnement ne s'ouvre qu'avec les paramètres
     $tones = ['ink' => 'bg-ink-700 text-white', 'ochre' => 'bg-ochre-500 text-on-accent', 'terra' => 'bg-terra-500 text-white', 'leaf' => 'bg-leaf-500 text-white'];
 @endphp
 <div class="space-y-5 lg:space-y-6">
@@ -12,7 +13,7 @@
         <p class="text-sm text-ink-100 first-letter:uppercase">{{ $date }}</p>
         <h1 class="mt-0.5 text-2xl font-semibold text-white">{{ __('Bonjour, :name', ['name' => $firstName]) }}</h1>
         @if ($trialDaysLeft !== null)
-            <a href="{{ route('subscription') }}" class="badge mt-3 bg-ochre-500 text-on-accent"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</a>
+            <{{ $trialTag }} @if ($trialTag === 'a') href="{{ route('subscription') }}" @endif class="badge mt-3 bg-ochre-500 text-on-accent"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</{{ $trialTag }}>
         @endif
     </div>
 
@@ -23,7 +24,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
             @if ($trialDaysLeft !== null)
-                <a href="{{ route('subscription') }}" class="badge bg-ochre-100 text-ochre-700 hover:bg-ochre-500 hover:text-on-accent"><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</a>
+                <{{ $trialTag }} @if ($trialTag === 'a') href="{{ route('subscription') }}" @endif @class(['badge bg-ochre-100 text-ochre-700', 'hover:bg-ochre-500 hover:text-on-accent' => $trialTag === 'a'])><x-icon name="clock" class="size-3.5" /> {{ trans_choice('Essai gratuit : :count jour restant|Essai gratuit : :count jours restants', $trialDaysLeft) }}</{{ $trialTag }}>
             @endif
         </div>
     </div>
