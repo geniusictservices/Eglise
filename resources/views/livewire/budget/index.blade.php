@@ -19,7 +19,7 @@
         @if ($adopted)
             <p class="text-sm text-ochre-300">{{ __('Budget :y · version :v adoptée le :d par :n', ['y' => $yearLabel, 'v' => $adopted->version, 'd' => $adopted->approved_at->translatedFormat('j M Y'), 'n' => $adopted->approver?->name]) }}</p>
             <div class="mt-3 grid grid-cols-3 gap-3">
-                @php $solde = $adopted->total('income') - $adopted->total('expense'); @endphp
+                @php $solde = $summary['gap'] > 0 ? -$summary['gap'] : $summary['surplus']; @endphp
                 @foreach ([[__('Recettes prévues'), $adopted->total('income')], [__('Dépenses prévues'), $adopted->total('expense')], [$solde < 0 ? __('Déficit') : __('Excédent'), $solde]] as [$label, $value])
                     <div><p class="text-xs text-ink-100">{{ $label }}</p><p class="text-xl font-semibold tabular text-white sm:text-2xl">{{ Money::format($value, 'USD') }}</p></div>
                 @endforeach

@@ -52,7 +52,7 @@ class Quotas
     public function base(Organization $organization, string $period): float
     {
         [$from, $to] = $this->bounds($period);
-        $quota = FinanceCategory::withoutOrganizationScope()->where('organization_id', $organization->id)->whereIn('name', Consolidation::QUOTA_CATEGORIES)->pluck('id');
+        $quota = FinanceCategory::systemIds([$organization->id], Consolidation::QUOTA_CATEGORIES);
 
         return round((float) FinanceTransaction::withoutOrganizationScope()->valid()->where('organization_id', $organization->id)->where('type', 'income')
             ->whereBetween('occurred_on', [$from, $to])->whereNull('project_id')->whereNull('expense_request_id')
@@ -92,7 +92,7 @@ class Quotas
         }
 
         return DB::transaction(function () use ($child, $parent, $period, $account, $currency, $amount, $reference) {
-            $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(['organization_id' => $child->id, 'type' => 'expense', 'name' => 'Quote-part versée au niveau supérieur'], ['position' => 95]);
+            $category = FinanceCategory::system($child->id, 'quota_sent');
             $expense = $this->ledger->record($account, $currency, 'expense', ['amount' => $amount, 'category_id' => $category->id,
                 'description' => __('Quote-part :m à :p', ['m' => $this->label($period), 'p' => $parent->name]), 'external_reference' => $reference]);
             $payment = QuotaPayment::create(['from_organization_id' => $child->id, 'to_organization_id' => $parent->id, 'period' => $period,
@@ -118,8 +118,7 @@ class Quotas
                 throw new InvalidArgumentException(__('Cette quote-part est déjà reçue.'));
             }
             $payment->loadMissing('from');
-            $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(['organization_id' => $payment->to_organization_id, 'type' => 'income', 'name' => 'Quotes-parts reçues'],
-                ['nature' => 'collective', 'position' => 95]);
+            $category = FinanceCategory::system($payment->to_organization_id, 'quota_received');
             $income = $this->ledger->record($account, $payment->currency, 'income', ['amount' => (string) $payment->amount, 'category_id' => $category->id,
                 'payer_name' => $payment->from->name, 'description' => __('Quote-part :m de :c', ['m' => $this->label($payment->period), 'c' => $payment->from->name]),
                 'external_reference' => $payment->reference]);

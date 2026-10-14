@@ -121,7 +121,11 @@ class Sheet extends Component
             ]);
 
             $this->sheet->lines()->delete();
+            $categories = FinanceCategory::where('type', 'income')->pluck('id')->all();
             foreach ($this->lines as $categoryId => $amounts) {
+                if (! in_array((int) $categoryId, $categories, true)) {
+                    continue;
+                }
                 foreach ($amounts as $currency => $amount) {
                     if (is_numeric($amount) && (float) $amount > 0 && in_array($currency, $this->currencies(), true)) {
                         CollectionLine::create(['collection_id' => $this->sheet->id, 'category_id' => $categoryId, 'currency' => $currency, 'amount' => $amount]);
@@ -159,7 +163,7 @@ class Sheet extends Component
             'envelopeCategory' => ['required', Rule::exists('finance_categories', 'id')->where('organization_id', $this->organization()->id)->where('nature', 'personal')],
             'envelopeCurrency' => ['required', Rule::in($this->currencies())],
             'envelopeAmount' => 'required|numeric|gt:0',
-            'envelopeMemberId' => [Rule::requiredIf(trim($this->envelopeName) === '')],
+            'envelopeMemberId' => [Rule::requiredIf(trim($this->envelopeName) === ''), 'nullable', Rule::exists('members', 'id')->where('organization_id', $this->organization()->id)],
             'envelopeName' => 'nullable|string|max:150',
         ], ['envelopeMemberId.required' => __('Choisissez le membre, ou écrivez le nom d’un donateur de passage.')], ['envelopeAmount' => __('montant')]);
 

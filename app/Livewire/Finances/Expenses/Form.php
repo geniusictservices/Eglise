@@ -92,7 +92,7 @@ class Form extends Component
             'description' => 'nullable|string|max:2000',
             'amount' => 'required|numeric|gt:0',
             'currency' => ['required', Rule::in($ledger->currencies($this->organization()))],
-            'beneficiaryId' => [Rule::requiredIf($this->isAdvance && trim($this->beneficiaryName) === '')],
+            'beneficiaryId' => [Rule::requiredIf($this->isAdvance && trim($this->beneficiaryName) === ''), 'nullable', Rule::exists('members', 'id')->where('organization_id', $this->organization()->id)],
             'beneficiaryName' => 'nullable|string|max:150',
             'neededOn' => 'nullable|date',
             'files.*' => 'file|max:8192|mimes:jpg,jpeg,png,webp,pdf',

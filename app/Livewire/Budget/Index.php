@@ -8,6 +8,7 @@ use App\Models\BudgetOverrun;
 use App\Models\BudgetProposal;
 use App\Models\Department;
 use App\Services\Budgets;
+use App\Services\BudgetSources;
 use App\Support\DepartmentScope;
 use App\Support\FiscalYear;
 use Illuminate\Support\Facades\Gate;
@@ -78,6 +79,7 @@ class Index extends Component
             'adopted' => $adopted,
             'pending' => $pending,
             'byDepartment' => $adopted ? $budgets->byDepartment($adopted) : [],
+            'summary' => $adopted ? app(BudgetSources::class)->summary($adopted) : null,
             'departments' => Department::where('is_active', true)->orderByDesc('is_system')->orderBy('name')->get(),
             'proposals' => $proposals,
             'mine' => $scope,

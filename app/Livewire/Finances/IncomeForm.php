@@ -99,10 +99,19 @@ class IncomeForm extends Component
             'currency' => ['required', Rule::in($this->accountCurrencies())],
             'amount' => 'required|numeric|gt:0|max:999999999999',
             'occurredOn' => 'required|date|before_or_equal:today',
-            'memberId' => [Rule::requiredIf($category?->nature === 'personal' && trim($this->payerName) === '')],
-            'departmentId' => [Rule::requiredIf($category?->nature === 'group')],
+            'memberId' => [Rule::requiredIf($category?->nature === 'personal' && trim($this->payerName) === ''), 'nullable', Rule::exists('members', 'id')->where('organization_id', $this->organization()->id)],
+            'departmentId' => [Rule::requiredIf($category?->nature === 'group'), 'nullable', Rule::exists('departments', 'id')->where('organization_id', $this->organization()->id)],
             'paymentMethod' => ['required', Rule::in(array_keys(FinanceTransaction::PAYMENT_METHODS))],
-            'externalReference' => [Rule::requiredIf($this->paymentMethod === 'mobile'), 'nullable', 'string', 'max:100'],
+            'externalReference' => [Rule::requiredIf($this->paymentMethod === 'mobile'), 'nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
+                $reference = strtoupper(preg_replace('/\s+/', '', (string) $value));
+                if ($reference === '' || $this->paymentMethod !== 'mobile') {
+                    return;
+                }
+                $existing = FinanceTransaction::valid()->whereRaw('upper(replace(external_reference, \' \', \'\')) = ?', [$reference])->orderBy('id')->first();
+                if ($existing) {
+                    $fail(__('Cet ID de transaction est déjà enregistré (reçu :n du :d).', ['n' => $existing->receipt_number ?? '—', 'd' => $existing->occurred_on->translatedFormat('j M Y')]));
+                }
+            }],
             'payerName' => 'nullable|string|max:150',
             'description' => 'nullable|string|max:255',
         ], [

@@ -118,8 +118,7 @@ class Budgets
     {
         $this->expectDraft($budget);
         $organization = $budget->organization()->firstOrFail();
-        $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(
-            ['organization_id' => $organization->id, 'type' => 'expense', 'name' => 'Rémunérations et motivations'], ['position' => 50])->id;
+        $category = FinanceCategory::system($organization->id, 'salaries')->id;
         $general = Department::withoutGlobalScope('organization')->where('organization_id', $organization->id)->where('is_system', true)->value('id');
         $payroll = app(Payroll::class);
         $control = app(BudgetControl::class);
@@ -166,11 +165,9 @@ class Budgets
         $year = $budget->fiscal_year;
         $projects = app(Projects::class);
         $general = Department::withoutGlobalScope('organization')->where('organization_id', $organization->id)->where('is_system', true)->value('id');
-        $expenseCategory = FinanceCategory::withoutOrganizationScope()->firstOrCreate(
-            ['organization_id' => $organization->id, 'type' => 'expense', 'name' => 'Projets et travaux'], ['position' => 55])->id;
+        $expenseCategory = FinanceCategory::system($organization->id, 'projects')->id;
         // Ce qu'une paroisse collecte pour un projet du siège, elle le lui verse.
-        $sentCategory = fn () => FinanceCategory::withoutOrganizationScope()->firstOrCreate(
-            ['organization_id' => $organization->id, 'type' => 'expense', 'name' => ProjectNetwork::SENT_CATEGORY], ['position' => 96])->id;
+        $sentCategory = fn () => FinanceCategory::system($organization->id, 'project_remittance')->id;
         $count = 0;
 
         $list = Project::withoutOrganizationScope()->with(['years', 'parentProject.organization'])->where('organization_id', $organization->id)

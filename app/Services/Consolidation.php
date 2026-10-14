@@ -22,8 +22,8 @@ class Consolidation
     /** Au-delà, une paroisse sans nouvelle opération est signalée. */
     public const LATE_DAYS = 14;
 
-    /** Les catégories des quotes-parts : un mouvement interne au réseau, retiré des totaux consolidés. */
-    public const QUOTA_CATEGORIES = ['Quotes-parts reçues', 'Quote-part versée au niveau supérieur'];
+    /** Les catégories des quotes-parts (codes système) : un mouvement interne au réseau, retiré des totaux consolidés. */
+    public const QUOTA_CATEGORIES = ['quota_received', 'quota_sent'];
 
     /**
      * Une ligne par niveau directement en dessous (ou le niveau lui-même s'il n'en a pas),
@@ -50,7 +50,7 @@ class Consolidation
     public function figures(Organization $unit, Carbon $from, Carbon $to, bool $own = false): array
     {
         $ids = $own ? [$unit->id] : Organization::query()->subtreeOf($unit)->pluck('id')->all();
-        $quota = FinanceCategory::withoutOrganizationScope()->whereIn('organization_id', $ids)->whereIn('name', self::QUOTA_CATEGORIES)->pluck('id');
+        $quota = FinanceCategory::systemIds($ids, self::QUOTA_CATEGORIES);
         $moves = FinanceTransaction::withoutOrganizationScope()->valid()->whereIn('organization_id', $ids)
             ->whereBetween('occurred_on', [$from->toDateString(), $to->toDateString()])->whereIn('type', ['income', 'expense'])
             ->when($quota->isNotEmpty(), fn ($q) => $q->where(fn ($q) => $q->whereNull('category_id')->orWhereNotIn('category_id', $quota)))

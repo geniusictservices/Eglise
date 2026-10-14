@@ -211,10 +211,13 @@ return [
         'expense_categories' => [
             'Loyer et charges', 'Électricité et eau', 'Transport et déplacements', 'Entretien et réparations',
             'Fournitures et matériel', 'Communication et téléphone', 'Évangélisation et missions', 'Œuvres sociales et entraide',
-            'Accueil et réceptions', 'Quote-part au niveau supérieur', 'Rémunérations et motivations', 'Autres dépenses',
+            'Accueil et réceptions', 'Quote-part versée au niveau supérieur', 'Rémunérations et motivations', 'Autres dépenses',
         ],
         // Circuit des dépenses : nombre de signatures (1 à 3), délai pour justifier une avance.
         'expenses' => ['approvals_required' => 2, 'advance_days' => 14, 'block_unjustified_advances' => false],
+
+        // Change : écart maximal (en %) entre le montant reçu et le taux officiel du jour ; 0 pour ne rien vérifier.
+        'exchange_tolerance' => 10,
 
         // Message de relance d'une promesse, envoyé à la main sur WhatsApp ; chaque communauté peut l'adapter.
         'pledge_reminder' => 'Bonjour :name, que la paix du Seigneur soit avec vous. Merci pour votre promesse de :promised pour « :campaign ». À ce jour, nous avons reçu :received ; il reste :remaining. Que Dieu vous bénisse ! — :church',

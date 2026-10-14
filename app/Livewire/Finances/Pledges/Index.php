@@ -45,6 +45,7 @@ class Index extends Component
     {
         $canSeeNames = Gate::any(['finance.pledges', 'finance.contributions.view']);
         $list = Pledge::with(['project', 'member', 'household', 'department'])
+            ->withSum(['payments as paid_sum' => fn ($q) => $q->valid()], 'pledge_amount')->withSum('deliveries as delivered_sum', 'value')
             ->when($this->project !== '', fn ($q) => $q->where('project_id', $this->project))
             ->when(in_array($this->state, ['active', 'fulfilled', 'cancelled'], true), fn ($q) => $q->where('status', $this->state))
             ->when($this->state === 'retard', fn ($q) => $q->where('status', 'active'))
@@ -54,13 +55,24 @@ class Index extends Component
                     ->orWhereHas('member', fn ($q) => $q->search(trim($this->search)))
                     ->orWhereHas('household', fn ($q) => $q->where('name', 'like', $term)));
             })
-            ->latest('pledged_on')->latest('id')->get()
-            ->map(fn ($p) => ['pledge' => $p, 'progress' => $pledges->progress($p)])
-            ->when($this->state === 'retard', fn ($c) => $c->filter(fn ($r) => $r['progress']['late']->isPositive()))
-            ->values();
+            ->latest('pledged_on')->latest('id');
 
         $page = $this->getPage();
         $perPage = 25;
+        if ($this->state === 'retard') {
+            // Le retard dépend de l'échéancier : il se calcule en PHP, sur les promesses actives seulement.
+            $list = $list->get()->map(fn ($p) => ['pledge' => $p, 'progress' => $pledges->progress($p)])
+                ->filter(fn ($r) => $r['progress']['late']->isPositive())->values();
+            $rows = $list->forPage($page, $perPage);
+            $total = $list->count();
+        } else {
+            $paginator = $list->paginate($perPage, page: $page);
+            $rows = collect($paginator->items())->map(fn ($p) => ['pledge' => $p, 'progress' => $pledges->progress($p)]);
+            $total = $paginator->total();
+        }
+        $lateCount = Pledge::where('status', 'active')->when($this->project !== '', fn ($q) => $q->where('project_id', $this->project))
+            ->withSum(['payments as paid_sum' => fn ($q) => $q->valid()], 'pledge_amount')->withSum('deliveries as delivered_sum', 'value')->get()
+            ->filter(fn ($p) => $pledges->progress($p)['late']->isPositive())->count();
 
         return view('livewire.finances.pledges.index', [
             // Les projets qui ont des promesses, ou qui en attendent (ouverts, avec un objectif).
@@ -69,11 +81,11 @@ class Index extends Component
                 ->orderByRaw("FIELD(status, 'ongoing', 'planned', 'done', 'cancelled')")->latest()->get()
                 ->map(fn ($c) => ['project' => $c, 'totals' => $projects->totals($c), 'count' => $c->pledges_count]),
             'current' => $this->project !== '' ? Project::find($this->project) : null,
-            'rows' => $list->forPage($page, $perPage),
-            'total' => $list->count(),
-            'pages' => (int) ceil($list->count() / $perPage),
+            'rows' => $rows,
+            'total' => $total,
+            'pages' => (int) ceil($total / $perPage),
             'page' => $page,
-            'lateCount' => $list->filter(fn ($r) => $r['progress']['late']->isPositive())->count(),
+            'lateCount' => $lateCount,
             'canSeeNames' => $canSeeNames,
             'canManage' => Gate::allows('finance.pledges') && ! $this->organization()->isReadOnly(),
         ]);

@@ -63,6 +63,15 @@ class Form extends Component
         abort_if($this->readOnly || $this->notOurs(), 403);
         $this->authorizeWrite('roles.manage');
         $organization = $this->organization();
+        $actor = auth()->user();
+
+        // On ne modifie pas un rôle que l'on porte, et l'on ne coche pas une permission que l'on n'a pas.
+        if (! $actor->isAdministratorOf($organization)) {
+            abort_if($this->role && $this->role->assignments()->where('user_id', $actor->id)->exists(), 403,
+                __('Vous portez ce rôle : seul un administrateur peut le modifier.'));
+            abort_if(array_diff($this->permissions, $actor->permissionsIn($organization)) !== [], 403,
+                __('Vous ne pouvez pas accorder une permission que vous n’avez pas vous-même.'));
+        }
 
         $this->validate([
             'name' => ['required', 'string', 'max:80', Rule::unique('roles')->where('organization_id', $organization->id)->ignore($this->role?->id)],

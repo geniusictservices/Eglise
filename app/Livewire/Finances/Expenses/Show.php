@@ -107,8 +107,10 @@ class Show extends Component
             'note' => 'nullable|string|max:500',
             'files.*' => 'file|max:8192|mimes:jpg,jpeg,png,webp,pdf',
         ], attributes: ['spent' => __('montant dépensé'), 'files.*' => __('pièce jointe')]);
-        $this->storeFiles('invoice');
-        $this->run(fn () => $expenses->justify($this->expense, $this->spent, trim($this->note) ?: null), __('Dépense justifiée.'), 'spent');
+        $this->run(function () use ($expenses) {
+            $expenses->justify($this->expense, $this->spent, trim($this->note) ?: null);
+            $this->storeFiles('invoice');
+        }, __('Dépense justifiée.'), 'spent');
     }
 
     /** Ajouter une pièce à tout moment (devis, facture, reçu, photo). */

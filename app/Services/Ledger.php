@@ -14,6 +14,7 @@ use App\Models\Pledge;
 use App\Models\ProjectRemittance;
 use App\Models\QuotaPayment;
 use App\Models\SalaryAdvance;
+use App\Support\Money;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
@@ -146,6 +147,9 @@ class Ledger
         FinanceClosing::assertOpen($from->organization_id, $on);
         $out = $this->amount($amountOut, $fromCurrency);
         $in = $exchange ? $this->amount($amountIn ?? throw new InvalidArgumentException(__('Indiquez le montant reçu.')), $toCurrency) : $out;
+        if ($exchange) {
+            $this->assertFairExchange($from->loadMissing('organization')->organization, $out, $fromCurrency, $in, $toCurrency, $on);
+        }
 
         return DB::transaction(function () use ($from, $fromCurrency, $to, $toCurrency, $out, $in, $exchange, $description, $on) {
             CashAccountCurrency::where('cash_account_id', $from->id)->where('currency', $fromCurrency)->lockForUpdate()->first();
@@ -165,6 +169,31 @@ class Ledger
 
             return [$legOut, $legIn];
         });
+    }
+
+    /**
+     * Un change dont le montant reçu s'éloigne trop du taux officiel du jour fait sortir de l'argent
+     * sans aucune seconde signature : au-delà de la tolérance (réglage finance.exchange_tolerance,
+     * en pour cent), l'opération est refusée et le montant attendu est indiqué.
+     */
+    private function assertFairExchange(Organization $organization, BigDecimal $out, string $fromCurrency, BigDecimal $in, string $toCurrency, Carbon $on): void
+    {
+        $tolerance = (float) config('waumini.finance.exchange_tolerance', 10);
+        $rateOut = $this->rates->rate($organization, $fromCurrency, $on);
+        $rateIn = $this->rates->rate($organization, $toCurrency, $on);
+        if ($tolerance <= 0 || ! $rateOut || ! $rateIn) {
+            return;
+        }
+        $expected = $out->dividedBy($rateOut, 8, RoundingMode::HalfUp)->multipliedBy($rateIn);
+        if ($expected->isZero()) {
+            return;
+        }
+        $gap = $in->minus($expected)->abs()->dividedBy($expected, 6, RoundingMode::HalfUp)->multipliedBy(100);
+        if ($gap->isGreaterThan((string) $tolerance)) {
+            throw new InvalidArgumentException(__('Au taux du jour, :out donnent environ :expected. Le montant reçu s’en écarte de plus de :t % : vérifiez-le, ou corrigez d’abord le taux du jour.', [
+                'out' => Money::format($out, $fromCurrency), 'expected' => Money::format($expected, $toCurrency), 't' => rtrim(rtrim(number_format($tolerance, 1, ',', ' '), '0'), ','),
+            ]));
+        }
     }
 
     /**
@@ -299,10 +328,10 @@ class Ledger
         }
 
         foreach (config('waumini.finance.income_categories') as $i => [$name, $nature]) {
-            FinanceCategory::create(['organization_id' => $organization->id, 'type' => 'income', 'name' => $name, 'nature' => $nature, 'position' => $i]);
+            FinanceCategory::create(['organization_id' => $organization->id, 'type' => 'income', 'code' => FinanceCategory::codeFor('income', $name), 'name' => $name, 'nature' => $nature, 'position' => $i]);
         }
         foreach (config('waumini.finance.expense_categories') as $i => $name) {
-            FinanceCategory::create(['organization_id' => $organization->id, 'type' => 'expense', 'name' => $name, 'position' => $i]);
+            FinanceCategory::create(['organization_id' => $organization->id, 'type' => 'expense', 'code' => FinanceCategory::codeFor('expense', $name), 'name' => $name, 'position' => $i]);
         }
     }
 }

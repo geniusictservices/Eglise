@@ -42,9 +42,12 @@ class Backups
                 $zip->setPassword($password);
             }
             $add = function (string $file, string $entry) use ($zip, $password) {
-                $zip->addFile($file, $entry);
-                if ($password !== '') {
-                    $zip->setEncryptionName($entry, ZipArchive::EM_AES_256);
+                if (! $zip->addFile($file, $entry)) {
+                    throw new RuntimeException("Impossible d'ajouter {$entry} à l'archive.");
+                }
+                // Sans chiffrement effectif, l'archive sortirait en clair alors que l'écran la dirait chiffrée.
+                if ($password !== '' && ! $zip->setEncryptionName($entry, ZipArchive::EM_AES_256)) {
+                    throw new RuntimeException('Le chiffrement AES-256 des archives n’est pas disponible sur ce serveur (libzip trop ancienne).');
                 }
             };
             $add($sql, 'database.sql');

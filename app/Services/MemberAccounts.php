@@ -46,6 +46,9 @@ class MemberAccounts
                 $password = Str::upper(Str::random(3)).'-'.random_int(1000, 9999);
                 $user = User::create(['name' => $member->fullName(), 'phone' => $phone, 'password' => $password, 'must_change_password' => true,
                     'locale' => $member->preferred_language ?: 'fr']);
+                if ($organization->root()->is_demo) {
+                    $user->forceFill(['is_demo' => true])->save();
+                }
             }
             $root = $organization->root();
             $role = Role::where('organization_id', $root->id)->where('key', 'membre')->first()

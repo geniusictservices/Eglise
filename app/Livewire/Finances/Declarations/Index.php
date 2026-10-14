@@ -75,7 +75,7 @@ class Index extends Component
         [$purposeType, $purposeId] = array_pad(explode(':', (string) ($this->form['purpose'] ?? '')), 2, null);
 
         $this->validate([
-            'memberId' => [Rule::requiredIf(trim($this->form['declarant_name'] ?? '') === '')],
+            'memberId' => [Rule::requiredIf(trim($this->form['declarant_name'] ?? '') === ''), 'nullable', Rule::exists('members', 'id')->where('organization_id', $this->organization()->id)],
             'form.declarant_name' => 'nullable|string|max:150',
             'form.declarant_phone' => ['nullable', 'string', 'max:25', fn ($a, $v, $fail) => $v && ! Phone::normalize($v) ? $fail(__('Ce numéro de téléphone n’est pas valide.')) : null],
             'form.amount' => 'required|numeric|gt:0',

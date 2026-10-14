@@ -10,7 +10,9 @@ use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\FiscalYear;
 use App\Support\Money;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -89,9 +91,10 @@ class Expenses
         if (! ($data['budget_line_id'] ?? null)) {
             return ['is_unforeseen' => false, 'unforeseen_reason' => null] + $data;
         }
+        $year = FiscalYear::of($organization, Carbon::parse($data['needed_on'] ?? today()));
         $line = BudgetLine::where('type', 'expense')->whereHas('budget', fn ($q) => $q->withoutGlobalScope('organization')
-            ->where('organization_id', $organization->id)->where('status', 'adopted'))->find($data['budget_line_id'])
-            ?? throw new InvalidArgumentException(__('Choisissez une ligne du budget adopté.'));
+            ->where('organization_id', $organization->id)->where('status', 'adopted')->where('fiscal_year', $year))->find($data['budget_line_id'])
+            ?? throw new InvalidArgumentException(__('Choisissez une ligne du budget adopté de l’exercice de la dépense.'));
 
         return ['department_id' => $line->department_id, 'category_id' => $line->category_id, 'budget_line_id' => $line->id,
             'project_id' => $line->project_id ?? ($data['project_id'] ?? null), 'is_unforeseen' => false, 'unforeseen_reason' => null] + $data;
@@ -191,9 +194,7 @@ class Expenses
             if ($amount - $spent > 0.004) {
                 $return = $this->ledger->record($request->account, $request->currency, 'income', [
                     'amount' => (string) round($amount - $spent, 2),
-                    'category_id' => FinanceCategory::withoutOrganizationScope()->firstOrCreate(
-                        ['organization_id' => $request->organization_id, 'type' => 'income', 'name' => 'Retour sur avance'],
-                        ['nature' => 'collective', 'position' => 90])->id,
+                    'category_id' => FinanceCategory::system($request->organization_id, 'advance_return')->id,
                     'description' => __('Reste non dépensé : :n', ['n' => $request->number]),
                     'expense_request_id' => $request->id,
                     'project_id' => $request->project_id,

@@ -55,8 +55,7 @@ class SalaryAdvances
             throw new InvalidArgumentException(__('Cette avance n’est pas approuvée.'));
         }
         $advance->loadMissing(['payee', 'organization']);
-        $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(
-            ['organization_id' => $advance->organization_id, 'type' => 'expense', 'name' => 'Rémunérations et motivations'], ['position' => 50])->id;
+        $category = FinanceCategory::system($advance->organization_id, 'salaries')->id;
 
         DB::transaction(function () use ($advance, $account, $payCurrency, $category) {
             // Relue sous verrou : un double clic ne passe pas deux fois.
