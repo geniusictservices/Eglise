@@ -98,7 +98,7 @@ class Space extends Component
             'gift.paid_on' => 'required|date|before_or_equal:today|after:-60 days', 'gift.message' => 'nullable|string|max:255',
         ], attributes: ['gift.amount' => __('montant'), 'gift.reference' => __('ID de la transaction'), 'gift.paid_on' => __('date')]);
         $pledge = $this->gift['pledge_id'] ? Pledge::where('member_id', $member->id)->find((int) $this->gift['pledge_id']) : null;
-        $category = $this->gift['category_id'] ? FinanceCategory::where('type', 'income')->find((int) $this->gift['category_id']) : null;
+        $category = $this->gift['category_id'] ? FinanceCategory::where('type', 'income')->where('nature', 'personal')->find((int) $this->gift['category_id']) : null;
         $declaration = PaymentDeclaration::create([
             'member_id' => $member->id, 'declarant_name' => $member->fullName(), 'declarant_phone' => $member->phone,
             'amount' => $this->gift['amount'], 'currency' => $pledge?->currency ?? $this->gift['currency'], 'operator' => $this->gift['operator'],

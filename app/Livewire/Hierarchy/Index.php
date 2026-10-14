@@ -80,7 +80,8 @@ class Index extends Component
 
         $target = Organization::where('slug', trim($this->targetSlug))->first();
 
-        if (! $target || $target->isSelfOrDescendantOf($organization)) {
+        // Une démo ne se rattache pas à une vraie communauté, ni l'inverse : la purge de la démo emporterait tout.
+        if (! $target || $target->isSelfOrDescendantOf($organization) || (bool) $target->root()->is_demo !== (bool) $organization->is_demo) {
             $this->addError('targetSlug', __('Aucune communauté ne correspond à ce code.'));
 
             return;
@@ -104,6 +105,7 @@ class Index extends Component
         $request = AttachmentRequest::with(['organization', 'target'])->where('status', 'pending')->findOrFail($requestId);
         abort_unless($request->target->isSelfOrDescendantOf($organization), 404);
         $this->authorizeWrite('organization.hierarchy', $request->target);
+        abort_if($accept && (bool) $request->organization->is_demo !== (bool) $request->target->root()->is_demo, 403, __('Une communauté de démonstration ne rejoint pas une vraie communauté.'));
 
         DB::transaction(function () use ($request, $accept) {
             $request->update(['status' => $accept ? 'accepted' : 'refused', 'decided_by' => auth()->id(), 'decided_at' => now()]);

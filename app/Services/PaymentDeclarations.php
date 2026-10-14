@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CashAccount;
+use App\Models\FinanceCategory;
 use App\Models\PaymentDeclaration;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -42,7 +43,7 @@ class PaymentDeclarations
                 ? $this->pledges->pay($declaration->pledge, $account, $declaration->currency, (string) $declaration->amount, $extra)
                 : $this->ledger->record($account, $declaration->currency, 'income', $extra + [
                     'amount' => (string) $declaration->amount,
-                    'category_id' => $declaration->category_id,
+                    'category_id' => $declaration->category_id ?? $this->defaultCategory($declaration),
                     'member_id' => $declaration->member_id,
                     'payer_name' => $declaration->member_id ? null : $declaration->declarant_name,
                     'description' => trim(__('Paiement :op déclaré', ['op' => $declaration->operator]).($declaration->message ? ' · '.$declaration->message : '')),
@@ -63,5 +64,12 @@ class PaymentDeclarations
         }
         $declaration->update(['status' => 'rejected', 'reject_reason' => $reason, 'reviewed_by' => auth()->id(), 'reviewed_at' => now()]);
         app(CircuitNotices::class)->declarationReviewed($declaration);
+    }
+
+    /** Un don déclaré « pour l'offrande », sans catégorie précise : la première catégorie collective de la communauté. */
+    private function defaultCategory(PaymentDeclaration $declaration): ?int
+    {
+        return FinanceCategory::withoutOrganizationScope()->where('organization_id', $declaration->organization_id)
+            ->where('type', 'income')->where('is_active', true)->where('nature', 'collective')->orderBy('position')->value('id');
     }
 }

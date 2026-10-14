@@ -59,6 +59,11 @@ SESSION_SECURE_COOKIE=true
 CACHE_STORE=database
 QUEUE_CONNECTION=database
 
+# Journal : un fichier par jour, 14 jours gardés, seulement les avertissements et les erreurs
+LOG_CHANNEL=daily
+LOG_DAILY_DAYS=14
+LOG_LEVEL=warning
+
 # Notifications sur les téléphones (clés générées plus bas)
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
@@ -100,7 +105,9 @@ Le chemin de PHP peut varier ; cPanel l'indique dans la page *Tâches Cron*. Cet
 | Chaque nuit, 2 h 15 | La **sauvegarde** de la base et des fichiers |
 | Chaque matin, 5 h | L'état des abonnements : fin d'essai, délai de grâce, lecture seule |
 | Chaque matin, 6 h 30 | Les anniversaires du jour, à l'équipe pastorale |
-| Chaque jour | Le ménage des sessions et jetons expirés |
+| Chaque jour | Le ménage : jetons de réinitialisation expirés, tâches en échec anciennes, nouveautés lues depuis 90 jours |
+
+Chaque tâche écrit ce qu'elle fait dans `storage/logs/schedule.log`, et un échec est inscrit dans le journal de l'application (`storage/logs/laravel-*.log`). Vérifier ces deux fichiers après l'installation, puis de temps en temps : le cron de l'hébergeur, lui, ne signale rien. Si `php -i | grep disable_functions` liste `proc_open`, rien ne change : la file d'attente tourne dans le processus du planificateur.
 
 ## 4 bis. Premier compte de l'équipe Genius ICT
 
@@ -151,7 +158,7 @@ Waumini se sauvegarde **lui-même chaque nuit** (2 h 15) : une archive `storage/
 - `database.sql` : toute la base, en SQL ;
 - `fichiers/` : les fichiers envoyés (logos, photos de membres, justificatifs de dépenses, captures de paiements, photos des sites, audios des prédications).
 
-L'archive est **chiffrée** (AES-256) avec `BACKUP_PASSWORD`. Les 14 dernières sont gardées (`BACKUP_KEEP`).
+L'archive est **chiffrée** (AES-256) avec `BACKUP_PASSWORD` ; si le serveur ne sait pas chiffrer (libzip trop ancienne), la sauvegarde échoue et le dit, plutôt que d'écrire une archive en clair. Garder aussi, hors du serveur, une copie du fichier `.env` : sans `APP_KEY`, les sessions et les données chiffrées (notes confidentielles) de la sauvegarde sont perdues, et sans les clés VAPID, tous les abonnements aux notifications sont à refaire. Les 14 dernières sont gardées (`BACKUP_KEEP`).
 
 Une sauvegarde qui reste sur le même serveur ne protège pas d'une panne de l'hébergement. Il faut donc **une copie ailleurs** :
 
