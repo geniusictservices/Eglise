@@ -43,6 +43,10 @@
                 @php
                     $in = $t->isInflow();
                     $who = $t->member_id ? ($canSeeNames ? $t->member?->fullName() : __('Contribution nominative')) : ($t->payer_name && $canSeeNames ? $t->payer_name : ($t->department?->name));
+                    // Une ligne de paie : le nom et le détail ne se lisent qu'avec la permission paie.
+                    $payroll = $t->pay_slip_id && ! $canSeePayroll;
+                    $who = $payroll ? __('Paie') : $who;
+                    $description = $payroll ? \Illuminate\Support\Str::before((string) $t->description, ' · ') : $t->description;
                 @endphp
                 <li @class(['flex flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3', 'opacity-60' => $t->cancelled_at]) wire:key="t-{{ $t->id }}">
                     <span @class(['icon-tile size-9', 'bg-leaf-50 text-leaf-600' => $in, 'bg-terra-50 text-terra-600' => ! $in])>
@@ -53,7 +57,7 @@
                             {{ $t->category?->name ?? __(\App\Models\FinanceTransaction::TYPES[$t->type]) }}@if ($who) · <span class="font-normal">{{ $who }}</span>@endif
                         </p>
                         <p class="truncate text-xs text-sand-700">
-                            {{ $t->occurred_on->translatedFormat('j M') }} · {{ $t->account->name }}@if ($t->description) · {{ $t->description }}@endif @if ($t->receipt_number) · {{ $t->receipt_number }}@endif
+                            {{ $t->occurred_on->translatedFormat('j M') }} · {{ $t->account->name }}@if ($description) · {{ $description }}@endif @if ($t->receipt_number) · {{ $t->receipt_number }}@endif
                             @if ($t->external_reference) · {{ __('ID :r', ['r' => $t->external_reference]) }}@endif
                         </p>
                         @if ($t->cancelled_at)<p class="text-xs text-terra-600">{{ __('Annulée le :d : :r', ['d' => $t->cancelled_at->translatedFormat('j M'), 'r' => $t->cancel_reason]) }}</p>@endif

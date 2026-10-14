@@ -19,6 +19,9 @@ class Index extends Component
     /** Taux saisis, par devise. */
     public array $rates = [];
 
+    /** @var array<string, bool> taux très différent du précédent, confirmé par l'utilisateur */
+    public array $confirm = [];
+
     public string $date = '';
 
     public string $newCurrency = '';
@@ -44,6 +47,18 @@ class Index extends Component
             "rates.{$currency}" => 'required|numeric|gt:0|max:100000000',
             'date' => 'required|date|before_or_equal:today',
         ], attributes: ["rates.{$currency}" => __('taux'), 'date' => __('date')]);
+
+        // 28,5 au lieu de 2 850 figerait des équivalents en dollars cent fois trop grands sur toutes les opérations du jour.
+        $previous = $service->rate($this->organization(), $currency, Carbon::parse($this->date));
+        if ($previous && empty($this->confirm[$currency])) {
+            $gap = abs((float) $value - (float) (string) $previous) / (float) (string) $previous * 100;
+            if ($gap > 50) {
+                $this->addError("rates.{$currency}", __('Ce taux s’écarte de :g % du taux connu (:p). Si c’est bien voulu, cochez « Je confirme » puis enregistrez.', ['g' => round($gap), 'p' => (string) $previous->strippedOfTrailingZeros()]));
+
+                return;
+            }
+        }
+        unset($this->confirm[$currency]);
 
         $service->setRate($this->organization(), $currency, $value, Carbon::parse($this->date));
         unset($this->rates[$currency]);

@@ -152,6 +152,7 @@ class Journal extends Component
             'totals' => $totals,
             'monthLabel' => Carbon::createFromFormat('Y-m-d', $this->month.'-01')->translatedFormat('F Y'),
             'canSeeNames' => Gate::allows('finance.contributions.view'),
+            'canSeePayroll' => Gate::allows('payroll.view'),
             'closed' => $this->monthClosed(),
             'cancellable' => $transactions->getCollection()->mapWithKeys(fn ($t) => [$t->id => $this->canCancel($t)]),
             'pending' => $this->cancelId ? FinanceTransaction::find($this->cancelId) : null,

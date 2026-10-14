@@ -55,7 +55,9 @@
                                        placeholder="{{ $row['effective'] ? (string) $row['effective']->strippedOfTrailingZeros() : '2850' }}">
                                 <span class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-sm font-semibold text-sand-700">{{ config("waumini.currencies.{$c->currency}.symbol") }}</span>
                             </div>
-                            @error("rates.{$c->currency}") <p class="error">{{ $message }}</p> @enderror
+                            @error("rates.{$c->currency}") <p class="error">{{ $message }}</p>
+                                <label class="mt-1 flex items-center gap-2 text-sm"><input type="checkbox" wire:model="confirm.{{ $c->currency }}" class="checkbox"> {{ __('Je confirme ce taux') }}</label>
+                            @enderror
                         </div>
                         <button type="submit" class="btn-primary">{{ __('Enregistrer') }}</button>
                     </form>

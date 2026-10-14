@@ -131,11 +131,11 @@ class Budgets
                 $paid = PaySlip::where('payee_id', $payee->id)->whereNotNull('paid_at')->where('paid_at', '>=', now()->subYear())->get();
                 $months = $paid->isEmpty() ? 0 : max(1, (int) ceil($paid->min('paid_at')->diffInMonths(now()) + 1));
                 $annual = $months ? (float) $paid->sum('net') / $months * 12 : 0.0;
-                $label = __('Paie : :n (:s)', ['n' => $payee->displayName(), 's' => $schedule->describe()]);
+                $label = __('Paie : :n (:s)', ['n' => $payee->position ?: __('à la prestation'), 's' => $schedule->describe()]);
             } else {
                 $periods = $schedule->unit === 'week' ? intdiv(52, $schedule->every) : intdiv(12, $schedule->every);
                 $annual = $payroll->compute($payee)['net'] * $periods;
-                $label = collect([__('Paie'), $payee->position ? $payee->position.' ('.$payee->displayName().')' : $payee->displayName()])->implode(' : ');
+                $label = __('Paie : :p', ['p' => $payee->position ?: $schedule->describe()]);
             }
             if ($annual <= 0) {
                 continue;

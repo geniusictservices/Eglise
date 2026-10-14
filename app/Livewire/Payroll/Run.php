@@ -133,6 +133,7 @@ class Run extends Component
     public function pay(PayRuns $runs, string $currency): void
     {
         $this->authorizeWrite('payroll.manage');
+        $this->authorizeWrite('finance.disburse');
         $choice = $this->payment[$currency] ?? [];
         $this->validate([
             "payment.$currency.account" => ['required', Rule::exists('cash_accounts', 'id')->where('organization_id', $this->organization()->id)->where('is_active', true)],

@@ -95,6 +95,12 @@ class Quotas
             $category = FinanceCategory::system($child->id, 'quota_sent');
             $expense = $this->ledger->record($account, $currency, 'expense', ['amount' => $amount, 'category_id' => $category->id,
                 'description' => __('Quote-part :m à :p', ['m' => $this->label($period), 'p' => $parent->name]), 'external_reference' => $reference]);
+            // Pas plus que le reste dû : un versement trop grand est une erreur de saisie, pas une avance.
+            $owed = $this->owed($child, $period);
+            if ($owed && ! $owed['rate_missing'] && (float) $expense->usd_amount > $owed['remaining'] + 1) {
+                throw new InvalidArgumentException(__('Il reste :r à verser pour :m ; ce montant vaut :a. Vérifiez-le.', [
+                    'r' => Money::format($owed['remaining'], 'USD'), 'm' => $this->label($period), 'a' => Money::format($expense->usd_amount, 'USD')]));
+            }
             $payment = QuotaPayment::create(['from_organization_id' => $child->id, 'to_organization_id' => $parent->id, 'period' => $period,
                 'amount' => $expense->amount, 'currency' => $currency, 'usd_amount' => $expense->usd_amount, 'paid_on' => today(),
                 'reference' => $reference, 'expense_transaction_id' => $expense->id, 'sent_by' => auth()->id()]);

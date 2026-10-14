@@ -90,6 +90,16 @@ class Ledger
         }
     }
 
+    /** Une opération ne se date pas d'avant l'ouverture de la devise dans le compte. */
+    public function assertOpened(CashAccount $account, string $currency, Carbon $on): void
+    {
+        $opened = CashAccountCurrency::where('cash_account_id', $account->id)->where('currency', $currency)->value('opened_on');
+        if ($opened && $on->lt(Carbon::parse($opened)->startOfDay())) {
+            throw new InvalidArgumentException(__(':account ne tenait pas encore de :currency le :d (ouvert le :o).', [
+                'account' => $account->name, 'currency' => $currency, 'd' => $on->translatedFormat('j M Y'), 'o' => Carbon::parse($opened)->translatedFormat('j M Y')]));
+        }
+    }
+
     /**
      * Enregistre un mouvement simple (recette ou dépense).
      *
@@ -105,6 +115,7 @@ class Ledger
         return DB::transaction(function () use ($account, $currency, $type, $data) {
             $on = Carbon::parse($data['occurred_on'] ?? today());
             FinanceClosing::assertOpen($account->organization_id, $on);
+            $this->assertOpened($account, $currency, $on);
             $amount = $this->amount($data['amount'], $currency);
 
             // La ligne de la devise sous verrou : deux sorties simultanées ne mettent pas la caisse en négatif.
@@ -145,6 +156,8 @@ class Ledger
 
         $on ??= today();
         FinanceClosing::assertOpen($from->organization_id, $on);
+        $this->assertOpened($from, $fromCurrency, $on);
+        $this->assertOpened($to, $toCurrency, $on);
         $out = $this->amount($amountOut, $fromCurrency);
         $in = $exchange ? $this->amount($amountIn ?? throw new InvalidArgumentException(__('Indiquez le montant reçu.')), $toCurrency) : $out;
         if ($exchange) {
@@ -159,7 +172,7 @@ class Ledger
 
             $group = (string) Str::uuid();
             $label = $description ?: ($exchange
-                ? __('Change :from → :to', ['from' => $fromCurrency, 'to' => $toCurrency]).($from->is($to) ? '' : ' · '.$from->name.' → '.$to->name)
+                ? __('Change :from → :to', ['from' => $fromCurrency, 'to' => $toCurrency]).($from->is($to) ? '' : ' · '.$from->name.' → '.$to->name).$this->practisedRate($out, $fromCurrency, $in, $toCurrency)
                 : __('Virement de :from vers :to', ['from' => $from->name, 'to' => $to->name]));
 
             $legOut = FinanceTransaction::create($this->values($from, $fromCurrency, $exchange ? 'exchange_out' : 'transfer_out', $out, $on)
@@ -169,6 +182,21 @@ class Ledger
 
             return [$legOut, $legIn];
         });
+    }
+
+    /** « (1 $ = 2 850 FC) » : le taux réellement pratiqué, quand l'un des deux côtés est en dollars. */
+    private function practisedRate(BigDecimal $out, string $fromCurrency, BigDecimal $in, string $toCurrency): string
+    {
+        $base = config('waumini.base_currency');
+        if ($fromCurrency !== $base && $toCurrency !== $base) {
+            return '';
+        }
+        [$usd, $other, $currency] = $fromCurrency === $base ? [$out, $in, $toCurrency] : [$in, $out, $fromCurrency];
+        if ($usd->isZero()) {
+            return '';
+        }
+
+        return ' ('.__('1 $ = :r', ['r' => Money::format($other->dividedBy($usd, 2, RoundingMode::HalfUp), $currency)]).')';
     }
 
     /**

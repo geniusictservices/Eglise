@@ -136,7 +136,7 @@
                     @foreach ($lines as $l)
                         <li wire:key="bl-{{ $l->id }}" class="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
                             <span class="min-w-0 flex-1">
-                                <span class="block text-sm font-semibold text-ink-800">{{ $l->label }}</span>
+                                <span class="block text-sm font-semibold text-ink-800">{{ $l->displayLabel() }}</span>
                                 <span class="block text-xs text-sand-700">@if ($l->project)<span class="font-semibold text-ochre-700">{{ $l->source ? __(\App\Models\BudgetLine::SOURCES[$l->source]) : __('Projet') }}</span> · @endif{{ $l->category?->name }}@if ($l->proposed_amount !== null && (float) $l->proposed_amount !== (float) $l->amount) · {{ __('proposé : :m', ['m' => Money::format($l->proposed_amount, 'USD')]) }}@endif @if ($l->note) · {{ $l->note }}@endif</span>
                                 <span class="mt-1 flex items-center gap-2">
                                     <span class="h-1.5 flex-1 overflow-hidden rounded-full bg-sand-100"><span @class(['block h-full rounded-full', 'bg-terra-500' => $type === 'expense', 'bg-leaf-500' => $type === 'income']) style="width: {{ min(100, $pct($l->amount)) }}%"></span></span>

@@ -57,7 +57,10 @@ class Consolidation
             // Les versements des paroisses au siège pour un projet : un mouvement interne, comme les quotes-parts.
             ->whereNotIn('id', ProjectRemittance::query()->whereNotNull('expense_transaction_id')->select('expense_transaction_id'))
             ->whereNotIn('id', ProjectRemittance::query()->whereNotNull('income_transaction_id')->select('income_transaction_id'))
-            ->selectRaw('type, sum(usd_amount) as usd')->groupBy('type')->pluck('usd', 'type');
+            ->selectRaw("case when expense_request_id is not null and type = 'income' then 'advance_return' else type end as kind, sum(usd_amount) as usd")
+            ->groupBy('kind')->pluck('usd', 'kind');
+        // Le reste d'une avance rendu en caisse n'est pas une recette : il réduit la dépense.
+        $moves['expense'] = (float) ($moves['expense'] ?? 0) - (float) ($moves['advance_return'] ?? 0);
         $members = Member::withoutOrganizationScope()->whereIn('organization_id', $ids)
             ->where(fn ($q) => $q->whereNull('status_id')->orWhereHas('status', fn ($q) => $q->where('counts_as_member', true)));
         $last = $this->lastEntry($ids);

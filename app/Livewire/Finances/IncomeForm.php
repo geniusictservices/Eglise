@@ -75,7 +75,10 @@ class IncomeForm extends Component
     private function accountCurrencies(): array
     {
         return $this->accountId
-            ? CashAccountCurrency::where('cash_account_id', $this->accountId)->where('is_active', true)->orderByRaw("currency = 'USD' DESC")->orderBy('currency')->pluck('currency')->all()
+            ? array_values(array_intersect(
+                CashAccountCurrency::where('cash_account_id', $this->accountId)->where('is_active', true)->orderByRaw("currency = 'USD' DESC")->orderBy('currency')->pluck('currency')->all(),
+                app(Ledger::class)->currencies($this->organization()),
+            ))
             : [];
     }
 
