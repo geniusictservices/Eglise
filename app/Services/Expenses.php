@@ -151,6 +151,10 @@ class Expenses
     {
         $this->expect($request, 'approved');
         $request->loadMissing('organization');
+        // Un compte fermé ne décaisse plus (l'attribut n'est pas chargé sur un compte tout juste créé : il est ouvert).
+        if ($account->is_active === false) {
+            throw new InvalidArgumentException(__('Le compte :a est fermé.', ['a' => $account->name]));
+        }
 
         DB::transaction(function () use ($request, $account) {
             // Relue sous verrou : un double clic ne passe pas deux fois.

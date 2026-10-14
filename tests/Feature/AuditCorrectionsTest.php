@@ -24,6 +24,7 @@ use App\Services\PaymentDeclarations;
 use App\Services\Payroll;
 use App\Services\PayRuns;
 use App\Services\Pledges;
+use App\Services\Pricing;
 use App\Services\SalaryAdvances;
 use App\Support\CurrentOrganization;
 use App\Support\Permissions;
@@ -362,5 +363,22 @@ class AuditCorrectionsTest extends TestCase
         $this->assertNotNull(FinanceCategory::systemId($this->eglise->id, 'advance_return'));
         $this->assertNotNull(FinanceCategory::systemId($this->eglise->id, 'pledges'));
         $this->assertNotNull(FinanceCategory::systemId($this->eglise->id, 'salaries'));
+    }
+
+    public function test_the_subscription_tier_cannot_be_smaller_than_the_real_membership(): void
+    {
+        config(['waumini.size_limits' => ['small' => 2, 'medium' => 5]]);
+        $pricing = app(Pricing::class);
+        $this->assertSame('small', $pricing->tierFor($this->eglise));
+
+        $paroisse = $this->createChild($this->eglise, 'Paroisse');
+        foreach ([[$this->eglise, 'A'], [$this->eglise, 'B'], [$paroisse, 'C']] as [$org, $name]) {
+            Member::withoutOrganizationScope()->create(['organization_id' => $org->id, 'last_name' => $name, 'first_name' => $name]);
+        }
+        $this->assertSame(3, $pricing->memberCount($this->eglise));
+        $this->assertSame('medium', $pricing->tierFor($this->eglise));
+        $this->assertFalse($pricing->tierCovers($this->eglise, 'small'));
+        $this->assertTrue($pricing->tierCovers($this->eglise, 'medium'));
+        $this->assertTrue($pricing->tierCovers($this->eglise, 'large'));
     }
 }

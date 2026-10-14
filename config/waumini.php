@@ -73,6 +73,8 @@ return [
         'medium' => 'De 301 à 1 500 membres',
         'large' => 'Plus de 1 500 membres',
     ],
+    // Le nombre de membres au-delà duquel on passe au palier suivant.
+    'size_limits' => ['small' => 300, 'medium' => 1500],
 
     'packs' => [
         'msingi' => [

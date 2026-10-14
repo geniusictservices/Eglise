@@ -42,7 +42,7 @@ Le bloc **Souscrire** (ou **Renouveler**) indique les **numéros mobile money** 
 <td width="32%"><img src="captures/mobile/113-declarer-abonnement.png" alt="Déclarer un paiement sur téléphone"></td>
 </tr></table>
 
-① Choisissez l'**offre**, la **taille** de la communauté et, si vous payez pour l'année, cochez **Paiement annuel** (deux mois offerts). Waumini affiche le **montant à payer** et la période couverte : à la suite de la période en cours, ou à partir d'aujourd'hui.
+① Choisissez l'**offre**, la **taille** de la communauté (Waumini compte vos membres, siège et paroisses compris : la taille déclarée ne peut pas être plus petite que l'effectif réel) et, si vous payez pour l'année, cochez **Paiement annuel** (deux mois offerts). Waumini affiche le **montant à payer** et la période couverte : à la suite de la période en cours, ou à partir d'aujourd'hui.
 
 ② Indiquez le **montant envoyé**, l'opérateur, la date et l'**ID de la transaction** reçu par SMS.
 

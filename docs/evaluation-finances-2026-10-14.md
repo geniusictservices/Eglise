@@ -336,3 +336,15 @@ Ensuite, par ordre de valeur :
 14. Palier d'abonnement calculé sur l'effectif réel.
 
 Fonctions à ajouter pour atteindre le niveau d'une trésorerie d'église complète : rapprochement et comptage physique avec écriture d'écart, pièces jointes sur recettes, différence de change, relevé annuel et attestation par membre, historique de paie par bénéficiaire, régime simplifié des petites dépenses avec seuil, dépenses récurrentes, alertes de seuil budgétaire, exports du journal et de la consolidation, PDF serveur pour reçus et rapports.
+
+## 18. Suite donnée
+
+Corrigé dans le code après ce rapport (voir `CHANGELOG.md` et `tests/Feature/AuditCorrectionsTest.php`) : les points 1 à 6 du plan d'action, puis 7 (excédent, ligne budgétaire par exercice), 8 pour partie (pièces après succès, motif d'annulation), 9 (confidentialité de la paie dans le journal et le budget, permission de décaisser au paiement), 10 (date d'ouverture, fermeture de compte, devise désactivée, taux aberrant à confirmer), 11 pour partie (erreurs d'autosave affichées), 12 pour partie (quote-part plafonnée), 13 pour partie (retours d'avance neutralisés en consolidation, projets non synchronisés en lecture seule), 14 (palier d'abonnement imposé par l'effectif). S'y ajoutent : don déclaré sans catégorie devenu une offrande, taux pratiqué dans le libellé d'un change, bug des retenues de paie, run bloqué en « approuvé ».
+
+Décisions prises en corrigeant :
+
+- Le contrôleur d'une dépense peut encore la signer : les tests et l'usage d'une petite église (un administrateur fait souvent les deux) reposent dessus. La séparation demandeur ≠ signataire est maintenue.
+- Les recettes par département (point 7, attribution arbitraire) ne sont pas corrigées : elles demandent de rendre le département obligatoire à la saisie pour les catégories budgétées par département.
+- La paie en deux devises par personne, les éléments fixes avec devise, l'historique par bénéficiaire et la justification partielle des avances sont des évolutions de schéma, hors de ce lot.
+
+Reste à faire : relance automatique des avances en retard, historique des règles de quote-part et cumul des arriérés, suivi côté paroisse des remises non confirmées, lecture de l'instantané de clôture, correction d'un taux passé avec recalcul ou avertissement, changement de compte d'une feuille de collecte sans perte, et les manques fonctionnels listés en fin de plan d'action.

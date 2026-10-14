@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Member;
+use App\Models\Organization;
 use App\Models\Plan;
 use App\Models\PlanPrice;
 use App\Support\Platform;
@@ -91,5 +93,35 @@ class Pricing
     public function tiers(): array
     {
         return Platform::get('size_tiers');
+    }
+
+    /** Les membres comptés dans toute la communauté (siège et paroisses). */
+    public function memberCount(Organization $root): int
+    {
+        $ids = Organization::query()->subtreeOf($root)->pluck('id');
+
+        return Member::withoutOrganizationScope()->whereIn('organization_id', $ids)
+            ->where(fn ($q) => $q->whereNull('status_id')->orWhereHas('status', fn ($q) => $q->where('counts_as_member', true)))->count();
+    }
+
+    /** Le palier que l'effectif impose : on peut déclarer plus grand, jamais plus petit. */
+    public function tierFor(Organization $root): string
+    {
+        $count = $this->memberCount($root);
+        foreach (config('waumini.size_limits', []) as $tier => $limit) {
+            if ($count <= $limit) {
+                return $tier;
+            }
+        }
+
+        return array_key_last($this->tiers()) ?? 'large';
+    }
+
+    /** Ce palier couvre-t-il l'effectif ? */
+    public function tierCovers(Organization $root, string $tier): bool
+    {
+        $order = array_keys($this->tiers());
+
+        return array_search($tier, $order, true) >= array_search($this->tierFor($root), $order, true);
     }
 }
