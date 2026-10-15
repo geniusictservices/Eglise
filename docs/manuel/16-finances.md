@@ -61,6 +61,8 @@ Chaque catégorie de recette a une **nature** :
 
 ③ **Le montant**, la date et le moyen de paiement. Pour le mobile money, indiquez l'**ID de la transaction** : Waumini refuse un ID déjà enregistré, ce qui évite de compter deux fois le même paiement.
 
+Si le budget adopté attend cette catégorie de recette de **plusieurs départements** (des ventes de la jeunesse et de la chorale, par exemple), Waumini demande lequel la reçoit : le [suivi du budget](22-suivi-budget.md) la met alors au bon compte.
+
 Pour la collecte complète du culte (boîte, enveloppes, comptage des billets), utilisez plutôt la [feuille de collecte](17-collecte.md).
 
 ## Le reçu

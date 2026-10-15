@@ -349,4 +349,6 @@ Décisions prises en corrigeant :
 
 Second lot : relance des avances à justifier, arriérés de quotes-parts visibles au-delà de six mois, remises de projet en attente visibles côté paroisse, avertissement quand une période clôturée a changé, avertissement à la correction d'un taux passé, changement de caisse d'une collecte sans perte, annulation unique et sans solde passé négatif, immutabilité des opérations gardée par le modèle.
 
-Reste à faire : historique des règles de quote-part (une évolution de schéma), recettes par département, et les manques fonctionnels listés en fin de plan d'action.
+Décisions du 15 octobre 2026 : le contrôleur d'une dépense peut continuer à la signer ; une recette d'une catégorie budgétée par plusieurs départements demande désormais le département qui la reçoit (corrigé).
+
+Reste à faire : historique des règles de quote-part (une évolution de schéma), et les manques fonctionnels listés en fin de plan d'action.

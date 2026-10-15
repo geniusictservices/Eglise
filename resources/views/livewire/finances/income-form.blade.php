@@ -61,6 +61,17 @@
                         @error('departmentId') <p class="error">{{ $message }}</p> @enderror
                     </div>
                 @endif
+                @if ($budgetedDepartments->isNotEmpty())
+                    <div>
+                        <label for="budgetedDepartment" class="label">{{ __('Département qui reçoit cette recette') }}</label>
+                        <select wire:model="departmentId" id="budgetedDepartment" class="input">
+                            <option value="">—</option>
+                            @foreach ($budgetedDepartments as $d)<option value="{{ $d->id }}">{{ $d->name }}</option>@endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-sand-700">{{ __('Plusieurs départements attendent cette recette au budget : le suivi du budget la mettra au compte de celui-ci.') }}</p>
+                        @error('departmentId') <p class="error">{{ $message }}</p> @enderror
+                    </div>
+                @endif
 
                 <div>
                     <label for="accountId" class="label">{{ __('Compte') }}</label>

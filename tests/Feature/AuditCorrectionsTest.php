@@ -5,9 +5,12 @@ namespace Tests\Feature;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Livewire;
 use App\Models\AuditLog;
+use App\Models\Budget;
+use App\Models\BudgetLine;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
 use App\Models\CollectionSheet;
+use App\Models\Department;
 use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
@@ -498,5 +501,28 @@ class AuditCorrectionsTest extends TestCase
             $try()->assertHasErrors('phone');
         }
         $this->assertStringContainsString('Trop d’essais', $try()->errors()->first('phone'));
+    }
+
+    public function test_an_income_budgeted_by_several_departments_says_which_one_receives_it(): void
+    {
+        $caisse = $this->caisse();
+        $jeunesse = Department::create(['name' => 'Jeunesse']);
+        $chorale = Department::create(['name' => 'Chorale']);
+        $ventes = FinanceCategory::create(['type' => 'income', 'name' => 'Ventes', 'nature' => 'collective']);
+        $year = FiscalYear::of($this->eglise, today());
+        $budget = Budget::create(['fiscal_year' => $year, 'version' => 1, 'status' => 'adopted']);
+        foreach ([[$jeunesse, 300], [$chorale, 200]] as [$department, $amount]) {
+            BudgetLine::create(['budget_id' => $budget->id, 'type' => 'income', 'department_id' => $department->id, 'category_id' => $ventes->id, 'label' => 'Ventes', 'amount' => $amount]);
+        }
+
+        $form = fn () => LivewireTest::test(Livewire\Finances\IncomeForm::class)
+            ->set('accountId', (string) $caisse->id)->set('currency', 'USD')->set('categoryId', (string) $ventes->id)->set('amount', '40');
+        $form()->assertSee('Département qui reçoit cette recette')->call('save')->assertHasErrors('departmentId');
+        $form()->set('departmentId', (string) $chorale->id)->call('save')->assertHasNoErrors();
+
+        $this->assertSame($chorale->id, FinanceTransaction::sole()->department_id);
+        $income = app(BudgetControl::class)->execution($this->eglise, $year)['income'];
+        $this->assertSame(40.0, $income[BudgetControl::key($chorale->id, $ventes->id)]['actual']);
+        $this->assertSame(0.0, $income[BudgetControl::key($jeunesse->id, $ventes->id)]['actual']);
     }
 }

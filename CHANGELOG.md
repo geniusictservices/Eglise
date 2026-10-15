@@ -35,6 +35,11 @@ Les deux rapports sont dans `docs/audit-2026-10-14.md` (sécurité) et `docs/eva
 - Taux corrigé après coup : le nombre d'opérations qui gardent l'ancien taux est indiqué.
 - Collecte : changer de caisse ne fait plus disparaître de montants.
 
+### Décisions du 15 octobre 2026
+- Une recette d'une catégorie budgétée par plusieurs départements demande le département qui la reçoit ; le suivi du budget ne l'attribue plus au premier venu.
+- Le suivi pastoral reste visible de l'administrateur (dossiers), les notes confidentielles d'autrui restant cachées, comme le décrit le manuel.
+- Le contrôleur d'une dépense peut aussi la signer ; le demandeur, jamais.
+
 ### Exploitation
 - En-têtes de sécurité HTTP ; export Excel sans formule ; sauvegardes en instantané cohérent, chiffrement vérifié, copie distante jamais silencieuse.
 - File d'attente dans le planificateur (plus de `proc_open`), verrous courts, journal `schedule.log`, échecs signalés, ménage quotidien réel.
