@@ -14,7 +14,8 @@ use Illuminate\Support\Str;
  */
 class ExportManual extends Command
 {
-    protected $signature = 'waumini:manuel-web {dossier : où écrire le site} {--fragment : page sans en-tête HTML, pour une publication en Artifact}';
+    protected $signature = 'waumini:manuel-web {dossier : où écrire le site} {--fragment : page sans en-tête HTML, pour une publication en Artifact}
+        {--telechargements= : dossier des archives et scripts SQL d’une livraison, ajoutés au manuel avec leur page}';
 
     protected $description = 'Exporte le manuel d’utilisation en site web statique';
 
@@ -45,6 +46,10 @@ class ExportManual extends Command
             $markdown = preg_replace('/^# \d+\.\s*/m', '# ', $markdown, 1);
             File::put("{$out}/chapitres/{$slug}.html", $this->render($markdown));
         }
+        if ($downloads = $this->option('telechargements')) {
+            $groups[] = ['title' => 'Équipe Genius ICT', 'chapters' => [['slug' => 'telechargements', 'num' => null, 'title' => 'Téléchargements : installer et mettre à jour']]];
+            File::put("{$out}/chapitres/telechargements.html", $this->downloads(rtrim($downloads, '/'), $out));
+        }
         File::put("{$out}/sommaire.json", json_encode(['groups' => $groups, 'date' => now()->translatedFormat('j F Y')], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
 
         $count = 0;
@@ -71,6 +76,43 @@ class ExportManual extends Command
         $this->info("Manuel exporté dans {$out} : {$slugs->count()} chapitres, {$count} captures.");
 
         return self::SUCCESS;
+    }
+
+    /** Ce que chaque fichier d'une livraison permet de faire, d'après son nom. */
+    private const DOWNLOADS = [
+        '/installation.*\.zip$/' => 'Première installation : le code, les dépendances PHP, l’interface compilée et les captures du manuel.',
+        '/code-seul.*\.zip$/' => 'Mise à jour d’un serveur dont les dépendances n’ont pas changé de version : seulement le code de Waumini. Le dossier vendor du serveur reste en place.',
+        '/mise-a-jour.*\.zip$/' => 'Mise à jour avec les dépendances PHP, sans les captures du manuel déjà présentes sur le serveur.',
+        '/base-vide.*\.sql$/' => 'Base de données vide, toutes les tables créées : première installation sans terminal. Dans phpMyAdmin, onglet Importer, une seule fois, dans une base vide.',
+        '/mise-a-jour-base.*\.sql$/' => 'Mise à jour d’une base déjà en service : à importer une seule fois, après une sauvegarde. Le fichier dit en tête depuis quelle version il part.',
+    ];
+
+    /** La page des téléchargements : les fichiers d'une livraison, copiés à côté du manuel. */
+    private function downloads(string $source, string $out): string
+    {
+        File::ensureDirectoryExists("{$out}/telechargements");
+        $rows = '';
+        $files = collect(File::files($source))->filter(fn ($f) => in_array($f->getExtension(), ['zip', 'sql'], true))->sortBy(fn ($f) => $f->getFilename());
+        foreach ($files as $file) {
+            $name = $file->getFilename();
+            $use = collect(self::DOWNLOADS)->first(fn ($text, $pattern) => preg_match($pattern, $name)) ?? '';
+            File::copy($file->getPathname(), "{$out}/telechargements/{$name}");
+            $size = $file->getSize() >= 1048576 ? number_format($file->getSize() / 1048576, 1, ',', ' ').' Mo' : number_format($file->getSize() / 1024, 0, ',', ' ').' Ko';
+            $rows .= '<tr><td><a href="telechargements/'.e($name).'" download>'.e($name).'</a></td><td>'.e($use).'</td><td>'.$size.'</td></tr>';
+        }
+        $complete = $files->contains(fn ($f) => str_contains($f->getFilename(), 'installation'));
+
+        return '<h1>Téléchargements : installer et mettre à jour</h1>'
+            .'<blockquote><p>Cette page sert à l’équipe Genius ICT, qui installe Waumini sur un serveur. Une église n’a rien à télécharger : Waumini s’utilise dans le navigateur, ou s’installe sur le téléphone depuis le navigateur (<a href="#c-02-installer">chapitre 2</a>).</p></blockquote>'
+            .'<p>Livraison du '.e(now()->translatedFormat('j F Y')).'.</p>'
+            .'<div class="tableau"><table><thead><tr><th>Fichier</th><th>À quoi il sert</th><th>Taille</th></tr></thead><tbody>'.$rows.'</tbody></table></div>'
+            .($complete ? '' : '<p>L’archive d’installation complète et la mise à jour avec dépendances sont trop lourdes pour cette page : demandez-les à l’équipe Genius ICT.</p>')
+            .'<h2 id="mettre-à-jour">Mettre à jour un serveur</h2><ol>'
+            .'<li>Faire une <strong>sauvegarde</strong> : espace Genius ICT, <strong>Sauvegardes</strong>, <strong>Sauvegarder maintenant</strong>.</li>'
+            .'<li>Envoyer l’archive dans le dossier de Waumini avec le gestionnaire de fichiers de cPanel, puis l’<strong>extraire par-dessus</strong> l’installation. Le fichier <code>.env</code> et le dossier <code>storage</code> restent en place.</li>'
+            .'<li>Mettre la base à jour : <code>php artisan migrate --force</code> dans le terminal de cPanel, ou, sans terminal, importer <strong>une seule fois</strong> le script SQL de mise à jour dans phpMyAdmin.</li>'
+            .'<li>Vérifier que l’adresse <code>/up</code> répond « Application up » et que la connexion fonctionne.</li></ol>'
+            .'<p>Le guide complet, avec la première installation, est dans l’archive : <code>docs/deploiement-lws.md</code>.</p>';
     }
 
     /** Markdown vers HTML : liens entre chapitres en #c-…, captures en JPEG relatives, tableaux défilants. */
