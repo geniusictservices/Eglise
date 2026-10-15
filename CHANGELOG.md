@@ -24,6 +24,17 @@ Les deux rapports sont dans `docs/audit-2026-10-14.md` (sécurité) et `docs/eva
 - Un compte ne se ferme pas avec un solde ; une devise désactivée disparaît des saisies ; pas d'opération avant l'ouverture d'une devise ; fuseau horaire de la communauté appliqué.
 - Abonnement : la taille déclarée ne descend pas sous l'effectif réel.
 
+### Second lot
+- Une opération enregistrée ne se modifie ni ne se supprime, même hors des écrans : le modèle le refuse ; elle s'annule une seule fois, et jamais si un solde passé devenait négatif.
+- Inscription : chaque essai compte, réussi ou non (20 par heure et par appareil).
+- Le support Genius ICT ne peut rien écrire, même si une permission le laissait passer.
+- Avances à justifier : rappel deux jours avant l'échéance, puis le lendemain et chaque semaine de retard (commande `waumini:avances`, 7 h).
+- Quotes-parts : les arriérés plus anciens que six mois restent visibles et se versent ; le niveau supérieur voit les arriérés de chaque niveau.
+- Projet du siège : la paroisse voit ce qui attend la confirmation du siège.
+- Rapport d'une période clôturée : un avertissement si les chiffres ont changé depuis la clôture.
+- Taux corrigé après coup : le nombre d'opérations qui gardent l'ancien taux est indiqué.
+- Collecte : changer de caisse ne fait plus disparaître de montants.
+
 ### Exploitation
 - En-têtes de sécurité HTTP ; export Excel sans formule ; sauvegardes en instantané cohérent, chiffrement vérifié, copie distante jamais silencieuse.
 - File d'attente dans le planificateur (plus de `proc_open`), verrous courts, journal `schedule.log`, échecs signalés, ménage quotidien réel.

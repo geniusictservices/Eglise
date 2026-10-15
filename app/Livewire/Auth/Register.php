@@ -83,6 +83,15 @@ class Register extends Component
             return null;
         }
 
+        // Chaque essai compte, réussi ou non : on ne teste pas des numéros à l'infini pour savoir qui a un compte.
+        $probe = 'register-probe:'.request()->ip();
+        if (RateLimiter::tooManyAttempts($probe, 20)) {
+            $this->addError('phone', __('Trop d’essais depuis cet appareil. Réessayez dans une heure.'));
+
+            return null;
+        }
+        RateLimiter::hit($probe, 3600);
+
         $phone = Phone::normalize($this->phone);
 
         $this->validate([

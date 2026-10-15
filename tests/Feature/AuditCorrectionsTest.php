@@ -7,6 +7,8 @@ use App\Livewire;
 use App\Models\AuditLog;
 use App\Models\CashAccount;
 use App\Models\CashAccountCurrency;
+use App\Models\CollectionSheet;
+use App\Models\ExpenseRequest;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Member;
@@ -18,6 +20,7 @@ use App\Models\Pledge;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\BudgetControl;
+use App\Services\Closings;
 use App\Services\ExchangeRateService;
 use App\Services\Ledger;
 use App\Services\PaymentDeclarations;
@@ -25,8 +28,10 @@ use App\Services\Payroll;
 use App\Services\PayRuns;
 use App\Services\Pledges;
 use App\Services\Pricing;
+use App\Services\Quotas;
 use App\Services\SalaryAdvances;
 use App\Support\CurrentOrganization;
+use App\Support\FiscalYear;
 use App\Support\Permissions;
 use Brick\Math\BigDecimal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -380,5 +385,118 @@ class AuditCorrectionsTest extends TestCase
         $this->assertFalse($pricing->tierCovers($this->eglise, 'small'));
         $this->assertTrue($pricing->tierCovers($this->eglise, 'medium'));
         $this->assertTrue($pricing->tierCovers($this->eglise, 'large'));
+    }
+
+    public function test_a_recorded_operation_is_never_edited_nor_deleted_and_is_cancelled_once(): void
+    {
+        $caisse = $this->caisse();
+        $ledger = app(Ledger::class);
+        $income = $ledger->record($caisse, 'USD', 'income', ['amount' => '50']);
+
+        try {
+            $income->update(['amount' => 5]);
+            $this->fail('Une opération enregistrée ne devrait pas se modifier.');
+        } catch (\LogicException) {
+        }
+        try {
+            $income->fresh()->delete();
+            $this->fail('Une opération ne devrait pas se supprimer.');
+        } catch (\LogicException) {
+        }
+
+        $ledger->cancel($income->fresh(), 'Saisie en double');
+        $this->expectException(InvalidArgumentException::class);
+        $ledger->cancel($income->fresh(), 'Encore');
+    }
+
+    public function test_cancelling_a_past_income_may_not_leave_a_past_balance_negative(): void
+    {
+        $caisse = $this->caisse(['USD' => 0]);
+        $ledger = app(Ledger::class);
+        $first = $ledger->record($caisse, 'USD', 'income', ['amount' => '100', 'occurred_on' => today()->subDays(3)->toDateString()]);
+        $ledger->record($caisse, 'USD', 'expense', ['amount' => '100', 'occurred_on' => today()->subDays(2)->toDateString()]);
+        $ledger->record($caisse, 'USD', 'income', ['amount' => '100', 'occurred_on' => today()->subDay()->toDateString()]);
+
+        // Aujourd'hui la caisse tient 100 $, mais l'avant-veille elle serait tombée à −100 $.
+        $this->expectException(InvalidArgumentException::class);
+        $ledger->cancel($first, 'Erreur');
+    }
+
+    public function test_advances_to_justify_are_recalled_before_and_after_the_deadline(): void
+    {
+        $tres = User::factory()->create();
+        $this->assign($tres, $this->role($this->eglise, 'tresorier'), $this->eglise);
+        $demandeur = User::factory()->create();
+        $make = fn (int $days) => ExpenseRequest::create(['number' => 'D-'.$days, 'title' => 'Évangélisation', 'amount' => 150, 'currency' => 'USD',
+            'status' => 'disbursed', 'is_advance' => true, 'beneficiary_name' => 'Josué', 'requested_by' => $demandeur->id, 'justify_by' => today()->addDays($days)]);
+        $soon = $make(2);
+        $late = $make(-1);
+        $quiet = $make(-3);
+
+        $this->artisan('waumini:avances')->assertSuccessful();
+        $keys = fn (User $u) => DatabaseNotification::where('notifiable_id', $u->id)->pluck('key')->all();
+        $this->assertContains("expense.{$soon->id}.due-soon", $keys($demandeur));
+        $this->assertContains("expense.{$late->id}.overdue", $keys($demandeur));
+        $this->assertContains("expense.{$late->id}.overdue", $keys($tres));
+        $this->assertNotContains("expense.{$soon->id}.due-soon", $keys($tres));
+        $this->assertNotContains("expense.{$quiet->id}.overdue", $keys($demandeur));
+    }
+
+    public function test_quota_arrears_older_than_six_months_stay_visible(): void
+    {
+        $paroisse = $this->createChild($this->eglise, 'Paroisse');
+        app(Quotas::class)->setRule($this->eglise, 'fixed', null, 10, 'USD', now()->subMonths(9)->format('Y-m'));
+        $arrears = app(Quotas::class)->arrears($paroisse->fresh());
+
+        $this->assertCount(9, $arrears['periods']);
+        $this->assertSame(90.0, $arrears['total']);
+        $this->assertSame(now()->subMonths(9)->format('Y-m'), $arrears['periods'][0]);
+    }
+
+    public function test_a_closed_report_says_when_its_figures_changed_since_the_closing(): void
+    {
+        Carbon::setTestNow('2026-10-06 10:00');
+        $caisse = $this->caisse(['USD' => 0]);
+        $caisse->currencies()->update(['opened_on' => '2026-09-01']);
+        app(Ledger::class)->record($caisse, 'USD', 'income', ['amount' => '40', 'occurred_on' => '2026-09-10']);
+        app(Closings::class)->close($this->eglise, 2026, 9);
+
+        $report = fn () => LivewireTest::test(Livewire\Finances\Reports::class)->set('year', FiscalYear::of($this->eglise, Carbon::parse('2026-09-10')))->set('month', 9);
+        $report()->assertViewHas('drift', null);
+
+        // Le solde de départ du compte change après la clôture : le rapport le signale.
+        $caisse->currencies()->update(['opening_balance' => 500]);
+        $report()->assertViewHas('drift', fn ($d) => $d !== null && $d['income'] === 40.0);
+    }
+
+    public function test_changing_the_collection_account_never_drops_amounts(): void
+    {
+        $caisse = $this->caisse(['USD' => 0, 'CDF' => 0]);
+        $banque = CashAccount::create(['name' => 'Banque', 'kind' => 'bank']);
+        CashAccountCurrency::create(['cash_account_id' => $banque->id, 'currency' => 'USD', 'opened_on' => now()->subYear()]);
+        $offrande = FinanceCategory::where('name', 'Offrande du culte')->value('id');
+        $sheet = CollectionSheet::create(['service_date' => today(), 'service_label' => 'Culte', 'cash_account_id' => $caisse->id, 'counters' => ['A']]);
+
+        LivewireTest::test(Livewire\Finances\Collections\Sheet::class, ['sheet' => $sheet])
+            ->set('lines.'.$offrande.'.CDF', '50000')
+            ->set('accountId', (string) $banque->id)
+            ->assertHasErrors('accountId')
+            ->assertSet('accountId', (string) $caisse->id);
+        $this->assertSame($caisse->id, $sheet->fresh()->cash_account_id);
+        $this->assertSame('50000.00', (string) $sheet->lines()->sole()->amount);
+    }
+
+    public function test_probing_phone_numbers_at_registration_is_limited(): void
+    {
+        auth()->logout();
+        User::factory()->create(['phone' => '+243990000123']);
+        $try = fn () => LivewireTest::test(Livewire\Auth\Register::class)
+            ->set('name', 'Jean')->set('phone', '0990000123')->set('password', 'secret123')->set('passwordConfirmation', 'secret123')->set('accept', true)
+            ->call('register');
+
+        for ($i = 0; $i < 20; $i++) {
+            $try()->assertHasErrors('phone');
+        }
+        $this->assertStringContainsString('Trop d’essais', $try()->errors()->first('phone'));
     }
 }

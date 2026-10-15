@@ -105,6 +105,7 @@ Le chemin de PHP peut varier ; cPanel l'indique dans la page *Tâches Cron*. Cet
 | Chaque nuit, 2 h 15 | La **sauvegarde** de la base et des fichiers |
 | Chaque matin, 5 h | L'état des abonnements : fin d'essai, délai de grâce, lecture seule |
 | Chaque matin, 6 h 30 | Les anniversaires du jour, à l'équipe pastorale |
+| Chaque matin, 7 h | Les avances à justifier : rappel deux jours avant, puis chaque semaine de retard |
 | Chaque jour | Le ménage : jetons de réinitialisation expirés, tâches en échec anciennes, nouveautés lues depuis 90 jours |
 
 Chaque tâche écrit ce qu'elle fait dans `storage/logs/schedule.log`, et un échec est inscrit dans le journal de l'application (`storage/logs/laravel-*.log`). Vérifier ces deux fichiers après l'installation, puis de temps en temps : le cron de l'hébergeur, lui, ne signale rien. Si `php -i | grep disable_functions` liste `proc_open`, rien ne change : la file d'attente tourne dans le processus du planificateur.

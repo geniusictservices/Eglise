@@ -20,6 +20,11 @@
         @endif
     </div>
 
+    @if ($drift)
+        <p class="mb-5 rounded-2xl border border-ochre-200 bg-ochre-50 p-4 text-sm text-ink-800"><x-icon name="triangle-alert" class="mr-1 inline size-4 text-ochre-700" />
+            {{ __('Ces chiffres ne sont plus exactement ceux de la clôture du :d : un compte, un solde de départ ou un libellé a changé depuis. À la clôture : recettes :i, dépenses :e. Rouvrez puis clôturez à nouveau la période si la différence est voulue.', ['d' => $closing->closed_at->translatedFormat('j M Y'), 'i' => \App\Support\Money::format($drift['income'], 'USD'), 'e' => \App\Support\Money::format($drift['expense'], 'USD')]) }}</p>
+    @endif
+
     <section class="card p-5 sm:p-6" wire:loading.class="opacity-60">
         <h2 class="mb-4 text-lg">{{ $title }}</h2>
         @include('finances.partials.report', ['r' => $r])

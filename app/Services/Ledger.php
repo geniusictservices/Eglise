@@ -270,6 +270,9 @@ class Ledger
      */
     public function cancel(FinanceTransaction $transaction, string $reason, bool $fromOwner = false): void
     {
+        if ($transaction->cancelled_at !== null) {
+            throw new InvalidArgumentException(__('Cette opération est déjà annulée.'));
+        }
         if (! $fromOwner && ($owner = $this->owner($transaction))) {
             throw new InvalidArgumentException($owner);
         }
@@ -281,11 +284,11 @@ class Ledger
                 ? FinanceTransaction::withoutOrganizationScope()->where('group_uuid', $transaction->group_uuid)->get()
                 : collect([$transaction]);
 
-            // Retirer une entrée d'argent ne doit pas laisser une caisse en négatif.
+            // Retirer une entrée d'argent ne doit laisser la caisse en négatif ni aujourd'hui ni à aucune date depuis l'entrée.
             foreach ($legs->filter(fn ($leg) => in_array($leg->type, ['income', 'transfer_in', 'exchange_in'], true)) as $leg) {
                 $account = CashAccount::withoutOrganizationScope()->findOrFail($leg->cash_account_id);
                 CashAccountCurrency::where('cash_account_id', $account->id)->where('currency', $leg->currency)->lockForUpdate()->first();
-                if ($this->balance($account, $leg->currency)->isLessThan(BigDecimal::of((string) $leg->amount))) {
+                if ($this->lowestFrom($account, $leg->currency, $leg->occurred_on)->isLessThan(BigDecimal::of((string) $leg->amount))) {
                     throw new InvalidArgumentException(__('Impossible : :account n’a plus ces :currency (l’argent a déjà été dépensé ou viré).', ['account' => $account->name, 'currency' => $leg->currency]));
                 }
             }

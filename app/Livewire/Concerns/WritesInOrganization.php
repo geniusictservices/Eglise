@@ -3,6 +3,7 @@
 namespace App\Livewire\Concerns;
 
 use App\Models\Organization;
+use App\Support\SupportAccess;
 use Illuminate\Support\Facades\Gate;
 
 /** Outils communs aux écrans qui modifient les données de la communauté. */
@@ -20,6 +21,8 @@ trait WritesInOrganization
 
         abort_unless(Gate::allows($permission, $organization), 403);
         abort_if($organization->isReadOnly(), 403, __('Cette communauté est en lecture seule.'));
+        $user = auth()->user();
+        abort_if($user?->is_platform_staff && app(SupportAccess::class)->covers($user, $organization), 403, __('Lecture seule : le support ne modifie rien.'));
     }
 
     protected function notify(string $message, string $type = 'success'): void

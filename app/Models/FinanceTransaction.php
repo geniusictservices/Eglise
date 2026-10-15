@@ -7,6 +7,7 @@ use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LogicException;
 
 /** Un mouvement d'argent dans une caisse. */
 class FinanceTransaction extends Model
@@ -29,6 +30,26 @@ class FinanceTransaction extends Model
     protected $table = 'finance_transactions';
 
     protected $guarded = ['id'];
+
+    /** Ce qui peut encore se poser sur une opération enregistrée : son annulation, son reçu, son lien à une promesse. */
+    private const MUTABLE = ['cancelled_at', 'cancelled_by', 'cancel_reason', 'receipt_number', 'pledge_id', 'pledge_amount', 'updated_at'];
+
+    protected static function booted(): void
+    {
+        // L'immutabilité ne repose pas que sur les écrans : le modèle lui-même la garde.
+        static::updating(function (FinanceTransaction $transaction) {
+            if ($transaction->getOriginal('cancelled_at') !== null) {
+                throw new LogicException('Cette opération est déjà annulée : elle ne change plus.');
+            }
+            if ($transaction->isDirty('receipt_number') && $transaction->getOriginal('receipt_number') !== null) {
+                throw new LogicException('Le numéro de reçu d’une opération ne change pas.');
+            }
+            if ($changed = array_diff(array_keys($transaction->getDirty()), self::MUTABLE)) {
+                throw new LogicException('Une opération enregistrée ne se modifie pas ('.implode(', ', $changed).') : annulez-la et saisissez-la à nouveau.');
+            }
+        });
+        static::deleting(fn () => throw new LogicException('Une opération ne se supprime pas : elle s’annule.'));
+    }
 
     protected function casts(): array
     {

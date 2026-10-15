@@ -31,6 +31,9 @@ Schedule::command('waumini:abonnements')->dailyAt('05:00')->withoutOverlapping(3
 // Chaque matin : les anniversaires du jour à l'équipe pastorale.
 Schedule::command('waumini:anniversaires')->dailyAt('06:30')->withoutOverlapping(30)->appendOutputTo($log)->onFailure($failed('anniversaires'));
 
+// Chaque matin : les avances à justifier, deux jours avant l'échéance puis chaque semaine de retard.
+Schedule::command('waumini:avances')->dailyAt('07:00')->withoutOverlapping(30)->appendOutputTo($log)->onFailure($failed('avances'));
+
 // Chaque heure : les démos publiques arrivées à leur terme sont effacées.
 Schedule::command('waumini:demos')->hourly()->withoutOverlapping(30)->appendOutputTo($log)->onFailure($failed('démos'));
 

@@ -110,6 +110,19 @@ class Sheet extends Component
             'notes' => 'nullable|string|max:2000',
         ], attributes: ['lines.*.*' => __('montant'), 'counts.*.*' => __('nombre de billets')]);
 
+        // Une autre caisse doit tenir toutes les devises déjà saisies, sinon des montants disparaîtraient.
+        if ($root === 'accountId' && (int) $this->accountId !== $this->sheet->cash_account_id) {
+            $held = CashAccountCurrency::where('cash_account_id', (int) $this->accountId)->where('is_active', true)->pluck('currency')->all();
+            $used = collect($this->lines)->flatMap(fn ($row) => collect($row)->filter(fn ($a) => is_numeric($a) && (float) $a > 0)->keys())
+                ->merge($this->sheet->envelopes()->pluck('currency'))->unique()->values()->all();
+            if ($missing = array_diff($used, $held)) {
+                $this->accountId = (string) $this->sheet->cash_account_id;
+                $this->addError('accountId', __('Cette caisse ne tient pas :c, déjà saisi sur la feuille : retirez d’abord ces montants, ou choisissez une autre caisse.', ['c' => implode(', ', $missing)]));
+
+                return;
+            }
+        }
+
         DB::transaction(function () {
             $this->sheet->update([
                 'service_date' => $this->serviceDate,

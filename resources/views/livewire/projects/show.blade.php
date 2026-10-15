@@ -14,7 +14,7 @@
                 </p>
                 @if ($p->account)<p class="mt-1 text-sm text-ink-100"><x-icon name="wallet" class="mr-1 inline size-4" /> {{ __('Compte du projet : :a', ['a' => $p->account->name]) }}</p>@endif
                 @if ($p->isRelay() && $relayRow)
-                    <p class="mt-2 rounded-xl bg-white/10 px-3 py-2 text-sm text-white">{{ __('Projet de :o. Votre part : :s · collecté : :c · versé : :v · reste à verser : :r.', ['o' => $p->parentProject->organization->displayName(), 's' => Money::format($relayRow['share'], 'USD'), 'c' => Money::format($relayRow['collected'], 'USD'), 'v' => Money::format($relayRow['sent'], 'USD'), 'r' => Money::format($relayRow['to_send'], 'USD')]) }}</p>
+                    <p class="mt-2 rounded-xl bg-white/10 px-3 py-2 text-sm text-white">{{ __('Projet de :o. Votre part : :s · collecté : :c · versé : :v · reste à verser : :r.', ['o' => $p->parentProject->organization->displayName(), 's' => Money::format($relayRow['share'], 'USD'), 'c' => Money::format($relayRow['collected'], 'USD'), 'v' => Money::format($relayRow['sent'], 'USD'), 'r' => Money::format($relayRow['to_send'], 'USD')]) }}@if ($relayRow['sent'] > $relayRow['received'] + 0.004) {{ __('Dont :m pas encore confirmés par :o.', ['m' => Money::format($relayRow['sent'] - $relayRow['received'], 'USD'), 'o' => $p->parentProject->organization->displayName()]) }}@endif</p>
                 @endif
                 <p class="mt-1 text-xs text-ink-100">{{ $progress['percent'] === null ? __('Pas encore d’indicateur : l’avancement se calcule à partir des indicateurs du projet.') : trans_choice('Avancement calculé sur :count indicateur.|Avancement calculé sur :count indicateurs.', $progress['rows']->count()) }}</p>
             </div>

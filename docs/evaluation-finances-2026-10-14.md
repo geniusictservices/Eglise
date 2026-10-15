@@ -347,4 +347,6 @@ Décisions prises en corrigeant :
 - Les recettes par département (point 7, attribution arbitraire) ne sont pas corrigées : elles demandent de rendre le département obligatoire à la saisie pour les catégories budgétées par département.
 - La paie en deux devises par personne, les éléments fixes avec devise, l'historique par bénéficiaire et la justification partielle des avances sont des évolutions de schéma, hors de ce lot.
 
-Reste à faire : relance automatique des avances en retard, historique des règles de quote-part et cumul des arriérés, suivi côté paroisse des remises non confirmées, lecture de l'instantané de clôture, correction d'un taux passé avec recalcul ou avertissement, changement de compte d'une feuille de collecte sans perte, et les manques fonctionnels listés en fin de plan d'action.
+Second lot : relance des avances à justifier, arriérés de quotes-parts visibles au-delà de six mois, remises de projet en attente visibles côté paroisse, avertissement quand une période clôturée a changé, avertissement à la correction d'un taux passé, changement de caisse d'une collecte sans perte, annulation unique et sans solde passé négatif, immutabilité des opérations gardée par le modèle.
+
+Reste à faire : historique des règles de quote-part (une évolution de schéma), recettes par département, et les manques fonctionnels listés en fin de plan d'action.

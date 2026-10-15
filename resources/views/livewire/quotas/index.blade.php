@@ -10,6 +10,9 @@
                     <p class="mt-1 text-sm text-sand-700">{{ __(':p ne demande pas de quote-part.', ['p' => $parent->name]) }}</p>
                 @else
                     <p class="mb-3 mt-1 text-sm text-sand-700">{{ __('Règle : :r, depuis :m.', ['r' => $parentRule->describe(), 'm' => mb_strtolower($quotas->label($parentRule->starts_period))]) }}</p>
+                    @if ($arrears['total'] > 0)
+                        <p class="mb-3 rounded-xl bg-terra-50 px-3 py-2 text-sm font-semibold text-terra-700">{{ trans_choice('Arriérés : :m sur :count mois passé.|Arriérés : :m sur :count mois passés.', count($arrears['periods']), ['m' => $usd($arrears['total'])]) }}</p>
+                    @endif
                     <ul class="divide-y divide-sand-100 border-t border-sand-200">
                         @foreach ($owed as $o)
                             <li class="flex flex-wrap items-center gap-x-4 gap-y-1.5 py-3">
@@ -68,7 +71,7 @@
                     <h2 class="px-5 pb-2 pt-5 text-lg sm:px-6">{{ __('Suivi par niveau') }}</h2>
                     <div class="overflow-x-auto">
                         <table class="w-full min-w-[560px] text-sm">
-                            <thead><tr class="border-b border-sand-200 text-left text-xs text-sand-700"><th class="px-5 py-2 font-semibold sm:px-6">{{ __('Niveau') }}</th>@foreach ($gridPeriods as $p)<th class="px-3 py-2 text-right font-semibold">{{ $quotas->label($p) }}</th>@endforeach</tr></thead>
+                            <thead><tr class="border-b border-sand-200 text-left text-xs text-sand-700"><th class="px-5 py-2 font-semibold sm:px-6">{{ __('Niveau') }}</th>@foreach ($gridPeriods as $p)<th class="px-3 py-2 text-right font-semibold">{{ $quotas->label($p) }}</th>@endforeach<th class="px-3 py-2 text-right font-semibold sm:pr-6">{{ __('Arriérés') }}</th></tr></thead>
                             <tbody class="divide-y divide-sand-100">
                                 @foreach ($children as $c)
                                     <tr><td class="px-5 py-2.5 font-semibold text-ink-800 sm:px-6">{{ $c->name }}</td>
@@ -81,6 +84,10 @@
                                                 @endif
                                             </td>
                                         @endforeach
+                                        @php $a = $childArrears[$c->id] ?? ['total' => 0, 'periods' => []]; @endphp
+                                        <td class="px-3 py-2.5 text-right tabular sm:pr-6">
+                                            @if ($a['total'] > 0)<span class="block font-semibold text-terra-700">{{ $usd($a['total']) }}</span><span class="text-xs text-sand-700">{{ trans_choice(':count mois|:count mois', count($a['periods'])) }}</span>@else<span class="text-xs font-semibold text-leaf-600">{{ __('Aucun') }}</span>@endif
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>

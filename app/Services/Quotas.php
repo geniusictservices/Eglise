@@ -133,6 +133,32 @@ class Quotas
         });
     }
 
+    /**
+     * Les mois passés encore dus depuis le début de la règle, et leur total en dollars.
+     *
+     * @return array{total: float, periods: list<string>}
+     */
+    public function arrears(Organization $child): array
+    {
+        $parent = $child->loadMissing('parent')->parent;
+        $rule = $parent ? $this->rule($parent) : null;
+        if (! $rule) {
+            return ['total' => 0.0, 'periods' => []];
+        }
+        $periods = [];
+        $total = 0.0;
+        $last = now()->startOfMonth()->subMonth();
+        for ($month = Carbon::createFromFormat('Y-m-d', $rule->starts_period.'-01')->startOfMonth(); $month->lte($last); $month->addMonth()) {
+            $owed = $this->owed($child, $month->format('Y-m'));
+            if ($owed && $owed['remaining'] > 0.004) {
+                $periods[] = $owed['period'];
+                $total += $owed['remaining'];
+            }
+        }
+
+        return ['total' => round($total, 2), 'periods' => $periods];
+    }
+
     public function label(string $period): string
     {
         return ucfirst(Carbon::createFromFormat('Y-m-d', $period.'-01')->translatedFormat('F Y'));
