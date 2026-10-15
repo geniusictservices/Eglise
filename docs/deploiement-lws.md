@@ -152,6 +152,8 @@ Envoyer aussi le nouveau dossier `public/build` compilé.
 
 **Sans terminal (gestionnaire de fichiers du cPanel)** : extraire l'archive de mise à jour par-dessus l'installation (le fichier `.env` et le dossier `storage` restent en place ; `vendor` aussi, si `composer.lock` n'a pas changé), puis appliquer les changements de la base. `php artisan migrate --force` est le plus sûr ; sans terminal, importer dans **phpMyAdmin** le fichier SQL fourni avec la mise à jour, dans `database/sql/` (par exemple `mise-a-jour-2026-11-01.sql`), **une seule fois**. Chaque fichier dit en tête depuis quelle version il part. Il se prépare avec `php artisan migrate --pretend` sur une copie de la base à l'état du serveur, puis se vérifie sur MySQL comme sur MariaDB ; `scripts/build-sql.sh` régénère `installation.sql` après chaque nouvelle migration. Une page blanche ou une « erreur 500 » juste après une mise à jour vient presque toujours d'une base pas encore mise à jour.
 
+Le manuel en ligne se republie avec `php artisan waumini:manuel-web DOSSIER --fragment --telechargements=LIVRAISON` : sa page *Téléchargements* (rubrique Équipe Genius ICT) donne les scripts SQL de la livraison. Les archives .zip ne peuvent pas être déposées dans le manuel : hébergées ailleurs, par exemple dans une *Release* GitHub, elles y sont reliées avec `--lien-archives=ADRESSE`.
+
 Pour une mise à jour, `scripts/build-release.sh --sans-captures` donne une archive plus légère, sans les captures du manuel déjà présentes sur le serveur. Si `composer.lock` n'a changé aucune version de dépendance, ajouter `--sans-vendor` : l'archive ne contient plus que le code de Waumini (quelques Mo) et le dossier `vendor` du serveur reste en place.
 
 ## Sauvegardes

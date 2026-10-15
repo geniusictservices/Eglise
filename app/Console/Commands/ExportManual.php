@@ -15,7 +15,8 @@ use Illuminate\Support\Str;
 class ExportManual extends Command
 {
     protected $signature = 'waumini:manuel-web {dossier : où écrire le site} {--fragment : page sans en-tête HTML, pour une publication en Artifact}
-        {--telechargements= : dossier des archives et scripts SQL d’une livraison, ajoutés au manuel avec leur page}';
+        {--telechargements= : dossier des archives et scripts SQL d’une livraison, ajoutés au manuel avec leur page}
+        {--lien-archives= : adresse où les archives .zip sont hébergées (une « Release » GitHub, par exemple)}';
 
     protected $description = 'Exporte le manuel d’utilisation en site web statique';
 
@@ -87,26 +88,36 @@ class ExportManual extends Command
         '/mise-a-jour-base.*\.sql$/' => 'Mise à jour d’une base déjà en service : à importer une seule fois, après une sauvegarde. Le fichier dit en tête depuis quelle version il part.',
     ];
 
-    /** La page des téléchargements : les fichiers d'une livraison, copiés à côté du manuel. */
+    /**
+     * La page des téléchargements. Les scripts SQL sont copiés à côté du manuel ; les archives .zip,
+     * qu'une publication en Artifact ne sert pas, pointent vers --lien-archives, ou sont à demander.
+     */
     private function downloads(string $source, string $out): string
     {
         File::ensureDirectoryExists("{$out}/telechargements");
+        $link = rtrim((string) $this->option('lien-archives'), '/');
         $rows = '';
-        $files = collect(File::files($source))->filter(fn ($f) => in_array($f->getExtension(), ['zip', 'sql'], true))->sortBy(fn ($f) => $f->getFilename());
+        $files = collect(File::files($source))->filter(fn ($f) => in_array($f->getExtension(), ['zip', 'sql'], true))
+            ->sortBy(fn ($f) => [$f->getExtension() === 'sql' ? 1 : 0, $f->getFilename()]);
         foreach ($files as $file) {
             $name = $file->getFilename();
             $use = collect(self::DOWNLOADS)->first(fn ($text, $pattern) => preg_match($pattern, $name)) ?? '';
-            File::copy($file->getPathname(), "{$out}/telechargements/{$name}");
             $size = $file->getSize() >= 1048576 ? number_format($file->getSize() / 1048576, 1, ',', ' ').' Mo' : number_format($file->getSize() / 1024, 0, ',', ' ').' Ko';
-            $rows .= '<tr><td><a href="telechargements/'.e($name).'" download>'.e($name).'</a></td><td>'.e($use).'</td><td>'.$size.'</td></tr>';
+            if ($file->getExtension() === 'sql') {
+                File::copy($file->getPathname(), "{$out}/telechargements/{$name}");
+                $cell = '<a href="telechargements/'.e($name).'" download>'.e($name).'</a>';
+            } else {
+                $cell = $link !== '' ? '<a href="'.e($link.'/'.$name).'">'.e($name).'</a>' : e($name).'<br><small>sur demande</small>';
+            }
+            $rows .= '<tr><td>'.$cell.'</td><td>'.e($use).'</td><td>'.$size.'</td></tr>';
         }
-        $complete = $files->contains(fn ($f) => str_contains($f->getFilename(), 'installation'));
+        $complete = $link !== '' || $files->every(fn ($f) => $f->getExtension() !== 'zip');
 
         return '<h1>Téléchargements : installer et mettre à jour</h1>'
             .'<blockquote><p>Cette page sert à l’équipe Genius ICT, qui installe Waumini sur un serveur. Une église n’a rien à télécharger : Waumini s’utilise dans le navigateur, ou s’installe sur le téléphone depuis le navigateur (<a href="#c-02-installer">chapitre 2</a>).</p></blockquote>'
             .'<p>Livraison du '.e(now()->translatedFormat('j F Y')).'.</p>'
             .'<div class="tableau"><table><thead><tr><th>Fichier</th><th>À quoi il sert</th><th>Taille</th></tr></thead><tbody>'.$rows.'</tbody></table></div>'
-            .($complete ? '' : '<p>L’archive d’installation complète et la mise à jour avec dépendances sont trop lourdes pour cette page : demandez-les à l’équipe Genius ICT.</p>')
+            .($complete ? '' : '<p>Les archives .zip ne peuvent pas être déposées dans ce manuel : demandez-les à l’équipe Genius ICT. Les scripts SQL, eux, s’ouvrent ou s’enregistrent depuis le tableau.</p>')
             .'<h2 id="mettre-à-jour">Mettre à jour un serveur</h2><ol>'
             .'<li>Faire une <strong>sauvegarde</strong> : espace Genius ICT, <strong>Sauvegardes</strong>, <strong>Sauvegarder maintenant</strong>.</li>'
             .'<li>Envoyer l’archive dans le dossier de Waumini avec le gestionnaire de fichiers de cPanel, puis l’<strong>extraire par-dessus</strong> l’installation. Le fichier <code>.env</code> et le dossier <code>storage</code> restent en place.</li>'
