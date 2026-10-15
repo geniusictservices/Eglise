@@ -40,6 +40,11 @@ Les deux rapports sont dans `docs/audit-2026-10-14.md` (sécurité) et `docs/eva
 - Le suivi pastoral reste visible de l'administrateur (dossiers), les notes confidentielles d'autrui restant cachées, comme le décrit le manuel.
 - Le contrôleur d'une dépense peut aussi la signer ; le demandeur, jamais.
 
+### Livraison
+- `database/sql/installation.sql` : la base vide pour une installation sans terminal (phpMyAdmin), régénérée par `scripts/build-sql.sh`.
+- `database/sql/mise-a-jour-2026-11-01.sql` : la mise à jour d'une base en service, vérifiée sur une base de la version précédente.
+- La migration des codes de catégories s'annule proprement et ne relit plus la table qu'elle modifie (refusé par MySQL).
+
 ### Exploitation
 - En-têtes de sécurité HTTP ; export Excel sans formule ; sauvegardes en instantané cohérent, chiffrement vérifié, copie distante jamais silencieuse.
 - File d'attente dans le planificateur (plus de `proc_open`), verrous courts, journal `schedule.log`, échecs signalés, ménage quotidien réel.

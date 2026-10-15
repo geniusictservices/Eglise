@@ -118,6 +118,8 @@ L'espace d'administration (`https://waumini.com/admin`) est réservé à l'équi
 php artisan waumini:equipe 0812345678 "Prénom Nom"
 ```
 
+**Sans terminal**, la base se crée dans *phpMyAdmin* : sélectionner la base vide, onglet **Importer**, choisir `database/sql/installation.sql` (fourni dans l'archive), une seule fois. Il contient toutes les tables et note toutes les migrations comme faites. La clé `APP_KEY` et les clés VAPID se génèrent alors sur votre ordinateur (`php artisan key:generate --show`, `php artisan waumini:vapid`) et se copient dans `.env`. Le premier compte de l'équipe Genius ICT, lui, demande le *Terminal* de cPanel : aucun mot de passe n'est mis dans un fichier SQL.
+
 La commande affiche un mot de passe provisoire, à changer à la première connexion. Ensuite, les autres membres de l'équipe s'ajoutent depuis l'écran **Équipe Genius ICT**. Dans l'espace d'administration, renseigner tout de suite :
 
 - **Coordonnées et réglages** : le numéro WhatsApp et l'e-mail de contact ;
@@ -148,7 +150,7 @@ php artisan up
 
 Envoyer aussi le nouveau dossier `public/build` compilé.
 
-**Sans terminal (gestionnaire de fichiers du cPanel)** : extraire l'archive de mise à jour par-dessus l'installation (le fichier `.env` et le dossier `storage` restent en place ; `vendor` aussi, si `composer.lock` n'a pas changé), puis appliquer les changements de la base. `php artisan migrate --force` est le plus sûr ; sans terminal, importer dans **phpMyAdmin** le fichier SQL fourni avec la mise à jour (par exemple `mise-a-jour-octobre-2026.sql`), **une seule fois**. Il se prépare avec `php artisan migrate --pretend` sur une copie de la base à l'état du serveur. Une page blanche ou une « erreur 500 » juste après une mise à jour vient presque toujours d'une base pas encore mise à jour.
+**Sans terminal (gestionnaire de fichiers du cPanel)** : extraire l'archive de mise à jour par-dessus l'installation (le fichier `.env` et le dossier `storage` restent en place ; `vendor` aussi, si `composer.lock` n'a pas changé), puis appliquer les changements de la base. `php artisan migrate --force` est le plus sûr ; sans terminal, importer dans **phpMyAdmin** le fichier SQL fourni avec la mise à jour, dans `database/sql/` (par exemple `mise-a-jour-2026-11-01.sql`), **une seule fois**. Chaque fichier dit en tête depuis quelle version il part. Il se prépare avec `php artisan migrate --pretend` sur une copie de la base à l'état du serveur, puis se vérifie sur MySQL comme sur MariaDB ; `scripts/build-sql.sh` régénère `installation.sql` après chaque nouvelle migration. Une page blanche ou une « erreur 500 » juste après une mise à jour vient presque toujours d'une base pas encore mise à jour.
 
 Pour une mise à jour, `scripts/build-release.sh --sans-captures` donne une archive plus légère, sans les captures du manuel déjà présentes sur le serveur.
 
