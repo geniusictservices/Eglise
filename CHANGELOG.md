@@ -44,6 +44,7 @@ Les deux rapports sont dans `docs/audit-2026-10-14.md` (sécurité) et `docs/eva
 - `database/sql/installation.sql` : la base vide pour une installation sans terminal (phpMyAdmin), régénérée par `scripts/build-sql.sh`.
 - `database/sql/mise-a-jour-2026-11-01.sql` : la mise à jour d'une base en service, vérifiée sur une base de la version précédente.
 - La migration des codes de catégories s'annule proprement et ne relit plus la table qu'elle modifie (refusé par MySQL).
+- Le manuel est livré dans le dépôt, en HTML (`docs/manuel/html/index.html`, s'ouvre d'un double-clic, sans serveur, refait par `waumini:manuel-web docs/manuel/html --depot`) et en PDF (`docs/manuel/manuel-waumini.pdf`). Le manuel en ligne se lit lui aussi depuis un dossier local grâce à `manuel.js`.
 
 ### Exploitation
 - En-têtes de sécurité HTTP ; export Excel sans formule ; sauvegardes en instantané cohérent, chiffrement vérifié, copie distante jamais silencieuse.

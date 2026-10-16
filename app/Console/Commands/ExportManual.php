@@ -10,13 +10,16 @@ use Illuminate\Support\Str;
  * Exporte le manuel d'utilisation (docs/manuel) en site web statique :
  * une page de lecture, un fragment HTML par chapitre et les captures en
  * JPEG, légères pour les téléphones. Le site se lit sans Waumini, hors
- * de l'application (hébergement simple, GitHub Pages, partage en ligne).
+ * de l'application (hébergement simple, GitHub Pages, partage en ligne),
+ * et s'ouvre aussi en double-cliquant sur index.html : manuel.js porte le
+ * sommaire et les chapitres, qu'un navigateur ne lit pas en fichiers locaux.
  */
 class ExportManual extends Command
 {
     protected $signature = 'waumini:manuel-web {dossier : où écrire le site} {--fragment : page sans en-tête HTML, pour une publication en Artifact}
         {--telechargements= : dossier des archives et scripts SQL d’une livraison, ajoutés au manuel avec leur page}
-        {--lien-archives= : adresse où les archives .zip sont hébergées (une « Release » GitHub, par exemple)}';
+        {--lien-archives= : adresse où les archives .zip sont hébergées (une « Release » GitHub, par exemple)}
+        {--depot : version rangée dans docs/manuel/html, qui reprend les captures PNG du dépôt au lieu de les copier}';
 
     protected $description = 'Exporte le manuel d’utilisation en site web statique';
 
@@ -25,7 +28,7 @@ class ExportManual extends Command
     public function handle(): int
     {
         $out = rtrim($this->argument('dossier'), '/');
-        File::ensureDirectoryExists("{$out}/chapitres");
+        File::ensureDirectoryExists($out);
         $readme = File::get(base_path(self::SOURCE.'/README.md'));
 
         // Le sommaire : ses rubriques et ses chapitres, dans l'ordre et avec la numérotation du README.
@@ -40,21 +43,30 @@ class ExportManual extends Command
 
         $slugs = collect($groups)->pluck('chapters')->flatten(1)->pluck('slug');
         $intro = preg_replace('/^## Sommaire.*?(?=^## )/ms', '', $readme);
-        File::put("{$out}/chapitres/accueil.html", $this->render($intro));
+        $chapters = ['accueil' => $this->render($intro)];
         foreach ($slugs as $slug) {
             $markdown = File::get(base_path(self::SOURCE."/{$slug}.md"));
             // Le numéro vient du sommaire : on le retire du titre du chapitre.
             $markdown = preg_replace('/^# \d+\.\s*/m', '# ', $markdown, 1);
-            File::put("{$out}/chapitres/{$slug}.html", $this->render($markdown));
+            $chapters[$slug] = $this->render($markdown);
         }
         if ($downloads = $this->option('telechargements')) {
             $groups[] = ['title' => 'Équipe Genius ICT', 'chapters' => [['slug' => 'telechargements', 'num' => null, 'title' => 'Téléchargements : installer et mettre à jour']]];
-            File::put("{$out}/chapitres/telechargements.html", $this->downloads(rtrim($downloads, '/'), $out));
+            $chapters['telechargements'] = $this->downloads(rtrim($downloads, '/'), $out);
         }
-        File::put("{$out}/sommaire.json", json_encode(['groups' => $groups, 'date' => now()->translatedFormat('j F Y')], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        $summary = ['groups' => $groups, 'date' => now()->translatedFormat('j F Y')];
+        // Dans le dépôt, manuel.js suffit ; en ligne, chaque chapitre se charge aussi seul.
+        if (! $this->option('depot')) {
+            File::ensureDirectoryExists("{$out}/chapitres");
+            foreach ($chapters as $slug => $html) {
+                File::put("{$out}/chapitres/{$slug}.html", $html);
+            }
+            File::put("{$out}/sommaire.json", json_encode($summary, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
+        }
+        File::put("{$out}/manuel.js", 'window.WAUMINI_MANUEL = '.json_encode(['sommaire' => $summary, 'chapitres' => $chapters], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG).";\n");
 
         $count = 0;
-        foreach (['bureau', 'mobile'] as $device) {
+        foreach ($this->option('depot') ? [] : ['bureau', 'mobile'] as $device) {
             File::ensureDirectoryExists("{$out}/captures/{$device}");
             foreach (File::files(base_path(self::SOURCE."/captures/{$device}")) as $file) {
                 if ($file->getExtension() !== 'png') {
@@ -74,7 +86,7 @@ class ExportManual extends Command
         File::put("{$out}/index.html", $this->option('fragment') ? $page
             : "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover\">\n".str_replace('<style>', "<style>\nbody { margin: 0; }", $page)."\n</html>\n");
 
-        $this->info("Manuel exporté dans {$out} : {$slugs->count()} chapitres, {$count} captures.");
+        $this->info("Manuel exporté dans {$out} : {$slugs->count()} chapitres, ".($this->option('depot') ? 'captures reprises de docs/manuel/captures.' : "{$count} captures."));
 
         return self::SUCCESS;
     }
@@ -132,7 +144,7 @@ class ExportManual extends Command
         $markdown = preg_replace_callback('/\]\(([a-z0-9-]+)\.md(#[^)]*)?\)/', fn ($m) => '](#c-'.$m[1].(isset($m[2]) ? '--'.ltrim($m[2], '#') : '').')', $markdown);
         $markdown = preg_replace('/\]\(README\.md\)/', '](#c-accueil)', $markdown);
         $markdown = preg_replace('/\]\(\.\.\/[^)]+\)/', '](#c-accueil)', $markdown);
-        $markdown = preg_replace('/src="captures\/(bureau|mobile)\/([a-z0-9-]+)\.png"/', 'src="captures/$1/$2.jpg" loading="lazy"', $markdown);
+        $markdown = preg_replace('/src="captures\/(bureau|mobile)\/([a-z0-9-]+)\.png"/', $this->option('depot') ? 'src="../captures/$1/$2.png" loading="lazy"' : 'src="captures/$1/$2.jpg" loading="lazy"', $markdown);
 
         $html = Str::markdown($markdown, ['html_input' => 'allow', 'allow_unsafe_links' => false]);
         $html = preg_replace_callback('/<h([23])>(.+?)<\/h\1>/', fn ($m) => '<h'.$m[1].' id="'.self::anchor($m[2]).'">'.$m[2].'</h'.$m[1].'>', $html);

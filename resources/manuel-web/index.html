@@ -196,17 +196,21 @@ main { min-width: 0; padding: 32px 16px 80px; }
   </main>
 </div>
 
+<script src="manuel.js"></script>
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
   const doc = $('doc'), pager = $('pager'), crumb = $('crumb');
   let order = [], bySlug = {}, current = null;
   const cache = {};
+  // manuel.js, quand il est là, porte tout le manuel : la page s'ouvre alors aussi depuis un dossier, sans serveur.
+  const bundle = window.WAUMINI_MANUEL || null;
 
   const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   const store = (k, v) => { try { v === undefined ? (v = localStorage.getItem(k)) : localStorage.setItem(k, v); return v; } catch { return null; } };
 
   async function fragment(slug) {
+    if (!cache[slug] && bundle && bundle.chapitres[slug] !== undefined) cache[slug] = Promise.resolve(bundle.chapitres[slug]);
     if (!cache[slug]) cache[slug] = fetch(`chapitres/${slug}.html`).then((r) => { if (!r.ok) throw new Error(r.status); return r.text(); });
     return cache[slug];
   }
@@ -299,7 +303,7 @@ main { min-width: 0; padding: 32px 16px 80px; }
     }, 200);
   });
 
-  fetch('sommaire.json').then((r) => r.json()).then((data) => {
+  (bundle ? Promise.resolve(bundle.sommaire) : fetch('sommaire.json').then((r) => r.json())).then((data) => {
     chaptersBox.innerHTML = data.groups.map((g) => `<h2>${esc(g.title)}</h2><ol>${g.chapters.map((c) => {
       bySlug[c.slug] = { ...c, group: g.title }; order.push(c.slug);
       return `<li><a href="#c-${c.slug}" data-slug="${c.slug}"><span class="n">${c.num ?? '·'}</span><span>${esc(c.title)}</span></a></li>`;
