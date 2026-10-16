@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetCurrentOrganization;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             SubstituteBindings::class,
             SetCurrentOrganization::class,
         );
+        $middleware->append(SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

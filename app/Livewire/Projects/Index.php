@@ -79,10 +79,10 @@ class Index extends Component
                 ->orWhere(fn ($q) => $q->whereIn('status', ['planned', 'ongoing'])->whereDoesntHave('years'))))
             ->when($this->state === 'finis', fn ($q) => $q->whereIn('status', ['done', 'cancelled']))
             ->orderByRaw("FIELD(status, 'ongoing', 'planned', 'done', 'cancelled')")->orderBy('theme')->orderBy('name')->get()
-            ->map(function (Project $p) use ($projects) {
+            ->map(function (Project $p) use ($projects, $organization) {
                 $totals = $projects->totals($p);
 
-                return ['project' => $p, 'totals' => $totals, 'progress' => $projects->progressOf($p, $totals)['percent']];
+                return ['project' => $p, 'totals' => $totals, 'progress' => $projects->progressOf($p, $totals, sync: ! $organization->isReadOnly())['percent']];
             });
         $open = $list->filter(fn ($r) => $r['project']->isActive());
         $current = FiscalYear::current($organization);

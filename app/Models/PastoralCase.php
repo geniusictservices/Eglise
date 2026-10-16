@@ -27,6 +27,12 @@ class PastoralCase extends Model
 
     protected $guarded = ['id'];
 
+    /** Le journal, lisible par d'autres rôles et par le support, ne reçoit ni la personne, ni le motif, ni son téléphone. */
+    public function auditableValues(array $values): array
+    {
+        return array_intersect_key($values, array_flip(['id', 'organization_id', 'kind', 'status', 'assigned_to', 'opened_on', 'closed_on', 'member_id']));
+    }
+
     protected $attributes = ['status' => 'open', 'source' => 'app'];
 
     protected function casts(): array

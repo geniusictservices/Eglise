@@ -12,6 +12,7 @@ use App\Models\Organization;
 use App\Services\Expenses;
 use App\Services\Ledger;
 use App\Support\FiscalYear;
+use App\Support\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -145,6 +146,17 @@ class Settings extends Component
             $this->addError('account.currencies', __('Choisissez au moins une devise pour ce compte.'));
 
             return;
+        }
+
+        if ($this->accountId && empty($data['is_active'])) {
+            $account = CashAccount::findOrFail($this->accountId);
+            foreach ($account->currencies()->where('is_active', true)->get() as $row) {
+                if (! app(Ledger::class)->balance($account, $row->currency)->isZero()) {
+                    $this->addError('account.is_active', __('Ce compte tient encore :m : videz-le par un virement avant de le fermer.', ['m' => Money::format(app(Ledger::class)->balance($account, $row->currency), $row->currency)]));
+
+                    return;
+                }
+            }
         }
 
         DB::transaction(function () use ($data) {

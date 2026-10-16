@@ -39,3 +39,9 @@ Pour supprimer un rôle, retirez-le d'abord aux personnes qui l'ont reçu, puis 
 - **Les dîmes nominatives sont sensibles** : la permission *Voir les contributions nominatives* est réservée par défaut au pasteur et au trésorier. Le secrétaire ne l'a pas.
 - **La paie est confidentielle** : seuls les rôles qui ont *Voir la paie et les rémunérations* voient ce que chacun reçoit.
 - **Le conseil contrôle sans modifier** : le rôle *Conseil / comité* lit les rapports mais ne peut rien changer.
+
+## Ce que Waumini refuse
+
+- Personne ne modifie **ses propres rôles** : demandez à un autre administrateur.
+- Personne n'attribue ni ne coche une **permission qu'il n'a pas lui-même**. Seul un administrateur donne un rôle plus large que le sien, ou modifie un rôle qu'il porte.
+- Un rôle qui coche **toutes** les permissions est un administrateur, avec les mêmes garde-fous que le rôle Administrateur.

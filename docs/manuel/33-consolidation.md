@@ -59,7 +59,7 @@ Chaque niveau choisit ce que ses niveaux **directement en dessous** lui reversen
 
 Pour chaque mois depuis l'entrée en vigueur de la règle : les **recettes** du mois (hors quotes-parts reçues et hors argent des projets), le montant **dû**, ce qui a été **versé**, et le **reste**. « À confirmer » signale un versement que le niveau supérieur n'a pas encore reçu.
 
-① **Verser** : choisissez le compte d'où part l'argent (la caisse, le compte mobile money), la devise, le montant (Waumini propose le reste dû) et la référence du transfert. La dépense est enregistrée dans le journal de la paroisse, dans la catégorie « Quote-part versée au niveau supérieur ». Le trésorier du niveau supérieur est prévenu dans ses [nouveautés](25-nouveautes.md).
+① **Verser** : choisissez le compte d'où part l'argent (la caisse, le compte mobile money), la devise, le montant (Waumini propose le reste dû, et refuse un montant qui le dépasse) et la référence du transfert. La dépense est enregistrée dans le journal de la paroisse, dans la catégorie « Quote-part versée au niveau supérieur ». Le trésorier du niveau supérieur est prévenu dans ses [nouveautés](25-nouveautes.md).
 
 ### Ce que nous demandons à nos niveaux inférieurs
 

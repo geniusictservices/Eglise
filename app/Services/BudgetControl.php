@@ -206,8 +206,7 @@ class BudgetControl
     /** La catégorie des salaires : « Rémunérations et motivations ». */
     public static function salaryCategoryId(Organization $organization): ?int
     {
-        return FinanceCategory::withoutOrganizationScope()->where('organization_id', $organization->id)
-            ->where('type', 'expense')->where('name', 'Rémunérations et motivations')->value('id');
+        return FinanceCategory::systemId($organization->id, 'salaries');
     }
 
     /** L'exercice d'une paie : celui de la fin de sa période. */

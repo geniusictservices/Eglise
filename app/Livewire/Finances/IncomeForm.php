@@ -9,7 +9,11 @@ use App\Models\Department;
 use App\Models\FinanceCategory;
 use App\Models\FinanceTransaction;
 use App\Models\Member;
+use App\Services\Budgets;
 use App\Services\Ledger;
+use App\Support\FiscalYear;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Title;
@@ -64,6 +68,28 @@ class IncomeForm extends Component
         return $this->categoryId ? FinanceCategory::find($this->categoryId) : null;
     }
 
+    /**
+     * Les départements qui attendent cette catégorie de recette dans le budget adopté de l'exercice.
+     * Quand il y en a plusieurs, la recette doit dire lequel la reçoit : sinon le suivi du budget
+     * la mettrait au compte du premier venu.
+     */
+    private function budgetedDepartments(?FinanceCategory $category): Collection
+    {
+        if (! $category || $category->nature === 'group') {
+            return collect();
+        }
+        $organization = $this->organization();
+        $on = $this->occurredOn ? Carbon::parse($this->occurredOn) : today();
+        $budget = app(Budgets::class)->adopted($organization, FiscalYear::of($organization, $on));
+        if (! $budget) {
+            return collect();
+        }
+        $ids = $budget->lines()->where('type', 'income')->where('category_id', $category->id)->whereNull('source')
+            ->whereNotNull('department_id')->distinct()->pluck('department_id');
+
+        return $ids->count() > 1 ? Department::withTrashed()->whereIn('id', $ids)->orderBy('name')->get() : collect();
+    }
+
     public function chooseMember(int $id): void
     {
         $this->memberId = Member::findOrFail($id)->id;
@@ -75,7 +101,10 @@ class IncomeForm extends Component
     private function accountCurrencies(): array
     {
         return $this->accountId
-            ? CashAccountCurrency::where('cash_account_id', $this->accountId)->where('is_active', true)->orderByRaw("currency = 'USD' DESC")->orderBy('currency')->pluck('currency')->all()
+            ? array_values(array_intersect(
+                CashAccountCurrency::where('cash_account_id', $this->accountId)->where('is_active', true)->orderByRaw("currency = 'USD' DESC")->orderBy('currency')->pluck('currency')->all(),
+                app(Ledger::class)->currencies($this->organization()),
+            ))
             : [];
     }
 
@@ -93,21 +122,32 @@ class IncomeForm extends Component
         $this->authorizeWrite('finance.income');
         $category = $this->category();
 
+        $budgeted = $this->budgetedDepartments($category);
         $this->validate([
             'accountId' => ['required', Rule::exists('cash_accounts', 'id')->where('organization_id', $this->organization()->id)->where('is_active', true)],
             'categoryId' => ['required', Rule::exists('finance_categories', 'id')->where('organization_id', $this->organization()->id)->where('type', 'income')],
             'currency' => ['required', Rule::in($this->accountCurrencies())],
             'amount' => 'required|numeric|gt:0|max:999999999999',
             'occurredOn' => 'required|date|before_or_equal:today',
-            'memberId' => [Rule::requiredIf($category?->nature === 'personal' && trim($this->payerName) === '')],
-            'departmentId' => [Rule::requiredIf($category?->nature === 'group')],
+            'memberId' => [Rule::requiredIf($category?->nature === 'personal' && trim($this->payerName) === ''), 'nullable', Rule::exists('members', 'id')->where('organization_id', $this->organization()->id)],
+            'departmentId' => [Rule::requiredIf($category?->nature === 'group' || $budgeted->isNotEmpty()), 'nullable', Rule::exists('departments', 'id')->where('organization_id', $this->organization()->id),
+                ...($budgeted->isNotEmpty() ? [Rule::in($budgeted->pluck('id')->map(fn ($id) => (string) $id)->all())] : [])],
             'paymentMethod' => ['required', Rule::in(array_keys(FinanceTransaction::PAYMENT_METHODS))],
-            'externalReference' => [Rule::requiredIf($this->paymentMethod === 'mobile'), 'nullable', 'string', 'max:100'],
+            'externalReference' => [Rule::requiredIf($this->paymentMethod === 'mobile'), 'nullable', 'string', 'max:100', function ($attribute, $value, $fail) {
+                $reference = strtoupper(preg_replace('/\s+/', '', (string) $value));
+                if ($reference === '' || $this->paymentMethod !== 'mobile') {
+                    return;
+                }
+                $existing = FinanceTransaction::valid()->whereRaw('upper(replace(external_reference, \' \', \'\')) = ?', [$reference])->orderBy('id')->first();
+                if ($existing) {
+                    $fail(__('Cet ID de transaction est déjà enregistré (reçu :n du :d).', ['n' => $existing->receipt_number ?? '—', 'd' => $existing->occurred_on->translatedFormat('j M Y')]));
+                }
+            }],
             'payerName' => 'nullable|string|max:150',
             'description' => 'nullable|string|max:255',
         ], [
             'memberId.required' => __('Choisissez le membre, ou écrivez le nom d’un donateur de passage.'),
-            'departmentId.required' => __('Choisissez le département qui verse cette contribution.'),
+            'departmentId.required' => $budgeted->isNotEmpty() ? __('Plusieurs départements attendent cette recette au budget : dites lequel la reçoit.') : __('Choisissez le département qui verse cette contribution.'),
             'externalReference.required' => __('Indiquez l’ID de la transaction mobile money.'),
         ], ['amount' => __('montant'), 'occurredOn' => __('date'), 'accountId' => __('caisse'), 'categoryId' => __('catégorie')]);
 
@@ -118,7 +158,7 @@ class IncomeForm extends Component
                 'category_id' => (int) $this->categoryId,
                 'member_id' => $category->nature === 'personal' ? $this->memberId : null,
                 'payer_name' => $category->nature === 'personal' && ! $this->memberId ? (trim($this->payerName) ?: null) : null,
-                'department_id' => $category->nature === 'group' ? (int) $this->departmentId : null,
+                'department_id' => $category->nature === 'group' || $budgeted->isNotEmpty() ? (int) $this->departmentId : null,
                 'payment_method' => $this->paymentMethod,
                 'external_reference' => trim($this->externalReference) ?: null,
                 'description' => trim($this->description) ?: null,
@@ -147,6 +187,7 @@ class IncomeForm extends Component
             'categories' => FinanceCategory::where('type', 'income')->where('is_active', true)->orderBy('position')->get(),
             'category' => $category,
             'departments' => Department::where('is_active', true)->orderBy('name')->get(),
+            'budgetedDepartments' => $this->budgetedDepartments($category),
             'member' => $this->memberId ? Member::find($this->memberId) : null,
             'candidates' => $candidates,
             'account' => $this->accountId ? CashAccount::find($this->accountId) : null,

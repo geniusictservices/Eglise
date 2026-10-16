@@ -55,7 +55,12 @@ class Subscription extends Component
         $this->authorizeDeclare();
         $this->validate([
             'payment.plan_id' => ['required', Rule::exists('plans', 'id')->where('is_active', true)],
-            'tier' => ['required', Rule::in(array_keys($pricing->tiers()))],
+            'tier' => ['required', Rule::in(array_keys($pricing->tiers())), function ($attribute, $value, $fail) use ($pricing) {
+                $root = current_organization()->root();
+                if (! $pricing->tierCovers($root, $value)) {
+                    $fail(__('Votre communauté compte :n membres : la taille « :t » est la plus petite possible.', ['n' => $pricing->memberCount($root), 't' => $pricing->tiers()[$pricing->tierFor($root)]]));
+                }
+            }],
             'payment.amount' => 'required|numeric|min:0.01', 'payment.method' => ['required', Rule::in(SubscriptionPeriod::PAYMENT_METHODS)],
             'payment.reference' => 'required|string|max:100', 'payment.paid_on' => 'required|date|before_or_equal:today|after:-90 days',
             'payment.message' => 'nullable|string|max:255',

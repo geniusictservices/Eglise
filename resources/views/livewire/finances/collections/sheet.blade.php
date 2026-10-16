@@ -23,6 +23,11 @@
         </div>
     </section>
 
+    @if ($errors->hasAny(['serviceDate', 'serviceLabel', 'accountId', 'lines.*.*', 'counters.*', 'notes']))
+        <p class="mb-5 rounded-2xl border border-terra-100 bg-terra-50 p-4 text-sm text-terra-700"><x-icon name="triangle-alert" class="mr-1 inline size-4" />
+            {{ __('La dernière saisie n’a pas été enregistrée : :e', ['e' => $errors->first()]) }}</p>
+    @endif
+
     @if ($sheet->status === 'validated')
         <p class="mb-5 rounded-2xl border border-leaf-100 bg-leaf-50 p-4 text-sm text-ink-800"><x-icon name="circle-check" class="mr-1 inline size-4 text-leaf-600" />
             {{ __('Validée le :date par :name. Les recettes sont dans le journal ; la feuille ne se modifie plus.', ['date' => $sheet->validated_at->translatedFormat('j F Y à H:i'), 'name' => $sheet->validator?->name]) }}</p>

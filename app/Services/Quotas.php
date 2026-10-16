@@ -52,7 +52,7 @@ class Quotas
     public function base(Organization $organization, string $period): float
     {
         [$from, $to] = $this->bounds($period);
-        $quota = FinanceCategory::withoutOrganizationScope()->where('organization_id', $organization->id)->whereIn('name', Consolidation::QUOTA_CATEGORIES)->pluck('id');
+        $quota = FinanceCategory::systemIds([$organization->id], Consolidation::QUOTA_CATEGORIES);
 
         return round((float) FinanceTransaction::withoutOrganizationScope()->valid()->where('organization_id', $organization->id)->where('type', 'income')
             ->whereBetween('occurred_on', [$from, $to])->whereNull('project_id')->whereNull('expense_request_id')
@@ -92,9 +92,15 @@ class Quotas
         }
 
         return DB::transaction(function () use ($child, $parent, $period, $account, $currency, $amount, $reference) {
-            $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(['organization_id' => $child->id, 'type' => 'expense', 'name' => 'Quote-part versée au niveau supérieur'], ['position' => 95]);
+            $category = FinanceCategory::system($child->id, 'quota_sent');
             $expense = $this->ledger->record($account, $currency, 'expense', ['amount' => $amount, 'category_id' => $category->id,
                 'description' => __('Quote-part :m à :p', ['m' => $this->label($period), 'p' => $parent->name]), 'external_reference' => $reference]);
+            // Pas plus que le reste dû : un versement trop grand est une erreur de saisie, pas une avance.
+            $owed = $this->owed($child, $period);
+            if ($owed && ! $owed['rate_missing'] && (float) $expense->usd_amount > $owed['remaining'] + 1) {
+                throw new InvalidArgumentException(__('Il reste :r à verser pour :m ; ce montant vaut :a. Vérifiez-le.', [
+                    'r' => Money::format($owed['remaining'], 'USD'), 'm' => $this->label($period), 'a' => Money::format($expense->usd_amount, 'USD')]));
+            }
             $payment = QuotaPayment::create(['from_organization_id' => $child->id, 'to_organization_id' => $parent->id, 'period' => $period,
                 'amount' => $expense->amount, 'currency' => $currency, 'usd_amount' => $expense->usd_amount, 'paid_on' => today(),
                 'reference' => $reference, 'expense_transaction_id' => $expense->id, 'sent_by' => auth()->id()]);
@@ -118,14 +124,39 @@ class Quotas
                 throw new InvalidArgumentException(__('Cette quote-part est déjà reçue.'));
             }
             $payment->loadMissing('from');
-            $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(['organization_id' => $payment->to_organization_id, 'type' => 'income', 'name' => 'Quotes-parts reçues'],
-                ['nature' => 'collective', 'position' => 95]);
+            $category = FinanceCategory::system($payment->to_organization_id, 'quota_received');
             $income = $this->ledger->record($account, $payment->currency, 'income', ['amount' => (string) $payment->amount, 'category_id' => $category->id,
                 'payer_name' => $payment->from->name, 'description' => __('Quote-part :m de :c', ['m' => $this->label($payment->period), 'c' => $payment->from->name]),
                 'external_reference' => $payment->reference]);
             $payment->update(['status' => 'received', 'income_transaction_id' => $income->id, 'received_by' => auth()->id(), 'received_at' => now()]);
             $this->notifier->settle("quota.{$payment->id}");
         });
+    }
+
+    /**
+     * Les mois passés encore dus depuis le début de la règle, et leur total en dollars.
+     *
+     * @return array{total: float, periods: list<string>}
+     */
+    public function arrears(Organization $child): array
+    {
+        $parent = $child->loadMissing('parent')->parent;
+        $rule = $parent ? $this->rule($parent) : null;
+        if (! $rule) {
+            return ['total' => 0.0, 'periods' => []];
+        }
+        $periods = [];
+        $total = 0.0;
+        $last = now()->startOfMonth()->subMonth();
+        for ($month = Carbon::createFromFormat('Y-m-d', $rule->starts_period.'-01')->startOfMonth(); $month->lte($last); $month->addMonth()) {
+            $owed = $this->owed($child, $month->format('Y-m'));
+            if ($owed && $owed['remaining'] > 0.004) {
+                $periods[] = $owed['period'];
+                $total += $owed['remaining'];
+            }
+        }
+
+        return ['total' => round($total, 2), 'periods' => $periods];
     }
 
     public function label(string $period): string

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Finances;
 
+use App\Models\FinanceClosing;
 use App\Services\Closings;
 use App\Services\FinanceReports;
 use App\Support\FiscalYear;
@@ -30,6 +31,25 @@ class Reports extends Component
         $this->month = max(0, min(12, $this->month));
     }
 
+    /**
+     * Une période clôturée se recalcule à chaque affichage. Si un compte, un solde de départ ou un libellé
+     * a changé depuis, les chiffres ne sont plus ceux de la clôture : on le dit, avec ceux de l'instantané.
+     */
+    private function drift(?FinanceClosing $closing, array $r): ?array
+    {
+        if (! $closing?->isClosed() || ! is_array($closing->snapshot)) {
+            return null;
+        }
+        $snapshot = $closing->snapshot;
+        $balances = fn (array $rows) => collect($rows)->map(fn ($b) => implode('|', [$b['account'], $b['currency'], $b['closing']]))->sort()->values()->all();
+        $live = collect($r['accounts'])->map(fn ($a) => ['account' => $a['account']->name, 'currency' => $a['currency'], 'closing' => (string) $a['closing']])->all();
+        $same = abs((float) ($snapshot['totals']['income'] ?? 0) - $r['totals']['income']) < 0.01
+            && abs((float) ($snapshot['totals']['expense'] ?? 0) - $r['totals']['expense']) < 0.01
+            && $balances($snapshot['balances'] ?? []) === $balances($live);
+
+        return $same ? null : ['income' => (float) ($snapshot['totals']['income'] ?? 0), 'expense' => (float) ($snapshot['totals']['expense'] ?? 0)];
+    }
+
     public function render(FinanceReports $reports, Closings $closings)
     {
         $organization = current_organization();
@@ -37,9 +57,12 @@ class Reports extends Component
         $first = $closings->firstMonth($organization);
         $current = FiscalYear::current($organization);
 
+        $r = $reports->period($organization, $from, $to);
+
         return view('livewire.finances.reports', [
-            'r' => $reports->period($organization, $from, $to),
+            'r' => $r,
             'closing' => $closing,
+            'drift' => $this->drift($closing, $r),
             'title' => $title,
             'years' => collect(range(max($current, $this->year), min($first ? FiscalYear::of($organization, $first) : $current, $this->year)))
                 ->mapWithKeys(fn ($y) => [$y => FiscalYear::label($organization, $y)])->all(),

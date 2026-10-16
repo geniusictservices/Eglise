@@ -29,8 +29,9 @@ class Pledges
     {
         $on ??= today();
         $promised = BigDecimal::of((string) $pledge->amount);
-        $paid = BigDecimal::of((string) ($pledge->payments()->valid()->sum('pledge_amount') ?: '0'));
-        $delivered = BigDecimal::of((string) ($pledge->deliveries()->sum('value') ?: '0'));
+        // Les sommes préchargées par withSum() évitent deux requêtes par promesse dans les listes.
+        $paid = BigDecimal::of((string) (($pledge->getAttributes()['paid_sum'] ?? $pledge->payments()->valid()->sum('pledge_amount')) ?: '0'));
+        $delivered = BigDecimal::of((string) (($pledge->getAttributes()['delivered_sum'] ?? $pledge->deliveries()->sum('value')) ?: '0'));
         $received = $paid->plus($delivered);
         $remaining = $promised->minus($received);
         $remaining = $remaining->isNegative() ? BigDecimal::zero() : $remaining;
@@ -49,6 +50,35 @@ class Pledges
             'percent' => $promised->isZero() ? 100 : min(100, (int) round((float) (string) $received->dividedBy($promised, 4, RoundingMode::HalfUp) * 100)),
             'next_due' => $nextDue,
         ];
+    }
+
+    /**
+     * L'échéancier : date et montant de chaque échéance, cumul attendu, honorée ou en retard.
+     * Les parts sont arrondies vers le bas et la dernière prend le solde, comme dans expected().
+     *
+     * @return list<array{date: Carbon, amount: BigDecimal, cumulative: BigDecimal, paid: bool, late: bool}>
+     */
+    public function schedule(Pledge $pledge, BigDecimal $received, ?Carbon $on = null): array
+    {
+        if ($pledge->frequency === 'once') {
+            return [];
+        }
+        $on ??= today();
+        $first = ($pledge->first_due_on ?? $pledge->pledged_on)->copy();
+        $count = max(1, (int) $pledge->installments);
+        $amount = BigDecimal::of((string) $pledge->amount);
+        $each = $amount->dividedBy($count, 2, RoundingMode::Down);
+        $rows = [];
+        $cumulative = BigDecimal::zero();
+        for ($i = 0; $i < $count; $i++) {
+            $date = $pledge->frequency === 'weekly' ? $first->copy()->addWeeks($i) : $first->copy()->addMonthsNoOverflow($i);
+            $part = $i === $count - 1 ? $amount->minus($cumulative) : $each;
+            $cumulative = $cumulative->plus($part);
+            $rows[] = ['date' => $date, 'amount' => $part, 'cumulative' => $cumulative,
+                'paid' => $received->isGreaterThanOrEqualTo($cumulative), 'late' => $date->lt($on) && $received->isLessThan($cumulative)];
+        }
+
+        return $rows;
     }
 
     /** Montant attendu à une date selon les échéances, et la prochaine échéance. */
@@ -168,9 +198,6 @@ class Pledges
 
     private function defaultCategory(Pledge $pledge): int
     {
-        return FinanceCategory::withoutOrganizationScope()->firstOrCreate(
-            ['organization_id' => $pledge->organization_id, 'type' => 'income', 'name' => 'Promesses et projets'],
-            ['nature' => 'personal', 'position' => 50],
-        )->id;
+        return FinanceCategory::system($pledge->organization_id, 'pledges')->id;
     }
 }

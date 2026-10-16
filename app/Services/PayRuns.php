@@ -171,8 +171,7 @@ class PayRuns
     {
         $this->expect($run, 'approved');
         $run->loadMissing('organization');
-        $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(
-            ['organization_id' => $run->organization_id, 'type' => 'expense', 'name' => 'Rémunérations et motivations'], ['position' => 50])->id;
+        $category = FinanceCategory::system($run->organization_id, 'salaries')->id;
 
         return DB::transaction(function () use ($run, $slipCurrency, $account, $payCurrency, $category) {
             // Relue sous verrou : deux clics sur « Payer » ne paient pas deux fois.
@@ -234,7 +233,8 @@ class PayRuns
             $kept[] = ['amount' => $amount] + $a;
         }
         if ($given > 0.004) {
-            $slip->update(['advance_total' => round((float) $slip->advance_total - $given, 2), 'deductions' => round((float) $slip->deductions - $given, 2),
+            // La part d'avance finalement non retenue revient au net ; les retenues, elles, n'ont jamais contenu les avances.
+            $slip->update(['advance_total' => round((float) $slip->advance_total - $given, 2),
                 'net' => round((float) $slip->net + $given, 2), 'details' => ['advances' => $kept] + ($slip->details ?? [])]);
         }
     }

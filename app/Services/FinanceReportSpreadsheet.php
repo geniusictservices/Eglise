@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\FinanceClosing;
 use App\Models\Organization;
+use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
@@ -13,6 +14,8 @@ class FinanceReportSpreadsheet
     public function build(Organization $organization, array $r, ?FinanceClosing $closing): Spreadsheet
     {
         $book = new Spreadsheet;
+        // Un nom de catégorie ou de compte qui commence par « = » doit rester un texte, pas devenir une formule.
+        $book->setValueBinder((new StringValueBinder)->setNumericConversion(true)->setNullConversion(true));
         $book->getProperties()->setCreator('Waumini')->setTitle(__('Rapport financier'));
 
         $sheet = $book->getActiveSheet()->setTitle(__('Synthèse'));

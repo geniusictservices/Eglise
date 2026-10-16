@@ -141,18 +141,8 @@ class Show extends Component
         $this->pledge->refresh()->load(['project', 'member', 'household', 'department']);
         $progress = $pledges->progress($this->pledge);
 
-        // Échéancier : date, montant attendu, cumul, honorée ou non.
-        $schedule = [];
-        if ($this->pledge->frequency !== 'once') {
-            $each = (float) $this->pledge->amount / max(1, $this->pledge->installments);
-            $first = $this->pledge->first_due_on ?? $this->pledge->pledged_on;
-            $received = (float) (string) $progress['received'];
-            for ($i = 0; $i < $this->pledge->installments; $i++) {
-                $date = $this->pledge->frequency === 'weekly' ? $first->copy()->addWeeks($i) : $first->copy()->addMonthsNoOverflow($i);
-                $cumul = $each * ($i + 1);
-                $schedule[] = ['date' => $date, 'amount' => $each, 'paid' => $received + 0.009 >= $cumul, 'late' => $date->lt(today()) && $received + 0.009 < $cumul];
-            }
-        }
+        // Échéancier : date, montant attendu, cumul, honorée ou non — le même calcul que le montant attendu.
+        $schedule = $pledges->schedule($this->pledge, $progress['received']);
 
         return view('livewire.finances.pledges.show', [
             'progress' => $progress,

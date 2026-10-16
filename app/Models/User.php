@@ -107,6 +107,18 @@ class User extends Authenticatable implements PasskeyUser
         return $this->assignmentsCovering($organization)->contains(fn (RoleAssignment $a) => $a->role->grants($permission));
     }
 
+    /** Toutes les permissions de l'utilisateur dans cette organisation, le joker développé. */
+    public function permissionsIn(Organization $organization): array
+    {
+        return $this->assignmentsCovering($organization)->flatMap(fn (RoleAssignment $a) => $a->role->grantedPermissions())->unique()->values()->all();
+    }
+
+    /** L'utilisateur est-il administrateur (toutes les permissions) de cette organisation ? */
+    public function isAdministratorOf(Organization $organization): bool
+    {
+        return $this->is_active && $this->assignmentsCovering($organization)->contains(fn (RoleAssignment $a) => $a->role->isAdministrator());
+    }
+
     /** Membre de l'équipe Genius ICT ayant cette permission de l'espace d'administration. */
     public function hasPlatformPermission(string $permission): bool
     {

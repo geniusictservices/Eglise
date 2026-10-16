@@ -26,7 +26,7 @@ use InvalidArgumentException;
  */
 class ProjectNetwork
 {
-    public const SENT_CATEGORY = 'Versements au siège pour les projets';
+    public const SENT_CATEGORY = 'Versements au siège pour les projets'; // nom proposé ; le code système est « project_remittance »
 
     public function __construct(private Projects $projects, private Ledger $ledger, private ExchangeRateService $rates, private Notifier $notifier) {}
 
@@ -154,7 +154,7 @@ class ProjectNetwork
                 throw new InvalidArgumentException(__('La paroisse n’a que :m collectés pour ce projet, pas encore versés.', ['m' => Money::format($held, 'USD')]));
             }
 
-            $category = FinanceCategory::withoutOrganizationScope()->firstOrCreate(['organization_id' => $organization->id, 'type' => 'expense', 'name' => self::SENT_CATEGORY], ['position' => 96]);
+            $category = FinanceCategory::system($organization->id, 'project_remittance');
             $expense = $this->ledger->record($account, $currency, 'expense', ['amount' => $amount, 'category_id' => $category->id, 'project_id' => $relay->id,
                 'description' => __('Versement à :o : :p', ['o' => $parent->organization->displayName(), 'p' => $parent->name]), 'external_reference' => $reference]);
             $remittance = ProjectRemittance::create(['project_id' => $relay->id, 'parent_project_id' => $parent->id,

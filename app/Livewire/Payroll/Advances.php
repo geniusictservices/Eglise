@@ -93,6 +93,7 @@ class Advances extends Component
     public function pay(SalaryAdvances $advances): void
     {
         $this->authorizeWrite('payroll.manage');
+        $this->authorizeWrite('finance.disburse');
         $this->validate(['accountId' => ['required', Rule::exists('cash_accounts', 'id')->where('organization_id', $this->organization()->id)->where('is_active', true)], 'payCurrency' => 'required|size:3'],
             attributes: ['accountId' => __('compte')]);
         try {

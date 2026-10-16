@@ -3,6 +3,7 @@
 namespace App\Livewire\Profile;
 
 use App\Services\AuditLogger;
+use App\Support\Sessions;
 use App\Support\UserPhoto;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -100,6 +101,8 @@ class Edit extends Component
 
         $wasForced = $user->must_change_password;
         $user->forceFill(['password' => $this->password, 'must_change_password' => false])->save();
+        // Les autres appareils connectés avec l'ancien mot de passe sont déconnectés.
+        Sessions::revoke($user, session()->getId());
         $this->reset('currentPassword', 'password', 'passwordConfirmation');
 
         if ($wasForced) {

@@ -28,7 +28,7 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, intl, pdo_mysql, zip, gd
+          extensions: mbstring, intl, pdo_mysql, zip, gd, sodium, gmp
           coverage: none
 
       - uses: actions/setup-node@v4
@@ -51,6 +51,11 @@ jobs:
 
       - name: Style du code (Pint)
         run: vendor/bin/pint --test
+
+      - name: Dépendances vulnérables
+        run: |
+          composer audit --locked
+          npm audit --omit=dev
 
       - name: Tests
         env:

@@ -300,7 +300,7 @@ class Show extends Component
             'canRemit' => $this->record->isRelay() && Gate::allows('finance.disburse') && ! $organization->isReadOnly(),
             'p' => $this->record,
             'totals' => $totals = $projects->totals($this->record),
-            'progress' => $projects->progressOf($this->record, $totals),
+            'progress' => $projects->progressOf($this->record, $totals, sync: ! $organization->isReadOnly()),
             'history' => $this->tab === 'avancement' ? ProjectIndicatorValue::with(['indicator', 'user'])
                 ->whereHas('indicator', fn ($q) => $q->where('project_id', $this->record->id))->latest('measured_on')->latest('id')->limit(50)->get() : collect(),
             'measured' => $this->measureId ? ProjectIndicator::where('project_id', $this->record->id)->find($this->measureId) : null,

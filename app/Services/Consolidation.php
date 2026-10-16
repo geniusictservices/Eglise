@@ -22,8 +22,8 @@ class Consolidation
     /** Au-delà, une paroisse sans nouvelle opération est signalée. */
     public const LATE_DAYS = 14;
 
-    /** Les catégories des quotes-parts : un mouvement interne au réseau, retiré des totaux consolidés. */
-    public const QUOTA_CATEGORIES = ['Quotes-parts reçues', 'Quote-part versée au niveau supérieur'];
+    /** Les catégories des quotes-parts (codes système) : un mouvement interne au réseau, retiré des totaux consolidés. */
+    public const QUOTA_CATEGORIES = ['quota_received', 'quota_sent'];
 
     /**
      * Une ligne par niveau directement en dessous (ou le niveau lui-même s'il n'en a pas),
@@ -50,14 +50,17 @@ class Consolidation
     public function figures(Organization $unit, Carbon $from, Carbon $to, bool $own = false): array
     {
         $ids = $own ? [$unit->id] : Organization::query()->subtreeOf($unit)->pluck('id')->all();
-        $quota = FinanceCategory::withoutOrganizationScope()->whereIn('organization_id', $ids)->whereIn('name', self::QUOTA_CATEGORIES)->pluck('id');
+        $quota = FinanceCategory::systemIds($ids, self::QUOTA_CATEGORIES);
         $moves = FinanceTransaction::withoutOrganizationScope()->valid()->whereIn('organization_id', $ids)
             ->whereBetween('occurred_on', [$from->toDateString(), $to->toDateString()])->whereIn('type', ['income', 'expense'])
             ->when($quota->isNotEmpty(), fn ($q) => $q->where(fn ($q) => $q->whereNull('category_id')->orWhereNotIn('category_id', $quota)))
             // Les versements des paroisses au siège pour un projet : un mouvement interne, comme les quotes-parts.
             ->whereNotIn('id', ProjectRemittance::query()->whereNotNull('expense_transaction_id')->select('expense_transaction_id'))
             ->whereNotIn('id', ProjectRemittance::query()->whereNotNull('income_transaction_id')->select('income_transaction_id'))
-            ->selectRaw('type, sum(usd_amount) as usd')->groupBy('type')->pluck('usd', 'type');
+            ->selectRaw("case when expense_request_id is not null and type = 'income' then 'advance_return' else type end as kind, sum(usd_amount) as usd")
+            ->groupBy('kind')->pluck('usd', 'kind');
+        // Le reste d'une avance rendu en caisse n'est pas une recette : il réduit la dépense.
+        $moves['expense'] = (float) ($moves['expense'] ?? 0) - (float) ($moves['advance_return'] ?? 0);
         $members = Member::withoutOrganizationScope()->whereIn('organization_id', $ids)
             ->where(fn ($q) => $q->whereNull('status_id')->orWhereHas('status', fn ($q) => $q->where('counts_as_member', true)));
         $last = $this->lastEntry($ids);

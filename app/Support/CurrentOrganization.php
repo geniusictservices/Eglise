@@ -17,6 +17,11 @@ class CurrentOrganization
     public function set(?Organization $organization): void
     {
         $this->organization = $organization;
+        // « Aujourd'hui » est celui de la communauté : une église de Kinshasa ou de Nairobi n'a pas l'heure de Lubumbashi.
+        $timezone = $organization?->timezone ?: config('app.timezone');
+        if ($timezone && in_array($timezone, timezone_identifiers_list(), true)) {
+            date_default_timezone_set($timezone);
+        }
     }
 
     public function get(): ?Organization

@@ -6,13 +6,13 @@ use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\BudgetOverrun;
 use App\Models\CashAccount;
 use App\Models\PayRun;
-use App\Models\PaySlip;
 use App\Services\BudgetControl;
 use App\Services\Ledger;
 use App\Services\PayRuns;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use InvalidArgumentException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /** Une paie : les bulletins, puis présentation, approbation et paiement. */
@@ -25,6 +25,7 @@ class Run extends Component
     /** Prestations saisies, bulletin par bulletin. */
     public array $quantities = [];
 
+    #[Locked]
     public ?int $slipId = null;
 
     public array $adjustment = ['label' => '', 'kind' => 'earning', 'amount' => ''];
@@ -132,6 +133,7 @@ class Run extends Component
     public function pay(PayRuns $runs, string $currency): void
     {
         $this->authorizeWrite('payroll.manage');
+        $this->authorizeWrite('finance.disburse');
         $choice = $this->payment[$currency] ?? [];
         $this->validate([
             "payment.$currency.account" => ['required', Rule::exists('cash_accounts', 'id')->where('organization_id', $this->organization()->id)->where('is_active', true)],
@@ -213,7 +215,7 @@ class Run extends Component
 
         // Le paiement : pour chaque devise de bulletins, un compte et la devise à payer.
         $balances = $run->status === 'approved' ? $ledger->balances($organization) : collect();
-        foreach ($run->slips->whereNull('paid_at')->where('net', '>', 0)->pluck('currency')->unique() as $currency) {
+        foreach ($run->slips->whereNull('paid_at')->filter(fn ($s) => (float) $s->net > 0 || (float) $s->advance_total > 0)->pluck('currency')->unique() as $currency) {
             if (! isset($this->payment[$currency])) {
                 $best = $balances->firstWhere('currency', $currency) ?? $balances->first();
                 $this->payment[$currency] = ['account' => (string) ($best['account']->id ?? ''), 'currency' => $best['currency'] ?? $currency];
@@ -238,7 +240,7 @@ class Run extends Component
             'canDecideOverrun' => $writable && Gate::allows('budget.authorize'),
             'totals' => $run->totals(),
             'balances' => $balances,
-            'slip' => $this->slipId ? PaySlip::with('payee')->find($this->slipId) : null,
+            'slip' => $this->slipId ? $this->run->slips()->with('payee')->find($this->slipId) : null,
             'canEdit' => $this->canEdit(),
             'canApprove' => $writable && $run->status === 'submitted' && Gate::allows('payroll.approve') && $run->submitted_by !== auth()->id(),
             'canPay' => $writable && $run->status === 'approved' && Gate::allows('payroll.manage'),

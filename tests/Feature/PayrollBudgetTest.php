@@ -85,18 +85,20 @@ class PayrollBudgetTest extends TestCase
 
         LivewireTest::test(Livewire\Budget\Version::class, ['budget' => $budget])->call('importPayroll')->assertHasNoErrors();
 
-        $lines = $budget->lines()->whereNotNull('payee_id')->get();
+        $lines = $budget->lines()->with('payee.member')->whereNotNull('payee_id')->get();
         $this->assertCount(2, $lines);
         // Pasteur : (250 + 50) × 12 = 3 600 $ ; sentinelle : (168 000 + 33 600) × 12 / 2 800 = 864 $.
-        $this->assertSame('3600.00', (string) $lines->firstWhere('label', 'Paie : Pasteur titulaire (Pasteur)')->amount);
-        $this->assertSame('864.00', (string) $lines->firstWhere('label', 'Paie : Sentinelle')->amount);
+        // Le libellé ne nomme personne : le nom du bénéficiaire ne s'affiche qu'à qui voit la paie.
+        $this->assertSame('3600.00', (string) $lines->firstWhere('label', 'Paie : Pasteur titulaire')->amount);
+        $this->assertSame('864.00', (string) $lines->sortBy('amount')->first()->amount);
+        $this->assertStringContainsString('Sentinelle', $lines->sortBy('amount')->first()->displayLabel());
         $this->assertSame($this->salaries, $lines->first()->category_id);
 
         // Reprendre une deuxième fois met à jour, sans doubler.
         Payee::where('name', 'Pasteur')->update(['base_amount' => 300]);
         app(Budgets::class)->importPayroll($budget);
         $this->assertSame(2, $budget->lines()->whereNotNull('payee_id')->count());
-        $this->assertSame('4320.00', (string) $budget->lines()->where('label', 'Paie : Pasteur titulaire (Pasteur)')->value('amount'));
+        $this->assertSame('4320.00', (string) $budget->lines()->where('label', 'Paie : Pasteur titulaire')->value('amount'));
     }
 
     public function test_payroll_beyond_the_salary_budget_needs_an_authorized_overrun(): void

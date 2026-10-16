@@ -104,9 +104,9 @@ class Form extends Component
         $this->validate([
             'projectId' => ['nullable', Rule::exists('projects', 'id')->where('organization_id', $this->organization()->id)],
             'pledgerType' => 'required|in:member,household,department,other',
-            'memberId' => [Rule::requiredIf($this->pledgerType === 'member')],
-            'householdId' => [Rule::requiredIf($this->pledgerType === 'household')],
-            'departmentId' => [Rule::requiredIf($this->pledgerType === 'department')],
+            'memberId' => [Rule::requiredIf($this->pledgerType === 'member'), 'nullable', Rule::exists('members', 'id')->where('organization_id', $this->organization()->id)],
+            'householdId' => [Rule::requiredIf($this->pledgerType === 'household'), 'nullable', Rule::exists('households', 'id')->where('organization_id', $this->organization()->id)],
+            'departmentId' => [Rule::requiredIf($this->pledgerType === 'department'), 'nullable', Rule::exists('departments', 'id')->where('organization_id', $this->organization()->id)],
             'pledgerName' => [Rule::requiredIf($this->pledgerType === 'other'), 'nullable', 'string', 'max:150'],
             'pledgerPhone' => ['nullable', 'string', 'max:25', fn ($a, $v, $fail) => $v && ! Phone::normalize($v) ? $fail(__('Ce numéro de téléphone n’est pas valide.')) : null],
             'kind' => 'required|in:money,in_kind',

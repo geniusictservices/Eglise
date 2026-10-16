@@ -101,13 +101,19 @@ class Index extends Component
         $organization = $this->organization()->loadMissing('parent');
         $periods = collect(range(5, 0))->map(fn ($i) => now()->startOfMonth()->subMonths($i)->format('Y-m'));
         $children = $organization->children()->orderBy('name')->get();
+        // Les mois impayés plus anciens que les six derniers restent visibles, et se versent comme les autres.
+        $arrears = $quotas->arrears($organization);
+        $ownPeriods = collect($arrears['periods'])->merge($periods)->unique()->sort()->values();
+        $withRule = $children->isNotEmpty() && $quotas->rule($organization);
 
         return view('livewire.quotas.index', [
             'parent' => $organization->parent,
             'parentRule' => $organization->parent ? $quotas->rule($organization->parent) : null,
-            'owed' => $periods->reverse()->map(fn ($p) => $quotas->owed($organization, $p))->filter()->values(),
+            'owed' => $ownPeriods->reverse()->map(fn ($p) => $quotas->owed($organization, $p))->filter()->values(),
+            'arrears' => $arrears,
+            'childArrears' => $withRule ? $children->mapWithKeys(fn ($c) => [$c->id => $quotas->arrears($c)]) : collect(),
             'children' => $children,
-            'grid' => $children->isNotEmpty() && $quotas->rule($organization)
+            'grid' => $withRule
                 ? $children->mapWithKeys(fn ($c) => [$c->id => $periods->slice(-3)->mapWithKeys(fn ($p) => [$p => $quotas->owed($c, $p)])])
                 : collect(),
             'gridPeriods' => $periods->slice(-3),

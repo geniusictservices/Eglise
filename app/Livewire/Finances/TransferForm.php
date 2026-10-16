@@ -51,6 +51,7 @@ class TransferForm extends Component
             ->join('cash_accounts', 'cash_accounts.id', '=', 'cash_account_currencies.cash_account_id')
             ->where('cash_accounts.organization_id', $this->organization()->id)
             ->where('cash_accounts.is_active', true)->where('cash_account_currencies.is_active', true)
+            ->whereIn('cash_account_currencies.currency', app(Ledger::class)->currencies($this->organization()))
             ->orderBy('cash_accounts.position')->orderBy('cash_accounts.name')->orderByRaw("currency = 'USD' DESC")
             ->get(['cash_accounts.id as account_id', 'cash_accounts.name', 'cash_account_currencies.currency'])
             ->mapWithKeys(fn ($r) => [$r->account_id.':'.$r->currency => $r->name.' · '.$r->currency])->all();

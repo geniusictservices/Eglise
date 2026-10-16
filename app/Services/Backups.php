@@ -42,9 +42,12 @@ class Backups
                 $zip->setPassword($password);
             }
             $add = function (string $file, string $entry) use ($zip, $password) {
-                $zip->addFile($file, $entry);
-                if ($password !== '') {
-                    $zip->setEncryptionName($entry, ZipArchive::EM_AES_256);
+                if (! $zip->addFile($file, $entry)) {
+                    throw new RuntimeException("Impossible d'ajouter {$entry} à l'archive.");
+                }
+                // Sans chiffrement effectif, l'archive sortirait en clair alors que l'écran la dirait chiffrée.
+                if ($password !== '' && ! $zip->setEncryptionName($entry, ZipArchive::EM_AES_256)) {
+                    throw new RuntimeException('Le chiffrement AES-256 des archives n’est pas disponible sur ce serveur (libzip trop ancienne).');
                 }
             };
             $add($sql, 'database.sql');
@@ -92,14 +95,20 @@ class Backups
     private function copyToRemote(string $path, string $name): void
     {
         $disk = config('waumini.backups.disk');
-        if ($disk) {
-            Storage::disk($disk)->putFileAs('waumini', new \Illuminate\Http\File($path), $name);
+        if ($disk && ! Storage::disk($disk)->putFileAs('waumini', new \Illuminate\Http\File($path), $name)) {
+            throw new RuntimeException("La copie de la sauvegarde sur le disque « {$disk} » a échoué.");
         }
     }
 
     private function dumpDatabase(string $file): void
     {
         $pdo = DB::connection()->getPdo();
+        // Toutes les tables lues au même instant : une écriture pendant la sauvegarde ne laisse pas de lignes orphelines.
+        $snapshot = ! $pdo->inTransaction();
+        if ($snapshot) {
+            $pdo->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+            $pdo->exec('START TRANSACTION WITH CONSISTENT SNAPSHOT');
+        }
         $out = fopen($file, 'w');
         fwrite($out, '-- Waumini · sauvegarde du '.now()->toDateTimeString()."\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n");
         foreach (DB::select('SHOW FULL TABLES WHERE Table_type = "BASE TABLE"') as $row) {
@@ -123,6 +132,9 @@ class Backups
             fwrite($out, "\n");
         }
         fwrite($out, "SET FOREIGN_KEY_CHECKS=1;\n");
+        if ($snapshot) {
+            $pdo->exec('COMMIT');
+        }
         fclose($out);
     }
 }

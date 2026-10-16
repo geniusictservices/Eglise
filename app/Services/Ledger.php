@@ -14,6 +14,7 @@ use App\Models\Pledge;
 use App\Models\ProjectRemittance;
 use App\Models\QuotaPayment;
 use App\Models\SalaryAdvance;
+use App\Support\Money;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use Illuminate\Support\Carbon;
@@ -89,6 +90,16 @@ class Ledger
         }
     }
 
+    /** Une opération ne se date pas d'avant l'ouverture de la devise dans le compte. */
+    public function assertOpened(CashAccount $account, string $currency, Carbon $on): void
+    {
+        $opened = CashAccountCurrency::where('cash_account_id', $account->id)->where('currency', $currency)->value('opened_on');
+        if ($opened && $on->lt(Carbon::parse($opened)->startOfDay())) {
+            throw new InvalidArgumentException(__(':account ne tenait pas encore de :currency le :d (ouvert le :o).', [
+                'account' => $account->name, 'currency' => $currency, 'd' => $on->translatedFormat('j M Y'), 'o' => Carbon::parse($opened)->translatedFormat('j M Y')]));
+        }
+    }
+
     /**
      * Enregistre un mouvement simple (recette ou dépense).
      *
@@ -104,6 +115,7 @@ class Ledger
         return DB::transaction(function () use ($account, $currency, $type, $data) {
             $on = Carbon::parse($data['occurred_on'] ?? today());
             FinanceClosing::assertOpen($account->organization_id, $on);
+            $this->assertOpened($account, $currency, $on);
             $amount = $this->amount($data['amount'], $currency);
 
             // La ligne de la devise sous verrou : deux sorties simultanées ne mettent pas la caisse en négatif.
@@ -144,8 +156,13 @@ class Ledger
 
         $on ??= today();
         FinanceClosing::assertOpen($from->organization_id, $on);
+        $this->assertOpened($from, $fromCurrency, $on);
+        $this->assertOpened($to, $toCurrency, $on);
         $out = $this->amount($amountOut, $fromCurrency);
         $in = $exchange ? $this->amount($amountIn ?? throw new InvalidArgumentException(__('Indiquez le montant reçu.')), $toCurrency) : $out;
+        if ($exchange) {
+            $this->assertFairExchange($from->loadMissing('organization')->organization, $out, $fromCurrency, $in, $toCurrency, $on);
+        }
 
         return DB::transaction(function () use ($from, $fromCurrency, $to, $toCurrency, $out, $in, $exchange, $description, $on) {
             CashAccountCurrency::where('cash_account_id', $from->id)->where('currency', $fromCurrency)->lockForUpdate()->first();
@@ -155,7 +172,7 @@ class Ledger
 
             $group = (string) Str::uuid();
             $label = $description ?: ($exchange
-                ? __('Change :from → :to', ['from' => $fromCurrency, 'to' => $toCurrency]).($from->is($to) ? '' : ' · '.$from->name.' → '.$to->name)
+                ? __('Change :from → :to', ['from' => $fromCurrency, 'to' => $toCurrency]).($from->is($to) ? '' : ' · '.$from->name.' → '.$to->name).$this->practisedRate($out, $fromCurrency, $in, $toCurrency)
                 : __('Virement de :from vers :to', ['from' => $from->name, 'to' => $to->name]));
 
             $legOut = FinanceTransaction::create($this->values($from, $fromCurrency, $exchange ? 'exchange_out' : 'transfer_out', $out, $on)
@@ -165,6 +182,46 @@ class Ledger
 
             return [$legOut, $legIn];
         });
+    }
+
+    /** « (1 $ = 2 850 FC) » : le taux réellement pratiqué, quand l'un des deux côtés est en dollars. */
+    private function practisedRate(BigDecimal $out, string $fromCurrency, BigDecimal $in, string $toCurrency): string
+    {
+        $base = config('waumini.base_currency');
+        if ($fromCurrency !== $base && $toCurrency !== $base) {
+            return '';
+        }
+        [$usd, $other, $currency] = $fromCurrency === $base ? [$out, $in, $toCurrency] : [$in, $out, $fromCurrency];
+        if ($usd->isZero()) {
+            return '';
+        }
+
+        return ' ('.__('1 $ = :r', ['r' => Money::format($other->dividedBy($usd, 2, RoundingMode::HalfUp), $currency)]).')';
+    }
+
+    /**
+     * Un change dont le montant reçu s'éloigne trop du taux officiel du jour fait sortir de l'argent
+     * sans aucune seconde signature : au-delà de la tolérance (réglage finance.exchange_tolerance,
+     * en pour cent), l'opération est refusée et le montant attendu est indiqué.
+     */
+    private function assertFairExchange(Organization $organization, BigDecimal $out, string $fromCurrency, BigDecimal $in, string $toCurrency, Carbon $on): void
+    {
+        $tolerance = (float) config('waumini.finance.exchange_tolerance', 10);
+        $rateOut = $this->rates->rate($organization, $fromCurrency, $on);
+        $rateIn = $this->rates->rate($organization, $toCurrency, $on);
+        if ($tolerance <= 0 || ! $rateOut || ! $rateIn) {
+            return;
+        }
+        $expected = $out->dividedBy($rateOut, 8, RoundingMode::HalfUp)->multipliedBy($rateIn);
+        if ($expected->isZero()) {
+            return;
+        }
+        $gap = $in->minus($expected)->abs()->dividedBy($expected, 6, RoundingMode::HalfUp)->multipliedBy(100);
+        if ($gap->isGreaterThan((string) $tolerance)) {
+            throw new InvalidArgumentException(__('Au taux du jour, :out donnent environ :expected. Le montant reçu s’en écarte de plus de :t % : vérifiez-le, ou corrigez d’abord le taux du jour.', [
+                'out' => Money::format($out, $fromCurrency), 'expected' => Money::format($expected, $toCurrency), 't' => rtrim(rtrim(number_format($tolerance, 1, ',', ' '), '0'), ','),
+            ]));
+        }
     }
 
     /**
@@ -213,6 +270,9 @@ class Ledger
      */
     public function cancel(FinanceTransaction $transaction, string $reason, bool $fromOwner = false): void
     {
+        if ($transaction->cancelled_at !== null) {
+            throw new InvalidArgumentException(__('Cette opération est déjà annulée.'));
+        }
         if (! $fromOwner && ($owner = $this->owner($transaction))) {
             throw new InvalidArgumentException($owner);
         }
@@ -224,11 +284,11 @@ class Ledger
                 ? FinanceTransaction::withoutOrganizationScope()->where('group_uuid', $transaction->group_uuid)->get()
                 : collect([$transaction]);
 
-            // Retirer une entrée d'argent ne doit pas laisser une caisse en négatif.
+            // Retirer une entrée d'argent ne doit laisser la caisse en négatif ni aujourd'hui ni à aucune date depuis l'entrée.
             foreach ($legs->filter(fn ($leg) => in_array($leg->type, ['income', 'transfer_in', 'exchange_in'], true)) as $leg) {
                 $account = CashAccount::withoutOrganizationScope()->findOrFail($leg->cash_account_id);
                 CashAccountCurrency::where('cash_account_id', $account->id)->where('currency', $leg->currency)->lockForUpdate()->first();
-                if ($this->balance($account, $leg->currency)->isLessThan(BigDecimal::of((string) $leg->amount))) {
+                if ($this->lowestFrom($account, $leg->currency, $leg->occurred_on)->isLessThan(BigDecimal::of((string) $leg->amount))) {
                     throw new InvalidArgumentException(__('Impossible : :account n’a plus ces :currency (l’argent a déjà été dépensé ou viré).', ['account' => $account->name, 'currency' => $leg->currency]));
                 }
             }
@@ -299,10 +359,10 @@ class Ledger
         }
 
         foreach (config('waumini.finance.income_categories') as $i => [$name, $nature]) {
-            FinanceCategory::create(['organization_id' => $organization->id, 'type' => 'income', 'name' => $name, 'nature' => $nature, 'position' => $i]);
+            FinanceCategory::create(['organization_id' => $organization->id, 'type' => 'income', 'code' => FinanceCategory::codeFor('income', $name), 'name' => $name, 'nature' => $nature, 'position' => $i]);
         }
         foreach (config('waumini.finance.expense_categories') as $i => $name) {
-            FinanceCategory::create(['organization_id' => $organization->id, 'type' => 'expense', 'name' => $name, 'position' => $i]);
+            FinanceCategory::create(['organization_id' => $organization->id, 'type' => 'expense', 'code' => FinanceCategory::codeFor('expense', $name), 'name' => $name, 'position' => $i]);
         }
     }
 }

@@ -36,6 +36,8 @@ Un compte qui ne sert plus se **ferme** (case *Compte ouvert* décochée) : il d
 
 ### Les catégories
 
+Un compte qui tient encore de l'argent ne se ferme pas : videz-le d'abord par un virement. Une opération ne se date pas d'avant l'ouverture de la devise dans le compte.
+
 Les onglets **Catégories de recettes** et **Catégories de dépenses** classent l'argent dans les rapports. Waumini en propose d'office (offrande du culte, dîme, action de grâce, don, promesses et projets ; loyer, électricité, transport, entretien, évangélisation, œuvres sociales…). Vous pouvez les renommer, en ajouter ou désactiver celles qui ne servent pas.
 
 Chaque catégorie de recette a une **nature** :
@@ -58,6 +60,8 @@ Chaque catégorie de recette a une **nature** :
 ② **La catégorie**. Selon sa nature, Waumini demande le membre (dîme), le département (contribution de groupe) ou rien (offrande collective). Une personne qui n'est pas membre peut être indiquée par son nom.
 
 ③ **Le montant**, la date et le moyen de paiement. Pour le mobile money, indiquez l'**ID de la transaction** : Waumini refuse un ID déjà enregistré, ce qui évite de compter deux fois le même paiement.
+
+Si le budget adopté attend cette catégorie de recette de **plusieurs départements** (des ventes de la jeunesse et de la chorale, par exemple), Waumini demande lequel la reçoit : le [suivi du budget](22-suivi-budget.md) la met alors au bon compte.
 
 Pour la collecte complète du culte (boîte, enveloppes, comptage des billets), utilisez plutôt la [feuille de collecte](17-collecte.md).
 
@@ -93,6 +97,8 @@ Le reçu porte le logo et l'**identité juridique** de l'église (dénomination,
 - Dès que la **devise change**, c'est un **change** : vous indiquez le montant donné et le montant reçu (par exemple 285 000 FC changés contre 100 $ au marché). Le taux réel du change apparaît dans le libellé.
 
 Un virement ou un change n'est ni une recette ni une dépense : il ne modifie pas le résultat du mois.
+
+Waumini compare le montant reçu au **taux du jour** saisi dans [Devises](07-devises.md) : s'il s'en écarte de plus de 10 %, le change est refusé et le montant attendu est indiqué. Vérifiez le montant, ou corrigez d'abord le taux du jour. Ainsi, un change à un taux fantaisiste ne fait pas sortir d'argent sans que personne le remarque.
 
 ## Les opérations
 

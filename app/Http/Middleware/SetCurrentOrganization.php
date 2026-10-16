@@ -36,7 +36,7 @@ class SetCurrentOrganization
                 return redirect()->route('admin.dashboard')->with('status', __('La communauté a retiré l’accès du support, ou il a expiré.'));
             }
             if (($granted = $support->organization($user)) && ! $request->routeIs('admin.*')) {
-                abort_unless($request->isMethodSafe() || $request->routeIs('livewire.*', 'logout', 'support.leave'), 403, __('Lecture seule : le support ne modifie rien.'));
+                abort_unless($request->isMethodSafe() || $request->routeIs('logout', 'support.leave') || $request->route()?->named('*livewire.update', '*livewire.upload-file'), 403, __('Lecture seule : le support ne modifie rien.'));
                 $organization = $user->currentOrganization && $support->covers($user, $user->currentOrganization) ? $user->currentOrganization : $granted;
                 $this->current->set($organization);
                 view()->share('currentOrganization', $organization);

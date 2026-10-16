@@ -6,7 +6,7 @@
 
 - **Feuille de route** : [docs/feuille-de-route.html](docs/feuille-de-route.html), aussi publiée en ligne
 - **Identité visuelle** : [branding/](branding/README.md)
-- **Manuel d'utilisation** : [docs/manuel/](docs/manuel/README.md)
+- **Manuel d'utilisation** : [docs/manuel/](docs/manuel/README.md), en HTML (ouvrir `docs/manuel/html/index.html`) et en PDF : [docs/manuel/manuel-waumini.pdf](docs/manuel/manuel-waumini.pdf)
 - **Déploiement sur LWS** : [docs/deploiement-lws.md](docs/deploiement-lws.md)
 - **Traductions** : [lang/a-traduire/](lang/a-traduire/LISEZMOI.md)
 

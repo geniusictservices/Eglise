@@ -46,8 +46,9 @@ class Role extends Model
         return in_array('*', $permissions, true) || in_array($permission, $permissions, true);
     }
 
+    /** Le joker, ou toutes les permissions cochées une à une : c'est la même chose. */
     public function isAdministrator(): bool
     {
-        return in_array('*', $this->permissions ?? [], true);
+        return in_array('*', $this->permissions ?? [], true) || array_diff(Permissions::all(), $this->permissions ?? []) === [];
     }
 }

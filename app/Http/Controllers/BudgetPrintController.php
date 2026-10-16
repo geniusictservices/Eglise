@@ -13,7 +13,7 @@ class BudgetPrintController extends Controller
     public function __invoke(Budget $budget, BudgetSources $sources)
     {
         abort_unless(Gate::any(['planning.view', 'budget.arbitrate', 'budget.approve']), 403);
-        $budget->load(['lines.department', 'lines.category', 'submitter', 'approver', 'organization']);
+        $budget->load(['lines.department', 'lines.category', 'lines.payee.member', 'submitter', 'approver', 'organization']);
         $organization = $budget->organization;
 
         return view('budget.print', [

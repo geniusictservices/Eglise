@@ -12,6 +12,11 @@
     "license": "proprietary",
     "require": {
         "php": "^8.3",
+        "ext-gd": "*",
+        "ext-intl": "*",
+        "ext-mbstring": "*",
+        "ext-pdo_mysql": "*",
+        "ext-zip": "*",
         "bacon/bacon-qr-code": "^3.1",
         "brick/money": "^0.15.2",
         "laravel/framework": "^13.17",

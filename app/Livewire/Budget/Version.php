@@ -223,7 +223,7 @@ class Version extends Component
 
     public function render(Budgets $budgets, BudgetSources $sources, Projects $projects, Pledges $pledges)
     {
-        $this->budget->refresh()->load(['lines.department', 'lines.category', 'lines.project', 'preparer', 'submitter', 'approver']);
+        $this->budget->refresh()->load(['lines.department', 'lines.category', 'lines.project', 'lines.payee.member', 'preparer', 'submitter', 'approver']);
         $organization = $this->organization();
         $lines = $this->budget->lines;
         $summary = $sources->summary($this->budget);

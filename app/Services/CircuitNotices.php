@@ -194,6 +194,17 @@ class CircuitNotices
     public function declarationReviewed(PaymentDeclaration $d): void
     {
         $this->notifier->settle("declaration.{$d->id}.*");
+        if (! $d->created_by || $d->source === 'staff') {
+            return;
+        }
+        $d->loadMissing(['organization', 'transaction']);
+        $validated = $d->status === 'validated';
+        $this->notifier->send($d->organization, $d->created_by, "declaration.{$d->id}.result", [
+            'title' => $validated ? __('Votre paiement est enregistré') : __('Votre paiement n’a pas été retrouvé'),
+            'body' => $validated
+                ? __(':m · reçu :n', ['m' => Money::format($d->amount, $d->currency), 'n' => $d->transaction?->receipt_number ?? '—'])
+                : __(':m · :r', ['m' => Money::format($d->amount, $d->currency), 'r' => $d->reject_reason ?: __('vérifiez l’ID de la transaction et déclarez-le à nouveau')]),
+            'url' => $validated && $d->transaction ? route('finances.receipt', $d->transaction) : route('member.space'), 'icon' => $validated ? 'circle-check' : 'triangle-alert']);
     }
 
     // ---------------------------------------------------------------------------------

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Une ligne du budget : département, catégorie, montant arrêté en dollars.
@@ -43,6 +44,21 @@ class BudgetLine extends Model
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class)->withoutGlobalScope('organization');
+    }
+
+    public function payee(): BelongsTo
+    {
+        return $this->belongsTo(Payee::class)->withoutGlobalScope('organization');
+    }
+
+    /** Le libellé à afficher : une ligne de paie ne nomme son bénéficiaire qu'à qui voit la paie. */
+    public function displayLabel(): string
+    {
+        if ($this->payee_id && Gate::allows('payroll.view') && $this->payee) {
+            return $this->label.' · '.$this->payee->displayName();
+        }
+
+        return $this->label;
     }
 
     public function isCarryover(): bool

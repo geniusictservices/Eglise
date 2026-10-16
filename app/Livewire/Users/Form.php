@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\OrganizationProvisioner;
 use App\Support\Phone;
+use App\Support\Sessions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -123,6 +124,9 @@ class Form extends Component
 
         if ($this->user) {
             $this->user->update($attributes);
+            if (! $this->isActive) {
+                Sessions::revoke($this->user);
+            }
             $this->notify(__('Modifications enregistrées.'));
 
             return;
@@ -137,6 +141,9 @@ class Form extends Component
         DB::transaction(function () use ($attributes) {
             $password = $this->makePassword();
             $user = User::create($attributes + ['password' => $password, 'must_change_password' => true]);
+            if ($this->organization()->root()->is_demo) {
+                $user->forceFill(['is_demo' => true])->save();
+            }
             $this->user = $user;
             $this->grantRole();
             $this->temporaryPassword = $password;
@@ -160,10 +167,14 @@ class Form extends Component
         $scope = Organization::query()->subtreeOf($this->organization())->findOrFail($this->scopeId);
         $role = Role::whereIn('organization_id', $scope->lineageIds())->findOrFail($this->roleId);
         abort_unless(auth()->user()->can('users.manage', $scope), 403);
+        abort_if($this->user->is(auth()->user()), 403, __('Vos propres rôles ne se modifient pas ici : demandez à un autre administrateur.'));
 
-        // Seul un administrateur peut nommer un administrateur.
+        // Seul un administrateur peut nommer un administrateur, et nul ne donne une permission qu'il n'a pas.
         if ($role->isAdministrator() && ! $this->isAdministratorOf($scope)) {
             abort(403, __('Seul un administrateur peut attribuer le rôle Administrateur.'));
+        }
+        if (! $this->isAdministratorOf($scope) && array_diff($role->grantedPermissions(), auth()->user()->permissionsIn($scope)) !== []) {
+            abort(403, __('Ce rôle donne des permissions que vous n’avez pas vous-même : seul un administrateur peut l’attribuer.'));
         }
 
         app(OrganizationProvisioner::class)->assign($this->user, $role, $scope, $this->includesDescendants);
@@ -179,6 +190,7 @@ class Form extends Component
         $this->authorizeWrite('users.manage');
         $assignment = $this->user->roleAssignments()->with(['role', 'organization'])->findOrFail($assignmentId);
         abort_unless($assignment->organization->isSelfOrDescendantOf($this->organization()), 404);
+        abort_if($this->user->is(auth()->user()), 403, __('Vos propres rôles ne se modifient pas ici : demandez à un autre administrateur.'));
 
         if ($assignment->role->isAdministrator()) {
             $others = RoleAssignment::where('organization_id', $assignment->organization_id)
@@ -202,6 +214,7 @@ class Form extends Component
         abort_unless($this->user && $this->canEditIdentity(), 403, __('Ce compte a aussi des rôles hors de votre communauté : seul son niveau supérieur peut changer son mot de passe.'));
         $password = $this->makePassword();
         $this->user->forceFill(['password' => $password, 'must_change_password' => true])->save();
+        Sessions::revoke($this->user);
         app(AuditLogger::class)->record('password_reset', $this->user, description: __('a réinitialisé le mot de passe de :name', ['name' => $this->user->name]));
         $this->temporaryPassword = $password;
     }

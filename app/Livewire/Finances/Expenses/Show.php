@@ -107,8 +107,10 @@ class Show extends Component
             'note' => 'nullable|string|max:500',
             'files.*' => 'file|max:8192|mimes:jpg,jpeg,png,webp,pdf',
         ], attributes: ['spent' => __('montant dépensé'), 'files.*' => __('pièce jointe')]);
-        $this->storeFiles('invoice');
-        $this->run(fn () => $expenses->justify($this->expense, $this->spent, trim($this->note) ?: null), __('Dépense justifiée.'), 'spent');
+        $this->run(function () use ($expenses) {
+            $expenses->justify($this->expense, $this->spent, trim($this->note) ?: null);
+            $this->storeFiles('invoice');
+        }, __('Dépense justifiée.'), 'spent');
     }
 
     /** Ajouter une pièce à tout moment (devis, facture, reçu, photo). */
@@ -140,7 +142,8 @@ class Show extends Component
         $paid = in_array($this->expense->status, ['disbursed', 'justified'], true);
         abort_unless(Gate::allows('finance.disburse') || (! $paid && $this->expense->requested_by === auth()->id()), 403);
         abort_if($this->organization()->isReadOnly(), 403, __('Cette communauté est en lecture seule.'));
-        $this->run(fn () => $expenses->cancel($this->expense), $paid ? __('Demande annulée : son décaissement est annulé et l’argent revient au compte.') : __('Demande annulée.'));
+        $this->validate(['reason' => 'required|string|min:5|max:500'], attributes: ['reason' => __('motif')]);
+        $this->run(fn () => $expenses->cancel($this->expense, trim($this->reason)), $paid ? __('Demande annulée : son décaissement est annulé et l’argent revient au compte.') : __('Demande annulée.'), 'reason');
     }
 
     public function askOverrun(BudgetControl $control): void

@@ -4,6 +4,7 @@ namespace App\Livewire\Currencies;
 
 use App\Livewire\Concerns\WritesInOrganization;
 use App\Models\ExchangeRate;
+use App\Models\FinanceTransaction;
 use App\Models\OrganizationCurrency;
 use App\Services\ExchangeRateService;
 use Illuminate\Support\Carbon;
@@ -18,6 +19,9 @@ class Index extends Component
 
     /** Taux saisis, par devise. */
     public array $rates = [];
+
+    /** @var array<string, bool> taux très différent du précédent, confirmé par l'utilisateur */
+    public array $confirm = [];
 
     public string $date = '';
 
@@ -45,10 +49,30 @@ class Index extends Component
             'date' => 'required|date|before_or_equal:today',
         ], attributes: ["rates.{$currency}" => __('taux'), 'date' => __('date')]);
 
-        $service->setRate($this->organization(), $currency, $value, Carbon::parse($this->date));
+        // 28,5 au lieu de 2 850 figerait des équivalents en dollars cent fois trop grands sur toutes les opérations du jour.
+        $previous = $service->rate($this->organization(), $currency, Carbon::parse($this->date));
+        if ($previous && empty($this->confirm[$currency])) {
+            $gap = abs((float) $value - (float) (string) $previous) / (float) (string) $previous * 100;
+            if ($gap > 50) {
+                $this->addError("rates.{$currency}", __('Ce taux s’écarte de :g % du taux connu (:p). Si c’est bien voulu, cochez « Je confirme » puis enregistrez.', ['g' => round($gap), 'p' => (string) $previous->strippedOfTrailingZeros()]));
+
+                return;
+            }
+        }
+        unset($this->confirm[$currency]);
+
+        $on = Carbon::parse($this->date);
+        $service->setRate($this->organization(), $currency, $value, $on);
         unset($this->rates[$currency]);
         $this->historyFor = $currency;
-        $this->notify(__('Taux du :currency enregistré.', ['currency' => $currency]));
+
+        // Les opérations déjà saisies sur la période de ce taux gardent le leur : leur équivalent en dollars est figé.
+        $next = ExchangeRate::where('currency', $currency)->whereDate('effective_on', '>', $on->toDateString())->min('effective_on');
+        $stale = FinanceTransaction::valid()->where('currency', $currency)->whereDate('occurred_on', '>=', $on->toDateString())
+            ->when($next, fn ($q) => $q->whereDate('occurred_on', '<', $next))->where('rate', '!=', $value)->count();
+        $this->notify($stale
+            ? trans_choice('Taux enregistré. :count opération déjà saisie garde l’ancien taux : son équivalent en dollars ne change pas. Pour la corriger, annulez-la et saisissez-la à nouveau.|Taux enregistré. :count opérations déjà saisies gardent l’ancien taux : leur équivalent en dollars ne change pas. Pour les corriger, annulez-les et saisissez-les à nouveau.', $stale)
+            : __('Taux du :currency enregistré.', ['currency' => $currency]), $stale ? 'error' : 'success');
     }
 
     public function addCurrency(): void

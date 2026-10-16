@@ -59,6 +59,11 @@ SESSION_SECURE_COOKIE=true
 CACHE_STORE=database
 QUEUE_CONNECTION=database
 
+# Journal : un fichier par jour, 14 jours gardés, seulement les avertissements et les erreurs
+LOG_CHANNEL=daily
+LOG_DAILY_DAYS=14
+LOG_LEVEL=warning
+
 # Notifications sur les téléphones (clés générées plus bas)
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=
@@ -100,7 +105,10 @@ Le chemin de PHP peut varier ; cPanel l'indique dans la page *Tâches Cron*. Cet
 | Chaque nuit, 2 h 15 | La **sauvegarde** de la base et des fichiers |
 | Chaque matin, 5 h | L'état des abonnements : fin d'essai, délai de grâce, lecture seule |
 | Chaque matin, 6 h 30 | Les anniversaires du jour, à l'équipe pastorale |
-| Chaque jour | Le ménage des sessions et jetons expirés |
+| Chaque matin, 7 h | Les avances à justifier : rappel deux jours avant, puis chaque semaine de retard |
+| Chaque jour | Le ménage : jetons de réinitialisation expirés, tâches en échec anciennes, nouveautés lues depuis 90 jours |
+
+Chaque tâche écrit ce qu'elle fait dans `storage/logs/schedule.log`, et un échec est inscrit dans le journal de l'application (`storage/logs/laravel-*.log`). Vérifier ces deux fichiers après l'installation, puis de temps en temps : le cron de l'hébergeur, lui, ne signale rien. Si `php -i | grep disable_functions` liste `proc_open`, rien ne change : la file d'attente tourne dans le processus du planificateur.
 
 ## 4 bis. Premier compte de l'équipe Genius ICT
 
@@ -109,6 +117,8 @@ L'espace d'administration (`https://waumini.com/admin`) est réservé à l'équi
 ```bash
 php artisan waumini:equipe 0812345678 "Prénom Nom"
 ```
+
+**Sans terminal**, la base se crée dans *phpMyAdmin* : sélectionner la base vide, onglet **Importer**, choisir `database/sql/installation.sql` (fourni dans l'archive), une seule fois. Il contient toutes les tables et note toutes les migrations comme faites. La clé `APP_KEY` et les clés VAPID se génèrent alors sur votre ordinateur (`php artisan key:generate --show`, `php artisan waumini:vapid`) et se copient dans `.env`. Le premier compte de l'équipe Genius ICT, lui, demande le *Terminal* de cPanel : aucun mot de passe n'est mis dans un fichier SQL.
 
 La commande affiche un mot de passe provisoire, à changer à la première connexion. Ensuite, les autres membres de l'équipe s'ajoutent depuis l'écran **Équipe Genius ICT**. Dans l'espace d'administration, renseigner tout de suite :
 
@@ -140,9 +150,11 @@ php artisan up
 
 Envoyer aussi le nouveau dossier `public/build` compilé.
 
-**Sans terminal (gestionnaire de fichiers du cPanel)** : extraire l'archive de mise à jour par-dessus l'installation (le fichier `.env` et le dossier `storage` restent en place ; `vendor` aussi, si `composer.lock` n'a pas changé), puis appliquer les changements de la base. `php artisan migrate --force` est le plus sûr ; sans terminal, importer dans **phpMyAdmin** le fichier SQL fourni avec la mise à jour (par exemple `mise-a-jour-octobre-2026.sql`), **une seule fois**. Il se prépare avec `php artisan migrate --pretend` sur une copie de la base à l'état du serveur. Une page blanche ou une « erreur 500 » juste après une mise à jour vient presque toujours d'une base pas encore mise à jour.
+**Sans terminal (gestionnaire de fichiers du cPanel)** : extraire l'archive de mise à jour par-dessus l'installation (le fichier `.env` et le dossier `storage` restent en place ; `vendor` aussi, si `composer.lock` n'a pas changé), puis appliquer les changements de la base. `php artisan migrate --force` est le plus sûr ; sans terminal, importer dans **phpMyAdmin** le fichier SQL fourni avec la mise à jour, dans `database/sql/` (par exemple `mise-a-jour-2026-11-01.sql`), **une seule fois**. Chaque fichier dit en tête depuis quelle version il part. Il se prépare avec `php artisan migrate --pretend` sur une copie de la base à l'état du serveur, puis se vérifie sur MySQL comme sur MariaDB ; `scripts/build-sql.sh` régénère `installation.sql` après chaque nouvelle migration. Une page blanche ou une « erreur 500 » juste après une mise à jour vient presque toujours d'une base pas encore mise à jour.
 
-Pour une mise à jour, `scripts/build-release.sh --sans-captures` donne une archive plus légère, sans les captures du manuel déjà présentes sur le serveur.
+Le manuel en ligne se republie avec `php artisan waumini:manuel-web DOSSIER --fragment --telechargements=LIVRAISON` : sa page *Téléchargements* (rubrique Équipe Genius ICT) donne les scripts SQL de la livraison. Les archives .zip ne peuvent pas être déposées dans le manuel : hébergées ailleurs, par exemple dans une *Release* GitHub, elles y sont reliées avec `--lien-archives=ADRESSE`.
+
+Pour une mise à jour, `scripts/build-release.sh --sans-captures` donne une archive plus légère, sans les captures du manuel déjà présentes sur le serveur. Si `composer.lock` n'a changé aucune version de dépendance, ajouter `--sans-vendor` : l'archive ne contient plus que le code de Waumini (quelques Mo) et le dossier `vendor` du serveur reste en place.
 
 ## Sauvegardes
 
@@ -151,7 +163,7 @@ Waumini se sauvegarde **lui-même chaque nuit** (2 h 15) : une archive `storage/
 - `database.sql` : toute la base, en SQL ;
 - `fichiers/` : les fichiers envoyés (logos, photos de membres, justificatifs de dépenses, captures de paiements, photos des sites, audios des prédications).
 
-L'archive est **chiffrée** (AES-256) avec `BACKUP_PASSWORD`. Les 14 dernières sont gardées (`BACKUP_KEEP`).
+L'archive est **chiffrée** (AES-256) avec `BACKUP_PASSWORD` ; si le serveur ne sait pas chiffrer (libzip trop ancienne), la sauvegarde échoue et le dit, plutôt que d'écrire une archive en clair. Garder aussi, hors du serveur, une copie du fichier `.env` : sans `APP_KEY`, les sessions et les données chiffrées (notes confidentielles) de la sauvegarde sont perdues, et sans les clés VAPID, tous les abonnements aux notifications sont à refaire. Les 14 dernières sont gardées (`BACKUP_KEEP`).
 
 Une sauvegarde qui reste sur le même serveur ne protège pas d'une panne de l'hébergement. Il faut donc **une copie ailleurs** :
 
