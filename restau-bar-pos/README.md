@@ -1,6 +1,6 @@
 # restau-bar-pos
 
-Système de caisse (POS) adaptable aux restaurants-bars, lounge bars et nightclubs.
+Système de caisse (POS) et ERP adaptable aux restaurants-bars, lounge bars et nightclubs.
 
 ## Documentation
 

@@ -1,6 +1,6 @@
 # Cahier des charges — restau-bar-pos
 
-Système de caisse (POS) adaptable à trois contextes : **restaurant-bar**, **lounge bar** et **nightclub**.
+Système de caisse (POS) et ERP adaptable à trois contextes : **restaurant-bar**, **lounge bar** et **nightclub**.
 Principe : un **socle commun** toujours actif + des **modules** activés selon le type d'établissement et l'heure.
 
 ---
@@ -83,9 +83,69 @@ Chaque service a ses propres prix, modules et postes. Tout reste dans **une seul
 - Distinction claire entre **chiffre d'affaires** (ventes) et **encaissements** (argent réellement reçu) : une vente à crédit compte dans le chiffre d'affaires, mais pas dans la caisse du jour.
 - Remboursements encaissés pendant une session de caisse.
 
-## 5. Exigences transverses
+## 5. ERP (gestion de l'établissement)
+
+La caisse n'est que la partie visible. L'ERP gère tout ce qui se passe en coulisses. Caisse et ERP partagent **la même base de données** : chaque vente fait baisser le stock, chaque crédit alimente les créances et chaque dépense arrive dans la trésorerie, sans ressaisie.
+
+### 5.1 Achats et fournisseurs
+
+- Fiche fournisseur : brasseries, distributeurs, grossistes, marché.
+- Bons de commande, réception des marchandises (quantités commandées ou reçues, écarts).
+- Factures fournisseurs, paiements, **dettes envers les fournisseurs** et leurs échéances.
+- Historique des prix d'achat par produit et par fournisseur.
+
+### 5.2 Stock avancé
+
+- **Plusieurs dépôts** : réserve, bar, cuisine, et un stock par site. Transferts entre dépôts (réserve → bar).
+- **Fiches techniques (recettes)** : un cocktail consomme par exemple 4 cl de rhum, 2 cl de sirop et 1 citron. Une bouteille servie au verre se compte en doses.
+- **Coût de revient et marge** par produit, calculés à partir des recettes et des prix d'achat.
+- **Inventaires** : comptage physique et écarts avec le stock théorique, par employé et par service.
+- **Pertes** : casse, offerts, consommations du personnel, périmés, avec un motif.
+- **Emballages consignés** : bouteilles et casiers vides, consignes payées et récupérées auprès des fournisseurs.
+- **Alertes** de stock bas et suggestions de commande.
+
+### 5.3 Dépenses et trésorerie
+
+- Saisie des dépenses par catégorie : loyer, électricité, carburant du groupe électrogène, entretien, sécurité, artistes…
+- Comptes de trésorerie : caisse, banque, mobile money, avec les transferts entre eux.
+- Vue de la trésorerie : entrées (ventes, remboursements de dettes) et sorties (fournisseurs, dépenses, salaires).
+- TVA et taxes, et export vers un logiciel comptable ou vers un comptable.
+
+### 5.4 Ressources humaines
+
+- Fiche employé, contrat, poste, site.
+- Plannings par service et pointage (arrivées et départs à la caisse avec le PIN).
+- Salaires, **avances sur salaire**, retenues (dettes du personnel, manquants de caisse).
+- Commissions des serveurs et des promoteurs, et répartition des pourboires.
+
+### 5.5 Événements (lounge et nightclub)
+
+- Soirées : date, thème, DJ ou artistes, budget.
+- Coûts (cachets, publicité, location de matériel) comparés aux recettes (entrées, bar, bouteilles VIP).
+- **Rentabilité par soirée**.
+
+### 5.6 Tableaux de bord de la direction
+
+- Chiffre d'affaires, marge, dépenses et résultat, par jour, par service, par site.
+- Produits les plus rentables et les moins vendus.
+- Créances clients et dettes fournisseurs.
+- Performances des employés.
+
+## 6. Exigences transverses
 
 - **Mode hors ligne** : la caisse fonctionne sans réseau et se synchronise quand il revient.
 - **Rapidité** : un barman doit encaisser en 2 ou 3 secondes.
 - **Multi-établissements** possible à terme.
 - **Sécurité** : annulations, remises et crédits validés par un gérant, avec historique complet.
+
+## 7. Découpage en phases
+
+Le périmètre est large : on le construit par étapes, chaque phase étant utilisable seule.
+
+| Phase | Contenu |
+|---|---|
+| 1 | Socle de la caisse (catalogue, commandes, encaissement, rôles, sessions de caisse), stock simple, clients et dettes |
+| 2 | Plan de salle, postes de préparation, services horaires, modules lounge et nightclub |
+| 3 | ERP : achats et fournisseurs, stock avancé (recettes, inventaires, consignes), dépenses et trésorerie |
+| 4 | ERP : ressources humaines (plannings, pointage, salaires, commissions), événements |
+| 5 | Tableaux de bord avancés, multi-établissements, export comptable |
