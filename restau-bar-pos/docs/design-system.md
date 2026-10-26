@@ -86,7 +86,7 @@ Composants propres à un espace : en-tête, barre collante, état d'ouverture et
 | Vitrine d'un nightclub ou d'un lounge | nuit | bouton ◐ dans la barre, mémorisé sur l'appareil du visiteur (`localStorage` « vitrine.theme », valable pour toute la vitrine) |
 | Vitrine d'un restaurant-bar | jour | idem |
 | Page d'accueil de la vitrine | nuit, sauf si tous les établissements sont des restaurants-bars | idem |
-| Caisse | comme la vitrine (nightclub et lounge de nuit ; le mode comptoir rapide du nightclub démarre donc en sombre) | bouton ◐ de la barre, mémorisé par appareil et par établissement (« caisse.theme.&lt;slug&gt; ») ; tailles de tuiles S/M/L inchangées |
+| Caisse | comme la vitrine (nightclub et lounge de nuit ; le mode comptoir rapide du nightclub démarre donc en sombre) | bouton ◐ de la barre, mémorisé par appareil et par établissement (« caisse.theme.&lt;slug&gt; ») ; grille de 5 tuiles par ligne (3 sur téléphone), tailles S/M/L pour la hauteur et le texte |
 | Espace de gestion | `auto` : préférence du système, jour sinon | bouton ◐ en haut, mémorisé (« gestion.theme ») |
 | Pages d'erreur | nuit | — |
 | Chevalet de table à imprimer | jour (toujours imprimé sur blanc) | — |

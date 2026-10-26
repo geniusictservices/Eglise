@@ -454,7 +454,8 @@ Principe : chaque personne ne voit que ce dont elle a besoin, au bon moment, sur
 - **Un toucher = un article.** Si le produit a plusieurs formats (dose, bouteille…), une fenêtre propose les formats avec leur prix.
 - **Quantité affichée sur la tuile** : on voit tout de suite ce qui est déjà dans le ticket.
 - **Produit en rupture** grisé et impossible à toucher.
-- **Trois tailles de tuiles** (petite, moyenne, grande). Le nightclub démarre en grandes tuiles.
+- **5 tuiles par ligne** (3 sur téléphone, pour garder des cibles faciles à toucher).
+- **Trois tailles de tuiles** (petite, moyenne, grande) qui règlent la hauteur et la taille du texte. Le nightclub démarre en grandes tuiles.
 - **Ticket** : lignes avec boutons − et +, total dans la devise principale, et total dans chaque autre devise acceptée.
 - **Recherche** : la touche « / » place le curseur dans la recherche, Entrée ajoute le produit s'il est seul (prépare le lecteur de codes-barres).
 - Plus tard : produits favoris et les plus vendus en premier, selon le service et le comptoir.
