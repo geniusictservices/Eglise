@@ -157,9 +157,9 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
   padding-bottom: .6rem;
 }
 .categories::-webkit-scrollbar { display: none; }
-.categories__lien { background: transparent; color: var(--doux); }
-.categories__lien:hover { color: var(--encre); }
-.categories__lien--actif { background: var(--accent); color: var(--sur-accent); }
+.categories__lien { background: var(--saisie); box-shadow: inset 0 0 0 1px var(--ligne); color: var(--encre); }
+.categories__lien:hover { box-shadow: inset 0 0 0 1px var(--ligne-forte); }
+.categories__lien--actif { background: var(--accent); color: var(--sur-accent); box-shadow: none; }
 .categories__lien--actif:hover { color: var(--sur-accent); }
 
 /* ---------- Menu ---------- */
@@ -172,8 +172,8 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
   width: 100%;
   min-height: var(--hauteur-bouton);
   padding: 0 1rem;
-  border: 1.5px solid var(--ligne-forte);
-  border-radius: var(--rayon);
+  border: 1px solid var(--ligne);
+  border-radius: 12px;
   background: var(--saisie);
   color: var(--encre);
   font: inherit;
@@ -183,7 +183,7 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 
 .categorie + .categorie { margin-top: 2.25rem; }
 .categorie__titre {
-  margin: 0 0 .25rem;
+  margin: 0 0 .75rem;
   font: 800 1.375rem/1.15 var(--police-titre);
   color: var(--accent-texte);
 }
@@ -196,7 +196,7 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
   align-items: center;
   gap: .6rem;
   margin: 0;
-  padding: .55rem 0 .15rem;
+  padding: .55rem 0 .6rem;
   font-size: var(--taille-xs, .75rem);
   font-weight: 700;
   letter-spacing: .12em;
@@ -205,16 +205,21 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 }
 .sous-categorie__titre::after { content: ""; flex: 1; height: 1px; background: var(--ligne); }
 
-.produits { list-style: none; margin: 0; padding: 0; }
+.produits { list-style: none; margin: 0; padding: 0; display: grid; gap: .625rem; }
+/* Style « Volcan Pro » : chaque produit dans une carte, image à gauche, prix à droite */
 .produit {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: .25rem 1rem;
-  padding-block: .95rem;
-  border-bottom: 1px solid var(--ligne);
+  padding: .625rem .875rem .625rem .625rem;
+  border: 1px solid var(--ligne);
+  border-radius: var(--rayon-carte);
+  background: var(--tuile-fond);
 }
-.produit:has(.produit__photo) { grid-template-columns: 80px minmax(0, 1fr) auto; }
-.produit__photo { width: 80px; height: 80px; object-fit: cover; border-radius: var(--rayon); background: var(--surface-2); }
+.produit:not(:has(.produit__photo)) { padding-left: .875rem; }
+.produit:has(.produit__photo) { grid-template-columns: 72px minmax(0, 1fr) auto; }
+.produit__photo { width: 72px; height: 72px; object-fit: cover; border-radius: 12px; background: var(--surface-2); }
 .produit__texte { min-width: 0; }
 .produit__nom {
   margin: 0;
@@ -242,7 +247,8 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 .prix__format { font-size: .8125rem; color: var(--doux); }
 .prix__montant {
   margin: 0;
-  font-weight: 700;
+  font-family: var(--police-titre);
+  font-weight: 600;
   color: var(--prix);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
