@@ -1,5 +1,5 @@
 /* Gestion du catalogue : disponibilité en un toucher, prix calculés pendant la saisie,
-   aperçu de la photo, rappel des modifications non enregistrées. Tout fonctionne aussi sans JavaScript. */
+   rappel des modifications non enregistrées. Tout fonctionne aussi sans JavaScript. */
 (function () {
   'use strict';
 
@@ -61,33 +61,7 @@
     }
   });
 
-  // Aperçu de la photo choisie, et taille vérifiée avant l'envoi
-  document.querySelectorAll('input[data-photo]').forEach(function (champ) {
-    var apercu = champ.closest('.cat-photo').querySelector('[data-apercu]');
-    var message = null;
-    champ.addEventListener('change', function () {
-      var fichier = champ.files && champ.files[0];
-      if (message) { message.remove(); message = null; }
-      champ.removeAttribute('aria-invalid');
-      if (!fichier) { return; }
-      if (fichier.size > Number(champ.dataset.octetsMax)) {
-        message = document.createElement('p');
-        message.className = 'alerte alerte--erreur';
-        message.setAttribute('role', 'alert');
-        message.textContent = champ.dataset.tropLourde;
-        champ.insertAdjacentElement('afterend', message);
-        champ.setAttribute('aria-invalid', 'true');
-        champ.value = '';
-        return;
-      }
-      if (apercu && window.URL && URL.createObjectURL) {
-        var img = document.createElement('img');
-        img.alt = '';
-        img.src = URL.createObjectURL(fichier);
-        apercu.replaceChildren(img);
-      }
-    });
-  });
+  // Photo : voir champ-image.js (glisser-déposer, médiathèque, aperçu, taille vérifiée avant l'envoi)
 
   // Prix calculés : une case vide affiche le prix que le menu calculera
   document.querySelectorAll('[data-calcul]').forEach(function (zone) {

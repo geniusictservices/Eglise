@@ -11,6 +11,7 @@ use App\Core\View;
 use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
 use App\Repositories\GestionEtablissementRepository;
+use App\Repositories\MediathequeRepository;
 use DateTimeImmutable;
 use RuntimeException;
 use Throwable;
@@ -19,6 +20,10 @@ use Throwable;
  * Établissements : liste, création, fiche en sections (informations, apparence, prix et devises,
  * horaires, zones, activation). Chaque section a son propre formulaire ; en cas d'erreur,
  * la fiche est réaffichée avec la saisie et le message sous le champ à corriger.
+ *
+ * Logo et couverture : choisis dans la médiathèque (champs cachés « logo_media », « couverture_media »)
+ * ou envoyés par l'ancien champ fichier, alors ajoutés à la médiathèque. Remplacer ou retirer une image
+ * ne supprime jamais le fichier : seule la médiathèque supprime une image inutilisée.
  */
 final class EtablissementController
 {
@@ -147,31 +152,55 @@ final class EtablissementController
             return;
         }
 
-        // Images envoyées : si l'une est refusée, rien n'est enregistré
-        $nouvelles = [];
+        // Images : fichier envoyé (sans JavaScript), image choisie dans la médiathèque ou retrait.
+        // Si l'une est refusée, rien n'est enregistré.
+        $mediatheque = new MediathequeRepository();
         $tailles = ['logo' => self::COTE_LOGO, 'couverture' => self::COTE_COUVERTURE];
+        $champs = [];
         foreach ($tailles as $colonne => $cote) {
-            $fichier = $_FILES[$colonne] ?? null;
-            if (!is_array($fichier) || ($fichier['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
-                continue;
-            }
-            try {
-                $nouvelles[$colonne] = Images::enregistrer($fichier, 'etablissements', $cote, (int) $etab['id'] . '-' . $colonne);
-            } catch (RuntimeException $erreur) {
-                foreach ($nouvelles as $chemin) {
-                    Images::supprimer($chemin);
-                }
+            $champs[$colonne] = ChampImage::lire($colonne, $colonne . '_media', $etab[$colonne], $mediatheque);
+            if ($champs[$colonne]['erreur'] !== null) {
                 $this->afficherFiche($utilisateur, $etab, ['apparence' => $apparence, 'erreurs' => ['apparence' => [
-                    $colonne => t('etab.' . $colonne) . ' : ' . $erreur->getMessage(),
+                    $colonne => t('etab.' . $colonne) . ' : ' . $champs[$colonne]['erreur'],
                 ]]], 422);
                 return;
             }
         }
 
-        $this->depot->definirCouleur((int) $etab['id'], $apparence['couleur'], $apparence['couverture_credit']);
+        $nouvelles = [];
+        $envoyes = [];
+        foreach ($champs as $colonne => $champ) {
+            if ($champ['action'] === 'choisie') {
+                $nouvelles[$colonne] = $champ['chemin'];
+            } elseif ($champ['action'] === 'retiree') {
+                $nouvelles[$colonne] = null;
+            } elseif ($champ['action'] === 'fichier') {
+                try {
+                    $chemin = Images::enregistrer($champ['fichier'], 'etablissements', $tailles[$colonne], (int) $etab['id'] . '-' . $colonne);
+                } catch (RuntimeException $erreur) {
+                    foreach ($envoyes as $fichierEnvoye) {
+                        Images::supprimer($fichierEnvoye['chemin']);
+                    }
+                    $this->afficherFiche($utilisateur, $etab, ['apparence' => $apparence, 'erreurs' => ['apparence' => [
+                        $colonne => t('etab.' . $colonne) . ' : ' . $erreur->getMessage(),
+                    ]]], 422);
+                    return;
+                }
+                $nouvelles[$colonne] = $chemin;
+                $envoyes[$colonne] = ['chemin' => $chemin, 'nom' => is_string($champ['fichier']['name'] ?? null) ? $champ['fichier']['name'] : ''];
+            }
+        }
+
+        // Sans couverture, son crédit n'a plus d'objet
+        $creditCouverture = array_key_exists('couverture', $nouvelles) && $nouvelles['couverture'] === null ? null : $apparence['couverture_credit'];
+        $this->depot->definirCouleur((int) $etab['id'], $apparence['couleur'], $creditCouverture);
+        foreach ($envoyes as $colonne => $fichierEnvoye) {
+            // L'image envoyée par l'ancien champ fichier rejoint la médiathèque
+            $mediatheque->ajouter($fichierEnvoye['chemin'], MediathequeRepository::nomLisible($fichierEnvoye['nom']), (int) $utilisateur['id'],
+                $colonne === 'couverture' ? $apparence['couverture_credit'] : null);
+        }
         foreach ($nouvelles as $colonne => $chemin) {
             $this->depot->definirImage((int) $etab['id'], $colonne, $chemin);
-            Images::supprimer($etab[$colonne]);
         }
         $this->succes($etab, 'etab.apparence_enregistree', 'apparence');
     }
@@ -189,8 +218,8 @@ final class EtablissementController
     private function supprimerImage(string $id, string $colonne): void
     {
         [, $etab] = $this->debutPost($id);
+        // Le fichier reste dans la médiathèque, où il peut servir ailleurs
         $this->depot->definirImage((int) $etab['id'], $colonne, null);
-        Images::supprimer($etab[$colonne]);
         $this->succes($etab, 'etab.' . $colonne . '_retire', 'apparence');
     }
 

@@ -111,16 +111,7 @@
 .etb-images { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 1.25rem; margin-top: 1.25rem; }
 @media (max-width: 760px) { .etb-images { grid-template-columns: minmax(0, 1fr); } }
 .etb-image { align-content: start; border-bottom: 0; padding: 0; margin: 0; }
-.etb-image__apercu {
-  display: grid; place-items: center; overflow: hidden; border-radius: 10px;
-  background: var(--fond); border: 1px dashed var(--ligne);
-}
-.etb-image__apercu img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.etb-image__apercu--logo { aspect-ratio: 1; max-width: 12rem; }
-.etb-image__apercu--logo img { object-fit: contain; padding: .5rem; }
-.etb-image__apercu--couverture { aspect-ratio: 16 / 7; }
-.etb-image__vide { padding: 1rem; color: var(--doux); text-align: center; font-size: .875rem; }
-.etb-image input[type="file"] { min-height: 44px; padding: .5rem 0; }
+/* Aperçu, glisser-déposer et choix dans la médiathèque : champ-image.css */
 .etb-image .bouton { justify-self: start; }
 
 /* Horaires */

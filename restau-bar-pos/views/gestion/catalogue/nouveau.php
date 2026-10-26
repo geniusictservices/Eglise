@@ -12,6 +12,7 @@
  * @var array $prix
  * @var array $vente
  * @var string $credit
+ * @var string $photo chemin choisi dans la médiathèque (gardé si le formulaire est réaffiché)
  * @var string[] $erreurs
  * @var array $formatsParDefaut
  * @var int $octetsMax
@@ -21,6 +22,7 @@ use App\Core\Images;
 $unite = t('unite.' . ($infos['unite_base'] ?? 'bouteille'));
 ?>
 <link rel="stylesheet" href="/assets/css/gestion-catalogue.css">
+<link rel="stylesheet" href="/assets/css/champ-image.css">
 
 <p class="cat-retour"><a class="lien" href="/gestion/catalogue">← <?= e(t('catalogue.titre')) ?></a></p>
 <h1><?= e(t('catalogue.nouveau_produit')) ?></h1>
@@ -47,17 +49,13 @@ $unite = t('unite.' . ($infos['unite_base'] ?? 'bouteille'));
         <section class="bloc cat-section" id="photo">
             <h2>2. <?= e(t('catalogue.section_photo')) ?> <span class="cat-facultatif"><?= e(t('catalogue.facultatif')) ?></span></h2>
             <div class="cat-photo">
-                <div class="cat-photo__apercu" data-apercu>
-                    <span class="cat-photo__vide"><?= e(t('catalogue.pas_de_photo')) ?></span>
-                </div>
+                <?= App\Core\View::rendre('gestion/_champ-image', [
+                    'id' => 'photo', 'fichier' => 'photo', 'nom' => 'photo_media', 'chemin' => $photo !== '' ? $photo : null,
+                    'vide' => t('catalogue.pas_de_photo'), 'libelleFichier' => t('catalogue.photo_choisir'),
+                    'aide' => t('catalogue.photo_aide', ['max' => Images::tailleLisible($octetsMax)]) . ($erreurs !== [] && $photo === '' ? ' ' . t('catalogue.photo_a_rechoisir') : ''),
+                    'credit' => 'photo_credit', 'retirerTexte' => t('catalogue.photo_retirer'), 'octetsMax' => $octetsMax,
+                ]) ?>
                 <div class="cat-photo__formulaires">
-                    <div class="champ">
-                        <label for="photo-fichier"><?= e(t('catalogue.photo_choisir')) ?></label>
-                        <input id="photo-fichier" name="photo" type="file" accept="image/jpeg,image/png,image/webp" data-photo data-octets-max="<?= $octetsMax ?>"
-                               data-trop-lourde="<?= e(t('image.trop_lourde', ['max' => Images::tailleLisible($octetsMax)])) ?>">
-                        <p class="aide"><?= e(t('catalogue.photo_aide', ['max' => Images::tailleLisible($octetsMax)])) ?></p>
-                        <?php if ($erreurs !== []): ?><p class="aide"><?= e(t('catalogue.photo_a_rechoisir')) ?></p><?php endif; ?>
-                    </div>
                     <div class="champ">
                         <label for="photo_credit"><?= e(t('catalogue.photo_credit')) ?> <span class="cat-facultatif"><?= e(t('catalogue.facultatif')) ?></span></label>
                         <input id="photo_credit" name="photo_credit" maxlength="255" value="<?= e($credit) ?>" placeholder="<?= e(t('catalogue.photo_credit_exemple')) ?>">
@@ -99,4 +97,5 @@ $unite = t('unite.' . ($infos['unite_base'] ?? 'bouteille'));
     </form>
 <?php endif; ?>
 
+<script src="/assets/js/champ-image.js" defer></script>
 <script src="/assets/js/gestion-catalogue.js" defer></script>

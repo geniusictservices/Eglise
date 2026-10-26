@@ -127,18 +127,10 @@
 .cat-cases:not(.cat-cases--ligne) { grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr)); }
 .cat-cases:not(.cat-cases--ligne) legend, .cat-cases:not(.cat-cases--ligne) .aide { grid-column: 1 / -1; }
 
-/* Photo */
-.cat-photo { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 1.25rem; align-items: start; }
-.cat-photo__apercu {
-  display: grid; place-items: center; aspect-ratio: 1; border-radius: 10px; overflow: hidden;
-  background: var(--fond); border: 1px dashed var(--ligne);
-}
-.cat-photo__apercu img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.cat-photo__vide { padding: 1rem; color: var(--doux); text-align: center; }
+/* Photo : champ image (champ-image.css) à gauche, crédit et enregistrement à droite */
+.cat-photo { display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
 .cat-photo__formulaires { display: grid; gap: 1rem; min-width: 0; }
-.cat-photo__formulaires form { margin: 0; }
-.cat-photo input[type="file"] { min-height: 44px; padding: .5rem 0; }
-@media (max-width: 600px) { .cat-photo { grid-template-columns: minmax(0, 1fr); } .cat-photo__apercu { max-width: 240px; } }
+@media (max-width: 700px) { .cat-photo { grid-template-columns: minmax(0, 1fr); } }
 
 /* Formats */
 .cat-formats { display: grid; gap: 1rem; margin-top: 1rem; }

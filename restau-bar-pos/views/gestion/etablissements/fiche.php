@@ -35,6 +35,7 @@ $couverture = urlImageSure($etab['couverture']);
 $tailleMax = Images::tailleLisible($octetsMax);
 ?>
 <link rel="stylesheet" href="/assets/css/gestion-etablissements.css">
+<link rel="stylesheet" href="/assets/css/champ-image.css">
 
 <p class="etb-retour"><a class="lien" href="/gestion/etablissements">← <?= e(t('etab.titre')) ?></a></p>
 
@@ -117,47 +118,31 @@ $tailleMax = Images::tailleLisible($octetsMax);
         <div class="etb-images">
             <fieldset class="etb-groupe etb-image">
                 <legend><?= e(t('etab.logo')) ?></legend>
-                <div class="etb-image__apercu etb-image__apercu--logo">
-                    <?php if ($logo): ?>
-                        <img src="<?= e($logo) ?>" alt="<?= e(t('etab.logo_de', ['nom' => $etab['nom']])) ?>" data-apercu-image>
-                    <?php else: ?>
-                        <span class="etb-image__vide" data-apercu-vide><?= e(t('etab.pas_de_logo')) ?></span>
-                    <?php endif; ?>
-                </div>
-                <div class="champ">
-                    <label for="etb-logo"><?= e($logo ? t('etab.image_remplacer') : t('etab.image_choisir')) ?></label>
-                    <input id="etb-logo" name="logo" type="file" accept="image/jpeg,image/png,image/webp" data-image data-octets-max="<?= $octetsMax ?>"
-                           data-trop-lourde="<?= e(t('image.trop_lourde', ['max' => $tailleMax])) ?>"<?= isset($erreursApparence['logo']) ? ' aria-invalid="true"' : '' ?>>
-                    <p class="aide"><?= e(t('etab.logo_aide', ['max' => $tailleMax])) ?></p>
-                </div>
-                <?php if ($logo): ?>
-                    <button class="bouton bouton--secondaire" type="submit" form="etb-retirer-logo"><?= e(t('etab.logo_retirer')) ?></button>
-                <?php endif; ?>
+                <?= App\Core\View::rendre('gestion/_champ-image', [
+                    'id' => 'etb-logo', 'fichier' => 'logo', 'nom' => 'logo_media', 'chemin' => $etab['logo'], 'format' => 'logo',
+                    'alt' => t('etab.logo_de', ['nom' => $etab['nom']]), 'vide' => t('etab.pas_de_logo'),
+                    'libelleFichier' => $logo ? t('etab.image_remplacer') : t('etab.image_choisir'),
+                    'aide' => t('etab.logo_aide', ['max' => $tailleMax]),
+                    'retirerForm' => 'etb-retirer-logo', 'retirerTexte' => t('etab.logo_retirer'),
+                    'invalide' => isset($erreursApparence['logo']), 'octetsMax' => $octetsMax,
+                ]) ?>
             </fieldset>
 
             <fieldset class="etb-groupe etb-image">
                 <legend><?= e(t('etab.couverture')) ?></legend>
-                <div class="etb-image__apercu etb-image__apercu--couverture">
-                    <?php if ($couverture): ?>
-                        <img src="<?= e($couverture) ?>" alt="<?= e(t('etab.couverture_de', ['nom' => $etab['nom']])) ?>" data-apercu-image>
-                    <?php else: ?>
-                        <span class="etb-image__vide" data-apercu-vide><?= e(t('etab.pas_de_couverture')) ?></span>
-                    <?php endif; ?>
-                </div>
-                <div class="champ">
-                    <label for="etb-couverture"><?= e($couverture ? t('etab.image_remplacer') : t('etab.image_choisir')) ?></label>
-                    <input id="etb-couverture" name="couverture" type="file" accept="image/jpeg,image/png,image/webp" data-image data-octets-max="<?= $octetsMax ?>"
-                           data-trop-lourde="<?= e(t('image.trop_lourde', ['max' => $tailleMax])) ?>"<?= isset($erreursApparence['couverture']) ? ' aria-invalid="true"' : '' ?>>
-                    <p class="aide"><?= e(t('etab.couverture_aide', ['max' => $tailleMax])) ?></p>
-                </div>
+                <?= App\Core\View::rendre('gestion/_champ-image', [
+                    'id' => 'etb-couverture', 'fichier' => 'couverture', 'nom' => 'couverture_media', 'chemin' => $etab['couverture'], 'format' => 'large',
+                    'alt' => t('etab.couverture_de', ['nom' => $etab['nom']]), 'vide' => t('etab.pas_de_couverture'),
+                    'libelleFichier' => $couverture ? t('etab.image_remplacer') : t('etab.image_choisir'),
+                    'aide' => t('etab.couverture_aide', ['max' => $tailleMax]),
+                    'credit' => 'etb-couverture-credit', 'retirerForm' => 'etb-retirer-couverture', 'retirerTexte' => t('etab.couverture_retirer'),
+                    'invalide' => isset($erreursApparence['couverture']), 'octetsMax' => $octetsMax,
+                ]) ?>
                 <?= App\Core\View::rendre('gestion/etablissements/_champ', [
                     'nom' => 'couverture_credit', 'libelle' => t('etab.couverture_credit'), 'valeurs' => $apparence,
                     'erreurs' => $erreursApparence, 'max' => 255, 'facultatif' => true,
                     'exemple' => t('etab.couverture_credit_exemple'), 'aide' => t('etab.couverture_credit_aide'),
                 ]) ?>
-                <?php if ($couverture): ?>
-                    <button class="bouton bouton--secondaire" type="submit" form="etb-retirer-couverture"><?= e(t('etab.couverture_retirer')) ?></button>
-                <?php endif; ?>
             </fieldset>
         </div>
 
@@ -349,4 +334,5 @@ $tailleMax = Images::tailleLisible($octetsMax);
     <?php endif; ?>
 </section>
 
+<script src="/assets/js/champ-image.js" defer></script>
 <script src="/assets/js/gestion-etablissements.js" defer></script>

@@ -11,12 +11,17 @@ use App\Core\View;
 use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
 use App\Repositories\GestionCatalogueRepository;
+use App\Repositories\MediathequeRepository;
 use RuntimeException;
 use Throwable;
 
 /**
  * Fiche produit : informations, photo, formats et prix, établissements, désactivation.
  * Chaque section a son propre formulaire. En cas d'erreur, la fiche est réaffichée avec la saisie.
+ *
+ * Photo : choisie dans la médiathèque (champ caché « photo_media ») ou envoyée par l'ancien champ fichier,
+ * alors ajoutée à la médiathèque. Remplacer ou retirer la photo ne supprime jamais le fichier :
+ * l'image peut servir ailleurs, seule la médiathèque supprime une image inutilisée.
  */
 final class CatalogueProduitController
 {
@@ -33,12 +38,14 @@ final class CatalogueProduitController
     private GestionCatalogueRepository $catalogue;
     private DeviseRepository $devises;
     private CatalogueSaisie $saisie;
+    private MediathequeRepository $mediatheque;
 
     public function __construct()
     {
         $this->catalogue = new GestionCatalogueRepository();
         $this->devises = new DeviseRepository();
         $this->saisie = new CatalogueSaisie($this->catalogue);
+        $this->mediatheque = new MediathequeRepository();
     }
 
     // Création
@@ -88,14 +95,18 @@ final class CatalogueProduitController
             $prix[$deviseId] = $montant;
         }
 
-        $fichier = $_FILES['photo'] ?? null;
-        $avecPhoto = is_array($fichier) && ($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+        // Photo : fichier envoyé (sans JavaScript) ou image choisie dans la médiathèque
+        $champPhoto = ChampImage::lire('photo', 'photo_media', null, $this->mediatheque);
+        if ($champPhoto['erreur'] !== null) {
+            $erreurs[] = $champPhoto['erreur'];
+        }
         $credit = $this->credit($_POST);
         if (mb_strlen((string) $credit) > 255) {
             $erreurs[] = t('catalogue.erreur_trop_long', ['champ' => t('catalogue.photo_credit'), 'max' => 255]);
         }
 
-        $etat = ['infos' => $infos, 'format' => $format, 'prix' => $saisiesPrix, 'vente' => $vente, 'credit' => $credit];
+        $etat = ['infos' => $infos, 'format' => $format, 'prix' => $saisiesPrix, 'vente' => $vente, 'credit' => $credit,
+            'photo' => $champPhoto['action'] === 'choisie' ? $champPhoto['chemin'] : ''];
         if ($erreurs !== []) {
             $this->afficherNouveau($utilisateur, $etat + ['erreurs' => $erreurs], 422);
             return;
@@ -114,9 +125,11 @@ final class CatalogueProduitController
                     $this->catalogue->definirPrix($formatId, $grille, $deviseId, $montant);
                 }
             }
-            if ($avecPhoto) {
-                $photo = Images::enregistrer($fichier, 'produits', self::COTE_PHOTO, (string) $id);
+            if ($champPhoto['action'] === 'fichier') {
+                $photo = $this->mediatheque->enregistrerEnvoi($champPhoto['fichier'], 'produits', self::COTE_PHOTO, (int) $utilisateur['id'], $credit, (string) $id)['chemin'];
                 $this->catalogue->definirPhoto($id, $photo, $credit);
+            } elseif ($champPhoto['action'] === 'choisie') {
+                $this->catalogue->definirPhoto($id, $champPhoto['chemin'], $credit);
             }
             $pdo->commit();
         } catch (RuntimeException $erreur) {
@@ -172,34 +185,45 @@ final class CatalogueProduitController
             return;
         }
 
-        $fichier = $_FILES['photo'] ?? null;
-        $avecPhoto = is_array($fichier) && ($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
-        if (!$avecPhoto) {
-            // Seul le crédit change
-            if ($produit['photo'] === null && $credit !== null) {
-                $this->afficherFiche($utilisateur, $produit, ['credit' => $credit, 'erreurs' => ['photo' => [t('image.aucun_fichier')]]], 422);
-                return;
-            }
-            $this->catalogue->definirCreditPhoto((int) $produit['id'], $credit);
-            $this->succes($produit, 'catalogue.credit_enregistre', 'photo');
-        }
-
-        try {
-            $photo = Images::enregistrer($fichier, 'produits', self::COTE_PHOTO, (string) (int) $produit['id']);
-        } catch (RuntimeException $erreur) {
-            $this->afficherFiche($utilisateur, $produit, ['credit' => $credit, 'erreurs' => ['photo' => [$erreur->getMessage()]]], 422);
+        $champ = ChampImage::lire('photo', 'photo_media', $produit['photo'], $this->mediatheque);
+        if ($champ['erreur'] !== null) {
+            $this->afficherFiche($utilisateur, $produit, ['credit' => $credit, 'erreurs' => ['photo' => [$champ['erreur']]]], 422);
             return;
         }
-        $this->catalogue->definirPhoto((int) $produit['id'], $photo, $credit);
-        Images::supprimer($produit['photo']);
-        $this->succes($produit, 'catalogue.photo_enregistree', 'photo');
+        switch ($champ['action']) {
+            case 'fichier':
+                // Ancien champ fichier : l'image est aussi enregistrée dans la médiathèque
+                try {
+                    $photo = $this->mediatheque->enregistrerEnvoi($champ['fichier'], 'produits', self::COTE_PHOTO, (int) $utilisateur['id'], $credit, (string) (int) $produit['id'])['chemin'];
+                } catch (RuntimeException $erreur) {
+                    $this->afficherFiche($utilisateur, $produit, ['credit' => $credit, 'erreurs' => ['photo' => [$erreur->getMessage()]]], 422);
+                    return;
+                }
+                $this->catalogue->definirPhoto((int) $produit['id'], $photo, $credit);
+                $this->succes($produit, 'catalogue.photo_enregistree', 'photo');
+            case 'choisie':
+                $this->catalogue->definirPhoto((int) $produit['id'], $champ['chemin'], $credit);
+                $this->succes($produit, 'catalogue.photo_enregistree', 'photo');
+            case 'retiree':
+                // Le fichier reste dans la médiathèque
+                $this->catalogue->definirPhoto((int) $produit['id'], null, null);
+                $this->succes($produit, 'catalogue.photo_supprimee', 'photo');
+        }
+
+        // Seul le crédit change
+        if ($produit['photo'] === null && $credit !== null) {
+            $this->afficherFiche($utilisateur, $produit, ['credit' => $credit, 'erreurs' => ['photo' => [t('image.aucun_fichier')]]], 422);
+            return;
+        }
+        $this->catalogue->definirCreditPhoto((int) $produit['id'], $credit);
+        $this->succes($produit, 'catalogue.credit_enregistre', 'photo');
     }
 
     public function supprimerPhoto(string $id): void
     {
         [, $produit] = $this->debutPost($id);
+        // Le fichier reste dans la médiathèque, où il peut servir ailleurs
         $this->catalogue->definirPhoto((int) $produit['id'], null, null);
-        Images::supprimer($produit['photo']);
         $this->succes($produit, 'catalogue.photo_supprimee', 'photo');
     }
 
@@ -328,6 +352,7 @@ final class CatalogueProduitController
             'prix' => $etat['prix'] ?? [],
             'vente' => $etat['vente'] ?? ['etablissements' => [], 'visible_public' => true, 'disponible' => true],
             'credit' => $etat['credit'] ?? '',
+            'photo' => $etat['photo'] ?? '',
             'erreurs' => $etat['erreurs'] ?? [],
             'formatsParDefaut' => self::FORMAT_PAR_DEFAUT,
             'octetsMax' => Images::octetsMax(),

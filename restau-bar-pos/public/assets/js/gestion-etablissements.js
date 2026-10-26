@@ -1,5 +1,5 @@
 /* Gestion des établissements : adresse web et codes proposés à partir du nom, devises,
-   couleur, aperçu des images, éditeur d'horaires, rappel des modifications non enregistrées.
+   couleur, éditeur d'horaires, rappel des modifications non enregistrées.
    Tout fonctionne aussi sans JavaScript. */
 (function () {
   'use strict';
@@ -70,26 +70,7 @@
     majCouleur();
   }
 
-  // Images : taille contrôlée avant l'envoi et aperçu immédiat
-  document.querySelectorAll('input[data-image]').forEach(function (champ) {
-    var bloc = champ.closest('.etb-image');
-    var zone = bloc ? bloc.querySelector('.etb-image__apercu') : null;
-    champ.addEventListener('change', function () {
-      var fichier = champ.files && champ.files[0];
-      var max = parseInt(champ.dataset.octetsMax, 10) || 0;
-      champ.setCustomValidity(fichier && max && fichier.size > max ? champ.dataset.tropLourde : '');
-      if (champ.validationMessage) { champ.reportValidity(); return; }
-      if (!fichier || !zone || !window.URL || !URL.createObjectURL) { return; }
-      var image = zone.querySelector('img');
-      if (!image) {
-        image = document.createElement('img');
-        image.alt = '';
-        zone.textContent = '';
-        zone.appendChild(image);
-      }
-      image.src = URL.createObjectURL(fichier);
-    });
-  });
+  // Logo et couverture : voir champ-image.js (glisser-déposer, médiathèque, aperçu, taille vérifiée)
 
   // Éditeur d'horaires
   var editeur = document.querySelector('[data-editeur-horaires]');

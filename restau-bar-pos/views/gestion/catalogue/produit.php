@@ -47,6 +47,7 @@ foreach ($vendables as $format) {
 }
 ?>
 <link rel="stylesheet" href="/assets/css/gestion-catalogue.css">
+<link rel="stylesheet" href="/assets/css/champ-image.css">
 
 <p class="cat-retour"><a class="lien" href="/gestion/catalogue#produit-<?= $id ?>">← <?= e(t('catalogue.titre')) ?></a></p>
 
@@ -106,41 +107,33 @@ foreach ($vendables as $format) {
 <section class="bloc cat-section" id="photo">
     <h2>2. <?= e(t('catalogue.section_photo')) ?></h2>
     <?= App\Core\View::rendre('gestion/catalogue/_erreurs', ['erreurs' => $erreurs['photo'] ?? []]) ?>
-    <div class="cat-photo">
-        <div class="cat-photo__apercu" data-apercu>
-            <?php if (urlImageSure($produit['photo'])): ?>
-                <img src="<?= e($produit['photo']) ?>" alt="<?= e(t('catalogue.photo_de', ['nom' => $nom])) ?>" width="240" height="240">
-            <?php else: ?>
-                <span class="cat-photo__vide"><?= e(t('catalogue.pas_de_photo')) ?></span>
-            <?php endif; ?>
-        </div>
+    <form class="formulaire cat-photo" method="post" action="<?= $base ?>/photo#photo" enctype="multipart/form-data" data-suivi>
+        <input type="hidden" name="csrf" value="<?= $jeton ?>">
+        <?= App\Core\View::rendre('gestion/_champ-image', [
+            'id' => 'photo', 'fichier' => 'photo', 'nom' => 'photo_media', 'chemin' => $produit['photo'],
+            'alt' => t('catalogue.photo_de', ['nom' => $nom]), 'vide' => t('catalogue.pas_de_photo'),
+            'libelleFichier' => $produit['photo'] ? t('catalogue.photo_remplacer') : t('catalogue.photo_choisir'),
+            'aide' => t('catalogue.photo_aide', ['max' => Images::tailleLisible($octetsMax)]),
+            'credit' => 'photo_credit', 'retirerForm' => 'cat-retirer-photo', 'retirerTexte' => t('catalogue.photo_retirer'),
+            'invalide' => !empty($erreurs['photo']), 'octetsMax' => $octetsMax,
+        ]) ?>
         <div class="cat-photo__formulaires">
-            <form class="formulaire" method="post" action="<?= $base ?>/photo#photo" enctype="multipart/form-data" data-suivi>
-                <input type="hidden" name="csrf" value="<?= $jeton ?>">
-                <div class="champ">
-                    <label for="photo-fichier"><?= e($produit['photo'] ? t('catalogue.photo_remplacer') : t('catalogue.photo_choisir')) ?></label>
-                    <input id="photo-fichier" name="photo" type="file" accept="image/jpeg,image/png,image/webp" data-photo data-octets-max="<?= $octetsMax ?>"
-                           data-trop-lourde="<?= e(t('image.trop_lourde', ['max' => Images::tailleLisible($octetsMax)])) ?>">
-                    <p class="aide"><?= e(t('catalogue.photo_aide', ['max' => Images::tailleLisible($octetsMax)])) ?></p>
-                </div>
-                <div class="champ">
-                    <label for="photo_credit"><?= e(t('catalogue.photo_credit')) ?> <span class="cat-facultatif"><?= e(t('catalogue.facultatif')) ?></span></label>
-                    <input id="photo_credit" name="photo_credit" maxlength="255" value="<?= e($credit) ?>" placeholder="<?= e(t('catalogue.photo_credit_exemple')) ?>">
-                    <p class="aide"><?= e(t('catalogue.photo_credit_aide')) ?></p>
-                </div>
-                <div class="cat-actions">
-                    <button class="bouton" type="submit"><?= e(t('catalogue.photo_enregistrer')) ?></button>
-                    <span class="cat-modifie" hidden><?= e(t('catalogue.non_enregistre')) ?></span>
-                </div>
-            </form>
-            <?php if ($produit['photo']): ?>
-                <form method="post" action="<?= $base ?>/photo/supprimer#photo">
-                    <input type="hidden" name="csrf" value="<?= $jeton ?>">
-                    <button class="bouton bouton--secondaire" type="submit"><?= e(t('catalogue.photo_retirer')) ?></button>
-                </form>
-            <?php endif; ?>
+            <div class="champ">
+                <label for="photo_credit"><?= e(t('catalogue.photo_credit')) ?> <span class="cat-facultatif"><?= e(t('catalogue.facultatif')) ?></span></label>
+                <input id="photo_credit" name="photo_credit" maxlength="255" value="<?= e($credit) ?>" placeholder="<?= e(t('catalogue.photo_credit_exemple')) ?>">
+                <p class="aide"><?= e(t('catalogue.photo_credit_aide')) ?></p>
+            </div>
+            <div class="cat-actions">
+                <button class="bouton" type="submit"><?= e(t('catalogue.photo_enregistrer')) ?></button>
+                <span class="cat-modifie" hidden><?= e(t('catalogue.non_enregistre')) ?></span>
+            </div>
         </div>
-    </div>
+    </form>
+    <?php if ($produit['photo']): ?>
+        <form id="cat-retirer-photo" method="post" action="<?= $base ?>/photo/supprimer#photo" hidden>
+            <input type="hidden" name="csrf" value="<?= $jeton ?>">
+        </form>
+    <?php endif; ?>
 </section>
 
 <!-- 3. Formats et prix -->
@@ -297,4 +290,5 @@ foreach ($vendables as $format) {
     </section>
 <?php endif; ?>
 
+<script src="/assets/js/champ-image.js" defer></script>
 <script src="/assets/js/gestion-catalogue.js" defer></script>
