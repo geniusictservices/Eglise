@@ -80,10 +80,35 @@ if ($module !== null && !isset($modules[$module['module']])) {
     <?php // Téléphone : barre du bas du module (ses écrans disponibles) et retour aux modules, sans menu caché ?>
     <nav class="barre-bas" aria-label="<?= e(t('modules.navigation', ['module' => $nomModule])) ?>">
         <a class="barre-bas__lien" href="/gestion"><?= Icones::svg('modules', 22) ?><span><?= e(t('modules.retour')) ?></span></a>
-        <?php foreach ($modules[$code]['ecrans'] as $ecran): if ($ecran['lien'] === null) { continue; } ?>
-            <a class="barre-bas__lien" href="<?= e($ecran['lien']) ?>" <?= $ecran['cle'] === $module['ecran'] ? 'aria-current="page"' : '' ?>><?= Icones::svg($ecran['icone'], 22) ?><span><?= e(t('ecran.' . $ecran['cle'])) ?></span></a>
+        <?php
+        // Barre étroite : « Garanties » seulement s'il y a une demande en attente (sinon elle reste dans l'accueil et la barre latérale)
+        $garantiesEnAttente = null;
+        foreach ($modules[$code]['ecrans'] as $ecran):
+            if ($ecran['lien'] === null) { continue; }
+            if ($ecran['cle'] === 'garanties' && $ecran['cle'] !== $module['ecran']) {
+                $garantiesEnAttente ??= (int) (App\Core\Database::un("SELECT COUNT(*) AS n FROM dettes WHERE garant_id = ? AND garant_statut = 'en_attente' AND statut = 'ouverte'", [(int) $utilisateur['id']])['n'] ?? 0);
+                if ($garantiesEnAttente === 0) { continue; }
+            }
+        ?>
+            <a class="barre-bas__lien" href="<?= e($ecran['lien']) ?>" <?= $ecran['cle'] === $module['ecran'] ? 'aria-current="page"' : '' ?>><?= Icones::svg($ecran['icone'], 22) ?><span><?= e(($court = t('ecran_court.' . $ecran['cle'])) !== 'ecran_court.' . $ecran['cle'] ? $court : t('ecran.' . $ecran['cle'])) ?></span></a>
         <?php endforeach; ?>
     </nav>
+    <script>
+      // Barre du bas plus large que l'écran : l'écran courant reste visible, et un fondu signale la suite
+      (function () {
+        var barre = document.querySelector('.barre-bas');
+        if (!barre) { return; }
+        var courant = barre.querySelector('[aria-current]');
+        if (courant && courant.scrollIntoView) { courant.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+        function bords() {
+          barre.classList.toggle('barre-bas--suite', barre.scrollLeft + barre.clientWidth < barre.scrollWidth - 2);
+          barre.classList.toggle('barre-bas--avant', barre.scrollLeft > 2);
+        }
+        barre.addEventListener('scroll', bords, { passive: true });
+        window.addEventListener('resize', bords);
+        bords();
+      })();
+    </script>
 <?php endif; ?>
 </body>
 </html>

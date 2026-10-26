@@ -71,4 +71,9 @@ return [
     'ecran.plannings' => 'Plannings',
     'ecran.paie' => 'Paie',
     'ecran.avances' => 'Avances',
+    // Libellés courts de la barre du bas sur téléphone (sinon le libellé de l'écran)
+    'ecran_court.sessions' => 'Sessions',
+    'ecran_court.remboursements' => 'Rembours.',
+    'ecran_court.rapport_creances' => 'Créances',
+    'ecran_court.mouvements_stock' => 'Mouvements',
 ];
