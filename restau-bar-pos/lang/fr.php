@@ -117,7 +117,6 @@ return [
     'caisse.ticket_vide' => 'Touchez un produit pour l\'ajouter au ticket.',
     'caisse.total' => 'Total',
     'caisse.encaisser' => 'Encaisser',
-    'caisse.note_phase3' => 'L\'encaissement et l\'enregistrement des ventes arrivent en phase 3.',
     'caisse.mode_paiement' => 'Moyen de paiement',
     'caisse.especes' => 'Espèces',
     'caisse.mobile_money' => 'Mobile money',

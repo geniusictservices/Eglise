@@ -1,5 +1,6 @@
 // Écran de caisse : grille de produits, ticket en cours, totaux dans chaque devise.
-// Les ventes ne sont pas encore enregistrées (phase 3) : le ticket est gardé dans l'onglet du navigateur.
+// Le ticket en cours est gardé dans l'onglet du navigateur (par personne) jusqu'à l'encaissement,
+// qui l'envoie au serveur (/caisse/encaisser) : le serveur recalcule tout et enregistre la vente.
 // Un produit à tailles (Primus Petite 33 cl, Grande 72 cl) est une seule tuile : ses formats sont ceux de
 // toutes ses tailles, chacun avec le libellé de sa taille ; la ligne du ticket affiche « Primus Grande 72 cl ».
 (function () {
@@ -176,6 +177,9 @@
       nbArticles + ' ' + (nbArticles > 1 ? T.articles : T.article) + ' · ' + T.voirTicket;
     document.getElementById('resume-total').textContent = elTotal.textContent;
     document.getElementById('encaisser-total').textContent = vide ? '' : elTotal.textContent;
+    var peutEncaisser = !vide && D.encaisser;
+    document.getElementById('encaisser').disabled = !peutEncaisser;
+    document.querySelectorAll('.paiements [data-moyen]').forEach(function (b) { b.disabled = !peutEncaisser; });
   }
 
   elVider.addEventListener('click', function () {
@@ -378,6 +382,339 @@
   }
 
   // Quitter la caisse : une icône discrète, confirmée dans une fenêtre (aucun menu sur la caisse)
+  // ---------- Encaissement ----------
+  // Payer en FC, en $ ou les deux ; pour chaque devise, le moyen (espèces, mobile money, banque) et le compte.
+  // Même calcul que le serveur (app/Core/Reglement.php) : chaque paiement couvre une part du ticket dans sa devise.
+  var fenetre = document.getElementById('paiement');
+  var boutonEncaisser = document.getElementById('encaisser');
+  var paiement = null; // { cle, totaux, lignes: [{devise, moyen, compte, recu, saisi}], rendu }
+
+  function pasDe(code) {
+    var d = devises[code];
+    return d.arrondi > 0 ? d.arrondi : Math.pow(10, -d.decimales);
+  }
+  function versLeHaut(m, code) { var p = pasDe(code); return +(Math.ceil(+(m / p).toFixed(6)) * p).toFixed(devises[code].decimales); }
+  function versLeBas(m, code) { var p = pasDe(code); return +(Math.floor(+(m / p).toFixed(6)) * p).toFixed(devises[code].decimales); }
+  function reglement() {
+    var part = 0;
+    paiement.lignes.forEach(function (l) {
+      var t = paiement.totaux[l.devise];
+      if (t > 0 && l.recu > 0) { part += l.recu / t; }
+    });
+    var principale = D.principale;
+    var regle = (1 - part) * paiement.totaux[principale] < pasDe(principale) / 2 - 1e-9;
+    var reste = {}, rendu = {};
+    Object.keys(paiement.totaux).forEach(function (code) {
+      var t = paiement.totaux[code];
+      reste[code] = regle ? 0 : versLeHaut(Math.max(0, (1 - part) * t), code);
+      rendu[code] = regle && part > 1 ? versLeBas((part - 1) * t, code) : 0;
+    });
+    if (!(rendu[principale] > 0)) { Object.keys(rendu).forEach(function (c) { rendu[c] = 0; }); }
+    return { part: part, regle: regle, reste: reste, rendu: rendu };
+  }
+  function comptesPour(code, moyen) {
+    return (D.comptes || []).filter(function (c) { return c.devise === code && (!moyen || c.moyen === moyen); });
+  }
+  function moyensPour(code) {
+    return ['especes', 'mobile_money', 'banque'].filter(function (m) { return comptesPour(code, m).length > 0; });
+  }
+  // Devises où tout le ticket a un prix (et au moins un compte pour encaisser)
+  function devisesPayables() {
+    return D.devises.map(function (d) { return d.code; }).filter(function (code) {
+      return totalEn(code) !== null && moyensPour(code).length > 0;
+    });
+  }
+  function nouvelleLigne(code, moyen) {
+    var moyens = moyensPour(code);
+    var m = moyen && moyens.indexOf(moyen) !== -1 ? moyen : moyens[0];
+    return { devise: code, moyen: m, compte: comptesPour(code, m)[0].id, recu: 0, saisi: false };
+  }
+  function cle() {
+    if (window.crypto && crypto.randomUUID) { return crypto.randomUUID(); }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16);
+    });
+  }
+  function choisirDevises(codes, moyen) {
+    var anciennes = paiement.lignes;
+    paiement.lignes = codes.map(function (code) {
+      return anciennes.filter(function (l) { return l.devise === code; })[0] || nouvelleLigne(code, moyen);
+    });
+    remplirAutomatiquement();
+    dessinerPaiement();
+  }
+  // Une seule devise : le montant exact par défaut ; deux devises : la dernière complète le reste
+  function remplirAutomatiquement() {
+    var lignes = paiement.lignes;
+    if (lignes.length === 1 && !lignes[0].saisi) {
+      lignes[0].recu = paiement.totaux[lignes[0].devise];
+      return;
+    }
+    if (lignes.length > 1) {
+      var derniere = lignes[lignes.length - 1];
+      if (derniere.saisi) { return; }
+      derniere.recu = 0;
+      derniere.recu = reglement().reste[derniere.devise];
+    }
+  }
+  function lireMontant(texte, code) {
+    var n = parseFloat(String(texte).replace(/[\s  ]/g, '').replace(',', '.'));
+    return isFinite(n) && n > 0 ? +n.toFixed(devises[code].decimales) : 0;
+  }
+  function montantSaisie(m, code) {
+    if (!m) { return ''; }
+    var s = String(+m.toFixed(devises[code].decimales));
+    return D.langue === 'fr' ? s.replace('.', ',') : s;
+  }
+  // Montants rapides en espèces : exact, puis les billets ronds au-dessus
+  function montantsRapides(code, du) {
+    var pas = code === 'USD' ? [5, 10, 20, 50, 100] : (devises[code].arrondi >= 100 ? [5000, 10000, 20000, 50000] : [1, 5, 10, 50]);
+    var choix = [du];
+    pas.forEach(function (p) {
+      var v = Math.ceil(du / p) * p;
+      if (v > du && choix.indexOf(v) === -1 && choix.length < 4) { choix.push(v); }
+    });
+    return choix;
+  }
+
+  function ouvrirPaiement(moyen) {
+    if (!D.encaisser || ticket.length === 0) { return; }
+    var payables = devisesPayables();
+    if (payables.length === 0) { return; }
+    var totaux = {};
+    payables.forEach(function (code) { totaux[code] = totalEn(code); });
+    var depart = payables.indexOf(D.principale) !== -1 ? D.principale : payables[0];
+    paiement = { cle: paiement && paiement.cleTicket === JSON.stringify(ticket) ? paiement.cle : cle(), cleTicket: JSON.stringify(ticket), totaux: totaux, lignes: [], rendu: D.principale, envoi: false };
+    paiement.lignes = [nouvelleLigne(depart, moyen)];
+    remplirAutomatiquement();
+    document.getElementById('paiement-corps').hidden = false;
+    document.getElementById('paiement-fin').hidden = true;
+    document.getElementById('paiement-erreur').hidden = true;
+    document.getElementById('paiement-total').textContent = formater(totaux[D.principale] || totaux[depart], totaux[D.principale] ? D.principale : depart);
+    document.getElementById('paiement-autres').textContent = Object.keys(totaux).filter(function (c) { return c !== D.principale; })
+      .map(function (c) { return formater(totaux[c], c); }).join('  ·  ');
+    dessinerChoixDevises();
+    dessinerPaiement();
+    racine.classList.remove('ticket-ouvert');
+    fenetre.showModal();
+  }
+
+  function dessinerChoixDevises() {
+    var zone = document.getElementById('paiement-devises');
+    zone.textContent = '';
+    var payables = Object.keys(paiement.totaux);
+    var options = payables.map(function (code) { return { codes: [code], texte: devises[code].symbole }; });
+    // « Les deux » : la devise locale et le dollar ensemble
+    if (payables.indexOf(D.principale) !== -1 && payables.indexOf('USD') !== -1 && D.principale !== 'USD') {
+      options.push({ codes: ['USD', D.principale], texte: T.lesDeux });
+    }
+    options.forEach(function (o) {
+      var b = el('button', '', o.texte);
+      b.type = 'button';
+      b.dataset.devises = o.codes.join(',');
+      b.addEventListener('click', function () { choisirDevises(o.codes); });
+      zone.appendChild(b);
+    });
+  }
+
+  function dessinerPaiement() {
+    var actives = paiement.lignes.map(function (l) { return l.devise; }).join(',');
+    document.querySelectorAll('#paiement-devises button').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.dataset.devises === actives ? 'true' : 'false');
+    });
+    var zone = document.getElementById('paiement-lignes');
+    zone.textContent = '';
+    paiement.lignes.forEach(function (ligne, i) {
+      var bloc = el('div', 'paiement-ligne');
+      var tete = el('div', 'paiement-ligne__tete');
+      tete.appendChild(el('span', 'paiement-ligne__devise', devises[ligne.devise].symbole));
+      var champ = document.createElement('input');
+      champ.className = 'paiement-ligne__montant';
+      champ.inputMode = 'decimal';
+      champ.autocomplete = 'off';
+      champ.id = 'recu-' + ligne.devise;
+      champ.value = montantSaisie(ligne.recu, ligne.devise);
+      champ.setAttribute('aria-label', T.recu + ' (' + ligne.devise + ')');
+      champ.addEventListener('input', function () {
+        ligne.recu = lireMontant(champ.value, ligne.devise);
+        ligne.saisi = true;
+        if (paiement.lignes.length > 1 && i < paiement.lignes.length - 1) {
+          paiement.lignes[paiement.lignes.length - 1].saisi = false;
+          remplirAutomatiquement();
+          var dernier = document.getElementById('recu-' + paiement.lignes[paiement.lignes.length - 1].devise);
+          if (dernier) { dernier.value = montantSaisie(paiement.lignes[paiement.lignes.length - 1].recu, paiement.lignes[paiement.lignes.length - 1].devise); }
+        }
+        dessinerBilan();
+      });
+      tete.appendChild(champ);
+      tete.appendChild(el('span', 'paiement-ligne__libelle', T.recu));
+      bloc.appendChild(tete);
+
+      var moyens = el('div', 'paiement-ligne__moyens');
+      moyensPour(ligne.devise).forEach(function (m) {
+        var b = el('button', 'puce', T.moyens[m]);
+        b.type = 'button';
+        b.setAttribute('aria-pressed', m === ligne.moyen ? 'true' : 'false');
+        b.addEventListener('click', function () {
+          ligne.moyen = m;
+          ligne.compte = comptesPour(ligne.devise, m)[0].id;
+          dessinerPaiement();
+        });
+        moyens.appendChild(b);
+      });
+      bloc.appendChild(moyens);
+
+      var comptes = comptesPour(ligne.devise, ligne.moyen);
+      if (comptes.length > 1) {
+        var choix = el('div', 'paiement-ligne__comptes');
+        comptes.forEach(function (c) {
+          var b = el('button', 'puce puce--accent', c.nom);
+          b.type = 'button';
+          b.setAttribute('aria-pressed', c.id === ligne.compte ? 'true' : 'false');
+          b.addEventListener('click', function () { ligne.compte = c.id; dessinerPaiement(); });
+          choix.appendChild(b);
+        });
+        bloc.appendChild(choix);
+      }
+      if (ligne.moyen === 'especes') {
+        var rapides = el('div', 'paiement-ligne__rapides');
+        var du = paiement.lignes.length === 1 ? paiement.totaux[ligne.devise] : (function () {
+          var r = ligne.recu; ligne.recu = 0; var reste = reglement().reste[ligne.devise]; ligne.recu = r; return reste;
+        })();
+        if (du > 0) {
+          montantsRapides(ligne.devise, du).forEach(function (v, k) {
+            var b = el('button', 'paiement-rapide', k === 0 ? T.montantExact : formater(v, ligne.devise));
+            b.type = 'button';
+            b.addEventListener('click', function () {
+              ligne.recu = v; ligne.saisi = true;
+              champ.value = montantSaisie(v, ligne.devise);
+              champ.dispatchEvent(new Event('input'));
+            });
+            rapides.appendChild(b);
+          });
+        }
+        bloc.appendChild(rapides);
+      }
+      zone.appendChild(bloc);
+    });
+    dessinerBilan();
+  }
+
+  function dessinerBilan() {
+    var r = reglement();
+    var bilan = document.getElementById('paiement-bilan');
+    bilan.textContent = '';
+    bilan.className = 'paiement-fenetre__bilan' + (r.regle ? ' paiement-fenetre__bilan--regle' : '');
+    var codes = Object.keys(paiement.totaux);
+    if (!r.regle) {
+      bilan.appendChild(el('span', '', T.resteAPayer));
+      bilan.appendChild(el('strong', '', codes.map(function (c) { return formater(r.reste[c], c); }).join('  ·  ')));
+    } else {
+      var aRendre = codes.some(function (c) { return r.rendu[c] > 0; });
+      bilan.appendChild(el('span', '', aRendre ? T.aRendre : T.regle));
+      if (aRendre) {
+        var code = r.rendu[paiement.rendu] > 0 ? paiement.rendu : codes.filter(function (c) { return r.rendu[c] > 0; })[0];
+        paiement.rendu = code;
+        bilan.appendChild(el('strong', '', formater(r.rendu[code], code)));
+      }
+    }
+    // Monnaie : dans une devise où l'établissement a une caisse en espèces
+    var zoneRendu = document.getElementById('paiement-rendu');
+    var possibles = codes.filter(function (c) { return r.rendu[c] > 0 && comptesPour(c, 'especes').length > 0; });
+    zoneRendu.hidden = !(r.regle && possibles.length > 1);
+    var choix = document.getElementById('paiement-rendu-devises');
+    choix.textContent = '';
+    possibles.forEach(function (c) {
+      var b = el('button', '', formater(r.rendu[c], c));
+      b.type = 'button';
+      b.setAttribute('aria-pressed', c === paiement.rendu ? 'true' : 'false');
+      b.addEventListener('click', function () { paiement.rendu = c; dessinerBilan(); });
+      choix.appendChild(b);
+    });
+    document.getElementById('paiement-valider').disabled = !r.regle || paiement.envoi;
+  }
+
+  function erreurPaiement(texte) {
+    var p = document.getElementById('paiement-erreur');
+    p.textContent = texte;
+    p.hidden = false;
+  }
+
+  function validerPaiement() {
+    if (!paiement || paiement.envoi || !reglement().regle) { return; }
+    paiement.envoi = true;
+    var valider = document.getElementById('paiement-valider');
+    valider.disabled = true;
+    valider.textContent = T.envoi;
+    document.getElementById('paiement-erreur').hidden = true;
+    var corps = new FormData();
+    corps.append('csrf', D.csrf);
+    corps.append('vente', JSON.stringify({
+      cle: paiement.cle, etab: D.etab, zone: D.zone,
+      lignes: ticket.map(function (l) { return { id: l.id, qte: l.qte }; }),
+      paiements: paiement.lignes.filter(function (l) { return l.recu > 0; }).map(function (l) {
+        return { devise: l.devise, moyen: l.moyen, compte: l.compte, recu: l.recu };
+      }),
+      rendu: paiement.rendu
+    }));
+    fetch('/caisse/encaisser', { method: 'POST', body: corps, credentials: 'same-origin', headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) { throw new Error(res.j.erreur || T.erreurReseau); }
+        venteTerminee(res.j);
+      })
+      .catch(function (e) {
+        paiement.envoi = false;
+        valider.textContent = document.getElementById('paiement-valider').dataset.texte;
+        erreurPaiement(e.message || T.erreurReseau);
+        dessinerBilan();
+      });
+  }
+
+  function venteTerminee(reponse) {
+    if (reponse.csrf) { D.csrf = reponse.csrf; }
+    var produits = ticket.map(function (l) { return formats[l.id].produit; });
+    ticket = [];
+    sauver();
+    dessinerTicket();
+    produits.forEach(majTuile);
+    document.getElementById('paiement-corps').hidden = true;
+    document.getElementById('paiement-fin').hidden = false;
+    document.getElementById('paiement-recu').innerHTML = reponse.recu;
+    var suivant = document.getElementById('paiement-suivant');
+    paiement.verrouille = reponse.verrouille;
+    if (reponse.verrouille) {
+      suivant.textContent = T.terminer;
+      var note = el('p', 'paiement-fenetre__note', T.verrouillee);
+      document.getElementById('paiement-recu').appendChild(note);
+    }
+    suivant.focus();
+  }
+
+  function terminer() {
+    fenetre.close();
+    if (paiement && paiement.verrouille) { window.location.reload(); }
+    paiement = null;
+  }
+
+  if (fenetre && boutonEncaisser) {
+    var valider = document.getElementById('paiement-valider');
+    valider.dataset.texte = valider.textContent;
+    boutonEncaisser.addEventListener('click', function () { ouvrirPaiement(null); });
+    document.querySelectorAll('.paiements [data-moyen]').forEach(function (b) {
+      b.addEventListener('click', function () { ouvrirPaiement(b.dataset.moyen); });
+    });
+    valider.addEventListener('click', validerPaiement);
+    document.querySelector('[data-fermer-paiement]').addEventListener('click', function () { fenetre.close(); });
+    document.getElementById('paiement-suivant').addEventListener('click', terminer);
+    fenetre.addEventListener('cancel', function (ev) { if (paiement && paiement.verrouille) { ev.preventDefault(); terminer(); } });
+    document.getElementById('paiement-imprimer').addEventListener('click', function () {
+      var zone = document.getElementById('zone-impression');
+      zone.innerHTML = document.getElementById('paiement-recu').querySelector('.recu').outerHTML;
+      window.print();
+    });
+  }
+
   // ---------- Verrouillage automatique (caisse partagée, délai choisi par l'administrateur) ----------
   // Sans toucher l'écran pendant le délai : avertissement 10 s avant, puis retour à « Qui êtes-vous ? ».
   var formVerrou = document.getElementById('form-verrouiller');

@@ -503,3 +503,87 @@ button { cursor: pointer; }
   max-width: calc(100% - 24px); padding: 14px 20px; border-radius: 14px;
   background: var(--encre); color: var(--fond); font-weight: 700; box-shadow: var(--ombre); text-align: center;
 }
+
+/* ---------- Encaissement : payer en FC, en $ ou les deux, moyen et compte, reste et monnaie ---------- */
+.paiement__bientot { display: block; font-size: .6875rem; font-weight: 600; color: var(--doux); }
+.paiement-fenetre {
+  width: min(560px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 0; overflow: auto;
+  border: 1px solid var(--ligne); border-radius: 22px; background: var(--surface); color: var(--encre); box-shadow: var(--ombre);
+}
+.paiement-fenetre::backdrop { background: var(--voile); }
+.paiement-fenetre__corps, .paiement-fenetre__fin { display: grid; gap: 14px; padding: 18px 20px 20px; }
+.paiement-fenetre__tete { display: flex; justify-content: space-between; align-items: center; }
+.paiement-fenetre__tete h2 { margin: 0; font: 600 1.25rem/1.2 var(--police-titre); }
+.paiement-fenetre__total { display: grid; gap: 2px; }
+.paiement-fenetre__total strong { font: 800 2.25rem/1.1 var(--police-titre); font-variant-numeric: tabular-nums; }
+.paiement-fenetre__total span { color: var(--doux); font-weight: 600; font-variant-numeric: tabular-nums; }
+.paiement-fenetre__devises, .paiement-fenetre__rendu { display: grid; gap: 6px; }
+.paiement-fenetre__etiquette { font-size: .8125rem; font-weight: 600; color: var(--doux); }
+.segments--large { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+.segments--large button, .paiement-fenetre__rendu .segments button { width: auto; min-width: 0; height: 46px; padding: 0 12px; font-size: .9375rem; }
+.paiement-fenetre__rendu .segments { display: flex; flex-wrap: wrap; }
+
+.paiement-lignes { display: grid; gap: 10px; }
+.paiement-ligne { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--ligne); border-radius: 16px; background: var(--saisie); }
+.paiement-ligne__tete { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.paiement-ligne__devise { display: grid; place-items: center; min-width: 46px; height: 46px; padding: 0 8px; border-radius: 12px; background: var(--surface-2); font-weight: 800; }
+.paiement-ligne__montant {
+  width: 100%; min-width: 0; height: 52px; padding: 0 12px; border: 1px solid var(--ligne-forte); border-radius: 12px;
+  background: var(--surface); color: var(--encre); font: 700 1.5rem/1 var(--police-titre); font-variant-numeric: tabular-nums; text-align: right; user-select: text;
+}
+.paiement-ligne__montant:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 0; }
+.paiement-ligne__libelle { font-size: .8125rem; color: var(--doux); }
+.paiement-ligne__moyens, .paiement-ligne__comptes, .paiement-ligne__rapides { display: flex; flex-wrap: wrap; gap: 6px; }
+.paiement-rapide {
+  min-height: 40px; padding: 0 12px; border: 1px dashed var(--ligne-forte); border-radius: 10px; background: transparent;
+  font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.paiement-rapide:active { background: var(--surface-2); }
+
+.paiement-fenetre__bilan {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px;
+  padding: 12px 14px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--erreur) 40%, var(--ligne)); background: var(--teinte-erreur);
+}
+.paiement-fenetre__bilan strong { font: 700 1.125rem/1.2 var(--police-titre); font-variant-numeric: tabular-nums; }
+.paiement-fenetre__bilan--regle { border-color: color-mix(in srgb, var(--succes) 45%, var(--ligne)); background: var(--teinte-succes); }
+.paiement-fenetre__erreur { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--teinte-erreur); border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne)); font-weight: 600; }
+.paiement-fenetre__valider { min-height: 60px; border-radius: var(--rayon-carte); font-size: 1.125rem; font-weight: 800; }
+.paiement-fenetre__actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+.paiement-fenetre__actions .bouton { min-height: 56px; }
+.paiement-fenetre__note { margin: 10px 0 0; text-align: center; color: var(--doux); font-size: .875rem; }
+@media (max-width: 600px) {
+  .paiement-fenetre { width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; border-radius: 0; border: 0; }
+  .paiement-fenetre__total strong { font-size: 1.875rem; }
+}
+
+/* ---------- Reçu (ticket de caisse) ---------- */
+.recu { max-width: 340px; margin: 0 auto; padding: 16px; border: 1px dashed var(--ligne-forte); border-radius: 12px; background: var(--saisie); font-size: .875rem; }
+.recu__tete { text-align: center; }
+.recu__etab { margin: 0; font: 800 1.0625rem/1.2 var(--police-titre); }
+.recu__info { margin: 2px 0 0; color: var(--doux); font-size: .8125rem; }
+.recu__meta { display: grid; gap: 2px; margin: 12px 0; padding: 8px 0; border-block: 1px dashed var(--ligne-forte); }
+.recu__meta div { display: flex; justify-content: space-between; gap: 8px; }
+.recu__meta dt { color: var(--doux); }
+.recu__meta dd { margin: 0; font-weight: 600; text-align: right; }
+.recu__lignes, .recu__paiements { width: 100%; border-collapse: collapse; }
+.recu__lignes td, .recu__paiements td { padding: 3px 0; vertical-align: top; }
+.recu__lignes small, .recu__paiements small { color: var(--doux); }
+.recu__qte { width: 2.6em; white-space: nowrap; color: var(--doux); }
+.recu__montant { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; padding-left: 8px; }
+.recu__total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--ligne-forte); }
+.recu__total strong { font: 800 1.375rem/1.1 var(--police-titre); font-variant-numeric: tabular-nums; }
+.recu__equivalent { margin: 2px 0 10px; text-align: right; color: var(--doux); font-variant-numeric: tabular-nums; }
+.recu__paiements { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--ligne-forte); }
+.recu__rendu td { font-weight: 700; }
+.recu__merci { margin: 12px 0 0; text-align: center; font-weight: 600; }
+.recu__annule { margin: 0 0 8px; padding: 6px; text-align: center; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--erreur); border: 2px solid var(--erreur); border-radius: 8px; }
+
+/* Impression : seulement le reçu, au format d'une imprimante de tickets (80 mm) */
+#zone-impression { display: none; }
+@media print {
+  @page { size: 80mm auto; margin: 4mm; }
+  body > *:not(#zone-impression) { display: none !important; }
+  #zone-impression { display: block !important; }
+  #zone-impression .recu { max-width: none; border: 0; padding: 0; background: #fff; color: #000; font-size: 11pt; }
+  #zone-impression .recu * { color: #000 !important; }
+}

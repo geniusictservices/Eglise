@@ -117,7 +117,6 @@ return [
     'caisse.ticket_vide' => 'Tap a product to add it to the ticket.',
     'caisse.total' => 'Total',
     'caisse.encaisser' => 'Charge',
-    'caisse.note_phase3' => 'Payment and sales recording come in phase 3.',
     'caisse.mode_paiement' => 'Payment method',
     'caisse.especes' => 'Cash',
     'caisse.mobile_money' => 'Mobile money',

@@ -21,7 +21,7 @@ use App\Repositories\VenteRepository;
 /**
  * Écran de caisse : produits en grille et ticket en cours.
  * L'écran s'adapte au type d'établissement (mode comptoir rapide et thème sombre pour un nightclub).
- * L'enregistrement des ventes et l'encaissement arrivent en phase 3.
+ * L'encaissement enregistre la vente (encaisser()) : prix recalculés, paiements dans la trésorerie.
  */
 final class CaisseController
 {

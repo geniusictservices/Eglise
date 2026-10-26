@@ -12,7 +12,8 @@ namespace App\Core;
  * - le reste à payer s'affiche dans chaque devise, arrondi vers le haut (on ne demande jamais trop peu) ;
  * - le ticket est réglé quand le reste, dans la devise du ticket, est inférieur à la moitié de son
  *   pas d'arrondi (moins de 50 FC pour un arrondi à 100) ;
- * - la monnaie se rend dans la devise choisie, arrondie vers le bas à son pas.
+ * - la monnaie se rend dans la devise choisie, arrondie vers le bas à son pas ; un excédent plus petit que
+ *   le pas de la devise du ticket ne se rend pas (sinon 40 FC d'écart deviendraient « 0,01 $ à rendre »).
  *
  * Le même calcul tourne dans la caisse (caisse.js) pour l'affichage ; le serveur refait tout.
  */
@@ -45,6 +46,10 @@ final class Reglement
             $reste[$code] = $regle ? 0.0 : self::versLeHaut(max(0.0, (1 - $part) * $total), $devises[$code] ?? []);
             $exces = ($part - 1) * $total;
             $rendu[$code] = $regle && $exces > 0 ? self::versLeBas($exces, $devises[$code] ?? []) : 0.0;
+        }
+        // Un excédent plus petit que le pas de la devise du ticket (quelques FC) ne se rend dans aucune devise
+        if (($rendu[$principale] ?? 0.0) <= 0) {
+            $rendu = array_map(static fn () => 0.0, $rendu);
         }
         return ['part' => $part, 'regle' => $regle, 'reste' => $reste, 'rendu' => $rendu];
     }

@@ -21,8 +21,21 @@ $textes = [
     'ajouter' => t('caisse.ajouter'),
     'quantite' => t('caisse.quantite'),
     'verrouBientot' => t('verrou.bientot'),
+    'moyens' => ['especes' => t('caisse.especes'), 'mobile_money' => t('caisse.mobile_money'), 'banque' => t('caisse.banque')],
+    'lesDeux' => t('paiement.les_deux'),
+    'recu' => t('paiement.recu'),
+    'resteAPayer' => t('paiement.reste'),
+    'regle' => t('paiement.regle'),
+    'aRendre' => t('paiement.a_rendre'),
+    'montantExact' => t('paiement.exact'),
+    'compte' => t('paiement.compte'),
+    'aucunCompte' => t('paiement.aucun_compte'),
+    'envoi' => t('paiement.envoi'),
+    'erreurReseau' => t('paiement.erreur_reseau'),
+    'terminer' => t('paiement.terminer'),
+    'verrouillee' => t('paiement.verrouillee'),
 ];
-$json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
+$json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'csrf' => App\Core\Session::jetonCsrf()], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
 ?>
 <div class="caisse" data-mode="<?= e($donnees['mode']) ?>" id="caisse">
     <header class="haut">
@@ -98,13 +111,15 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
                 <p class="totaux__autres" id="autres-devises"></p>
             </div>
             <div class="paiements" role="group" aria-label="<?= e(t('caisse.mode_paiement')) ?>">
-                <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.especes')) ?></button>
-                <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.mobile_money')) ?></button>
-                <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.banque')) ?></button>
-                <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.credit_client')) ?></button>
+                <button type="button" class="paiement" data-moyen="especes" disabled><?= e(t('caisse.especes')) ?></button>
+                <button type="button" class="paiement" data-moyen="mobile_money" disabled><?= e(t('caisse.mobile_money')) ?></button>
+                <button type="button" class="paiement" data-moyen="banque" disabled><?= e(t('caisse.banque')) ?></button>
+                <button type="button" class="paiement" disabled title="<?= e(t('modules.bientot')) ?>"><?= e(t('caisse.credit_client')) ?> <span class="paiement__bientot"><?= e(t('modules.bientot')) ?></span></button>
             </div>
-            <button type="button" class="encaisser bouton bouton--large" disabled aria-describedby="note-encaisser"><?= e(t('caisse.encaisser')) ?> <span id="encaisser-total"></span></button>
-            <p class="note" id="note-encaisser"><?= e(t('caisse.note_phase3')) ?></p>
+            <button type="button" class="encaisser bouton bouton--large" id="encaisser" disabled><?= e(t('caisse.encaisser')) ?> <span id="encaisser-total"></span></button>
+            <?php if (!$donnees['encaisser']): ?>
+                <p class="note" id="note-encaisser"><?= e(t('paiement.pas_le_droit')) ?></p>
+            <?php endif; ?>
         </aside>
     </div>
 
@@ -155,6 +170,42 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
             <form method="dialog"><button class="bouton bouton--secondaire" value="rester"><?= e(t('caisse.quitter_non')) ?></button></form>
         </div>
     </dialog>
+
+    <dialog class="paiement-fenetre" id="paiement" aria-labelledby="paiement-titre">
+        <div class="paiement-fenetre__corps" id="paiement-corps">
+            <div class="paiement-fenetre__tete">
+                <h2 id="paiement-titre"><?= e(t('paiement.titre')) ?></h2>
+                <button type="button" class="icone" data-fermer-paiement title="<?= e(t('caisse.annuler')) ?>">
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z"/></svg>
+                    <span class="visuellement-cache"><?= e(t('caisse.annuler')) ?></span>
+                </button>
+            </div>
+            <div class="paiement-fenetre__total">
+                <strong id="paiement-total"></strong>
+                <span id="paiement-autres"></span>
+            </div>
+            <div class="paiement-fenetre__devises" role="group" aria-label="<?= e(t('paiement.payer_en')) ?>">
+                <span class="paiement-fenetre__etiquette"><?= e(t('paiement.payer_en')) ?></span>
+                <div class="segments segments--large" id="paiement-devises"></div>
+            </div>
+            <div id="paiement-lignes" class="paiement-lignes"></div>
+            <div class="paiement-fenetre__bilan" id="paiement-bilan" aria-live="polite"></div>
+            <div class="paiement-fenetre__rendu" id="paiement-rendu" hidden>
+                <span class="paiement-fenetre__etiquette"><?= e(t('paiement.rendre_en')) ?></span>
+                <div class="segments" id="paiement-rendu-devises"></div>
+            </div>
+            <p class="paiement-fenetre__erreur" id="paiement-erreur" role="alert" hidden></p>
+            <button type="button" class="bouton bouton--large paiement-fenetre__valider" id="paiement-valider" disabled><?= e(t('paiement.valider')) ?></button>
+        </div>
+        <div class="paiement-fenetre__fin" id="paiement-fin" hidden>
+            <div id="paiement-recu"></div>
+            <div class="paiement-fenetre__actions">
+                <button type="button" class="bouton bouton--secondaire" id="paiement-imprimer"><?= e(t('paiement.imprimer')) ?></button>
+                <button type="button" class="bouton" id="paiement-suivant"><?= e(t('paiement.nouvelle_vente')) ?></button>
+            </div>
+        </div>
+    </dialog>
+    <div id="zone-impression" aria-hidden="true"></div>
 
     <dialog class="formats" id="formats">
         <form method="dialog">
