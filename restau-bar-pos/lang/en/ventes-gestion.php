@@ -70,6 +70,7 @@ return [
     'gventes.erreur_motif_long' => 'The reason must not exceed {n} characters.',
     'gventes.erreur_confirmer' => 'Tick the box to confirm the cancellation.',
     'gventes.erreur_deja_annulee' => 'This sale is already cancelled: it cannot be cancelled twice.',
+    'gventes.erreur_credit_rembourse' => 'Part of this ticket is on credit and the customer has already repaid: cancel the repayment first (Sales > Repayments).',
     'gventes.annulee_flash' => 'Sale {numero} cancelled. The payments have left the accounts.',
 
     // Report

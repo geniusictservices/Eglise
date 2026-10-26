@@ -52,6 +52,29 @@ final class I18n
         return $texte;
     }
 
+    /** @var array<string, array<string, string>> textes des autres langues, chargés à la demande */
+    private static array $autres = [];
+
+    /** Texte dans une langue donnée (SMS au client dans sa langue, quelle que soit celle de l'interface). */
+    public static function dans(string $langue, string $cle, array $params = []): string
+    {
+        if (!in_array($langue, Config::get('langues', ['fr']), true)) {
+            $langue = Config::get('langue_defaut', 'fr');
+        }
+        if (!isset(self::$autres[$langue])) {
+            $textes = require RACINE . '/lang/' . $langue . '.php';
+            foreach (glob(RACINE . '/lang/' . $langue . '/*.php') ?: [] as $fichier) {
+                $textes = array_merge($textes, require $fichier);
+            }
+            self::$autres[$langue] = $textes;
+        }
+        $texte = self::$autres[$langue][$cle] ?? $cle;
+        foreach ($params as $nom => $valeur) {
+            $texte = str_replace('{' . $nom . '}', (string) $valeur, $texte);
+        }
+        return $texte;
+    }
+
     private static function depuisNavigateur(array $langues): ?string
     {
         $entete = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';

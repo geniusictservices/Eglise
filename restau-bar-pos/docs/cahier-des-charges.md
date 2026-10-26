@@ -211,6 +211,14 @@ Le **super admin** n'est pas un rôle de l'instance : il n'existe que dans la co
 - **Avances et soldes positifs** : le client dépose de l'argent à l'avance (lien avec le cashless).
 - **Annulation ou remise de dette** réservée au gérant, avec un motif obligatoire.
 
+### 7.2 bis Décidé et fait : ardoise, garant, relances
+- **À la caisse**, « Crédit client » (raccourci du panneau) ou « Mettre à l'ardoise » dans la fenêtre d'encaissement : le client paie une partie (ou rien) et le reste va à son ardoise, en FC ou en $. Le client se trouve par son nom ou son téléphone, ou se crée sur place (nom, téléphone, rappels par WhatsApp ou SMS). On indique **qui a servi**, un **garant** facultatif et l'**échéance** (délai de l'établissement, 7 jours par défaut). Droit « caisse.credit » ; le serveur refuse un plafond dépassé, une ardoise en retard ou un crédit bloqué, sauf pour qui a « dettes.gerer » et coche « Forcer » (inscrit au journal). Pas de monnaie rendue sur une ardoise.
+- **La dette engage la personne qui a servi**, sauf si un **garant** (un autre agent, le gérant, le promoteur…) l'accepte. Le garant **confirme plus tard** : la demande s'ouvre à la caisse quand il se connecte (et dans la gestion) ; tant qu'il n'a pas accepté, la personne qui a servi reste responsable ; s'il accepte, il devient le responsable ; s'il refuse, rien ne change.
+- **Si le client ne paie pas, le gérant décide** : après l'échéance, il peut **mettre la dette à la charge du responsable** ; elle devient une dette du personnel (fiche client « personnel » liée à l'utilisateur), à retenir sur la paie quand le module Paie sera prêt. Il peut aussi changer le responsable, annuler une dette (sans remboursement) ou la remettre, avec un motif.
+- **Remboursement à la caisse** (« Ardoises », droit « caisse.rembourser ») ou dans la gestion (« dettes.rembourser ») : un montant dans une devise, sur un compte qui la tient ; il règle d'abord les ardoises les plus anciennes, converti au taux du jour ; un montant plus grand que la dette est refusé ; reçu imprimable avec le reste dû. Un remboursement saisi par erreur s'annule (gérant, motif).
+- **Annuler une vente** annule sa part à crédit, sauf si le client a déjà remboursé (annuler d'abord le remboursement).
+- **Relances automatiques seulement** (pas de bouton « Relancer ») : script `bin/relances.php` lancé chaque heure par le planificateur du serveur. À partir de l'heure réglée (10 h), la veille de l'échéance puis à J+1, J+7 et J+30 (étapes réglables), le client reçoit un SMS (Africa's Talking) ou un message WhatsApp Business (modèle approuvé par Meta), dans sa langue et sur son canal préféré, l'autre canal servant de secours. **Le responsable est prévenu aussi** (réglable), et le garant désigné reçoit la demande. Chaque message ne part qu'une fois ; tout est inscrit au journal des messages ; sans clés d'API, les messages sont seulement inscrits. Les clés ne sont jamais réaffichées.
+
 ### 7.3 Rapports
 - Total des créances en cours, et ancienneté : 0–30 jours, 31–60 jours, plus de 60 jours.
 - Dettes par client, par employé qui a accordé le crédit, par établissement, par devise.
@@ -577,6 +585,7 @@ Chaque phase est utilisable seule.
 | Connexion | Gestion : téléphone ou e-mail et mot de passe ; caisse : PIN de 6 chiffres sur un appareil autorisé, verrouillage après chaque encaissement (section 6.3) |
 | Navigation | Après la connexion, écran des modules ; dans un module, barre latérale sur ordinateur et barre du bas sur téléphone, sans menu caché |
 | Rapports du personnel | Serveur ou serveuse de la période (classement configurable) et dettes des clients liées à chaque utilisateur (section 13.7) |
+| Ardoises (dettes) | La dette engage la personne qui a servi, sauf si un garant (agent, gérant, promoteur) l'accepte plus tard ; après l'échéance, le gérant décide de la mettre à la charge du responsable ; relances automatiques seulement, par SMS (Africa's Talking) ou WhatsApp Business, au client et au responsable (section 7.2 bis) |
 
 ## 18. Questions ouvertes
 

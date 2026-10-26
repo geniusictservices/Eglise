@@ -34,7 +34,19 @@ $textes = [
     'erreurReseau' => t('paiement.erreur_reseau'),
     'terminer' => t('paiement.terminer'),
     'verrouillee' => t('paiement.verrouillee'),
+    'imprimerRecu' => t('paiement.imprimer'),
+    'payerEn' => t('paiement.payer_en'),
 ];
+// Textes de l'ardoise (caisse-ardoise.js) : « ardoise.* », « garantie.* », « rembourser.* » de lang/<langue>/dettes.php
+foreach (['ardoise' => ['mettre', 'titre', 'retirer', 'chercher', 'nouveau', 'nom', 'telephone', 'whatsapp', 'creer', 'aucun', 'changer',
+                        'doit', 'rien_du', 'en_retard', 'bloque', 'montant', 'servi_par', 'servi_aide', 'garant', 'sans_garant',
+                        'garant_aide', 'echeance', 'forcer', 'choisir_client', 'trop_ardoise'],
+          'garantie' => ['une', 'plusieurs', 'texte', 'accepter', 'refuser', 'aucune'],
+          'rembourser' => ['dettes', 'du_le', 'echeance', 'tout', 'ordre', 'valider', 'autre']] as $groupe => $cles) {
+    foreach ($cles as $cle) {
+        $textes[$groupe][$cle] = t($groupe . '.' . $cle);
+    }
+}
 // Raccourcis du panneau : le premier compte de chaque type (celui de l'établissement avant les communs)
 $raccourcis = [];
 foreach ($donnees['comptes'] as $compte) {
@@ -74,6 +86,15 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
         </div>
 
         <div class="haut__reglages">
+            <?php if ($donnees['garanties'] !== []): ?>
+                <button type="button" class="haut__garanties" id="garanties" aria-haspopup="dialog"><span></span></button>
+            <?php endif; ?>
+            <?php if ($donnees['rembourser']): ?>
+                <button type="button" class="haut__ardoises" id="ardoises" aria-haspopup="dialog" title="<?= e(t('rembourser.titre')) ?>">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+                    <span><?= e(t('rembourser.bouton')) ?></span>
+                </button>
+            <?php endif; ?>
             <div class="segments" role="group" aria-label="<?= e(t('caisse.taille_tuiles')) ?>">
                 <button type="button" data-taille="petite" aria-pressed="false" title="<?= e(t('caisse.taille_petite')) ?>">S</button>
                 <button type="button" data-taille="moyenne" aria-pressed="false" title="<?= e(t('caisse.taille_moyenne')) ?>">M</button>
@@ -122,7 +143,12 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
                         <span class="paiement__type"><?= e(t('tresorerie.type_' . $compte['type'])) ?></span>
                     </button>
                 <?php endforeach; ?>
-                <button type="button" class="paiement" disabled title="<?= e(t('modules.bientot')) ?>"><?= e(t('caisse.credit_client')) ?> <span class="paiement__bientot"><?= e(t('modules.bientot')) ?></span></button>
+                <?php if ($donnees['credit']): ?>
+                    <button type="button" class="paiement" data-ardoise disabled>
+                        <span class="paiement__nom"><?= e(t('caisse.credit_client')) ?></span>
+                        <span class="paiement__type"><?= e(t('ardoise.montant')) ?></span>
+                    </button>
+                <?php endif; ?>
             </div>
             <button type="button" class="encaisser bouton bouton--large" id="encaisser" disabled><?= e(t('caisse.encaisser')) ?> <span id="encaisser-total"></span></button>
             <?php if (!$donnees['encaisser']): ?>
@@ -214,6 +240,30 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
         </div>
     </dialog>
     <div id="zone-impression" aria-hidden="true"></div>
+
+    <?php if ($donnees['garanties'] !== []): ?>
+        <dialog class="formats garanties-fenetre" id="fenetre-garanties" aria-labelledby="garanties-titre">
+            <h2 id="garanties-titre"><?= e(t('garantie.titre')) ?></h2>
+            <p class="quitter__texte"><?= e(t('garantie.aide')) ?></p>
+            <div class="garanties-liste" id="garanties-liste"></div>
+            <form method="dialog"><button class="bouton bouton--secondaire" value="plus-tard"><?= e(t('garantie.plus_tard')) ?></button></form>
+        </dialog>
+    <?php endif; ?>
+
+    <?php if ($donnees['rembourser']): ?>
+        <dialog class="paiement-fenetre" id="fenetre-ardoises" aria-labelledby="ardoises-titre">
+            <div class="paiement-fenetre__corps">
+                <div class="paiement-fenetre__tete">
+                    <h2 id="ardoises-titre"><?= e(t('rembourser.titre')) ?></h2>
+                    <button type="button" class="icone" data-fermer-ardoises title="<?= e(t('rembourser.fermer')) ?>">
+                        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z"/></svg>
+                        <span class="visuellement-cache"><?= e(t('rembourser.fermer')) ?></span>
+                    </button>
+                </div>
+                <div id="ardoises-corps" class="ardoises-corps"></div>
+            </div>
+        </dialog>
+    <?php endif; ?>
 
     <dialog class="formats" id="formats">
         <form method="dialog">

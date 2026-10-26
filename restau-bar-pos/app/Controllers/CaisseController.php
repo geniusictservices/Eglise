@@ -13,6 +13,7 @@ use App\Core\Reglement;
 use App\Core\Session;
 use App\Core\View;
 use App\Repositories\CatalogueRepository;
+use App\Repositories\DetteRepository;
 use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
 use App\Repositories\VenteRepository;
@@ -77,8 +78,17 @@ final class CaisseController
         $zone = $contexte['zone'];
         $donnees = $contexte['donnees'];
         // Comptes de trésorerie où peuvent entrer les paiements de cet établissement, par type, avec leurs devises
-        $donnees['comptes'] = $this->comptesCaisse($id, $contexte['acceptees']);
+        $donnees['comptes'] = self::comptesCaisse($id, $contexte['acceptees']);
         $donnees['encaisser'] = Acces::a($personne['id'], 'caisse.encaisser', $id);
+        // Ardoise : mettre à crédit (caisse.credit), passer outre plafond et retard (dettes.gerer), rembourser (caisse.rembourser)
+        $donnees['credit'] = $donnees['encaisser'] && Acces::a($personne['id'], 'caisse.credit', $id);
+        $donnees['forcer'] = Acces::a($personne['id'], 'dettes.gerer', $id);
+        $donnees['rembourser'] = Acces::a($personne['id'], 'caisse.rembourser', $id);
+        $donnees['moi'] = $personne['id'];
+        $donnees['personnel'] = $donnees['credit'] ? self::personnel($id) : [];
+        $donnees['delai'] = (int) $etab['credit_delai_jours'];
+        $donnees['aujourdhui'] = date('Y-m-d');
+        $donnees['garanties'] = CaisseDetteController::garantiesJson($personne['id']);
         $donnees['etab'] = $etab['slug'];
         $donnees['zone'] = $zone['code'] ?? '';
         $personne['avatar'] = Database::un('SELECT avatar FROM utilisateurs WHERE id = ?', [$personne['id']])['avatar'] ?? null;
@@ -94,7 +104,7 @@ final class CaisseController
             'aLaGestion' => Acces::aLaGestion($personne['id']),
             'peutAutoriser' => $appareil === null && Acces::a($personne['id'], 'caisse.appareils', $id),
             'photoPermise' => (bool) $etab['photo_a_la_caisse'],
-            'scripts' => ['/assets/js/caisse.js', '/assets/js/photo-profil.js'],
+            'scripts' => ['/assets/js/caisse.js', '/assets/js/caisse-ardoise.js', '/assets/js/photo-profil.js'],
             'messagePhoto' => $messagePhoto,
             'etab' => $etab,
             'etablissements' => $liste,
@@ -117,16 +127,11 @@ final class CaisseController
     private function contexte(array $etab, ?string $codeZone): array
     {
         $etablissements = new EtablissementRepository();
-        $devises = new DeviseRepository();
         $id = (int) $etab['id'];
         $zone = $codeZone !== null && $codeZone !== '' ? $etablissements->zoneParCode($id, $codeZone) : null;
         $grilleDefaut = (int) $etab['grille_prix_id'];
         $grille = $zone && $zone['grille_prix_id'] ? (int) $zone['grille_prix_id'] : $grilleDefaut;
-        $acceptees = $devises->accepteesParmi($etablissements->deviseIds($id));
-        // Tickets en devise locale, le dollar en deuxième position (ordre de DeviseRepository::actives())
-        $locale = $devises->locale();
-        $principale = ($locale ? ($acceptees[(int) $locale['id']] ?? null) : null)
-            ?? $acceptees[(int) $etab['devise_affichage_id']] ?? $devises->reference() ?? reset($acceptees);
+        ['acceptees' => $acceptees, 'principale' => $principale] = self::devisesCaisse($etab);
         return [
             'zone' => $zone, 'grille' => $grille, 'grilleDefaut' => $grilleDefaut, 'acceptees' => $acceptees, 'principale' => $principale,
             'donnees' => $this->donnees($id, $grille, $grilleDefaut, $acceptees, $principale, $etab['type']),
@@ -134,11 +139,26 @@ final class CaisseController
     }
 
     /**
+     * Devises acceptées par l'établissement et devise du ticket : la devise locale, le dollar en deuxième
+     * position (ordre de DeviseRepository::actives()).
+     * @return array{acceptees: array<int, array>, principale: array}
+     */
+    public static function devisesCaisse(array $etab): array
+    {
+        $devises = new DeviseRepository();
+        $acceptees = $devises->accepteesParmi((new EtablissementRepository())->deviseIds((int) $etab['id']));
+        $locale = $devises->locale();
+        $principale = ($locale ? ($acceptees[(int) $locale['id']] ?? null) : null)
+            ?? $acceptees[(int) $etab['devise_affichage_id']] ?? $devises->reference() ?? reset($acceptees);
+        return ['acceptees' => $acceptees, 'principale' => $principale];
+    }
+
+    /**
      * Comptes actifs de l'établissement (ou communs à tous) qui tiennent au moins une devise acceptée,
      * rangés par type (caisse, mobile money, banque) puis ceux de l'établissement avant les communs.
      * @return list<array{id: int, nom: string, type: string, commun: bool, devises: list<string>}>
      */
-    private function comptesCaisse(int $etablissementId, array $acceptees): array
+    public static function comptesCaisse(int $etablissementId, array $acceptees): array
     {
         $codes = array_column($acceptees, 'code', 'id');
         $lignes = Database::tous(
@@ -167,11 +187,29 @@ final class CaisseController
     }
 
     /**
+     * Personnes de l'établissement (un rôle pour lui ou pour tous) : qui a servi le client, et garants possibles
+     * (un autre agent, le gérant, le promoteur…). « vend » : peut servir (caisse.vendre).
+     * @return list<array{id: int, nom: string, avatar: ?string, vend: bool}>
+     */
+    public static function personnel(int $etablissementId): array
+    {
+        $lignes = Database::tous(
+            'SELECT DISTINCT u.id, u.nom, u.avatar FROM utilisateurs u JOIN utilisateur_roles ur ON ur.utilisateur_id = u.id
+              WHERE u.actif = 1 AND (ur.etablissement_id IS NULL OR ur.etablissement_id = ?) ORDER BY u.nom',
+            [$etablissementId]
+        );
+        return array_map(static fn (array $u) => [
+            'id' => (int) $u['id'], 'nom' => $u['nom'], 'avatar' => $u['avatar'],
+            'vend' => Acces::a((int) $u['id'], 'caisse.vendre', $etablissementId),
+        ], $lignes);
+    }
+
+    /**
      * Personne qui vend sur ce navigateur et son établissement : la personne connectée par PIN
      * (caisse partagée), ou le compte de gestion (appareil personnel, établissement « e »).
      * @return array{personne: array, etab: array, appareil: ?array}|null
      */
-    private function vendeur(?string $slug): ?array
+    public static function vendeur(?string $slug): ?array
     {
         $etablissements = new EtablissementRepository();
         $appareil = CaissePartagee::appareil();
@@ -202,7 +240,7 @@ final class CaisseController
         if (!is_array($demande)) {
             $this->repondre(422, ['erreur' => t('encaisser.illisible')]);
         }
-        $vendeur = $this->vendeur(is_string($demande['etab'] ?? null) ? $demande['etab'] : null);
+        $vendeur = self::vendeur(is_string($demande['etab'] ?? null) ? $demande['etab'] : null);
         if ($vendeur === null) {
             $this->repondre(401, ['erreur' => t('encaisser.connexion')]);
         }
@@ -262,7 +300,7 @@ final class CaisseController
 
         // Paiements : un compte de cet établissement (ou commun) qui tient la devise, montant positif ;
         // le moyen enregistré est le type du compte (caisse, mobile money, banque)
-        $comptes = array_column($this->comptesCaisse($etabId, $contexte['acceptees']), null, 'id');
+        $comptes = array_column(self::comptesCaisse($etabId, $contexte['acceptees']), null, 'id');
         $paiements = [];
         foreach (is_array($demande['paiements'] ?? null) ? $demande['paiements'] : [] as $p) {
             $code = is_string($p['devise'] ?? null) ? $p['devise'] : '';
@@ -273,16 +311,22 @@ final class CaisseController
             }
             $paiements[] = ['moyen' => $compte['type'], 'compte' => $compte, 'devise' => $acceptees[$code], 'recu' => $recu, 'taux' => $this->taux($acceptees[$code])];
         }
-        if ($paiements === []) {
+        $credit = is_array($demande['credit'] ?? null) ? $this->credit($demande['credit'], $personne, $etab, $totaux, $acceptees) : null;
+        if ($paiements === [] && $credit === null) {
             $this->repondre(422, ['erreur' => t('encaisser.sans_paiement')]);
         }
-        $reglement = Reglement::calculer(
-            $totaux, $acceptees,
-            array_map(static fn (array $p) => ['devise' => $p['devise']['code'], 'recu' => $p['recu']], $paiements),
-            $principale['code']
-        );
+        // L'ardoise compte comme un paiement dans sa devise : elle couvre sa part du ticket
+        $parts = array_map(static fn (array $p) => ['devise' => $p['devise']['code'], 'recu' => $p['recu']], $paiements);
+        if ($credit !== null) {
+            $parts[] = ['devise' => $credit['devise']['code'], 'recu' => $credit['montant']];
+        }
+        $reglement = Reglement::calculer($totaux, $acceptees, $parts, $principale['code']);
         if (!$reglement['regle']) {
             $this->repondre(422, ['erreur' => t('encaisser.reste', ['reste' => $this->devisesRepo()->formater($reglement['reste'][$principale['code']], $principale)])]);
+        }
+        // On ne rend pas de monnaie sur une ardoise : elle ne couvre que le reste
+        if ($credit !== null && array_sum($reglement['rendu']) > 0) {
+            $this->repondre(422, ['erreur' => t('encaisser.credit_trop')]);
         }
 
         // Monnaie rendue dans la devise choisie, depuis une caisse qui tient cette devise :
@@ -319,8 +363,64 @@ final class CaisseController
             'reference' => $reference, 'total_reference' => $reference ? ($totaux[$reference['code']] ?? null) : null,
             'totaux' => array_map(fn (string $code) => ['devise' => $acceptees[$code], 'total' => $totaux[$code], 'taux' => $this->taux($acceptees[$code])], array_keys($totaux)),
             'lignes' => $lignes, 'paiements' => $paiements, 'rendu' => $rendu,
+            'credits' => $credit !== null ? [$credit] : [],
         ]);
         $this->repondreVente($id, $etab, $appareil);
+    }
+
+    /**
+     * Part du ticket mise à l'ardoise d'un client : droit « caisse.credit », client connu, montant dans une devise
+     * du ticket, personne qui a servi et garant parmi le personnel de l'établissement, échéance dans l'année.
+     * Plafond, retard ou crédit bloqué : refusé, sauf pour qui a « dettes.gerer » et coche « Forcer ».
+     * @return array{client_id: int, devise: array, montant: float, echeance: string, servi_par: int, garant_id: ?int, note: ?string}
+     */
+    private function credit(array $c, array $personne, array $etab, array $totaux, array $acceptees): array
+    {
+        $etabId = (int) $etab['id'];
+        if (!Acces::a($personne['id'], 'caisse.credit', $etabId)) {
+            $this->repondre(403, ['erreur' => t('encaisser.credit_droit')]);
+        }
+        $code = is_string($c['devise'] ?? null) ? $c['devise'] : '';
+        $montant = is_numeric($c['montant'] ?? null) ? round((float) $c['montant'], (int) ($acceptees[$code]['decimales'] ?? 2)) : 0.0;
+        $dettes = new DetteRepository();
+        $client = $dettes->client((int) ($c['client'] ?? 0));
+        if (!isset($totaux[$code]) || $montant <= 0 || $montant > 1e12 || $client === null || !$client['actif'] || $client['type'] === 'personnel') {
+            $this->repondre(422, ['erreur' => t('encaisser.credit_invalide')]);
+        }
+        $personnel = array_column(self::personnel($etabId), null, 'id');
+        $servi = (int) ($c['servi'] ?? $personne['id']);
+        $garant = ($c['garant'] ?? null) ? (int) $c['garant'] : null;
+        $echeance = is_string($c['echeance'] ?? null) ? $c['echeance'] : '';
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $echeance);
+        if (!isset($personnel[$servi]) || ($garant !== null && (!isset($personnel[$garant]) || $garant === $servi))
+            || $date === false || $date->format('Y-m-d') !== $echeance || $echeance < date('Y-m-d') || $echeance > date('Y-m-d', strtotime('+365 days'))) {
+            $this->repondre(422, ['erreur' => t('encaisser.credit_invalide')]);
+        }
+        $problemes = $dettes->empechements($client, (int) $acceptees[$code]['id'], $montant);
+        if ($problemes !== []) {
+            $peutForcer = Acces::a($personne['id'], 'dettes.gerer', $etabId);
+            if (!$peutForcer || empty($c['forcer'])) {
+                $messages = array_map(fn (array $p) => match ($p['code']) {
+                    'bloque' => t('encaisser.credit_bloque', ['client' => $client['nom']]),
+                    'retard' => t('encaisser.credit_retard', ['client' => $client['nom'], 'date' => date('d/m/Y', strtotime($p['date']))]),
+                    default => t('encaisser.credit_plafond', [
+                        'client' => $client['nom'],
+                        'encours' => $this->devisesRepo()->formater($p['encours'], $this->devisesRepo()->actives()[$p['devise_id']] ?? $acceptees[$code]),
+                        'plafond' => $this->devisesRepo()->formater($p['plafond'], $this->devisesRepo()->actives()[$p['devise_id']] ?? $acceptees[$code]),
+                    ]),
+                }, $problemes);
+                $this->repondre(422, [
+                    'erreur' => implode(' ', $messages) . ' ' . t($peutForcer ? 'encaisser.credit_forcer' : 'encaisser.credit_gerant'),
+                    'code' => 'credit_refuse', 'peutForcer' => $peutForcer,
+                ]);
+            }
+            Journal::ecrire('credit_force', $client['nom'], ['problemes' => array_column($problemes, 'code'), 'montant' => $montant, 'devise' => $code], $personne['id']);
+        }
+        $note = is_string($c['note'] ?? null) ? trim($c['note']) : '';
+        return [
+            'client_id' => (int) $client['id'], 'devise' => $acceptees[$code], 'montant' => $montant, 'echeance' => $echeance,
+            'servi_par' => $servi, 'garant_id' => $garant, 'note' => $note !== '' ? mb_substr($note, 0, 255) : null,
+        ];
     }
 
     /** Réponse d'une vente enregistrée ; la caisse partagée se verrouille si l'établissement l'exige. */

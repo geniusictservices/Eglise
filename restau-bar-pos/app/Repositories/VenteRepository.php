@@ -63,6 +63,7 @@ final class VenteRepository
                   WHERE t.vente_id = ? ORDER BY d.est_locale DESC, d.code = "USD" DESC, d.position',
                 [$id]
             ),
+            'credits' => (new DetteRepository($this->tresorerie))->dettesDeVente($id),
             // Toutes les devises (même désactivées depuis) pour afficher les montants
             'devises' => array_column((new GestionDeviseRepository())->toutes(), null, 'id'),
             'etablissement' => Database::un('SELECT * FROM etablissements WHERE id = ?', [(int) $vente['etablissement_id']]),
@@ -75,7 +76,9 @@ final class VenteRepository
      *              totaux: list<array{devise: array, total: float, taux: ?float}>,
      *              lignes: list<array{produit_id: int, conditionnement_id: int, libelle: string, format: ?string, quantite: int, prix: float, prix_reference: ?float}>,
      *              paiements: list<array{moyen: string, compte: array, devise: array, recu: float, taux: ?float}>,
-     *              rendu: ?array{montant: float, devise: array, compte: array, taux: ?float}, date?: string} $v
+     *              rendu: ?array{montant: float, devise: array, compte: array, taux: ?float}, date?: string,
+     *              credits?: list<array{client_id: int, devise: array, montant: float, echeance: string, servi_par: ?int, garant_id: ?int, note: ?string}>} $v
+     *        credits : part du ticket mise à l'ardoise d'un client (une dette par ligne, accordée par utilisateur_id)
      *        date (facultative, « Y-m-d H:i:s ») : heure de la vente et de ses mouvements de trésorerie,
      *        maintenant si absente (la caisse ne l'envoie jamais ; bin/demo-ventes.php l'utilise)
      * @return int identifiant de la vente
@@ -152,6 +155,14 @@ final class VenteRepository
                     ]
                 );
                 $this->tresorerie->ajouterMouvement($p['compte'], 'entree', $p['recu'], 'vente', $id, $maintenant, $libelle, $v['utilisateur_id'], (int) $p['devise']['id']);
+            }
+            foreach ($v['credits'] ?? [] as $c) {
+                (new DetteRepository($this->tresorerie))->creer([
+                    'client_id' => $c['client_id'], 'etablissement_id' => (int) $etab['id'], 'vente_id' => $id,
+                    'devise_id' => (int) $c['devise']['id'], 'montant' => $c['montant'], 'echeance' => $c['echeance'],
+                    'servi_par' => $c['servi_par'], 'accorde_par' => $v['utilisateur_id'], 'garant_id' => $c['garant_id'],
+                    'note' => $c['note'] ?? null, 'date' => $maintenant,
+                ]);
             }
             if ($v['rendu'] !== null && $v['rendu']['montant'] > 0) {
                 $this->tresorerie->ajouterMouvement($v['rendu']['compte'], 'sortie', $v['rendu']['montant'], 'vente', $id, $maintenant,

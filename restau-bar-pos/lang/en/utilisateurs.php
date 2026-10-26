@@ -175,7 +175,7 @@ return [
     'perm.caisse.remise' => 'Give a discount',
     'perm.caisse.annuler' => 'Cancel an item already sent',
     'perm.caisse.appareils' => 'Authorise a device as a shared till',
-    'perm.ventes.voir' => 'See sales, customers and debts',
+    'perm.ventes.voir' => 'See sales (tickets)',
     'perm.achats.voir' => 'See purchasing',
     'perm.stock.voir' => 'See stock',
     'perm.personnel.voir' => 'See staff, attendance and schedules',

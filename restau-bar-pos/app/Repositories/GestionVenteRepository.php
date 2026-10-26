@@ -270,6 +270,12 @@ final class GestionVenteRepository
             if ($vente['statut'] !== 'payee') {
                 return 'deja';
             }
+            // La part mise à crédit s'annule avec la vente, sauf si le client a déjà remboursé
+            try {
+                (new DetteRepository($this->tresorerie))->annulerPourVente($id, $utilisateurId, $motif);
+            } catch (\DomainException) {
+                return 'credit_rembourse';
+            }
             $maintenant = date('Y-m-d H:i:s');
             $mouvements = Database::tous(
                 'SELECT * FROM mouvements_tresorerie WHERE nature = \'vente\' AND source_id = ? ORDER BY id',

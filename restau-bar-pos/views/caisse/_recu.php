@@ -6,6 +6,7 @@
  * @var array $vente
  * @var list<array> $lignes
  * @var list<array> $paiements
+ * @var list<array> $credits part à l'ardoise (dettes de la vente)
  * @var list<array> $totaux
  * @var array<int, array> $devises
  * @var array $etablissement
@@ -53,6 +54,9 @@ $autres = array_values(array_filter($totaux, static fn (array $t) => (int) $t['d
         <tbody>
             <?php foreach ($paiements as $p): ?>
                 <tr><td><?= e($p['compte']) ?><br><small><?= e(t('tresorerie.type_' . $p['moyen'])) ?></small></td><td class="recu__montant"><?= e($montant($p['recu'], (int) $p['devise_id'])) ?></td></tr>
+            <?php endforeach; ?>
+            <?php foreach ($credits ?? [] as $c): ?>
+                <tr class="recu__ardoise"><td><?= e(t('recu.ardoise')) ?><br><small><?= e(t('recu.ardoise_detail', ['client' => $c['client_nom'], 'date' => date('d/m/Y', strtotime($c['echeance']))])) ?></small></td><td class="recu__montant"><?= e($montant($c['montant'], (int) $c['devise_id'])) ?></td></tr>
             <?php endforeach; ?>
             <?php if ((float) $vente['rendu'] > 0): ?>
                 <tr class="recu__rendu"><td><?= e(t('recu.rendu')) ?></td><td class="recu__montant"><?= e($montant($vente['rendu'], (int) $vente['rendu_devise_id'])) ?></td></tr>

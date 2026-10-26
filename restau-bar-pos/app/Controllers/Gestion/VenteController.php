@@ -124,6 +124,9 @@ final class VenteController
                 $fiche = $this->ficheOu404($id, $utilisateur);
                 $this->afficherFiche($utilisateur, $fiche, ['annulation' => t('gventes.erreur_deja_annulee')], '', 409);
                 return;
+            case 'credit_rembourse':
+                $this->afficherFiche($utilisateur, $fiche, ['annulation' => t('gventes.erreur_credit_rembourse')], mb_substr($motif, 0, 1000), 409);
+                return;
         }
         Session::flash(t('gventes.annulee_flash', ['numero' => $fiche['vente']['numero']]));
         rediriger('/gestion/ventes/' . (int) $fiche['vente']['id']);

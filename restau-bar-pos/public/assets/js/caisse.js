@@ -179,7 +179,7 @@
     document.getElementById('encaisser-total').textContent = vide ? '' : elTotal.textContent;
     var peutEncaisser = !vide && D.encaisser;
     document.getElementById('encaisser').disabled = !peutEncaisser;
-    document.querySelectorAll('.paiements [data-compte]').forEach(function (b) { b.disabled = !peutEncaisser; });
+    document.querySelectorAll('.paiements [data-compte], .paiements [data-ardoise]').forEach(function (b) { b.disabled = !peutEncaisser; });
   }
 
   elVider.addEventListener('click', function () {
@@ -365,6 +365,17 @@
     if (texte !== undefined) { e.textContent = texte; }
     return e;
   }
+  // Outils partagés avec caisse-ardoise.js (ardoise, remboursement, garanties)
+  window.Caisse = {
+    D: D, T: T, devises: devises, TYPES: ['caisse', 'mobile_money', 'banque'],
+    formater: function (m, c) { return formater(m, c); }, el: function (b, c, t) { return el(b, c, t); },
+    bouton: function (c, t, l) { return bouton(c, t, l); }, cle: function () { return cle(); },
+    comptesPour: function (c, t) { return comptesPour(c, t); }, imprimer: function (html) { imprimer(html); }
+  };
+  function imprimer(html) {
+    document.getElementById('zone-impression').innerHTML = html;
+    window.print();
+  }
   function bouton(classe, texte, libelle) {
     var b = el('button', classe, texte);
     b.type = 'button';
@@ -388,7 +399,8 @@
   // Même calcul que le serveur (app/Core/Reglement.php) : chaque paiement couvre une part du ticket dans sa devise.
   var fenetre = document.getElementById('paiement');
   var boutonEncaisser = document.getElementById('encaisser');
-  var paiement = null; // { cle, totaux, lignes: [{devise, compte, recu, saisi}], rendu }
+  // credit : part mise à l'ardoise d'un client (caisse-ardoise.js dessine son bloc), null sinon
+  var paiement = null; // { cle, totaux, lignes: [{devise, compte, recu, saisi}], credit: {client, devise, montant, saisi, servi, garant, echeance, forcer}, rendu }
 
   function pasDe(code) {
     var d = devises[code];
@@ -396,9 +408,12 @@
   }
   function versLeHaut(m, code) { var p = pasDe(code); return +(Math.ceil(+(m / p).toFixed(6)) * p).toFixed(devises[code].decimales); }
   function versLeBas(m, code) { var p = pasDe(code); return +(Math.floor(+(m / p).toFixed(6)) * p).toFixed(devises[code].decimales); }
-  function reglement() {
+  // L'ardoise compte comme un paiement dans sa devise ; sansArdoise : seulement ce qui est payé maintenant
+  function reglement(sansArdoise) {
     var part = 0;
-    paiement.lignes.forEach(function (l) {
+    var parts = paiement.lignes.slice();
+    if (paiement.credit && !sansArdoise) { parts.push({ devise: paiement.credit.devise, recu: paiement.credit.montant }); }
+    parts.forEach(function (l) {
       var t = paiement.totaux[l.devise];
       if (t > 0 && l.recu > 0) { part += l.recu / t; }
     });
@@ -448,9 +463,19 @@
     remplirAutomatiquement();
     dessinerPaiement();
   }
-  // Une seule devise : le montant exact par défaut ; deux devises : la dernière complète le reste
+  // Une seule devise : le montant exact par défaut ; deux devises : la dernière complète le reste ;
+  // avec une ardoise, c'est elle qui prend le reste (tant que son montant n'a pas été tapé)
   function remplirAutomatiquement() {
     var lignes = paiement.lignes;
+    var credit = paiement.credit;
+    if (credit) {
+      if (!credit.saisi) {
+        credit.montant = 0;
+        var r = reglement();
+        credit.montant = r.regle ? 0 : r.reste[credit.devise];
+      }
+      return;
+    }
     if (lignes.length === 1 && !lignes[0].saisi) {
       lignes[0].recu = paiement.totaux[lignes[0].devise];
       return;
@@ -482,20 +507,21 @@
     return choix;
   }
 
-  function ouvrirPaiement(compteId) {
+  function ouvrirPaiement(compteId, ardoise) {
     if (!D.encaisser || ticket.length === 0) { return; }
     var payables = devisesPayables();
     if (payables.length === 0) { return; }
     var totaux = {};
     payables.forEach(function (code) { totaux[code] = totalEn(code); });
     var depart = payables.indexOf(D.principale) !== -1 ? D.principale : payables[0];
-    paiement = { cle: paiement && paiement.cleTicket === JSON.stringify(ticket) ? paiement.cle : cle(), cleTicket: JSON.stringify(ticket), totaux: totaux, lignes: [], rendu: D.principale, envoi: false };
+    paiement = { cle: paiement && paiement.cleTicket === JSON.stringify(ticket) ? paiement.cle : cle(), cleTicket: JSON.stringify(ticket), totaux: totaux, lignes: [], credit: null, rendu: D.principale, envoi: false };
     var choisi = compteDe(compteId);
     // Un compte choisi sur le panneau qui ne tient pas la devise du ticket : commencer dans une devise qu'il tient
     if (choisi && choisi.devises.indexOf(depart) === -1) {
       depart = payables.filter(function (c) { return choisi.devises.indexOf(c) !== -1; })[0] || depart;
     }
-    paiement.lignes = [nouvelleLigne(depart, compteId)];
+    paiement.lignes = ardoise ? [] : [nouvelleLigne(depart, compteId)];
+    if (ardoise) { ajouterArdoise(); }
     remplirAutomatiquement();
     document.getElementById('paiement-corps').hidden = false;
     document.getElementById('paiement-fin').hidden = true;
@@ -527,6 +553,32 @@
     });
   }
 
+  // Ardoise ajoutée : les montants proposés d'office repartent de zéro, l'ardoise prend tout le reste
+  function ajouterArdoise() {
+    paiement.lignes.forEach(function (l) { if (!l.saisi) { l.recu = 0; l.saisi = true; } });
+    paiement.credit = {
+      client: null, devise: paiement.totaux[D.principale] !== undefined ? D.principale : Object.keys(paiement.totaux)[0],
+      montant: 0, saisi: false, servi: D.moi, garant: null, echeance: dateDans(D.delai), forcer: false, peutForcer: false
+    };
+  }
+  function retirerArdoise() {
+    paiement.credit = null;
+    if (paiement.lignes.length === 0) { paiement.lignes = [nouvelleLigne(Object.keys(paiement.totaux)[0], null)]; }
+    paiement.lignes.forEach(function (l) { if (!l.recu) { l.saisi = false; } });
+    remplirAutomatiquement();
+    dessinerPaiement();
+  }
+  function dateDans(jours) {
+    var d = new Date(D.aujourdhui + 'T12:00:00');
+    d.setDate(d.getDate() + (jours || 0));
+    return d.toISOString().slice(0, 10);
+  }
+  // Après un changement dans l'ardoise : recalcul du reste, sans redessiner le champ en cours de saisie
+  function ardoiseChangee(redessiner) {
+    remplirAutomatiquement();
+    if (redessiner) { dessinerPaiement(); } else { dessinerBilan(); }
+  }
+
   function dessinerPaiement() {
     var actives = paiement.lignes.map(function (l) { return l.devise; }).join(',');
     document.querySelectorAll('#paiement-devises button').forEach(function (b) {
@@ -548,7 +600,11 @@
       champ.addEventListener('input', function () {
         ligne.recu = lireMontant(champ.value, ligne.devise);
         ligne.saisi = true;
-        if (paiement.lignes.length > 1 && i < paiement.lignes.length - 1) {
+        if (paiement.credit) {
+          remplirAutomatiquement();
+          var champArdoise = document.getElementById('ardoise-montant');
+          if (champArdoise && !paiement.credit.saisi) { champArdoise.value = montantSaisie(paiement.credit.montant, paiement.credit.devise); }
+        } else if (paiement.lignes.length > 1 && i < paiement.lignes.length - 1) {
           paiement.lignes[paiement.lignes.length - 1].saisi = false;
           remplirAutomatiquement();
           var dernier = document.getElementById('recu-' + paiement.lignes[paiement.lignes.length - 1].devise);
@@ -585,8 +641,10 @@
 
       if ((compteDe(ligne.compte) || {}).type === 'caisse') {
         var rapides = el('div', 'paiement-ligne__rapides');
-        var du = paiement.lignes.length === 1 ? paiement.totaux[ligne.devise] : (function () {
-          var r = ligne.recu; ligne.recu = 0; var reste = reglement().reste[ligne.devise]; ligne.recu = r; return reste;
+        var du = paiement.lignes.length === 1 && !paiement.credit ? paiement.totaux[ligne.devise] : (function () {
+          var r = ligne.recu; ligne.recu = 0;
+          var reste = reglement(paiement.credit && !paiement.credit.saisi).reste[ligne.devise];
+          ligne.recu = r; return reste;
         })();
         if (du > 0) {
           montantsRapides(ligne.devise, du).forEach(function (v, k) {
@@ -604,6 +662,15 @@
       }
       zone.appendChild(bloc);
     });
+    // Ardoise : bloc du client à crédit, ou le bouton pour en ajouter une
+    if (paiement.credit && window.Caisse.ardoise) {
+      zone.appendChild(window.Caisse.ardoise.blocCredit(paiement, { changee: ardoiseChangee, retirer: retirerArdoise, montantSaisie: montantSaisie, lireMontant: lireMontant }));
+    } else if (D.credit && window.Caisse.ardoise) {
+      var ajout = bouton('bouton bouton--secondaire paiement-ardoise__ajouter', T.ardoise.mettre);
+      ajout.id = 'ajouter-ardoise';
+      ajout.addEventListener('click', function () { ajouterArdoise(); remplirAutomatiquement(); dessinerPaiement(); });
+      zone.appendChild(ajout);
+    }
     dessinerBilan();
   }
 
@@ -638,7 +705,17 @@
       b.addEventListener('click', function () { paiement.rendu = c; dessinerBilan(); });
       choix.appendChild(b);
     });
-    document.getElementById('paiement-valider').disabled = !r.regle || paiement.envoi;
+    // Ardoise : un client choisi, et pas plus que le reste (pas de monnaie sur une ardoise)
+    var credit = paiement.credit;
+    var aRendreArdoise = credit && codes.some(function (c) { return r.rendu[c] > 0; });
+    var sansClient = credit && !credit.client;
+    if (credit && (aRendreArdoise || sansClient)) {
+      bilan.className = 'paiement-fenetre__bilan';
+      bilan.textContent = '';
+      bilan.appendChild(el('span', '', aRendreArdoise ? T.ardoise.trop_ardoise : T.ardoise.choisir_client));
+      zoneRendu.hidden = true;
+    }
+    document.getElementById('paiement-valider').disabled = !r.regle || paiement.envoi || !!aRendreArdoise || !!sansClient;
   }
 
   function erreurPaiement(texte) {
@@ -648,7 +725,7 @@
   }
 
   function validerPaiement() {
-    if (!paiement || paiement.envoi || !reglement().regle) { return; }
+    if (!paiement || paiement.envoi || !reglement().regle || (paiement.credit && !paiement.credit.client)) { return; }
     paiement.envoi = true;
     var valider = document.getElementById('paiement-valider');
     valider.disabled = true;
@@ -662,12 +739,27 @@
       paiements: paiement.lignes.filter(function (l) { return l.recu > 0; }).map(function (l) {
         return { devise: l.devise, compte: l.compte, recu: l.recu };
       }),
-      rendu: paiement.rendu
+      rendu: paiement.rendu,
+      credit: paiement.credit ? {
+        client: paiement.credit.client.id, devise: paiement.credit.devise, montant: paiement.credit.montant,
+        servi: paiement.credit.servi, garant: paiement.credit.garant, echeance: paiement.credit.echeance, forcer: paiement.credit.forcer
+      } : null
     }));
     fetch('/caisse/encaisser', { method: 'POST', body: corps, credentials: 'same-origin', headers: { Accept: 'application/json' } })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
-        if (!res.ok) { throw new Error(res.j.erreur || T.erreurReseau); }
+        if (!res.ok) {
+          // Plafond ou retard : le gérant peut forcer (case dans le bloc de l'ardoise)
+          if (res.j.code === 'credit_refuse' && res.j.peutForcer && paiement.credit) {
+            paiement.credit.peutForcer = true;
+            paiement.envoi = false;
+            valider.textContent = valider.dataset.texte;
+            dessinerPaiement();
+            erreurPaiement(res.j.erreur);
+            return;
+          }
+          throw new Error(res.j.erreur || T.erreurReseau);
+        }
         venteTerminee(res.j);
       })
       .catch(function (e) {
@@ -711,14 +803,14 @@
     document.querySelectorAll('.paiements [data-compte]').forEach(function (b) {
       b.addEventListener('click', function () { ouvrirPaiement(+b.dataset.compte); });
     });
+    var boutonArdoise = document.querySelector('.paiements [data-ardoise]');
+    if (boutonArdoise) { boutonArdoise.addEventListener('click', function () { ouvrirPaiement(null, true); }); }
     valider.addEventListener('click', validerPaiement);
     document.querySelector('[data-fermer-paiement]').addEventListener('click', function () { fenetre.close(); });
     document.getElementById('paiement-suivant').addEventListener('click', terminer);
     fenetre.addEventListener('cancel', function (ev) { if (paiement && paiement.verrouille) { ev.preventDefault(); terminer(); } });
     document.getElementById('paiement-imprimer').addEventListener('click', function () {
-      var zone = document.getElementById('zone-impression');
-      zone.innerHTML = document.getElementById('paiement-recu').querySelector('.recu').outerHTML;
-      window.print();
+      imprimer(document.getElementById('paiement-recu').querySelector('.recu').outerHTML);
     });
   }
 

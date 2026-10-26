@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\CaisseController;
+use App\Controllers\CaisseDetteController;
 use App\Controllers\Gestion\ConnexionController;
 use App\Controllers\Gestion\ModulesController;
 use App\Controllers\Gestion\QrController;
@@ -57,6 +58,12 @@ $routeur->post('/caisse/verrouiller', [CaisseController::class, 'verrouiller']);
 $routeur->post('/caisse/photo', [CaisseController::class, 'photo']);
 $routeur->post('/caisse/encaisser', [CaisseController::class, 'encaisser']);
 $routeur->post('/caisse/appareil', [CaisseController::class, 'autoriserAppareil']);
+// Ardoises à la caisse : client à crédit, garant, remboursement
+$routeur->get('/caisse/clients', [CaisseDetteController::class, 'chercher']);
+$routeur->post('/caisse/clients', [CaisseDetteController::class, 'creer']);
+$routeur->get('/caisse/clients/{id}', [CaisseDetteController::class, 'client']);
+$routeur->post('/caisse/garanties', [CaisseDetteController::class, 'garantie']);
+$routeur->post('/caisse/rembourser', [CaisseDetteController::class, 'rembourser']);
 
 // Espace de gestion
 $routeur->get('/gestion', [ModulesController::class, 'index']);

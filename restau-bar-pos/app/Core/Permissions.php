@@ -15,15 +15,15 @@ final class Permissions
     public static function parModule(): array
     {
         return [
-            'caisse' => ['caisse.vendre', 'caisse.encaisser', 'caisse.credit', 'caisse.remise', 'caisse.annuler', 'caisse.appareils'],
-            'ventes' => ['ventes.voir', 'ventes.annuler'],
+            'caisse' => ['caisse.vendre', 'caisse.encaisser', 'caisse.credit', 'caisse.rembourser', 'caisse.remise', 'caisse.annuler', 'caisse.appareils'],
+            'ventes' => ['ventes.voir', 'ventes.annuler', 'clients.voir', 'clients.modifier', 'dettes.voir', 'dettes.rembourser', 'dettes.gerer'],
             'achats' => ['achats.voir'],
             'stock' => ['stock.voir'],
             'personnel' => ['personnel.voir', 'personnel.paie'],
             'finance' => ['finance.voir', 'finance.operations', 'finance.comptes', 'finance.taux'],
             'rapports' => ['rapports.voir', 'rapports.marges'],
             'carte' => ['carte.voir', 'carte.modifier', 'carte.prix'],
-            'parametres' => ['parametres.etablissements', 'parametres.utilisateurs'],
+            'parametres' => ['parametres.etablissements', 'parametres.utilisateurs', 'parametres.messagerie'],
         ];
     }
 

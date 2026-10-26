@@ -70,6 +70,7 @@ return [
     'gventes.erreur_motif_long' => 'Le motif ne doit pas dépasser {n} caractères.',
     'gventes.erreur_confirmer' => 'Cochez la case pour confirmer l\'annulation.',
     'gventes.erreur_deja_annulee' => 'Cette vente est déjà annulée : elle ne peut pas l\'être deux fois.',
+    'gventes.erreur_credit_rembourse' => "Une partie de ce ticket est à crédit et le client a déjà remboursé : annulez d'abord le remboursement (Ventes > Remboursements).",
     'gventes.annulee_flash' => 'Vente {numero} annulée. Les paiements sont ressortis des comptes.',
 
     // Rapport

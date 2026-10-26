@@ -258,7 +258,7 @@ button { cursor: pointer; }
   font-weight: 600;
   line-height: 1.15;
 }
-.paiement[data-compte] { display: grid; align-content: center; gap: 2px; padding: 6px 10px; text-align: left; }
+.paiement[data-compte], .paiement[data-ardoise] { display: grid; align-content: center; gap: 2px; padding: 6px 10px; text-align: left; }
 .paiement__nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .paiement__type { font-size: .6875rem; font-weight: 500; color: var(--doux); }
 .paiement:disabled { opacity: .55; cursor: not-allowed; }
@@ -598,4 +598,67 @@ button { cursor: pointer; }
   #zone-impression { display: block !important; }
   #zone-impression .recu { max-width: none; border: 0; padding: 0; background: #fff; color: #000; font-size: 11pt; }
   #zone-impression .recu * { color: #000 !important; }
+}
+
+/* ---------- Ardoises : crédit client, remboursement, garanties ---------- */
+.haut__ardoises, .haut__garanties {
+  display: inline-flex; align-items: center; gap: 6px; height: 46px; padding: 0 12px;
+  border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie); font-weight: 600; white-space: nowrap;
+}
+.haut__garanties { background: var(--teinte-accent); color: var(--accent-texte); border-color: transparent; }
+@media (max-width: 760px) {
+  .haut__ardoises span { display: none; }
+  .haut__ardoises { padding: 0 12px; }
+}
+.paiement-ardoise__ajouter { justify-self: start; min-height: 46px; }
+.paiement-ardoise { gap: 12px; }
+.paiement-ardoise__tete { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.paiement-ardoise__titre { margin: 0; font: 700 1rem/1.2 var(--police-titre); }
+.paiement-ardoise__aide { margin: -4px 0 0; font-size: .8125rem; color: var(--doux); }
+.paiement-ardoise__champs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.paiement-ardoise__devises { display: inline-flex; }
+.paiement-ardoise__devises button { width: auto; min-width: 46px; height: 46px; padding: 0 10px; }
+.ardoise-champ { display: grid; gap: 4px; min-width: 0; }
+.ardoise-champ input, .ardoise-champ select, .ardoise-choix__recherche {
+  min-height: var(--cible); width: 100%; padding: 0 12px; border: 1px solid var(--ligne-forte); border-radius: var(--rayon);
+  background: var(--saisie); color: var(--encre); font: inherit; user-select: text;
+}
+.ardoise-choix { display: grid; gap: 8px; }
+.ardoise-choix__liste { display: grid; gap: 6px; }
+.ardoise-choix__vide { margin: 0; color: var(--doux); font-size: .875rem; }
+.ardoise-client {
+  display: grid; justify-items: start; gap: 2px; min-height: 52px; padding: 8px 12px; text-align: left;
+  border: 1px solid var(--ligne); border-radius: 12px; background: var(--surface);
+}
+.ardoise-client:hover { border-color: var(--ligne-forte); }
+.ardoise-client__nom { font-weight: 700; }
+.ardoise-client__detail { font-size: .8125rem; color: var(--doux); font-variant-numeric: tabular-nums; }
+.ardoise-client .badge, .ardoise-carte .badge { white-space: normal; text-align: left; }
+.ardoise-nouveau > summary { list-style: none; display: inline-flex; min-height: var(--cible); align-items: center; cursor: pointer; }
+.ardoise-nouveau > summary::-webkit-details-marker { display: none; }
+.ardoise-nouveau__champs { display: grid; gap: 10px; padding-top: 4px; }
+.ardoise-case { display: flex; align-items: center; gap: 8px; min-height: var(--cible); font-size: .9375rem; }
+.ardoise-case input { width: 22px; height: 22px; accent-color: var(--accent); }
+.ardoise-case--forcer { padding: 0 12px; border-radius: 12px; background: var(--teinte-erreur); font-weight: 600; }
+.ardoise-carte { display: grid; gap: 8px; padding: 10px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--ligne); }
+.ardoise-carte__tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.ardoise-carte__noms { display: grid; gap: 2px; min-width: 0; }
+.ardoise-carte__nom { font-size: 1.0625rem; overflow-wrap: anywhere; }
+.ardoise-carte__detail { font-size: .8125rem; color: var(--doux); font-variant-numeric: tabular-nums; }
+.ardoise-carte__alertes { display: flex; flex-wrap: wrap; gap: 6px; }
+.ardoises-corps { display: grid; gap: 12px; }
+.ardoises-dettes { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ardoises-dette { display: flex; justify-content: space-between; gap: 10px; padding: 8px 12px; border-radius: 10px; background: var(--saisie); font-size: .875rem; font-variant-numeric: tabular-nums; }
+.ardoises-dette--retard { background: var(--teinte-erreur); }
+.ardoises-recu { display: grid; justify-items: center; }
+.garanties-fenetre { max-width: 34rem; }
+.garanties-liste { display: grid; gap: 10px; }
+.garantie { display: grid; gap: 10px; padding: 12px; border: 1px solid var(--ligne); border-radius: 14px; background: var(--saisie); }
+.garantie__texte { margin: 0; line-height: 1.4; }
+.garantie__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.garantie__actions .bouton { min-height: 48px; justify-content: center; }
+.recu__ardoise td { font-weight: 600; }
+.recu__titre { margin: 6px 0 0; text-align: center; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: .8125rem; }
+@media (max-width: 420px) {
+  .paiement-ardoise__champs { grid-template-columns: 1fr; }
 }

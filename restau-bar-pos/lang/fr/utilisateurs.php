@@ -175,7 +175,7 @@ return [
     'perm.caisse.remise' => 'Accorder une remise',
     'perm.caisse.annuler' => 'Annuler un article déjà envoyé',
     'perm.caisse.appareils' => 'Autoriser un appareil comme caisse partagée',
-    'perm.ventes.voir' => 'Voir les ventes, clients et dettes',
+    'perm.ventes.voir' => 'Voir les ventes (tickets)',
     'perm.achats.voir' => 'Voir les achats',
     'perm.stock.voir' => 'Voir le stock',
     'perm.personnel.voir' => 'Voir le personnel, la présence et les plannings',
