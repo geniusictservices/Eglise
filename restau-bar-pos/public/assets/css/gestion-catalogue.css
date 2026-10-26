@@ -195,3 +195,56 @@
 .cat-categorie .cat-depliant[open], .cat-categorie .cat-confirmer[open] { display: block; }
 .cat-categorie__note { margin-top: .75rem; font-size: .8125rem; }
 .cat-depliant[open] > summary { margin-bottom: .5rem; }
+
+/* Sous-catégories : arbre en retrait sous leur catégorie (deux niveaux au plus) */
+.cat-categories--sous { margin: .9rem 0 0 1.25rem; padding-left: 1rem; border-left: 3px solid var(--ligne); gap: .5rem; }
+.cat-categorie--sous { background: var(--fond); padding: .75rem; }
+.cat-categorie__parente { display: block; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--doux); }
+.cat-categorie__sous { color: var(--doux); }
+@media (max-width: 600px) {
+  .cat-categories--sous { margin-left: .25rem; padding-left: .65rem; }
+  .cat-categorie__ligne { gap: .65rem; }
+}
+
+/* Liste du catalogue : groupe d'une sous-catégorie, en retrait */
+.cat-groupe--sous { margin-left: 1.5rem; border-left: 3px solid var(--accent); }
+.cat-groupe__parente { display: block; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--doux); }
+@media (max-width: 600px) { .cat-groupe--sous { margin-left: .5rem; } }
+
+/* Tailles listées sous leur produit principal, en retrait */
+.cat-produit--taille { padding-left: 2.25rem; border-top-style: dashed; position: relative; }
+.cat-produit--taille::before {
+  content: ""; position: absolute; left: .9rem; top: 0; bottom: 50%; width: .9rem;
+  border-left: 2px solid var(--ligne-forte, var(--ligne)); border-bottom: 2px solid var(--ligne-forte, var(--ligne)); border-bottom-left-radius: 6px;
+}
+.cat-produit--taille .cat-produit__photo { width: 44px; height: 44px; justify-self: center; }
+.cat-produit--taille .cat-produit__nom { font-weight: 600; }
+.cat-produit__tailles { font-weight: 600; margin-right: .5rem; }
+@media (max-width: 600px) { .cat-produit--taille { padding-left: 1.75rem; } .cat-produit--taille::before { left: .5rem; width: .75rem; } }
+
+/* Fiche : section Tailles */
+.cat-tailles { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.cat-taille {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: .5rem 1rem;
+  padding: .75rem 1rem; border: 1px solid var(--ligne); border-radius: 10px; background: var(--fond); scroll-margin-top: 4rem;
+}
+.cat-taille:target { border-color: var(--accent); }
+.cat-taille__texte { min-width: 0; }
+.cat-taille__texte p { margin: 0; }
+.cat-taille__nom { font-weight: 700; font-size: 1.0625rem; overflow-wrap: anywhere; }
+.cat-taille__nom a { text-decoration: none; }
+.cat-taille__nom a:hover { text-decoration: underline; }
+.cat-taille__prix { margin-top: .15rem !important; }
+.cat-taille__ouvrir { display: inline-flex; align-items: center; min-height: 44px; white-space: nowrap; }
+.cat-taille--epuisee .cat-taille__nom a { color: var(--doux); }
+.cat-tailles + .cat-format--nouveau { margin-top: 1rem; }
+@media (max-width: 600px) {
+  .cat-taille { grid-template-columns: minmax(0, 1fr) auto; }
+  .cat-taille__texte { grid-column: 1 / -1; }
+}
+.cat-champ-court input { max-width: 12rem; }
+
+/* Fiche d'une taille : bandeau vers le produit principal */
+.cat-bandeau-taille { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .5rem; margin-top: 1rem; }
+.cat-bandeau-taille .lien { display: inline-flex; align-items: center; min-height: 44px; padding: 0 .25rem; font-weight: 700; }
+.cat-bandeau-taille__aide { flex-basis: 100%; font-size: .875rem; color: var(--doux); }

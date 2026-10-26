@@ -77,7 +77,7 @@ Jetons dérivés (recalculés sur chaque bloc thématisé) : `--accent` (= lave,
 | Tableau | `.tableau`, `.defile` (conteneur qui défile), `.nombre` | En-têtes en capitales espacées. |
 | Tuile de caisse | `.tuile`, `__nom`, `__bas`, `__format`, `__prix`, `__qte`, `--choisie`, `--epuise` ; variable `--cat` | Fond `--tuile-fond`, barre de 4 px en bas à la couleur de la catégorie ; tuile choisie : contour 2 px de la catégorie et fond teinté ; pastille de quantité ronde. |
 
-Composants propres à un espace : en-tête, barre collante, état d'ouverture et ligne de menu (`vitrine.css`) ; onglets, ticket, choix du format, résumé sur téléphone (`caisse.css`) ; barre de navigation, blocs, chiffres, alertes, codes QR et chevalet (`gestion.css`).
+Composants propres à un espace : en-tête, barre collante, état d'ouverture et ligne de menu (`vitrine.css`) ; onglets, rangée des sous-catégories (`.sous-onglet`), ticket, choix de la taille et du format, résumé sur téléphone (`caisse.css`) ; intertitre de sous-catégorie (`.sous-categorie__titre`) sur la vitrine ; barre de navigation, blocs, chiffres, alertes, codes QR et chevalet (`gestion.css`).
 
 ## Thème selon le contexte
 

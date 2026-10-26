@@ -90,7 +90,9 @@ Fournisseur ──► DÉPÔT ──(transfert)──► COMPTOIR ──► POIN
 
 ## 3. Socle commun
 
-- **Catalogue** : produits, catégories, conditionnements (section 9), prix par grille, taxes, options (« sans glaçons », cuisson…).
+- **Catalogue** : produits, catégories et sous-catégories, conditionnements et tailles (section 9), prix par grille, taxes, options (« sans glaçons », cuisson…).
+  - **Sous-catégories sur deux niveaux au plus** (catégorie > sous-catégorie : Bières > Locales, Importées ; Spiritueux > Whisky, Cognac). Un produit est rangé dans une catégorie ou dans une sous-catégorie. On ne peut ni créer un troisième niveau, ni ranger une catégorie dans une de ses sous-catégories, ni supprimer une catégorie qui a des sous-catégories ou des produits actifs. L'ordre se règle à l'intérieur de chaque niveau.
+  - Sur la vitrine, les sous-catégories sont des intertitres dans leur catégorie (la barre des catégories reste au premier niveau) ; à la caisse, les onglets sont les catégories principales et une seconde rangée de puces filtre par sous-catégorie (« Toutes », « Locales », « Importées »).
 - **Commandes et encaissement** : espèces, carte, mobile money, paiements en plusieurs devises (section 10).
 - **Utilisateurs, rôles et permissions** (section 6).
 - **Sessions de caisse** : ouverture, clôture, fond de caisse et écarts par devise.
@@ -272,7 +274,18 @@ Chaque produit a une **unité de base** (bouteille, cl, gramme, pièce) et **plu
 - **Bouteilles entamées** saisies à l'inventaire (fraction ou cl), et **perte normale** pour la pression.
 - **Code-barres par conditionnement**.
 
-### 9.3 Emballages consignés
+### 9.3 Tailles
+Deux situations différentes, à ne pas confondre :
+
+- **Formats en cl d'une même bouteille** : un vin ou un whisky est servi au verre, à la dose ou à la bouteille depuis **la même bouteille physique**. L'unité de base est le cl et chaque façon de servir est un **conditionnement** du même produit : vin rouge de la maison (verre 15 cl, carafe 30 cl, bouteille 75 cl) ; Johnnie Walker (dose 4 cl, double 8 cl, bouteille 70 cl). Un seul stock, compté en cl.
+- **Tailles** : la Primus ou la Mützig existent en **petite (33 cl)** et en **grande (72 cl ou 65 cl)** : ce sont des **bouteilles physiquement différentes**, avec chacune **son stock, ses formats d'achat (casier de 24 petites, casier de 12 grandes), ses prix (y compris prix fixes en francs congolais et prix VIP) et son état disponible / épuisé**. Une taille est un **produit « variante »** rattaché à un **produit principal** (même catégorie) ; le produit principal peut n'avoir aucun format à lui et sert alors de groupe de tailles.
+
+Affichage :
+- **Gestion** : la fiche du produit principal a une section « Tailles » (nom de la taille en français et en anglais, contenance, prix principal, ordre, lien vers la fiche de chaque taille) ; « Ajouter une taille » reprend la catégorie, les établissements, l'unité, les badges et la photo du produit principal. La fiche d'une taille rappelle son produit principal. Désactiver le produit principal désactive ses tailles. Dans la liste du catalogue, les tailles apparaissent en retrait sous leur produit.
+- **Vitrine** : une seule ligne « Primus » avec un prix par taille et par format vendu (« Petite 33 cl · $1,50 », « Grande 72 cl · $2 ») ; une taille épuisée est marquée seule ; la recherche trouve aussi le nom des tailles.
+- **Caisse** : une seule tuile « Primus » (« 2 tailles », plus petit prix suivi de « + ») ; un toucher ouvre le choix de la taille et du format ; la ligne du ticket affiche « Primus Grande 72 cl ».
+
+### 9.4 Emballages consignés
 - Casiers vides et bouteilles vides gérés comme **articles de stock**, avec une **valeur de consigne**.
 - Échange des vides avec les fournisseurs, ou paiement de la consigne.
 - En vente en gros, suivi de **ce que chaque client et chaque fournisseur doit en emballages**.
@@ -384,7 +397,7 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 - **Coût de revient et marge** par produit.
 - **Inventaires** : comptage physique et écarts, par employé et par service.
 - **Pertes** : casse, offerts, consommations du personnel, périmés, avec un motif.
-- **Emballages consignés** (section 9.3).
+- **Emballages consignés** (section 9.4).
 - **Alertes** de stock bas et suggestions de commande.
 
 ### 13.3 Dépenses et trésorerie
@@ -473,8 +486,8 @@ Principe : chaque personne ne voit que ce dont elle a besoin, au bon moment, sur
 
 ### 14.3 Caisse : produits en grille
 - **Grille de tuiles** : nom, prix dans la devise principale, photo si elle existe, bandeau de la couleur de la catégorie.
-- **Onglets de catégories** en haut, avec « Tout » en premier.
-- **Un toucher = un article.** Si le produit a plusieurs formats (dose, bouteille…), une fenêtre propose les formats avec leur prix.
+- **Onglets de catégories** en haut, avec « Tout » en premier. Une catégorie qui a des sous-catégories ouvre une **seconde rangée de puces** (« Toutes », « Locales », « Importées ») ; la couleur reste celle de la catégorie principale.
+- **Un toucher = un article.** Si le produit a plusieurs formats (dose, bouteille…) ou plusieurs tailles (Petite 33 cl, Grande 72 cl), une fenêtre propose chaque taille et chaque format avec son prix (section 9.3).
 - **Quantité affichée sur la tuile** : on voit tout de suite ce qui est déjà dans le ticket.
 - **Produit en rupture** grisé et impossible à toucher.
 - **5 tuiles par ligne** (3 sur téléphone, pour garder des cibles faciles à toucher).

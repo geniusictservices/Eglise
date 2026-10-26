@@ -88,8 +88,9 @@
     try { sessionStorage.setItem(cleTicket, JSON.stringify(ticket)); } catch (e) { /* stockage indisponible */ }
   }
   // « Primus Grande 72 cl » pour un format d'une taille, sinon le nom du produit
+  // (espace insécable entre le nombre et l'unité : « 65 cl » ne se coupe pas en fin de ligne)
   function nomLigne(f) {
-    return f.format.taille ? f.produit.nom + ' ' + f.format.taille : f.produit.nom;
+    return f.format.taille ? f.produit.nom + ' ' + f.format.taille.replace(/(\d) (?=\D)/g, '$1\u00a0') : f.produit.nom;
   }
   function quantiteProduit(produit) {
     return ticket.reduce(function (n, l) { return formats[l.id].produit === produit ? n + l.qte : n; }, 0);
@@ -338,7 +339,8 @@
     // Entrée avec un seul résultat : ajout direct (utile avec un lecteur de codes-barres plus tard)
     if (ev.key === 'Enter') {
       var seuls = D.produits.filter(function (p) { return !tuiles[p.id].hidden && p.disponible; });
-      if (seuls.length === 1) { choisir(seuls[0]); elRecherche.select(); }
+      // Sans preventDefault, la touche Entrée activerait aussitôt le premier choix de la fenêtre qui s'ouvre
+      if (seuls.length === 1) { ev.preventDefault(); choisir(seuls[0]); elRecherche.select(); }
     }
     if (ev.key === 'Escape') { elRecherche.value = ''; filtrer(); }
   });

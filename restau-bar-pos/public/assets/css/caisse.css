@@ -196,7 +196,17 @@ button { cursor: pointer; }
   border-left: 4px solid var(--cat);
 }
 .ligne__texte { display: grid; min-width: 0; }
-.ligne__nom { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Nom sur deux lignes au plus : « Mützig Grande 65 cl » reste lisible en entier */
+.ligne__nom {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-weight: 600;
+  line-height: 1.25;
+}
 .ligne__format { font-size: .8rem; color: var(--doux); }
 .ligne__montant { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 4.5rem; text-align: right; }
 .pas { display: flex; align-items: center; border-radius: var(--rayon); background: var(--surface-2); }
