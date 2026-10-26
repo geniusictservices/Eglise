@@ -312,4 +312,13 @@
     production.addEventListener('change', majProduction);
     majProduction();
   }
+  // ---------- Achat au marché : changer de lieu recharge le fonds et ses devises (si rien n'est saisi) ----------
+
+  var lieuMarche = document.querySelector('[data-marche-lieu]');
+  if (lieuMarche) {
+    lieuMarche.addEventListener('change', function () {
+      var saisi = Array.prototype.some.call(document.querySelectorAll('[data-marche] [data-ligne-quantite]'), function (c) { return c.value.trim() !== ''; });
+      if (lieuMarche.value && !saisi) window.location.href = '/gestion/achats/marche?lieu=' + encodeURIComponent(lieuMarche.value);
+    });
+  }
 })();
