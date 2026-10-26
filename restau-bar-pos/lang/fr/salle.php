@@ -28,6 +28,7 @@ return [
     'salle.perte_commentaire' => 'Annulé après le lancement : {plat} ({note}), validé par {valideur} — {motif}',
 
     // Caisse : salle et notes
+    'encaisser.epuise' => 'Épuisé au comptoir : {articles}. Retirez-le du ticket (le stock est à zéro).',
     'note.salle' => 'Salle',
     'note.fermer' => 'Fermer',
     'note.comptoir' => 'Comptoir',

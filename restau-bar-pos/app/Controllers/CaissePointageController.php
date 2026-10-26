@@ -65,7 +65,7 @@ final class CaissePointageController
     /** Refus 409 (JSON) si l'établissement exige le pointage et que la personne n'a pas pointé son arrivée ici. */
     public static function exigerPointage(array $etab, array $personne): void
     {
-        if (empty($etab['pointage_obligatoire']) || !\App\Core\Plateforme::moduleInclus('personnel')) {
+        if (empty($etab['pointage_obligatoire']) || !PersonnelRepository::installe() || !\App\Core\Plateforme::moduleInclus('personnel')) {
             return;
         }
         $employe = (new PersonnelRepository())->parUtilisateur((int) $personne['id']);

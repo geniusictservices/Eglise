@@ -24,6 +24,14 @@ final class PersonnelRepository
     public const DOCUMENTS = ['application/pdf' => 'pdf', 'image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
     public const DOCUMENT_MAX = 5 * 1024 * 1024;
 
+    private static ?bool $installe = null;
+
+    /** Migration 018 appliquée à cette base ? (la caisse d'une instance pas encore migrée continue de marcher) */
+    public static function installe(): bool
+    {
+        return self::$installe ??= Database::un("SHOW TABLES LIKE 'employes'") !== null;
+    }
+
     /** Condition SQL « l'employé e a un établissement dans la portée » ; params ajoutés à $params. */
     public static function conditionPortee(?array $portee, array &$params, string $alias = 'e'): string
     {

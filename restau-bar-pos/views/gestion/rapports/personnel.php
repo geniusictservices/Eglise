@@ -227,7 +227,8 @@ foreach ($classement as $ligne) {
     </section>
 <?php endif; ?>
 
-<?php if (is_file(RACINE . '/views/gestion/rapports/_personnel-presence.php')): ?>
+<?php // Présence (module Personnel et paie) : seulement si ses tables sont installées ?>
+<?php if (is_file(RACINE . '/views/gestion/rapports/_personnel-presence.php') && App\Repositories\RapportRepository::tableExiste('employes')): ?>
     <?= View::rendre('gestion/rapports/_personnel-presence', ['bornes' => $bornes, 'etablissement' => $etablissement, 'toutVoir' => $toutVoir, 'choisi' => $choisi, 'moi' => $moi]) ?>
 <?php endif; ?>
 

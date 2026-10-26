@@ -26,6 +26,7 @@ return [
     'salle.note_sans_nom' => 'Unnamed tab',
     'salle.perte_commentaire' => 'Cancelled after firing: {plat} ({note}), approved by {valideur} — {motif}',
 
+    'encaisser.epuise' => 'Sold out at the counter: {articles}. Remove it from the ticket (stock is at zero).',
     'note.salle' => 'Floor',
     'note.fermer' => 'Close',
     'note.comptoir' => 'Counter',

@@ -133,15 +133,9 @@ final class CaisseNoteController
         ['personne' => $personne, 'etab' => $etab] = $this->acces(false);
         $etabId = (int) $etab['id'];
         $etat = (new SalleRepository())->etat($etabId, $this->notes);
-        $epuises = [];
-        if (class_exists(\App\Repositories\StockRepository::class) && method_exists(\App\Repositories\StockRepository::class, 'epuises')) {
-            try {
-                $epuises = (new \App\Repositories\StockRepository())->epuises($etabId);
-            } catch (\Throwable) {
-                $epuises = [];
-            }
-        }
         $zone = is_string($_GET['zone'] ?? null) && $_GET['zone'] !== '' ? (new \App\Repositories\EtablissementRepository())->zoneParCode($etabId, $_GET['zone']) : null;
+        // Stock en mode « bloquer » : formats épuisés au comptoir qui sert cette caisse (appareil, zone)
+        $epuises = CaisseController::epuises($etab, $zone);
         $this->repondre(200, [
             'tables' => $etat['tables'], 'notes' => $etat['notes'],
             'indisponibles' => (new CuisineRepository())->indisponibles($etabId), 'epuises' => $epuises,
@@ -286,6 +280,10 @@ final class CaisseNoteController
         foreach (is_array($envoi['lignes'] ?? null) ? $envoi['lignes'] : [] as $l) {
             $f = $formats[(int) ($l['id'] ?? 0)] ?? null;
             $quantite = (int) ($l['qte'] ?? 0);
+            if ($f !== null && !empty($f['format']['epuise'])) {
+                $nomEpuise = $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'];
+                $this->repondre(422, ['erreur' => t('encaisser.epuise', ['articles' => $nomEpuise]), 'code' => 'epuise']);
+            }
             if ($f === null || $quantite < 1 || $quantite > 999 || !$f['format']['disponible'] || ($f['format']['prix'][$principale] ?? null) === null) {
                 $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
             }

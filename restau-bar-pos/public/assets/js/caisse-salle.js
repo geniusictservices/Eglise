@@ -831,7 +831,7 @@
     requete('GET', '/caisse/salle' + (D.zone ? '?zone=' + encodeURIComponent(D.zone) : '')).then(function (j) {
       enCours = false;
       salle = j;
-      C.disponibilites(j.indisponibles);
+      C.disponibilites(j.indisponibles, j.epuises);
       if (fenetreSalle.open) { dessinerSalle(); }
       dessinerPrets();
       // Note modifiée par un collègue (lignes ajoutées, plat prêt) : on la recharge

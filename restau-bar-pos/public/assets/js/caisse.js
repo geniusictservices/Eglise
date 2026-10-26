@@ -428,17 +428,32 @@
     },
     redessiner: function () { dessinerTicket(); },
     ouvrirPaiement: function (compteId, ardoise, source) { ouvrirPaiement(compteId, ardoise, source); },
-    disponibilites: function (indisponibles) { disponibilites(indisponibles); },
+    disponibilites: function (indisponibles, epuises) { disponibilites(indisponibles, epuises); },
     fenetreOuverte: function () { return !!document.querySelector('dialog[open]'); }
   };
-  // Rupture décidée en cuisine (ou « épuisé » dans le catalogue) : la tuile se grise tout de suite, sans recharger
-  function disponibilites(indisponibles) {
-    var hors = {};
-    (indisponibles || []).forEach(function (id) { hors[id] = true; });
+  // Rupture décidée en cuisine (ou « épuisé » dans le catalogue), stock épuisé au comptoir (mode « bloquer ») :
+  // la tuile se grise tout de suite, sans recharger. indisponibles : produits (et tailles) en rupture ;
+  // epuises : formats que le comptoir ne peut plus fournir ; null = inchangé.
+  // Au chargement, la rupture vient des données de la page (un format épuisé par le stock n'est pas une rupture).
+  D.produits.forEach(function (p) {
+    p.formats.forEach(function (f) { f.hors = !f.disponible && !f.epuise; });
+    p.hors = !p.disponible && !(p.formats.length && p.formats.every(function (f) { return f.epuise; }));
+  });
+  function disponibilites(indisponibles, epuises) {
+    var hors = null;
+    if (indisponibles) { hors = {}; indisponibles.forEach(function (id) { hors[id] = true; }); }
+    var ep = null;
+    if (epuises) { ep = {}; epuises.forEach(function (id) { ep[id] = true; }); }
     D.produits.forEach(function (p) {
       var avant = p.disponible + ':' + p.formats.map(function (f) { return f.disponible; }).join(',');
-      p.disponible = !hors[p.id];
-      p.formats.forEach(function (f) { f.disponible = !hors[p.id] && !hors[f.tailleId]; });
+      if (hors) { p.hors = !!hors[p.id]; }
+      p.formats.forEach(function (f) {
+        if (hors) { f.hors = !!(hors[p.id] || hors[f.tailleId]); }
+        if (ep) { f.epuise = !!ep[f.id]; }
+        f.disponible = !f.hors && !f.epuise;
+      });
+      // Tous les formats épuisés par le stock : la tuile se grise comme un produit en rupture
+      p.disponible = !p.hors && !(p.formats.length && p.formats.every(function (f) { return f.epuise; }));
       if (avant === p.disponible + ':' + p.formats.map(function (f) { return f.disponible; }).join(',')) { return; }
       var t = tuiles[p.id];
       if (!t) { return; }
@@ -866,6 +881,8 @@
 
   function venteTerminee(reponse) {
     if (reponse.csrf) { D.csrf = reponse.csrf; }
+    // Le stock a baissé : ce qui vient de s'épuiser au comptoir se grise (mode « bloquer »)
+    if (reponse.epuises) { disponibilites(null, reponse.epuises); }
     if (paiement.source) {
       // Note payée (en entier ou une part) : le ticket local n'a pas bougé, la note se met à jour
       if (window.Caisse.note && window.Caisse.note.payee) { window.Caisse.note.payee(reponse, paiement.source); }

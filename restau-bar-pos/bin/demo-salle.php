@@ -135,6 +135,21 @@ $friteuse = $poste($lac, 'Friteuse', 10);
 $cocktails = $poste($lac, 'Bar à cocktails', 8);
 $snack = $poste($club, 'Cuisine snack', 12);
 $barVip = $poste($club, 'Bar VIP', 8);
+// Postes rattachés aux comptoirs du module stock (s'il est installé) : Grill → Cuisine, Bar VIP → Bar VIP…
+$rattacher = static function (int $posteId, array $etab, string $comptoir): void {
+    try {
+        $lieu = Database::un("SELECT id FROM lieux_stock WHERE etablissement_id = ? AND type = 'comptoir' AND nom = ?", [(int) $etab['id'], $comptoir]);
+        if ($lieu !== null) {
+            Database::executer('UPDATE postes_cuisine SET lieu_id = ? WHERE id = ? AND lieu_id IS NULL', [(int) $lieu['id'], $posteId]);
+        }
+    } catch (\Throwable) {
+        // pas de module stock
+    }
+};
+$rattacher($grill, $lac, 'Cuisine');
+$rattacher($friteuse, $lac, 'Cuisine');
+$rattacher($snack, $club, 'Cuisine du club');
+$rattacher($barVip, $club, 'Bar VIP');
 $router = static function (array $etab, array $routage): void {
     foreach ($routage as $cat => $posteId) {
         if ($cat !== null) {

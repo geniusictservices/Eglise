@@ -152,11 +152,51 @@ final class CaisseController
         // Catégories du service en cours (la cuisine fermée disparaît de la caisse) ; $filtrer = false pour payer une note
         $categories = $filtrer && $service !== null ? $service['categories'] : [];
         ['acceptees' => $acceptees, 'principale' => $principale] = self::devisesCaisse($etab);
+        $donnees = $this->donnees($id, $grille, $grilleDefaut, $acceptees, $principale, $etab['type'], $categories, $service);
+        // Stock en mode « bloquer » : les formats que le comptoir ne peut plus fournir sont « épuisés »
+        $epuises = self::epuises($etab, $zone);
+        $donnees['epuises'] = $epuises;
+        if ($epuises !== []) {
+            $hors = array_flip($epuises);
+            foreach ($donnees['produits'] as &$produit) {
+                foreach ($produit['formats'] as &$format) {
+                    if (isset($hors[$format['id']])) {
+                        $format['disponible'] = false;
+                        $format['epuise'] = true;
+                    }
+                }
+                unset($format);
+                // Tous ses formats épuisés : la tuile est grisée comme un produit en rupture
+                if ($produit['formats'] !== [] && array_filter($produit['formats'], static fn (array $f) => $f['disponible']) === []) {
+                    $produit['disponible'] = false;
+                }
+            }
+            unset($produit);
+        }
         return [
             'zone' => $zone, 'grille' => $grille, 'grilleDefaut' => $grilleDefaut, 'acceptees' => $acceptees, 'principale' => $principale,
-            'service' => $service, 'happy' => $choix['happy'], 'source' => $choix['source'],
-            'donnees' => $this->donnees($id, $grille, $grilleDefaut, $acceptees, $principale, $etab['type'], $categories, $service),
+            'service' => $service, 'happy' => $choix['happy'], 'source' => $choix['source'], 'epuises' => $epuises,
+            'donnees' => $donnees,
         ];
+    }
+
+    /**
+     * Formats épuisés au comptoir qui les sert (module stock, mode « bloquer » de l'établissement ; [] en mode
+     * « vendre quand même » ou sans module stock). Le comptoir dépend de la catégorie, de l'appareil et de la zone.
+     * @return list<int> identifiants de conditionnements
+     */
+    public static function epuises(array $etab, ?array $zone): array
+    {
+        if (!class_exists(\App\Repositories\StockRepository::class) || !method_exists(\App\Repositories\StockRepository::class, 'epuises')) {
+            return [];
+        }
+        try {
+            $appareil = CaissePartagee::appareil();
+            return array_map('intval', (new \App\Repositories\StockRepository())->epuises((int) $etab['id'], $appareil ? (int) $appareil['id'] : null, $zone ? (int) $zone['id'] : null));
+        } catch (\Throwable $e) {
+            error_log('Stock épuisé non lu : ' . $e->getMessage());
+            return [];
+        }
     }
 
     /** @var array<string, array<int, array{format: array, produit: array}>> formats de chaque grille, par établissement */
@@ -366,6 +406,13 @@ final class CaisseController
             } catch (\InvalidArgumentException) {
                 $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
             }
+            // Stock en mode « bloquer » : un article que le comptoir ne peut plus fournir ne se vend pas
+            $horsStock = array_flip($contexte['epuises']);
+            $epuisees = array_unique(array_map(static fn (array $p) => $p['ligne']['libelle'],
+                array_filter($partNote, static fn (array $p) => isset($horsStock[(int) $p['ligne']['conditionnement_id']]))));
+            if ($epuisees !== []) {
+                $this->repondre(422, ['erreur' => t('encaisser.epuise', ['articles' => implode(', ', $epuisees)]), 'code' => 'epuise']);
+            }
             $prixNote = $this->prixLignesNote($etab, array_column($partNote, 'ligne'));
             $reference = $this->devisesRepo()->reference();
             foreach ($partNote as $p) {
@@ -384,6 +431,17 @@ final class CaisseController
                     'prix_reference' => $reference ? ($pu[$reference['code']] ?? null) : null,
                 ];
             }
+        }
+        // Stock en mode « bloquer » : la liste des articles épuisés, plutôt qu'un refus sans explication
+        $epuisees = [];
+        foreach ($note !== null ? [] : (is_array($demande['lignes'] ?? null) ? $demande['lignes'] : []) as $ligne) {
+            $f = $formats[(int) ($ligne['id'] ?? 0)] ?? null;
+            if ($f !== null && !empty($f['format']['epuise'])) {
+                $epuisees[] = $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'];
+            }
+        }
+        if ($epuisees !== []) {
+            $this->repondre(422, ['erreur' => t('encaisser.epuise', ['articles' => implode(', ', array_unique($epuisees))]), 'code' => 'epuise']);
         }
         foreach ($note !== null ? [] : (is_array($demande['lignes'] ?? null) ? $demande['lignes'] : []) as $ligne) {
             $formatId = (int) ($ligne['id'] ?? 0);
@@ -589,7 +647,10 @@ final class CaisseController
             $verrouille = true;
         }
         $recu = (new VenteRepository())->recu($id);
+        // Après la vente, le stock a baissé : la caisse grise ce qui vient de s'épuiser (mode « bloquer »)
+        $zoneVente = $recu['vente']['zone_id'] !== null ? Database::un('SELECT * FROM zones WHERE id = ?', [(int) $recu['vente']['zone_id']]) : null;
         $this->repondre(200, [
+            'epuises' => self::epuises($etab, $zoneVente),
             'numero' => $recu['vente']['numero'],
             'recu' => View::rendre('caisse/_recu', $recu),
             'verrouille' => $verrouille,

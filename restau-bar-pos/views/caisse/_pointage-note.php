@@ -5,7 +5,7 @@
  * @var array $etab
  * @var array $personne
  */
-if (!App\Core\Plateforme::moduleInclus('personnel')) {
+if (!App\Repositories\PersonnelRepository::installe() || !App\Core\Plateforme::moduleInclus('personnel')) {
     return;
 }
 App\Core\Session::demarrer();
