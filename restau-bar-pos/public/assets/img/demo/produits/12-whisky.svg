@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Whisky : bouteille carrée et verre tumbler avec glaçon</title>
+<defs>
+<clipPath id="whisky-b"><path d="M144 114V144Q144 150 136 152L122 156Q114 158 114 166V294Q114 302 122 302H182Q190 302 190 294V166Q190 158 182 156L168 152Q160 150 160 144V114Z"/></clipPath>
+<clipPath id="whisky-v"><path d="M206 204H296L290 296Q290 302 284 302H218Q212 302 212 296Z"/></clipPath>
+</defs>
+<rect width="400" height="400" fill="#171A22"/>
+<circle cx="200" cy="200" r="108" fill="#222634"/>
+<ellipse cx="206" cy="303" rx="100" ry="7" fill="#07080B" opacity=".6"/>
+<g clip-path="url(#whisky-b)">
+<rect x="110" y="100" width="84" height="210" fill="#B85E16"/>
+<rect x="166" y="100" width="28" height="210" fill="#86410C"/>
+<rect x="124" y="166" width="8" height="126" fill="#E69A4A"/>
+<rect x="110" y="196" width="84" height="74" fill="#1C1F23"/>
+<rect x="166" y="196" width="28" height="74" fill="#121417"/>
+<rect x="110" y="202" width="84" height="3" fill="#FFB547"/>
+<rect x="110" y="261" width="84" height="3" fill="#FFB547"/>
+<rect x="140" y="222" width="24" height="20" fill="#FFB547"/>
+</g>
+<path d="M140 100Q140 96 144 96H160Q164 96 164 100V118H140Z" fill="#FFB547"/>
+<path d="M155 96H160Q164 96 164 100V118H155Z" fill="#D58E26"/>
+<g clip-path="url(#whisky-v)">
+<rect x="200" y="200" width="100" height="110" fill="#F2EFEA" opacity=".12"/>
+<rect x="200" y="248" width="100" height="62" fill="#D27A1E"/>
+<rect x="262" y="248" width="38" height="62" fill="#A85A12"/>
+<rect x="200" y="248" width="100" height="5" fill="#F2A93B"/>
+<rect x="234" y="222" width="38" height="38" rx="5" transform="rotate(-14 253 241)" fill="#E4F4F8" opacity=".85"/>
+<rect x="200" y="286" width="100" height="16" fill="#F2EFEA" opacity=".25"/>
+</g>
+<path d="M206 204H296L290 296Q290 302 284 302H218Q212 302 212 296Z" fill="none" stroke="#F2EFEA" stroke-opacity=".6" stroke-width="4"/>
+</svg>

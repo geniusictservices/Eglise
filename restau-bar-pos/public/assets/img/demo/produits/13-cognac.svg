@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Cognac servi dans un verre ballon</title>
+<defs><clipPath id="cognac-v"><path d="M160 112H240C298 146 304 248 200 262C96 248 102 146 160 112Z"/></clipPath></defs>
+<rect width="400" height="400" fill="#171A22"/>
+<circle cx="200" cy="200" r="108" fill="#222634"/>
+<ellipse cx="204" cy="303" rx="62" ry="7" fill="#07080B" opacity=".6"/>
+<g clip-path="url(#cognac-v)">
+<rect x="100" y="108" width="200" height="160" fill="#F2EFEA" opacity=".1"/>
+<rect x="100" y="204" width="200" height="64" fill="#C0661A"/>
+<rect x="222" y="204" width="78" height="64" fill="#8E4810"/>
+<ellipse cx="200" cy="204" rx="100" ry="9" fill="#E8923A"/>
+<path d="M140 150Q124 178 132 214" fill="none" stroke="#F2EFEA" stroke-opacity=".55" stroke-width="7" stroke-linecap="round"/>
+</g>
+<path d="M160 112H240C298 146 304 248 200 262C96 248 102 146 160 112Z" fill="none" stroke="#F2EFEA" stroke-opacity=".65" stroke-width="4"/>
+<rect x="195" y="260" width="10" height="34" fill="#F2EFEA" opacity=".65"/>
+<ellipse cx="200" cy="296" rx="46" ry="7" fill="#F2EFEA" opacity=".65"/>
+</svg>

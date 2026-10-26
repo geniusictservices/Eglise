@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Eau minérale en bouteille bleue transparente</title>
+<defs><clipPath id="eau-b"><path id="eau-f" d="M187 114V124C187 140 164 146 164 166V196Q164 204 171 208Q164 212 164 220V292Q164 302 174 302H226Q236 302 236 292V220Q236 212 229 208Q236 204 236 196V166C236 146 213 140 213 124V114Z"/></clipPath></defs>
+<rect width="400" height="400" fill="#141C22"/>
+<circle cx="200" cy="200" r="108" fill="#1C2830"/>
+<ellipse cx="204" cy="303" rx="56" ry="7" fill="#06090B" opacity=".6"/>
+<g clip-path="url(#eau-b)">
+<rect x="160" y="100" width="80" height="210" fill="#3E7E92"/>
+<rect x="160" y="150" width="80" height="160" fill="#6CC3D5"/>
+<rect x="214" y="150" width="26" height="160" fill="#4FA3B6"/>
+<rect x="160" y="150" width="80" height="5" fill="#BDE8F1"/>
+<rect x="174" y="166" width="8" height="122" fill="#D3F1F7"/>
+<rect x="160" y="226" width="80" height="40" fill="#5FA8FF"/>
+<rect x="214" y="226" width="26" height="40" fill="#4683CF"/>
+<rect x="160" y="200" width="80" height="16" fill="#2F6A7C" opacity=".35"/>
+</g>
+<path d="M187 114V124C187 140 164 146 164 166V196Q164 204 171 208Q164 212 164 220V292Q164 302 174 302H226Q236 302 236 292V220Q236 212 229 208Q236 204 236 196V166C236 146 213 140 213 124V114Z" fill="none" stroke="#BDE8F1" stroke-width="3"/>
+<path d="M185 100Q185 96 189 96H211Q215 96 215 100V116H185Z" fill="#5FA8FF"/>
+<path d="M205 96H211Q215 96 215 100V116H205Z" fill="#4683CF"/>
+<circle cx="196" cy="180" r="4" fill="#F2EFEA" opacity=".8"/>
+<circle cx="210" cy="194" r="3" fill="#F2EFEA" opacity=".8"/>
+<circle cx="200" cy="282" r="3.5" fill="#F2EFEA" opacity=".8"/>
+<circle cx="214" cy="276" r="2.5" fill="#F2EFEA" opacity=".8"/>
+</svg>

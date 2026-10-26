@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Demi-poulet braisé et frites sur assiette</title>
+<rect width="400" height="400" fill="#18201A"/>
+<circle cx="206" cy="207" r="104" fill="#0B0F0C" opacity=".6"/>
+<circle cx="200" cy="200" r="104" fill="#FF5A1F"/>
+<circle cx="200" cy="200" r="96" fill="#F2EFEA"/>
+<circle cx="200" cy="200" r="74" fill="#E6E1D8"/>
+<g fill="#FFC24A" stroke="#D58E26" stroke-width="2">
+<rect x="236" y="124" width="12" height="70" rx="3" transform="rotate(-24 242 159)"/>
+<rect x="252" y="120" width="12" height="74" rx="3" transform="rotate(-8 258 157)"/>
+<rect x="268" y="126" width="12" height="70" rx="3" transform="rotate(10 274 161)"/>
+<rect x="244" y="140" width="12" height="66" rx="3" transform="rotate(30 250 173)"/>
+<rect x="276" y="150" width="12" height="60" rx="3" transform="rotate(-36 282 180)"/>
+</g>
+<path d="M112 196C110 156 164 134 210 150C244 162 254 198 236 222C214 248 142 250 122 226C116 218 112 208 112 196Z" fill="#B8641E"/>
+<path d="M210 150C244 162 254 198 236 222C228 232 214 238 198 242C222 220 228 184 210 150Z" fill="#8A4512"/>
+<path d="M138 170Q160 156 186 160" fill="none" stroke="#E7A050" stroke-width="8" stroke-linecap="round"/>
+<path d="M142 206L160 196M168 214L188 202M194 182L210 172M150 230L166 222" stroke="#5E2E10" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="224" cy="250" rx="34" ry="22" transform="rotate(32 224 250)" fill="#B8641E"/>
+<path d="M238 230C262 250 252 272 226 274C246 266 252 252 238 230Z" fill="#8A4512"/>
+<path d="M210 242L226 234" stroke="#5E2E10" stroke-width="5" stroke-linecap="round"/>
+<path d="M248 268L268 288" stroke="#F7EBD3" stroke-width="9" stroke-linecap="round"/>
+<circle cx="272" cy="286" r="6" fill="#F7EBD3" stroke="#9A6A3A" stroke-width="2"/>
+<circle cx="266" cy="293" r="6" fill="#F7EBD3" stroke="#9A6A3A" stroke-width="2"/>
+<path d="M140 268L170 284" stroke="#3FAE5A" stroke-width="7" stroke-linecap="round"/>
+<path d="M150 260L162 290" stroke="#7BD88F" stroke-width="5" stroke-linecap="round"/>
+</svg>

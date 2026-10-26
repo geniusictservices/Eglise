@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Frites dans un cornet</title>
+<rect width="400" height="400" fill="#1F1D16"/>
+<circle cx="200" cy="200" r="108" fill="#2B2820"/>
+<ellipse cx="204" cy="304" rx="30" ry="5" fill="#090806" opacity=".6"/>
+<g fill="#FFC24A" stroke="#D58E26" stroke-width="2.5">
+<rect x="150" y="116" width="15" height="80" rx="3" transform="rotate(-16 157 156)"/>
+<rect x="170" y="100" width="15" height="92" rx="3" transform="rotate(-6 177 146)"/>
+<rect x="192" y="96" width="15" height="96" rx="3"/>
+<rect x="214" y="102" width="15" height="90" rx="3" transform="rotate(8 221 147)"/>
+<rect x="234" y="114" width="15" height="80" rx="3" transform="rotate(18 241 154)"/>
+<rect x="180" y="124" width="15" height="70" rx="3" transform="rotate(10 187 159)"/>
+<rect x="206" y="122" width="15" height="70" rx="3" transform="rotate(-12 213 157)"/>
+</g>
+<path d="M174 100h11v8h-11zM196 96h11v7h-11z" fill="#E08A1C"/>
+<path d="M136 176H264L200 304Z" fill="#FF5A1F"/>
+<path d="M200 176H264L200 304Z" fill="#CF4316"/>
+<path d="M136 176H264L257 192H143Z" fill="#F2EFEA"/>
+<path d="M200 176H264L257 192H200Z" fill="#D6D0C6"/>
+<path d="M162 226L238 226M178 258L222 258" stroke="#FFB547" stroke-width="5"/>
+</svg>

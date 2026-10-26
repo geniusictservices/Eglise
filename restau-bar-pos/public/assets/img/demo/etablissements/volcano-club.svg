@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+<title>Piste de danse du Volcano Club la nuit, faisceaux de lumière et volcan stylisé</title>
+<defs>
+<clipPath id="club-sol"><rect y="660" width="1600" height="240"/></clipPath>
+<g id="club-p">
+<path d="M-46 160V60Q-46 26 -12 22H12Q46 26 46 60V160Z"/>
+<circle cy="-6" r="24"/>
+</g>
+<g id="club-h">
+<path d="M-46 160V60Q-46 26 -12 22H12Q46 26 46 60V160Z"/>
+<circle cy="-6" r="24"/>
+<path d="M-38 40L-70 -60L-56 -66L-22 30ZM38 40L70 -60L56 -66L22 30Z"/>
+</g>
+</defs>
+<rect width="1600" height="900" fill="#130E1B"/>
+<circle cx="800" cy="440" r="380" fill="#1D1229"/>
+<circle cx="800" cy="440" r="270" fill="#2A1430"/>
+<circle cx="800" cy="440" r="170" fill="#3A1733"/>
+<g fill="#F2EFEA" opacity=".7">
+<circle cx="140" cy="120" r="3"/><circle cx="310" cy="220" r="2"/><circle cx="460" cy="90" r="3"/><circle cx="1120" cy="100" r="3"/><circle cx="1290" cy="210" r="2"/><circle cx="1460" cy="130" r="3"/><circle cx="230" cy="380" r="2"/><circle cx="1380" cy="360" r="2"/>
+</g>
+<g fill="#B98CFF" opacity=".8">
+<circle cx="380" cy="300" r="4"/><circle cx="1220" cy="280" r="4"/><circle cx="560" cy="160" r="3"/><circle cx="1040" cy="190" r="3"/>
+</g>
+<path d="M800 300L520 0H630Z" fill="#FF5A1F" opacity=".38"/>
+<path d="M800 300L750 0H850Z" fill="#FFB547" opacity=".32"/>
+<path d="M800 300L970 0H1080Z" fill="#FF5A1F" opacity=".38"/>
+<path d="M150 0L1000 700H1160Z" fill="#FFB547" opacity=".14"/>
+<path d="M1450 0L440 700H600Z" fill="#FF5A1F" opacity=".16"/>
+<path d="M-20 120L420 700H520Z" fill="#B98CFF" opacity=".12"/>
+<path d="M1620 120L1080 700H1180Z" fill="#B98CFF" opacity=".12"/>
+<path d="M800 0V52" stroke="#3A3F45" stroke-width="3"/>
+<circle cx="800" cy="92" r="40" fill="#A3A9AF"/>
+<path d="M800 52A40 40 0 0 1 800 132Z" fill="#6B7178"/>
+<path d="M762 80H838M760 104H840M780 56V128M820 56V128" stroke="#3A3F45" stroke-width="3"/>
+<rect x="770" y="66" width="10" height="10" fill="#F2EFEA"/>
+<path d="M420 660L716 300H884L1180 660Z" fill="#0F0B15"/>
+<path d="M884 300L1180 660H990L862 312Z" fill="#170F1E"/>
+<path d="M716 300H884L870 314H730Z" fill="#FF5A1F"/>
+<rect x="740" y="296" width="120" height="6" rx="3" fill="#FFB547"/>
+<path d="M740 312H754L738 384L754 436L728 524H718L742 438L726 386Z" fill="#FF5A1F"/>
+<path d="M842 312H856L884 402L866 454L892 572H880L852 456L870 404Z" fill="#FFB547"/>
+<g fill="#FFB547">
+<rect x="770" y="250" width="10" height="10" transform="rotate(20 775 255)"/><rect x="820" y="232" width="12" height="12" transform="rotate(-15 826 238)" fill="#FF5A1F"/><rect x="796" y="206" width="8" height="8"/><rect x="742" y="222" width="8" height="8" fill="#FF5A1F"/><rect x="858" y="262" width="9" height="9"/>
+</g>
+<rect y="660" width="1600" height="240" fill="#0C0A11"/>
+<g clip-path="url(#club-sol)" stroke="#221B2E" stroke-width="3">
+<path d="M0 700H1600M0 750H1600M0 820H1600"/>
+<path d="M800 560L-400 900M800 560L0 900M800 560L400 900M800 560L800 900M800 560L1200 900M800 560L1600 900M800 560L2000 900"/>
+</g>
+<g clip-path="url(#club-sol)">
+<path d="M506 660L632 660L580 700H426Z" fill="#FF5A1F" opacity=".22"/>
+<path d="M880 700H1060L1150 750H930Z" fill="#B98CFF" opacity=".18"/>
+<path d="M800 660H924L1000 700H800Z" fill="#FFB547" opacity=".16"/>
+</g>
+<rect x="672" y="600" width="256" height="64" fill="#09070D"/>
+<rect x="672" y="600" width="256" height="5" fill="#FF5A1F"/>
+<g fill="#FFB547"><circle cx="712" cy="628" r="4"/><circle cx="740" cy="628" r="4" fill="#7BD88F"/><circle cx="860" cy="628" r="4" fill="#5FA8FF"/><circle cx="888" cy="628" r="4"/></g>
+<g fill="#07060A">
+<use href="#club-h" transform="translate(100 790)"/>
+<use href="#club-p" transform="translate(230 760) scale(.9)"/>
+<use href="#club-h" transform="translate(360 800) scale(1.1)"/>
+<use href="#club-p" transform="translate(490 770) scale(.85)"/>
+<use href="#club-h" transform="translate(620 810)"/>
+<use href="#club-p" transform="translate(760 790) scale(1.05)"/>
+<use href="#club-h" transform="translate(900 770) scale(.9)"/>
+<use href="#club-p" transform="translate(1030 800) scale(1.1)"/>
+<use href="#club-h" transform="translate(1170 780)"/>
+<use href="#club-p" transform="translate(1300 760) scale(.9)"/>
+<use href="#club-h" transform="translate(1430 800) scale(1.05)"/>
+<use href="#club-p" transform="translate(1560 780)"/>
+<use href="#club-p" transform="translate(-20 820) scale(1.1)"/>
+</g>
+<rect y="880" width="1600" height="20" fill="#07060A"/>
+</svg>

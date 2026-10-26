@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Vin rouge : bouteille et verre à pied</title>
+<defs>
+<clipPath id="vin-b"><path d="M139 112V156C139 176 118 180 118 200V292Q118 302 128 302H166Q176 302 176 292V200C176 180 157 176 157 156V112Z"/></clipPath>
+<clipPath id="vin-v"><path id="vin-c" d="M202 136H286C290 172 286 214 244 226C202 214 198 172 202 136Z"/></clipPath>
+</defs>
+<rect width="400" height="400" fill="#1C1622"/>
+<circle cx="200" cy="200" r="108" fill="#271E2F"/>
+<ellipse cx="206" cy="303" rx="94" ry="7" fill="#08060A" opacity=".6"/>
+<g clip-path="url(#vin-b)">
+<rect x="112" y="100" width="70" height="210" fill="#2F5440"/>
+<rect x="158" y="100" width="24" height="210" fill="#1F3A2C"/>
+<rect x="128" y="196" width="7" height="96" fill="#5C8A70"/>
+<rect x="112" y="100" width="70" height="40" fill="#8E1B2E"/>
+<rect x="158" y="100" width="24" height="40" fill="#661322"/>
+<rect x="112" y="222" width="70" height="52" fill="#F2EFEA"/>
+<rect x="158" y="222" width="24" height="52" fill="#D6D0C6"/>
+<rect x="112" y="252" width="70" height="8" fill="#8E1B2E"/>
+</g>
+<rect x="136" y="98" width="24" height="8" rx="3" fill="#661322"/>
+<g clip-path="url(#vin-v)">
+<rect x="196" y="130" width="96" height="100" fill="#F2EFEA" opacity=".12"/>
+<rect x="196" y="182" width="96" height="50" fill="#A51D36"/>
+<rect x="252" y="182" width="40" height="50" fill="#74121F"/>
+<rect x="196" y="182" width="96" height="5" fill="#C9445A"/>
+<rect x="210" y="148" width="6" height="30" fill="#F2EFEA" opacity=".4"/>
+</g>
+<path d="M202 136H286C290 172 286 214 244 226C202 214 198 172 202 136Z" fill="none" stroke="#F2EFEA" stroke-opacity=".6" stroke-width="4"/>
+<rect x="240" y="224" width="8" height="70" fill="#F2EFEA" opacity=".6"/>
+<ellipse cx="244" cy="297" rx="34" ry="6" fill="#F2EFEA" opacity=".6"/>
+</svg>

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Bière blonde premium : bouteille ambrée et verre mousseux</title>
+<defs>
+<clipPath id="mutzig-b"><path d="M148 116V150C148 168 126 174 126 198V290Q126 302 138 302H184Q196 302 196 290V198C196 174 174 168 174 150V116Z"/></clipPath>
+<clipPath id="mutzig-v"><path d="M214 176H290L282 298Q281 302 277 302H227Q223 302 222 298Z"/></clipPath>
+</defs>
+<rect width="400" height="400" fill="#201A14"/>
+<circle cx="200" cy="200" r="108" fill="#2B231A"/>
+<ellipse cx="210" cy="303" rx="96" ry="7" fill="#0C0A08" opacity=".6"/>
+<g clip-path="url(#mutzig-b)">
+<rect x="120" y="100" width="80" height="210" fill="#B5600F"/>
+<rect x="175" y="100" width="25" height="210" fill="#83420B"/>
+<rect x="136" y="176" width="8" height="118" fill="#E39A45"/>
+<rect x="120" y="116" width="80" height="34" fill="#FFB547"/>
+<rect x="175" y="116" width="25" height="34" fill="#D58E26"/>
+<rect x="120" y="214" width="80" height="58" fill="#FF5A1F"/>
+<rect x="175" y="214" width="25" height="58" fill="#D4461A"/>
+<rect x="120" y="219" width="80" height="3" fill="#FFB547"/>
+<rect x="120" y="264" width="80" height="3" fill="#FFB547"/>
+<ellipse cx="161" cy="243" rx="20" ry="13" fill="#F2EFEA"/>
+</g>
+<path d="M145 102Q145 99 148 99H174Q177 99 177 102V118H145Z" fill="#FFB547"/>
+<path d="M166 99H174Q177 99 177 102V118H166Z" fill="#D58E26"/>
+<g clip-path="url(#mutzig-v)">
+<rect x="210" y="170" width="84" height="140" fill="#F2A93B"/>
+<rect x="262" y="170" width="32" height="140" fill="#CF8522"/>
+<rect x="210" y="170" width="84" height="26" fill="#F7F1E4"/>
+<rect x="262" y="170" width="32" height="26" fill="#E3D9C6"/>
+<rect x="228" y="204" width="7" height="88" fill="#FFD27A"/>
+<circle cx="248" cy="226" r="3" fill="#FFE6A8"/>
+<circle cx="256" cy="254" r="2.5" fill="#FFE6A8"/>
+<circle cx="244" cy="274" r="2" fill="#FFE6A8"/>
+</g>
+<circle cx="222" cy="176" r="10" fill="#F7F1E4"/>
+<circle cx="240" cy="171" r="12" fill="#F7F1E4"/>
+<circle cx="262" cy="172" r="11" fill="#F7F1E4"/>
+<circle cx="281" cy="177" r="10" fill="#E3D9C6"/>
+<path d="M214 176H290L282 298Q281 302 277 302H227Q223 302 222 298Z" fill="none" stroke="#F2EFEA" stroke-opacity=".45" stroke-width="3"/>
+</svg>

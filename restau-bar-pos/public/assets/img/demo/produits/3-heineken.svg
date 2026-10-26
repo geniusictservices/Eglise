@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Bière blonde en bouteille verte de 33 cl</title>
+<defs><clipPath id="heineken-b"><path d="M188 112V160C188 180 166 184 166 206V292Q166 302 176 302H224Q234 302 234 292V206C234 184 212 180 212 160V112Z"/></clipPath></defs>
+<rect width="400" height="400" fill="#201A14"/>
+<circle cx="200" cy="200" r="108" fill="#2B231A"/>
+<ellipse cx="206" cy="303" rx="52" ry="7" fill="#0C0A08" opacity=".6"/>
+<g clip-path="url(#heineken-b)">
+<rect x="160" y="100" width="80" height="210" fill="#2E9A4B"/>
+<rect x="213" y="100" width="27" height="210" fill="#1D6E33"/>
+<rect x="175" y="196" width="8" height="98" fill="#7BD88F"/>
+<rect x="192" y="120" width="5" height="44" fill="#7BD88F"/>
+<rect x="160" y="146" width="80" height="18" fill="#F2EFEA"/>
+<rect x="213" y="146" width="27" height="18" fill="#D6D0C6"/>
+<rect x="160" y="222" width="80" height="50" fill="#F2EFEA"/>
+<rect x="213" y="222" width="27" height="50" fill="#D6D0C6"/>
+<rect x="160" y="234" width="80" height="12" fill="#1D6E33"/>
+<rect x="160" y="252" width="80" height="4" fill="#FF5A1F"/>
+</g>
+<path d="M185 100Q185 97 188 97H212Q215 97 215 100V114H185Z" fill="#C9CED3"/>
+<path d="M205 97H212Q215 97 215 100V114H205Z" fill="#9AA1A8"/>
+<circle cx="225" cy="214" r="3" fill="#6CC3D5"/>
+<circle cx="171" cy="284" r="2.5" fill="#6CC3D5"/>
+<circle cx="221" cy="282" r="2" fill="#6CC3D5"/>
+</svg>

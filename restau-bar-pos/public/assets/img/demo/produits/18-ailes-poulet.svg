@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Six ailes de poulet et petite sauce piquante</title>
+<defs>
+<g id="ailes-a">
+<path d="M-26 -2C-24 -18 4 -24 22 -14C34 -6 32 10 18 14C2 18 -22 14 -26 -2Z" fill="#C2410C"/>
+<path d="M22 -14C34 -6 32 10 18 14C6 16 -8 16 -18 10C4 10 22 4 22 -14Z" fill="#8F2E08"/>
+<path d="M-14 -10Q0 -16 12 -12" fill="none" stroke="#FF8A4C" stroke-width="5" stroke-linecap="round"/>
+<circle cx="-4" cy="2" r="2" fill="#F2EFEA"/>
+<circle cx="8" cy="-2" r="2" fill="#F2EFEA"/>
+<rect x="-12" y="6" width="7" height="3" rx="1.5" fill="#7BD88F"/>
+</g>
+</defs>
+<rect width="400" height="400" fill="#1F1D16"/>
+<circle cx="206" cy="207" r="104" fill="#090806" opacity=".6"/>
+<circle cx="200" cy="200" r="104" fill="#2B2820"/>
+<circle cx="200" cy="200" r="98" fill="#F2EFEA"/>
+<circle cx="200" cy="200" r="78" fill="#E6E1D8"/>
+<use href="#ailes-a" transform="translate(200 132) rotate(0) scale(1.28)"/>
+<use href="#ailes-a" transform="translate(259 166) rotate(60) scale(1.28)"/>
+<use href="#ailes-a" transform="translate(259 234) rotate(120) scale(1.28)"/>
+<use href="#ailes-a" transform="translate(200 268) rotate(180) scale(1.28)"/>
+<use href="#ailes-a" transform="translate(141 234) rotate(240) scale(1.28)"/>
+<use href="#ailes-a" transform="translate(141 166) rotate(300) scale(1.28)"/>
+<circle cx="200" cy="200" r="28" fill="#D6D0C6"/>
+<circle cx="200" cy="200" r="21" fill="#D7261E"/>
+<path d="M190 192Q198 186 206 190" fill="none" stroke="#FF7A66" stroke-width="4" stroke-linecap="round"/>
+</svg>

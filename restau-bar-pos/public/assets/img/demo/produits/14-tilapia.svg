@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Tilapia grillé entier sur assiette, bananes plantains et piment</title>
+<defs><clipPath id="tilapia-c"><path id="tilapia-p" d="M104 200C126 160 206 150 258 194L298 162Q306 200 298 238L258 206C206 250 126 240 104 200Z"/></clipPath></defs>
+<rect width="400" height="400" fill="#18201A"/>
+<circle cx="206" cy="207" r="104" fill="#0B0F0C" opacity=".6"/>
+<circle cx="200" cy="200" r="104" fill="#5FA8FF"/>
+<circle cx="200" cy="200" r="96" fill="#F2EFEA"/>
+<circle cx="200" cy="200" r="74" fill="#E6E1D8"/>
+<path d="M158 168L200 150L238 172Z" fill="#8A4A18"/>
+<path d="M170 230L204 248L226 228Z" fill="#8A4A18"/>
+<g clip-path="url(#tilapia-c)">
+<rect x="100" y="150" width="210" height="100" fill="#C9772F"/>
+<rect x="100" y="150" width="210" height="44" fill="#A85A22"/>
+<rect x="100" y="216" width="210" height="34" fill="#E09A4A"/>
+<path d="M150 150L130 250M180 150L160 250M210 150L190 250M240 150L220 250" stroke="#5E2E10" stroke-width="6"/>
+</g>
+<path d="M152 176Q162 200 152 224" fill="none" stroke="#5E2E10" stroke-width="4"/>
+<circle cx="128" cy="193" r="7" fill="#F2EFEA"/>
+<circle cx="128" cy="193" r="3.5" fill="#111315"/>
+<g stroke="#9A5B00" stroke-width="3" fill="#F2A93B">
+<ellipse cx="148" cy="268" rx="17" ry="11" transform="rotate(-20 148 268)"/>
+<ellipse cx="180" cy="280" rx="17" ry="11" transform="rotate(-8 180 280)"/>
+<ellipse cx="214" cy="281" rx="17" ry="11" transform="rotate(8 214 281)"/>
+</g>
+<path d="M240 132Q262 120 282 140Q268 136 254 142Q244 146 240 132Z" fill="#D7261E"/>
+<path d="M240 132Q234 126 230 128" fill="none" stroke="#3FAE5A" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Mojito : verre haut, menthe, citron vert et glaçons</title>
+<defs>
+<clipPath id="mojito-v"><path d="M150 118H250V292Q250 302 240 302H160Q150 302 150 292Z"/></clipPath>
+<path id="mojito-f" d="M0 0Q14 -15 34 0Q14 15 0 0Z"/>
+</defs>
+<rect width="400" height="400" fill="#22161A"/>
+<circle cx="200" cy="200" r="108" fill="#2E1D22"/>
+<ellipse cx="204" cy="303" rx="60" ry="7" fill="#0A0607" opacity=".6"/>
+<path d="M214 170L252 96" stroke="#7BD88F" stroke-width="8" stroke-linecap="round"/>
+<g clip-path="url(#mojito-v)">
+<rect x="146" y="114" width="108" height="192" fill="#F2EFEA" opacity=".1"/>
+<rect x="146" y="140" width="108" height="166" fill="#9ED8A6" opacity=".55"/>
+<rect x="146" y="140" width="108" height="4" fill="#E6F7E8" opacity=".8"/>
+<rect x="160" y="150" width="34" height="34" rx="4" transform="rotate(-14 177 167)" fill="#F2EFEA" opacity=".55"/>
+<rect x="204" y="166" width="34" height="34" rx="4" transform="rotate(12 221 183)" fill="#F2EFEA" opacity=".55"/>
+<rect x="172" y="200" width="32" height="32" rx="4" transform="rotate(8 188 216)" fill="#F2EFEA" opacity=".5"/>
+<use href="#mojito-f" transform="translate(160 246) rotate(-20)" fill="#3FAE5A"/>
+<use href="#mojito-f" transform="translate(204 262) rotate(-160)" fill="#2E8C45"/>
+<use href="#mojito-f" transform="translate(196 228) rotate(30)" fill="#7BD88F"/>
+<path d="M172 270A20 20 0 0 1 212 270Z" fill="#3E9B4F"/>
+<path d="M176 270A16 16 0 0 1 208 270Z" fill="#C8F0B8"/>
+<path d="M210 296A18 18 0 0 1 246 296Z" fill="#3E9B4F"/>
+<path d="M214 296A14 14 0 0 1 242 296Z" fill="#C8F0B8"/>
+<rect x="160" y="150" width="7" height="140" fill="#F2EFEA" opacity=".3"/>
+</g>
+<path d="M150 118H250V292Q250 302 240 302H160Q150 302 150 292Z" fill="none" stroke="#F2EFEA" stroke-opacity=".6" stroke-width="4"/>
+<use href="#mojito-f" transform="translate(178 128) rotate(-120)" fill="#3FAE5A"/>
+<use href="#mojito-f" transform="translate(180 128) rotate(-60)" fill="#7BD88F"/>
+<use href="#mojito-f" transform="translate(180 128) rotate(-170)" fill="#2E8C45"/>
+<path d="M180 128V104" stroke="#2E8C45" stroke-width="3"/>
+</svg>

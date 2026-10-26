@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<title>Soda en canette rouge de 33 cl</title>
+<rect width="400" height="400" fill="#141C22"/>
+<circle cx="200" cy="200" r="108" fill="#1C2830"/>
+<ellipse cx="204" cy="303" rx="62" ry="7" fill="#06090B" opacity=".6"/>
+<path d="M150 292H250L243 302H157Z" fill="#9AA1A8"/>
+<rect x="148" y="114" width="104" height="180" rx="6" fill="#E0302A"/>
+<path d="M214 114H246Q252 114 252 120V288Q252 294 246 294H214Z" fill="#A9201B"/>
+<rect x="162" y="124" width="10" height="160" fill="#FF7A66"/>
+<rect x="148" y="126" width="104" height="5" fill="#F2EFEA"/>
+<rect x="148" y="277" width="104" height="5" fill="#F2EFEA"/>
+<path d="M150 116L160 101H240L250 116Z" fill="#C9CED3"/>
+<path d="M214 101H240L250 116H214Z" fill="#9AA1A8"/>
+<rect x="158" y="97" width="84" height="6" rx="3" fill="#E4E7EA"/>
+<rect x="190" y="104" width="24" height="7" rx="3.5" fill="#7E868E"/>
+<circle cx="186" cy="168" r="3.5" fill="#6CC3D5"/>
+<circle cx="230" cy="200" r="3" fill="#6CC3D5"/>
+<circle cx="180" cy="236" r="2.5" fill="#6CC3D5"/>
+<circle cx="222" cy="254" r="3.5" fill="#6CC3D5"/>
+<circle cx="198" cy="150" r="2" fill="#6CC3D5"/>
+</svg>
