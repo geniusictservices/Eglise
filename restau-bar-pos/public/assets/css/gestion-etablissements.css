@@ -1,0 +1,204 @@
+/* Gestion des établissements et des grilles de prix.
+   Complète gestion.css ; n'utilise que ses variables (--accent --fond --surface --encre --doux --ligne --erreur). */
+
+.etb-cache {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.etb-facultatif { font-weight: 400; font-size: .8125rem; color: var(--doux); }
+.etb-retour { margin: 0 0 .75rem; }
+.etb-retour .lien, .etb-lien, .etb-actions .lien { display: inline-flex; align-items: center; min-height: 44px; }
+.etb-code { font: 600 .8125rem/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--doux); padding: .2em .45em; border: 1px solid var(--ligne); border-radius: 6px; vertical-align: .15em; }
+
+/* En-tête */
+.etb-entete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; }
+.etb-entete h1 { margin: 0; }
+.etb-entete__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.etb-entete__actions .bouton, .etb-actions .bouton, .etb-reactiver .bouton,
+.etb-confirmer summary.bouton, .etb-depliant summary.bouton, .etb-image .bouton {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+}
+.etb-annonce { margin-top: 1rem; }
+
+/* Liste */
+.etb-defile { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: .25rem 1rem; }
+.etb-liste { min-width: 44rem; }
+.etb-liste th[scope="row"] { font-weight: 400; font-size: inherit; text-transform: none; letter-spacing: normal; color: var(--encre); }
+.etb-liste__nom { display: inline-flex; align-items: center; min-height: 44px; font-weight: 700; font-size: 1.0625rem; }
+.etb-liste th[scope="row"] .etb-facultatif { display: block; margin-top: -.5rem; }
+.etb-liste td .etb-facultatif { display: block; }
+.etb-liste__inactif > * { color: var(--doux); }
+
+/* Ouvert / fermé */
+.etb-etat { display: inline-flex; align-items: center; gap: .45rem; font-weight: 600; }
+.etb-etat::before { content: ""; width: .6rem; height: .6rem; border-radius: 50%; background: var(--doux); flex: none; }
+.etb-etat--ouvert::before { background: #2E9E5B; box-shadow: 0 0 0 3px color-mix(in srgb, #2E9E5B 25%, transparent); }
+.etb-etat--ferme::before { background: var(--erreur); }
+.etb-etat--inconnu { color: var(--doux); font-weight: 400; }
+.etb-maintenant { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem .75rem; margin: .75rem 0 0; }
+
+/* Fiche : sommaire collant, sections */
+.etb-sommaire {
+  position: sticky; top: 0; z-index: 2; display: flex; gap: .25rem; overflow-x: auto;
+  margin: 1.25rem calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 0;
+  padding: .25rem max(16px, env(safe-area-inset-left, 0px)); background: var(--fond); border-bottom: 1px solid var(--ligne); scrollbar-width: none;
+}
+.etb-sommaire::-webkit-scrollbar { display: none; }
+.etb-sommaire a {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 .75rem; border-radius: 8px;
+  color: var(--doux); font-weight: 600; text-decoration: none; white-space: nowrap;
+}
+.etb-sommaire a:hover { color: var(--encre); background: var(--surface); }
+.etb-section { scroll-margin-top: 4rem; overflow: visible; }
+.etb-section h3 { margin: 0; font-size: 1rem; }
+.etb-formulaire { max-width: 56rem; }
+
+.etb-groupe { display: grid; gap: .4rem; min-width: 0; margin: 0 0 1.25rem; padding: 0 0 1.25rem; border: 0; border-bottom: 1px solid var(--ligne); }
+.etb-groupe:last-of-type { border-bottom: 0; padding-bottom: 0; }
+.etb-groupe > legend { padding: 0; margin-bottom: .25rem; font-weight: 700; font-size: .8125rem; letter-spacing: .06em; text-transform: uppercase; color: var(--doux); }
+.etb-paire { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1rem; }
+.etb-trio { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 1rem; }
+@media (max-width: 760px) { .etb-trio { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 600px) { .etb-paire { grid-template-columns: minmax(0, 1fr); } }
+.etb-champ--texte textarea { min-height: 7rem; }
+.etb-erreur-champ { margin: .25rem 0 0; color: var(--erreur); font-size: .875rem; font-weight: 600; }
+.etb-erreur-champ::before { content: "↑ "; }
+
+/* Adresse web */
+.etb-slug { display: flex; align-items: stretch; min-width: 0; }
+.etb-slug__prefixe {
+  display: inline-flex; align-items: center; padding: 0 .65rem; max-width: 45%;
+  border: 1.5px solid var(--ligne); border-right: 0; border-radius: 8px 0 0 8px;
+  background: var(--fond); color: var(--doux); font-size: .875rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.formulaire .etb-slug input { border-radius: 0 8px 8px 0; min-width: 0; }
+
+/* Cases et boutons radio larges, faciles à toucher */
+.etb-cases { display: grid; gap: .5rem; margin: .75rem 0 0; padding: 0; border: 0; min-width: 0; }
+.etb-cases legend { padding: 0; margin-bottom: .35rem; font-size: .875rem; font-weight: 600; }
+.etb-cases--ligne { display: flex; flex-wrap: wrap; }
+.etb-cases--types { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+.etb-cases .aide, .etb-cases .etb-erreur-champ { flex-basis: 100%; grid-column: 1 / -1; }
+.etb-case {
+  display: flex !important; align-items: center; gap: .65rem; min-height: 44px; margin: 0 !important; padding: .35rem .85rem;
+  border: 1.5px solid var(--ligne); border-radius: 8px; background: var(--surface); cursor: pointer;
+  font-size: .9375rem !important; font-weight: 400 !important;
+}
+.etb-case input { width: 1.25rem; height: 1.25rem; margin: 0; flex: none; accent-color: var(--accent); }
+.etb-case:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
+.etb-case--grande { align-items: flex-start; padding: .75rem .9rem; }
+.etb-case--grande input { margin-top: .15rem; }
+.etb-case--grande .etb-facultatif { display: block; margin-top: .1rem; }
+
+.etb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1rem; }
+.etb-actions--fin { margin: 1.5rem 0 0; }
+.etb-modifie { color: var(--erreur); font-size: .875rem; font-weight: 600; }
+[hidden] { display: none !important; }
+
+/* Couleur */
+.etb-couleur { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.etb-couleur__choix input[type="color"] {
+  width: 64px; height: 44px; padding: 2px; border: 1.5px solid var(--ligne); border-radius: 8px; background: var(--surface); cursor: pointer;
+}
+.formulaire .etb-couleur__choix input[type="color"] { width: 64px !important; min-height: 44px; padding: 2px !important; }
+.etb-couleur__choix--inactif { opacity: .45; }
+.etb-couleur__apercu {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 1.1rem; border-radius: 999px;
+  background: var(--etb-apercu, var(--accent)); color: #111315; font-weight: 700;
+}
+
+/* Logo et couverture */
+.etb-images { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 1.25rem; margin-top: 1.25rem; }
+@media (max-width: 760px) { .etb-images { grid-template-columns: minmax(0, 1fr); } }
+.etb-image { align-content: start; border-bottom: 0; padding: 0; margin: 0; }
+.etb-image__apercu {
+  display: grid; place-items: center; overflow: hidden; border-radius: 10px;
+  background: var(--fond); border: 1px dashed var(--ligne);
+}
+.etb-image__apercu img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.etb-image__apercu--logo { aspect-ratio: 1; max-width: 12rem; }
+.etb-image__apercu--logo img { object-fit: contain; padding: .5rem; }
+.etb-image__apercu--couverture { aspect-ratio: 16 / 7; }
+.etb-image__vide { padding: 1rem; color: var(--doux); text-align: center; font-size: .875rem; }
+.etb-image input[type="file"] { min-height: 44px; padding: .5rem 0; }
+.etb-image .bouton { justify-self: start; }
+
+/* Horaires */
+.etb-horaires { margin-top: 1rem; }
+.etb-horaires__liste { display: grid; gap: .75rem; }
+.etb-horaire {
+  display: grid; gap: .75rem; min-width: 0; margin: 0; padding: 1rem;
+  border: 1px solid var(--ligne); border-radius: 10px; background: var(--fond);
+}
+.etb-horaire--erreur { border-color: var(--erreur); }
+.etb-horaire .champ { display: grid; gap: .3rem; min-width: 0; }
+.etb-horaire label { font-size: .875rem; font-weight: 600; }
+.etb-horaire input:not([type="checkbox"]) {
+  box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 0 12px; border: 1.5px solid var(--ligne); border-radius: 8px;
+  background: var(--surface); color: var(--encre); font: inherit; font-size: 1rem;
+}
+.etb-horaire input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.etb-horaire__service { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
+.etb-horaire__jours { display: flex; flex-wrap: wrap; gap: .4rem; }
+.etb-jour { position: relative; display: inline-flex; margin: 0; }
+.etb-jour input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; }
+.etb-jour span, .etb-jour--tous {
+  display: inline-grid; place-items: center; min-width: 48px; min-height: 44px; padding: 0 .6rem;
+  border: 1.5px solid var(--ligne); border-radius: 8px; background: var(--surface); color: var(--encre);
+  font: inherit; font-weight: 700; font-size: .875rem !important; cursor: pointer;
+}
+.etb-jour input:checked + span { background: var(--accent); border-color: var(--accent); color: #111315; }
+.etb-jour input:focus-visible + span { outline: 2px solid var(--encre); outline-offset: 2px; }
+.etb-jour--tous { font-weight: 600; color: var(--doux); border-style: dashed; }
+.etb-horaire__heures { display: flex; flex-wrap: wrap; align-items: end; gap: .5rem .75rem; }
+.etb-horaire__heures .champ { flex: 0 1 9.5rem; }
+.etb-horaire__fleche { padding-bottom: .6rem; color: var(--doux); font-weight: 700; }
+.etb-horaire__retirer { justify-self: start; min-height: 44px; }
+.etb-horaire__note {
+  margin: 0; padding: .45rem .75rem; border-radius: 8px; font-size: .875rem; font-weight: 600;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface)); justify-self: start;
+}
+.etb-horaire__note::before { content: "☾ "; }
+@media (max-width: 600px) {
+  .etb-horaire__service { grid-template-columns: minmax(0, 1fr); }
+  .etb-horaire { padding: .75rem; }
+  .etb-horaire__heures { flex-wrap: nowrap; }
+  .etb-horaire__heures .champ { flex: 1 1 0; }
+  .etb-horaire__fleche { display: none; }
+  .etb-horaire input[type="time"] { padding: 0 8px; }
+}
+
+/* Zones et grilles */
+.etb-vide { color: var(--doux); }
+.etb-zones { display: grid; gap: 1rem; margin-top: 1rem; }
+.etb-zone { padding: 1rem; border: 1px solid var(--ligne); border-radius: 10px; background: var(--fond); scroll-margin-top: 4rem; }
+.etb-zone:target { border-color: var(--accent); }
+.etb-zone--nouvelle { border-style: dashed; }
+.etb-zone__titre { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1rem; }
+.etb-zone__titre h2, .etb-zone__titre h3 { margin: 0; font-size: 1.0625rem; }
+.etb-zone__titre .etb-lien { margin-left: auto; }
+.etb-zone .etb-depliant, .etb-zone .etb-confirmer { display: inline-block; margin: .75rem .5rem 0 0; vertical-align: top; }
+.etb-zone .etb-depliant[open], .etb-zone .etb-confirmer[open] { display: block; }
+.etb-note { margin-top: .75rem; }
+.etb-grilles { max-width: 56rem; }
+
+/* Confirmation dans la page (pas de boîte de dialogue) */
+.etb-confirmer, .etb-depliant { margin-top: .75rem; }
+.etb-confirmer summary, .etb-depliant summary { list-style: none; cursor: pointer; }
+.etb-confirmer summary::-webkit-details-marker, .etb-depliant summary::-webkit-details-marker { display: none; }
+.etb-confirmer[open] summary { display: none; }
+.etb-depliant[open] > summary { margin-bottom: .5rem; }
+.etb-confirmer__corps {
+  padding: 1rem; border-radius: 8px; border-left: 4px solid var(--erreur);
+  background: color-mix(in srgb, var(--erreur) 10%, var(--surface));
+}
+.etb-confirmer__corps p { margin: 0 0 .75rem; }
+.etb-confirmer__corps form { margin: 0; }
+.etb-bouton-danger { background: var(--erreur) !important; border-color: var(--erreur) !important; color: var(--sur-erreur, #fff) !important; min-height: 44px; }
+.etb-reactiver { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
+.etb-reactiver p, .etb-reactiver form { margin: 0; }
+
+/* Erreurs */
+.etb-erreurs { margin: 0 0 1rem; }
+.etb-erreurs p { display: inline; margin: 0; font-weight: 700; }
+.etb-erreurs ul { margin: .4rem 0 0; padding-left: 1.25rem; }

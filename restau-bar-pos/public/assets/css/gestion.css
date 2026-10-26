@@ -127,7 +127,7 @@ h2 { margin: 0 0 .75rem; font: 600 1.0625rem/1.25 var(--police-titre); }
 .impression { background: #E9E7E3; color: #111315; color-scheme: light; }
 .impression__aide { text-align: center; margin: 1.5rem 0; }
 .chevalet {
-  width: 10.5cm; margin: 0 auto 2rem; padding: 1cm .8cm; background: #fff; text-align: center;
+  width: 10.5cm; max-width: calc(100% - 2rem); margin: 0 auto 2rem; padding: 1cm .8cm; background: #fff; text-align: center;
   border-top: 10mm solid var(--accent); border-radius: 4px;
 }
 .chevalet p { margin: 0; }

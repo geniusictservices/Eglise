@@ -160,7 +160,7 @@
 }
 .cat-confirmer__corps p { margin: 0 0 .75rem; }
 .cat-confirmer__corps form { margin: 0; }
-.cat-bouton-danger { background: var(--erreur) !important; border-color: var(--erreur) !important; color: #fff !important; min-height: 44px; }
+.cat-bouton-danger { background: var(--erreur) !important; border-color: var(--erreur) !important; color: var(--sur-erreur, #fff) !important; min-height: 44px; }
 .cat-reactiver { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem; }
 .cat-reactiver p { margin: 0; }
 .cat-reactiver form { margin: 0; }

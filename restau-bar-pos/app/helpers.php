@@ -139,3 +139,10 @@ function couleurLisible(string $couleur, string $fond, float $ratio = 4.5): stri
     }
     return $resultat;
 }
+
+/** Mention « Photo : … » d'un crédit photo, sans répéter « Photo : » si l'auteur l'a déjà saisi. */
+function creditPhoto(string $credit): string
+{
+    $credit = trim((string) preg_replace('/^(photo|crédit|credit)\s*:\s*/iu', '', trim($credit)));
+    return t('vitrine.photo_credit', ['credit' => $credit]);
+}

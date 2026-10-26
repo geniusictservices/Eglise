@@ -312,7 +312,7 @@ final class EtablissementSaisie
             $erreurs['nom_fr'] = t('etab.erreur_trop_long', ['champ' => t('grilles.nom'), 'max' => 64]);
         }
         if ($v['code'] === '' && $v['nom_fr'] !== '') {
-            $v['code'] = self::slugifier((string) preg_replace('/^prix\s+/iu', '', $v['nom_fr']), 32);
+            $v['code'] = self::slugifier((string) preg_replace('/^(prix|price)\s+/iu', '', $v['nom_fr']), 32);
         }
         if ($v['code'] === '' && !isset($erreurs['nom_fr'])) {
             $erreurs['code'] = t('etab.erreur_code_vide');

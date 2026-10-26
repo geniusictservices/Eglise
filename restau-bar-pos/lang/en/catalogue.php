@@ -94,7 +94,7 @@ return [
     'catalogue.photo_aide' => 'JPEG, PNG or WebP, {max} maximum. A square, well-lit photo looks best on the menu.',
     'catalogue.photo_a_rechoisir' => 'If you had chosen a photo, please choose it again.',
     'catalogue.photo_credit' => 'Photo credit',
-    'catalogue.photo_credit_exemple' => 'Photo: Jean K. / CC BY 4.0',
+    'catalogue.photo_credit_exemple' => 'Jean K. · CC BY 4.0',
     'catalogue.photo_credit_aide' => 'Author and licence, to fill in if the photo is not yours.',
     'catalogue.photo_enregistrer' => 'Save the photo',
     'catalogue.photo_retirer' => 'Remove the photo',

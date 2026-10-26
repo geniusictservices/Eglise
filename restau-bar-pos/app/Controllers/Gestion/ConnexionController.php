@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers\Gestion;
 
+use App\Core\Config;
 use App\Core\Database;
 use App\Core\Session;
 use App\Core\View;
@@ -46,6 +47,14 @@ final class ConnexionController
         unset($_SESSION['essais_connexion']);
         Database::executer('UPDATE utilisateurs SET derniere_connexion = NOW() WHERE id = ?', [$utilisateur['id']]);
         Session::connecter($utilisateur);
+        // Langue préférée du compte (Mon compte)
+        if (in_array($utilisateur['langue'] ?? '', Config::get('langues', ['fr']), true)) {
+            setcookie('lang', $utilisateur['langue'], [
+                'expires' => time() + 365 * 86400,
+                'path' => '/',
+                'samesite' => 'Lax',
+            ]);
+        }
         rediriger('/gestion');
     }
 

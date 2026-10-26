@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Controllers\Gestion;
 
+use App\Core\Database;
 use App\Core\I18n;
 
 /** Lecture et affichage des nombres et des dates des écrans devises, taux et compte. */
 final class DeviseAffichage
 {
+    private static ?int $decalageBase = null;
+
     /** Taux lisible : « 2 850 », « 0,92 » (fr) ou « 2,850 », « 0.92 » (en), sans zéros inutiles. */
     public static function taux(float|string|null $taux): string
     {
@@ -84,5 +87,23 @@ final class DeviseAffichage
             return '';
         }
         return date(I18n::langue() === 'fr' ? 'd/m/Y H:i' : 'Y-m-d H:i', $horodatage);
+    }
+
+    /**
+     * Date écrite par la base (NOW(), CURRENT_TIMESTAMP), affichée à l'heure locale de l'instance.
+     * Le fuseau de MySQL peut différer de celui de PHP (fuseau_horaire de l'instance).
+     */
+    public static function dateHeureBase(?string $dateHeure): string
+    {
+        if ($dateHeure === null || $dateHeure === '' || ($horodatage = strtotime($dateHeure)) === false) {
+            return '';
+        }
+        if (self::$decalageBase === null) {
+            $ligne = Database::un('SELECT TIMESTAMPDIFF(SECOND, UTC_TIMESTAMP(), NOW()) AS decalage');
+            // Arrondi au quart d'heure : la requête prend quelques millisecondes
+            self::$decalageBase = (int) (round(((int) ($ligne['decalage'] ?? 0)) / 900) * 900);
+        }
+        $local = $horodatage - self::$decalageBase + (int) date('Z', $horodatage);
+        return self::dateHeure(date('Y-m-d H:i:s', $local));
     }
 }

@@ -1,0 +1,36 @@
+<?php
+
+// My account
+return [
+    'compte.titre' => 'My account',
+    'compte.aide' => 'Your name, the interface language and your password.',
+    'compte.profil' => 'My details',
+    'compte.email' => 'Sign-in e-mail',
+    'compte.derniere_connexion' => 'Last sign-in',
+    'compte.cree_le' => 'Account created on',
+    'compte.jamais' => 'Never',
+    'compte.nom' => 'Name',
+    'compte.nom_aide' => 'Shown at the top of the dashboard and in the rate history.',
+    'compte.langue' => 'Interface language',
+    'compte.langue_fr' => 'Français',
+    'compte.langue_en' => 'English',
+    'compte.langue_aide' => 'Applies right away on this device.',
+    'compte.enregistrer' => 'Save',
+    'compte.enregistre' => 'Your details are saved.',
+    'compte.erreur_nom' => 'Enter your name.',
+    'compte.erreur_nom_long' => 'The name must be 128 characters at most.',
+    'compte.erreur_langue' => 'Choose French or English.',
+
+    'compte.mot_de_passe' => 'Change password',
+    'compte.actuel' => 'Current password',
+    'compte.nouveau' => 'New password',
+    'compte.nouveau_aide' => 'At least {n} characters. A short sentence is easy to remember.',
+    'compte.confirmation' => 'New password, once more',
+    'compte.changer' => 'Change password',
+    'compte.mot_de_passe_change' => 'Your password has been changed.',
+    'compte.erreur_actuel' => 'The current password is incorrect.',
+    'compte.erreur_court' => 'The new password must be at least {n} characters.',
+    'compte.erreur_long' => 'The new password must be {n} characters at most.',
+    'compte.erreur_identique' => 'The new password must be different from the current one.',
+    'compte.erreur_confirmation' => 'The two new passwords do not match. Enter them again.',
+];

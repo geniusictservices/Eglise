@@ -43,8 +43,7 @@ $choisies = array_map('intval', $prix['devises'] ?? []);
         <label for="etb-devise-affichage"><?= e(t('etab.devise_affichage')) ?></label>
         <select id="etb-devise-affichage" name="devise_affichage_id" data-devise-affichage aria-describedby="etb-devise-affichage-aide">
             <?php foreach ($devises as $did => $devise): ?>
-                <option value="<?= (int) $did ?>" <?= (int) ($prix['devise_affichage_id'] ?? 0) === (int) $did ? 'selected' : '' ?>
-                    <?= in_array((int) $did, $choisies, true) ? '' : 'disabled' ?>><?= e($devise['code'] . ' · ' . champ($devise, 'nom')) ?></option>
+                <option value="<?= (int) $did ?>" <?= (int) ($prix['devise_affichage_id'] ?? 0) === (int) $did ? 'selected' : '' ?>><?= e($devise['code'] . ' · ' . champ($devise, 'nom')) ?></option>
             <?php endforeach; ?>
         </select>
         <p class="aide" id="etb-devise-affichage-aide"><?= e(t('etab.devise_affichage_aide')) ?></p>

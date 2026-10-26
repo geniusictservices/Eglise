@@ -37,7 +37,7 @@ $couverture = urlImageSure($etab['couverture']);
             <?php endif; ?>
         </p>
         <?php if ($couverture && !empty($etab['couverture_credit'])): ?>
-            <p class="entete__credit"><?= e(t('vitrine.photo_credit', ['credit' => $etab['couverture_credit']])) ?></p>
+            <p class="entete__credit"><?= e(creditPhoto($etab['couverture_credit'])) ?></p>
         <?php endif; ?>
     </div>
 </header>
@@ -121,7 +121,7 @@ $couverture = urlImageSure($etab['couverture']);
                                 <?php endforeach; ?>
                             </dl>
                             <?php if ($produit['photo'] && !empty($produit['photo_credit'])): ?>
-                                <p class="produit__credit"><?= e(t('vitrine.photo_credit', ['credit' => $produit['photo_credit']])) ?></p>
+                                <p class="produit__credit"><?= e(creditPhoto($produit['photo_credit'])) ?></p>
                             <?php endif; ?>
                         </li>
                     <?php endforeach; ?>

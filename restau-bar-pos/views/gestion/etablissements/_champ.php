@@ -13,9 +13,10 @@
  * @var ?bool $facultatif
  * @var ?string $langue   attribut lang du champ
  * @var ?string $attributs attributs supplémentaires, déjà sûrs
+ * @var ?string $prefixeId  pour plusieurs formulaires semblables dans la page (zones)
  */
 $type ??= 'text';
-$id = 'etb-' . str_replace('_', '-', $nom);
+$id = 'etb-' . ($prefixeId ?? '') . str_replace('_', '-', $nom);
 $erreur = $erreurs[$nom] ?? null;
 $decrit = trim(($erreur !== null ? $id . '-erreur ' : '') . (!empty($aide) ? $id . '-aide' : ''));
 $commun = 'id="' . e($id) . '" name="' . e($nom) . '"'

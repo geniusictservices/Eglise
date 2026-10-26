@@ -1,0 +1,134 @@
+/* Devises, taux de change et « Mon compte ».
+   Complète gestion.css ; n'utilise que ses variables (--accent --fond --surface --encre --doux --ligne --erreur). */
+
+.dev-cache {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; border: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+.dev-code { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.dev-facultatif { font-weight: 400; font-size: .8125rem; color: var(--doux); }
+.dev-retour { margin: 0 0 .75rem; }
+.dev-retour .lien { display: inline-flex; align-items: center; min-height: 44px; }
+.dev-majuscules { text-transform: uppercase; }
+
+.dev-entete { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: .75rem 1rem; }
+.dev-entete h1 { margin: 0; }
+.dev-entete .bouton,
+.dev-actions .bouton,
+.dev-depliant summary.bouton { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; }
+
+.dev-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: 1rem; }
+.dev-actions form { margin: 0; }
+.dev-actions--ligne { margin: 0; flex-wrap: nowrap; }
+.dev-petit { min-height: 44px; padding: 0 14px; font-size: .875rem; white-space: nowrap; }
+.dev-bouton-danger { background: var(--erreur); border-color: var(--erreur); color: var(--sur-erreur, var(--surface)); }
+
+.dev-erreurs ul { margin: .4rem 0 0; padding-left: 1.2rem; }
+.dev-erreur-champ { margin: .2rem 0 0; color: var(--erreur); font-weight: 600; font-size: .875rem; }
+
+/* Confirmation dans la page */
+.dev-confirmation {
+  margin-top: 1.25rem; padding: 1.25rem; border-radius: 12px;
+  background: var(--surface); border: 2px solid var(--accent);
+}
+.dev-confirmation h2 { margin-bottom: .5rem; }
+.dev-confirmation p { margin: .4rem 0 0; }
+.dev-confirmation ul { margin: .5rem 0 0; padding-left: 1.2rem; }
+.dev-liste-taux { font-variant-numeric: tabular-nums; }
+
+/* Devise de référence */
+.dev-reference {
+  margin-top: 1.5rem; padding: 1.25rem; background: var(--surface);
+  border: 1px solid var(--ligne); border-left: 6px solid var(--accent); border-radius: 12px;
+}
+.dev-reference__surtitre { margin: 0; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--doux); }
+.dev-reference__nom { display: flex; align-items: center; gap: .75rem; margin: .4rem 0 0; font-size: 1.25rem; font-weight: 700; }
+.dev-reference__symbole {
+  display: inline-grid; place-items: center; min-width: 2.75rem; height: 2.75rem; padding: 0 .5rem; border-radius: 10px;
+  background: var(--accent); color: var(--sur-accent, var(--surface)); font-weight: 800;
+}
+.dev-reference .dev-code { color: var(--doux); font-weight: 600; }
+.dev-depliant { margin-top: .75rem; }
+.dev-depliant summary { list-style: none; cursor: pointer; }
+.dev-depliant summary::-webkit-details-marker { display: none; }
+.dev-depliant__corps { margin-top: .75rem; padding-top: .75rem; border-top: 1px solid var(--ligne); }
+.dev-depliant__corps p { margin: 0 0 .5rem; }
+
+/* Taux du jour */
+.dev-taux__formulaire { gap: 0; }
+.dev-ligne-taux {
+  display: grid; grid-template-columns: minmax(10rem, 1fr) minmax(14rem, 1.3fr) minmax(10rem, 1fr);
+  grid-template-areas: "nom saisie exemple" "nom saisie depuis" "erreur erreur erreur";
+  align-items: center; gap: .25rem 1rem; padding: 1rem 0; border-bottom: 1px solid var(--ligne);
+}
+.dev-ligne-taux__nom { grid-area: nom; margin: 0 !important; font-size: 1rem !important; font-weight: 700; }
+.dev-ligne-taux__nom .dev-code { display: block; font-weight: 600; color: var(--doux); font-size: .875rem; }
+.dev-ligne-taux__saisie { grid-area: saisie; display: flex; align-items: center; gap: .5rem; }
+.dev-ligne-taux__saisie input { flex: 1 1 auto; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; font-size: 1.125rem !important; }
+.dev-ligne-taux__un, .dev-ligne-taux__code { white-space: nowrap; font-weight: 600; color: var(--doux); font-variant-numeric: tabular-nums; }
+.dev-ligne-taux__exemple { grid-area: exemple; margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.dev-ligne-taux__exemple--invalide { color: var(--erreur); }
+.dev-ligne-taux__depuis { grid-area: depuis; margin: 0; color: var(--doux); font-size: .8125rem; }
+.dev-ligne-taux__depuis .pastille { margin-left: 0; }
+.dev-ligne-taux .dev-erreur-champ { grid-area: erreur; }
+.dev-ligne-taux--modifiee .dev-ligne-taux__saisie input { border-color: var(--accent); }
+.dev-modifie[hidden] { display: none; }
+.dev-taux__pied { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 1rem; margin-top: 1rem; }
+.dev-taux__pied .champ { flex: 1 1 16rem; max-width: 22rem; }
+.dev-taux__bouton { min-height: 52px; padding-inline: 1.5rem; }
+
+/* Tableaux larges : défilement dans leur conteneur */
+.dev-defile { position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.dev-defile .tableau td.nombre { white-space: nowrap; }
+.dev-tableau th, .dev-tableau td { padding-inline: 8px; }
+.dev-tableau td:first-child { min-width: 10rem; }
+.dev-sous-texte { display: block; margin-top: .1rem; font-size: .8125rem; color: var(--doux); font-weight: 400; white-space: nowrap; }
+.dev-inactive td { color: var(--doux); }
+.dev-etat {
+  display: inline-block; padding: .15em .55em; border-radius: 4px; font-size: .75rem; font-weight: 700;
+  background: var(--ligne); color: var(--doux);
+}
+.dev-etat--active { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); color: var(--encre); }
+.dev-etat--reference { background: var(--accent); color: var(--sur-accent, var(--surface)); text-transform: uppercase; letter-spacing: .06em; }
+
+/* Fiche d'une devise */
+.dev-formulaire { max-width: 44rem; }
+.dev-paire { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1rem; }
+.dev-champ-court { max-width: 12rem; }
+.dev-groupe { margin: .75rem 0 0; padding: 0; border: 0; min-width: 0; }
+.dev-groupe legend { padding: 0; font-size: .875rem; font-weight: 600; }
+.dev-choix { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .4rem; }
+.dev-choix__option { position: relative; margin: 0 !important; }
+.dev-choix__option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.dev-choix__option span {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 48px; min-height: 48px; padding: 0 1rem;
+  border: 1.5px solid var(--ligne); border-radius: 10px; background: var(--surface); font-weight: 700; cursor: pointer;
+}
+.dev-choix__option input:checked + span { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); box-shadow: inset 0 0 0 1px var(--accent); }
+.dev-choix__option input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dev-apercu { margin: 1rem 0 0; padding: .85rem 1rem; border-radius: 10px; background: var(--fond); border: 1px dashed var(--ligne); }
+.dev-apercu strong { font-size: 1.25rem; }
+.dev-case { display: flex !important; align-items: center; gap: .75rem; min-height: 44px; margin-top: .75rem !important; font-size: 1rem !important; font-weight: 400 !important; }
+.dev-case input { width: 22px; height: 22px; accent-color: var(--accent); }
+
+/* Mon compte */
+.cpt-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 0 1.25rem; align-items: start; }
+.cpt-grille .bloc { margin-top: 1.5rem; }
+.cpt-infos { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .35rem 1rem; margin: 1rem 0 0; }
+.cpt-infos dt { color: var(--doux); }
+.cpt-infos dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.cpt-formulaire .bouton { margin-top: 1rem; }
+.cpt-langues { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .4rem; }
+
+@media (max-width: 760px) {
+  .dev-ligne-taux {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "nom" "saisie" "exemple" "depuis" "erreur";
+  }
+}
+@media (max-width: 600px) {
+  .dev-paire { grid-template-columns: minmax(0, 1fr); }
+  .dev-taux__pied .champ { max-width: none; }
+  .dev-taux__bouton, .cpt-formulaire .bouton { width: 100%; }
+  .dev-reference__nom { font-size: 1.0625rem; }
+}

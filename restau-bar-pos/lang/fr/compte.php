@@ -1,0 +1,36 @@
+<?php
+
+// Mon compte
+return [
+    'compte.titre' => 'Mon compte',
+    'compte.aide' => 'Votre nom, la langue de l\'interface et votre mot de passe.',
+    'compte.profil' => 'Mes informations',
+    'compte.email' => 'E-mail de connexion',
+    'compte.derniere_connexion' => 'Dernière connexion',
+    'compte.cree_le' => 'Compte créé le',
+    'compte.jamais' => 'Jamais',
+    'compte.nom' => 'Nom',
+    'compte.nom_aide' => 'Affiché en haut du tableau de bord et dans l\'historique des taux.',
+    'compte.langue' => 'Langue de l\'interface',
+    'compte.langue_fr' => 'Français',
+    'compte.langue_en' => 'English',
+    'compte.langue_aide' => 'S\'applique tout de suite sur cet appareil.',
+    'compte.enregistrer' => 'Enregistrer',
+    'compte.enregistre' => 'Vos informations sont enregistrées.',
+    'compte.erreur_nom' => 'Indiquez votre nom.',
+    'compte.erreur_nom_long' => 'Le nom doit faire 128 caractères au plus.',
+    'compte.erreur_langue' => 'Choisissez le français ou l\'anglais.',
+
+    'compte.mot_de_passe' => 'Changer de mot de passe',
+    'compte.actuel' => 'Mot de passe actuel',
+    'compte.nouveau' => 'Nouveau mot de passe',
+    'compte.nouveau_aide' => 'Au moins {n} caractères. Une phrase courte est facile à retenir.',
+    'compte.confirmation' => 'Nouveau mot de passe, encore une fois',
+    'compte.changer' => 'Changer le mot de passe',
+    'compte.mot_de_passe_change' => 'Votre mot de passe est changé.',
+    'compte.erreur_actuel' => 'Le mot de passe actuel est incorrect.',
+    'compte.erreur_court' => 'Le nouveau mot de passe doit faire au moins {n} caractères.',
+    'compte.erreur_long' => 'Le nouveau mot de passe doit faire {n} caractères au plus.',
+    'compte.erreur_identique' => 'Le nouveau mot de passe doit être différent de l\'actuel.',
+    'compte.erreur_confirmation' => 'Les deux nouveaux mots de passe ne sont pas identiques. Saisissez-les à nouveau.',
+];

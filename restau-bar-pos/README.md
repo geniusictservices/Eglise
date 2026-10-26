@@ -7,17 +7,27 @@ Chaque client dispose de sa propre instance sur un sous-domaine, gérée depuis 
 
 - [Cahier des charges](docs/cahier-des-charges.md)
 - [Présentation du projet (PDF)](docs/restau-bar-pos-presentation.pdf)
+- [Système de design « Volcan »](docs/design-system.md)
+- [Photos des produits](docs/photos.md)
 
 ## État d'avancement
 
 Phase 1 en cours. Déjà disponible :
 
 - résolution de l'instance par sous-domaine (`monbar.<domaine>` → `config/instances/monbar.php`) ;
-- catalogue : catégories, produits, conditionnements, grilles de prix, devises configurables et taux ;
-- **vitrine publique** de chaque établissement : présentation, horaires, état d'ouverture, menu avec les prix dans la devise choisie, prix de la zone (VIP…), recherche, français et anglais ;
-- **codes QR** : `/q/<code>` compte le scan puis ouvre le menu ; création, téléchargement (SVG) et chevalet de table à imprimer depuis l'espace de gestion ;
-- **écran de caisse** (`/caisse`) : produits en grille par catégorie, choix du format, ticket avec totaux dans chaque devise acceptée, adapté au type d'établissement (grandes tuiles et thème sombre pour un nightclub), utilisable sur tablette et téléphone. L'enregistrement des ventes arrive en phase 3 ;
-- espace de gestion : connexion et tableau de bord.
+- **vitrine publique** de chaque établissement : présentation, horaires, état d'ouverture, menu avec les prix dans la devise choisie, prix de la zone (VIP…), photos des produits avec leur crédit, recherche, français et anglais, thème jour ou nuit selon le type d'établissement ;
+- **codes QR** : `/q/<code>` compte le scan puis ouvre le menu (avec la zone) ; création, téléchargement (SVG) et chevalet de table à imprimer depuis l'espace de gestion ;
+- **écran de caisse** (`/caisse`) : produits en grille par catégorie, choix du format, ticket avec totaux dans chaque devise acceptée, prix de la zone, adapté au type d'établissement (grandes tuiles et thème nuit pour un nightclub ou un lounge), utilisable sur tablette et téléphone. L'enregistrement des ventes arrive en phase 3 ;
+- **espace de gestion** (`/gestion`), en français et en anglais, utilisable sur téléphone :
+  - connexion (limite des essais, langue préférée du compte appliquée) et tableau de bord ;
+  - **catalogue** (`/gestion/catalogue`) : produits groupés par catégorie avec filtres, « disponible / épuisé » en un toucher, ordre ; fiche produit (informations FR/EN, badges, allergènes, photo envoyée et ré-encodée avec son crédit, formats, tableau des prix formats × grilles × devises avec le calcul automatique affiché, établissements où il est vendu, désactivation) ; création sur une seule page ; catégories (`/gestion/catalogue/categories`) ;
+  - **établissements** (`/gestion/etablissements`) : liste avec l'état ouvert / fermé, création, fiche en six sections (informations et liens, apparence : couleur, logo et couverture, prix et devises, horaires par service, zones avec leur grille, activation) ; **grilles de prix** (`/gestion/grilles`) ;
+  - **devises et taux** (`/gestion/devises`) : devise de référence, taux du jour (avec date de début, éventuellement programmée), ajout et modification des devises (format, décimales, arrondi), activation, historique des taux ;
+  - **mon compte** (`/gestion/compte`) : nom, langue préférée, mot de passe ;
+  - codes QR et chevalet (`/gestion/qr`) ;
+  - **système de design** (`/gestion/design`) : page vivante des couleurs, contrastes, typographie et composants, en jour et en nuit.
+
+Photos de démonstration : l'outil `bin/importer-photos.php` est prêt mais n'a pas encore pu être lancé (accès réseau à Wikimedia Commons refusé) ; la démo utilise des illustrations SVG. Voir [docs/photos.md](docs/photos.md).
 
 ## Technologie
 
@@ -30,22 +40,43 @@ Phase 1 en cours. Déjà disponible :
 ```
 app/
   bootstrap.php          chargement des classes et de la configuration
-  helpers.php            fonctions d'affichage (e(), t(), champ()…)
-  Core/                  noyau : Config, Instance, Database, Router, View, I18n, Session
-  Controllers/           VitrineController (pages publiques), Gestion/ (espace de gestion)
-  Repositories/          accès aux données : devises et prix, établissements, catalogue
-bin/creer-instance.php   création d'une instance client
+  helpers.php            fonctions d'affichage (e(), t(), champ()…) et couleurs (contraste, texte lisible)
+  Core/                  noyau : Config, Instance, Database, Router, View, I18n, Session,
+                         Migrations, Images (contrôle et ré-encodage des images envoyées)
+  Controllers/           VitrineController (pages publiques), CaisseController, Gestion/ (espace de gestion)
+  Repositories/          accès aux données : devises et prix, établissements, catalogue,
+                         Gestion*Repository pour les écrans de gestion
+  routes/                routes d'un module : un fichier par module (catalogue, etablissements,
+                         devises, compte, design), chargé par public/index.php
+bin/
+  creer-instance.php     création d'une instance client (base, schéma, migrations, démo, compte admin)
+  migrer.php             applique les migrations en attente : php bin/migrer.php demo | --toutes
+  importer-photos.php    photos libres de droits de la démo depuis Wikimedia Commons (voir docs/photos.md)
 config/
   app.php                configuration commune (domaine de base, langues…)
   app.local.php          surcharge propre au serveur (non versionnée)
   instances/             une configuration par client (non versionnée)
 database/
-  schema.sql             tables d'une instance
-  demo.sql               données de démonstration
-lang/                    traductions fr et en
+  schema.sql             tables d'une instance (version de départ)
+  migrations/            évolutions du schéma : NNN_nom.sql, appliquées une seule fois et dans l'ordre
+                         (table schema_migrations)
+  demo.sql               données de démonstration ; demo-illustrations.sql : illustrations SVG
+  photos-demo.json       requêtes de recherche des photos de démonstration
+docs/
+  design-system.md       système de design « Volcan » : principes, jetons, composants, thèmes
+  photos.md              ajouter des photos ; credits-photos.md : crédits des photos importées
+lang/
+  fr.php, en.php         textes communs
+  fr/<module>.php        textes d'un module, fusionnés après les textes communs (même chose pour en/)
 public/                  racine web : index.php et fichiers statiques
-views/                   gabarits PHP
+  assets/css/            volcan.css (jetons et composants), vitrine.css, caisse.css, gestion.css,
+                         gestion-<module>.css
+  assets/js/             theme.js (jour / nuit), menu.js, caisse.js, gestion-<module>.js
+  uploads/<instance>/    images envoyées depuis la gestion (produits, établissements)
+views/                   gabarits PHP : layouts/, vitrine/, caisse/, gestion/<module>/, erreurs/
 ```
+
+Ajouter un module : un fichier `app/routes/<module>.php` (qui reçoit `$routeur`), des traductions `lang/fr/<module>.php` et `lang/en/<module>.php` (mêmes clés), une migration `database/migrations/<numéro>_<nom>.sql` si le schéma change (puis `php bin/migrer.php --toutes`), et des vues qui reprennent les composants de `volcan.css` (voir [docs/design-system.md](docs/design-system.md)).
 
 ## Installation en local
 
@@ -84,3 +115,5 @@ Pour afficher les erreurs PHP en développement, créer `config/app.local.php` :
 - Racine web : le dossier `public/`. Avec Apache, `public/.htaccess` envoie les requêtes vers `index.php`. Avec Nginx : `try_files $uri /index.php?$query_string;`.
 - Renseigner `domaine_base` dans `config/app.local.php` et mettre `instance_par_defaut` à `null`.
 - Créer chaque client avec `bin/creer-instance.php`.
+- À chaque mise à jour du code : `php bin/migrer.php --toutes`.
+- Photos envoyées depuis la gestion : jusqu'à 8 Mo si PHP le permet (`upload_max_filesize = 8M`, `post_max_size = 10M`) ; sinon la limite de PHP s'applique et elle est affichée dans les formulaires. Le dossier `public/uploads/` doit être accessible en écriture par PHP.

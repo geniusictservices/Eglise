@@ -165,3 +165,11 @@ INSERT INTO qr_codes (code, etablissement_id, zone_id, libelle) VALUES
  ('lac-terr',   1, 2,    'Tables de la terrasse'),
  ('volc-entree',2, NULL, 'Entrée du club'),
  ('volc-vip',   2, 4,    'Carré VIP');
+
+-- Photos de démonstration : database/demo-illustrations.sql, chargé après ce fichier, met les illustrations SVG du projet.
+-- Les photos libres de droits (Wikimedia Commons, avec le crédit des auteurs) s'importent avec :
+--   php bin/importer-photos.php --instance=demo
+-- (domaines à autoriser : commons.wikimedia.org et upload.wikimedia.org ; voir docs/photos.md).
+-- Aucune photo n'a encore été importée : l'accès à Wikimedia Commons était refusé par le réseau.
+-- Après un import réussi, « php bin/importer-photos.php --sql » affiche les UPDATE à placer
+-- à la fin de database/demo-illustrations.sql (ici, ils seraient remplacés par les illustrations).

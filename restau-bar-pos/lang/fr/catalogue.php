@@ -94,7 +94,7 @@ return [
     'catalogue.photo_aide' => 'JPEG, PNG ou WebP, {max} au plus. Une photo carrée, bien éclairée, rend mieux sur le menu.',
     'catalogue.photo_a_rechoisir' => 'Si vous aviez choisi une photo, choisissez-la à nouveau.',
     'catalogue.photo_credit' => 'Crédit de la photo',
-    'catalogue.photo_credit_exemple' => 'Photo : Jean K. / CC BY 4.0',
+    'catalogue.photo_credit_exemple' => 'Jean K. · CC BY 4.0',
     'catalogue.photo_credit_aide' => 'Auteur et licence, à indiquer si la photo n\'est pas la vôtre.',
     'catalogue.photo_enregistrer' => 'Enregistrer la photo',
     'catalogue.photo_retirer' => 'Retirer la photo',

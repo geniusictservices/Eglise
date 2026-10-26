@@ -1,0 +1,49 @@
+{
+  "_commentaire": "Photos libres de droits des données de démonstration (database/demo.sql), importées depuis Wikimedia Commons par bin/importer-photos.php. Requêtes en anglais, génériques et sans nom de marque : les premières sont essayées d'abord.",
+  "marques_exclues": [
+    "Primus", "Mützig", "Mutzig", "Heineken", "Guinness", "Amstel", "Skol", "Tembo", "Simba", "Turbo King",
+    "Castel", "Doppel", "Nile Special", "Tusker", "Bralirwa", "Bralima", "Brasimba",
+    "Corona", "Budweiser", "Carlsberg", "Stella Artois", "Beck's", "Becks", "Kronenbourg", "Leffe", "Hoegaarden",
+    "Grimbergen", "Desperados", "Peroni", "Asahi", "Kirin", "Sapporo", "Tsingtao", "Coors", "Castle Lager",
+    "Coca-Cola", "Coca Cola", "Coke", "Pepsi", "Fanta", "Sprite", "Schweppes", "7 Up", "7up", "Mirinda",
+    "Red Bull", "Monster Energy", "Orangina", "Evian", "Vittel", "Perrier", "San Pellegrino", "Volvic", "Nestlé", "Nestle",
+    "Moët", "Moet", "Chandon", "Dom Pérignon", "Dom Perignon", "Veuve Clicquot", "Clicquot", "Taittinger", "Laurent-Perrier",
+    "Bollinger", "Krug", "Ruinart", "Piper-Heidsieck", "Heidsieck", "Mumm", "Nicolas Feuillatte", "Roederer",
+    "Johnnie Walker", "Jack Daniel's", "Jack Daniels", "Chivas", "Jameson", "Ballantine's", "Ballantines",
+    "Glenfiddich", "Glenlivet", "Macallan", "Grant's", "Dewar's", "Famous Grouse", "Jim Beam", "Label 5",
+    "Hennessy", "Rémy Martin", "Remy Martin", "Martell", "Courvoisier",
+    "Bacardi", "Havana Club", "Captain Morgan", "Malibu", "Absolut", "Smirnoff", "Grey Goose", "Belvedere", "Ciroc",
+    "Bombay Sapphire", "Gordon's", "Tanqueray", "Baileys", "Jägermeister", "Jagermeister", "Martini", "Campari", "Aperol",
+    "Ricard", "Pastis 51", "Get 27", "Cointreau", "Grand Marnier", "Jose Cuervo",
+    "KFC", "McDonald", "McDonald's", "Burger King", "Hooters", "Wingstop", "Buffalo Wild Wings", "Starbucks", "Nando's"
+  ],
+  "mots_exclus": [
+    "logo", "label", "labels", "etiquette", "advertisement", "advert", "billboard", "poster", "sign", "signage",
+    "drawing", "illustration", "painting", "map", "diagram", "icon", "cartoon", "screenshot", "museum", "brewery",
+    "factory", "museo", "collection", "packaging", "sticker", "coaster", "trademark"
+  ],
+  "produits": [
+    { "id": 1,  "nom": "Primus",                     "slug": "biere-blonde",      "recherches": ["beer bottle cold", "lager beer bottle table"] },
+    { "id": 2,  "nom": "Mützig",                     "slug": "biere-premium",     "recherches": ["glass of lager beer foam", "beer bottles bar counter"] },
+    { "id": 3,  "nom": "Heineken",                   "slug": "biere-bouteille",   "recherches": ["green beer bottle condensation", "beer bottle on table"] },
+    { "id": 4,  "nom": "Guinness",                   "slug": "biere-brune",       "recherches": ["pint of stout beer", "dark stout beer glass"] },
+    { "id": 5,  "nom": "Coca-Cola",                  "slug": "soda",              "recherches": ["cola glass with ice", "glass of soda with ice"] },
+    { "id": 6,  "nom": "Eau minérale",               "slug": "eau-minerale",      "recherches": ["mineral water bottle and glass", "glass of water"] },
+    { "id": 7,  "nom": "Jus de maracuja",            "slug": "jus-maracuja",      "recherches": ["passion fruit juice glass", "passion fruit juice"] },
+    { "id": 8,  "nom": "Kivu Sunset",                "slug": "cocktail-sunset",   "recherches": ["tequila sunrise cocktail", "orange red cocktail glass"] },
+    { "id": 9,  "nom": "Mojito",                     "slug": "mojito",            "recherches": ["mojito cocktail", "mojito mint lime glass"] },
+    { "id": 10, "nom": "Vin rouge de la maison",     "slug": "vin-rouge",         "recherches": ["glass of red wine", "red wine glass table"] },
+    { "id": 11, "nom": "Moët & Chandon Brut",        "slug": "champagne",         "recherches": ["champagne bottle ice bucket", "champagne glasses"] },
+    { "id": 12, "nom": "Johnnie Walker Black Label", "slug": "whisky",            "recherches": ["whisky glass with ice", "scotch whisky glass"] },
+    { "id": 13, "nom": "Hennessy VS",                "slug": "cognac",            "recherches": ["cognac glass", "brandy snifter glass"] },
+    { "id": 14, "nom": "Tilapia grillé du lac",      "slug": "tilapia-grille",    "recherches": ["grilled tilapia fish plate", "grilled tilapia"] },
+    { "id": 15, "nom": "Poulet braisé",              "slug": "poulet-braise",     "recherches": ["grilled chicken plate", "poulet braisé"] },
+    { "id": 16, "nom": "Brochettes de chèvre",       "slug": "brochettes-chevre", "recherches": ["goat meat skewers", "grilled meat skewers"] },
+    { "id": 17, "nom": "Frites",                     "slug": "frites",            "recherches": ["french fries plate", "french fries"] },
+    { "id": 18, "nom": "Ailes de poulet",            "slug": "ailes-poulet",      "recherches": ["chicken wings plate", "fried chicken wings"] }
+  ],
+  "etablissements": [
+    { "slug": "comptoir-du-lac", "nom": "Le Comptoir du Lac", "recherches": ["Lake Kivu", "Lake Kivu sunset"] },
+    { "slug": "volcano-club",    "nom": "Volcano Club",       "recherches": ["nightclub dance floor lights", "nightclub crowd lights"] }
+  ]
+}

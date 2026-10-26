@@ -19,6 +19,10 @@ $couleurs = [
     ['--succes', 'succes', '--surface'],
 ];
 $nomsFonds = ['--fond' => t('design.couleur.fond'), '--surface' => t('design.couleur.surface'), '--sur-lave' => t('design.couleur.sur_lave')];
+// Données d'exemple : nom de catégorie et prix au format de la langue
+$anglais = App\Core\I18n::langue() === 'en';
+$exBieres = $anglais ? 'Beers' : 'Bières';
+$exDemi = $anglais ? '$3.50' : '$3,50';
 ?>
 <p class="surtitre"><?= e(t('design.titre')) ?></p>
 <h1><?= e(t('design.nom')) ?></h1>
@@ -130,7 +134,7 @@ $nomsFonds = ['--fond' => t('design.couleur.fond'), '--surface' => t('design.cou
                 <h3><?= e(t('design.puces')) ?></h3>
                 <div class="design__rangee">
                     <button type="button" class="puce" aria-pressed="true"><?= e(t('caisse.tout')) ?></button>
-                    <button type="button" class="puce" aria-pressed="false">Bières</button>
+                    <button type="button" class="puce" aria-pressed="false"><?= e($exBieres) ?></button>
                     <button type="button" class="puce" aria-pressed="false">Cocktails</button>
                     <a class="puce puce--accent puce--active" href="#">Bouteilles</a>
                 </div>
@@ -150,7 +154,7 @@ $nomsFonds = ['--fond' => t('design.couleur.fond'), '--surface' => t('design.cou
                 </div>
                 <div class="champ">
                     <label for="design-cat-<?= $theme ?>"><?= e(t('design.champ_categorie')) ?></label>
-                    <select id="design-cat-<?= $theme ?>"><option>Bières</option><option>Cocktails</option></select>
+                    <select id="design-cat-<?= $theme ?>"><option><?= e($exBieres) ?></option><option>Cocktails</option></select>
                 </div>
                 <label class="coche"><input type="checkbox" checked> <?= e(t('design.champ_visible')) ?></label>
             </section>
@@ -161,9 +165,9 @@ $nomsFonds = ['--fond' => t('design.couleur.fond'), '--surface' => t('design.cou
                     <table class="tableau">
                         <thead><tr><th><?= e(t('design.colonne_produit')) ?></th><th><?= e(t('design.colonne_categorie')) ?></th><th class="nombre"><?= e(t('design.colonne_prix')) ?></th><th><?= e(t('design.colonne_etat')) ?></th></tr></thead>
                         <tbody>
-                            <tr><td>Primus</td><td>Bières</td><td class="nombre">$2</td><td><span class="badge badge--succes"><?= e(t('etat.ouvert_court')) ?></span></td></tr>
+                            <tr><td>Primus</td><td><?= e($exBieres) ?></td><td class="nombre">$2</td><td><span class="badge badge--succes"><?= e(t('etat.ouvert_court')) ?></span></td></tr>
                             <tr><td>Kivu Sunset</td><td>Cocktails</td><td class="nombre">$8</td><td><span class="badge badge--nouveau"><?= e(t('badge.nouveau')) ?></span></td></tr>
-                            <tr><td>Guinness</td><td>Bières</td><td class="nombre">$3,50</td><td><span class="badge badge--epuise"><?= e(t('badge.epuise')) ?></span></td></tr>
+                            <tr><td>Guinness</td><td><?= e($exBieres) ?></td><td class="nombre"><?= e($exDemi) ?></td><td><span class="badge badge--epuise"><?= e(t('badge.epuise')) ?></span></td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -190,11 +194,11 @@ $nomsFonds = ['--fond' => t('design.couleur.fond'), '--surface' => t('design.cou
                 <h3><?= e(t('design.tuiles')) ?></h3>
                 <div class="design__tuiles">
                     <button type="button" class="tuile tuile--choisie" style="--cat: var(--cat-1)"><span class="tuile__nom">Primus</span><span class="tuile__bas"><span class="tuile__format"></span><span class="tuile__prix">$3</span></span><span class="tuile__qte">2</span></button>
-                    <button type="button" class="tuile" style="--cat: var(--cat-1)"><span class="tuile__nom">Mützig</span><span class="tuile__bas"><span class="tuile__format"></span><span class="tuile__prix">$3,50</span></span><span class="tuile__qte"></span></button>
+                    <button type="button" class="tuile" style="--cat: var(--cat-1)"><span class="tuile__nom">Mützig</span><span class="tuile__bas"><span class="tuile__format"></span><span class="tuile__prix"><?= e($exDemi) ?></span></span><span class="tuile__qte"></span></button>
                     <button type="button" class="tuile" style="--cat: var(--cat-3)"><span class="tuile__nom">Kivu Sunset</span><span class="tuile__bas"><span class="tuile__format"></span><span class="tuile__prix">$10</span></span><span class="tuile__qte"></span></button>
                     <button type="button" class="tuile tuile--choisie" style="--cat: var(--cat-2)"><span class="tuile__nom">Moët &amp; Chandon</span><span class="tuile__bas"><span class="tuile__format"></span><span class="tuile__prix">$150</span></span><span class="tuile__qte">1</span></button>
                     <button type="button" class="tuile" style="--cat: var(--cat-2)"><span class="tuile__nom">Hennessy VS</span><span class="tuile__bas"><span class="tuile__format">2 <?= e(t('caisse.formats')) ?></span><span class="tuile__prix">$6+</span></span><span class="tuile__qte"></span></button>
-                    <button type="button" class="tuile tuile--epuise" style="--cat: var(--cat-1)" disabled><span class="tuile__nom">Guinness</span><span class="tuile__bas"><span class="tuile__format"><?= e(t('badge.epuise')) ?></span><span class="tuile__prix">$3,50</span></span><span class="tuile__qte"></span></button>
+                    <button type="button" class="tuile tuile--epuise" style="--cat: var(--cat-1)" disabled><span class="tuile__nom">Guinness</span><span class="tuile__bas"><span class="tuile__format"><?= e(t('badge.epuise')) ?></span><span class="tuile__prix"><?= e($exDemi) ?></span></span><span class="tuile__qte"></span></button>
                 </div>
             </section>
 

@@ -37,6 +37,8 @@ if ($instance === null) {
 
 $parametres = array_column(Database::tous('SELECT cle, valeur FROM parametres'), 'valeur', 'cle');
 date_default_timezone_set($parametres['fuseau_horaire'] ?? Config::get('fuseau_horaire'));
+// Même fuseau pour NOW() et CURRENT_TIMESTAMP que pour PHP
+Database::executer('SET time_zone = ?', [date('P')]);
 I18n::initialiser($parametres['langue_defaut'] ?? null);
 Config::definir('parametres', $parametres);
 

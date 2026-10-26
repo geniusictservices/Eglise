@@ -119,7 +119,7 @@ button { cursor: pointer; }
 .grille {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--tuile), 1fr));
-  grid-auto-rows: minmax(var(--tuile-haut), auto);
+  grid-auto-rows: max-content; /* la grille défile : « auto » resterait au min-height des tuiles */
   gap: 10px;
   align-content: start;
   overflow-y: auto;
@@ -128,7 +128,10 @@ button { cursor: pointer; }
 }
 
 /* Tuile : composant .tuile de volcan.css */
-.tuile__photo { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 6px; max-width: 100%; }
+/* Hauteur fixe (pas aspect-ratio) : la ligne de la grille en tient compte et la tuile grandit */
+.tuile__photo { flex: none; display: block; width: 100%; height: calc(var(--tuile-haut) * .6); object-fit: cover; border-radius: 6px; }
+/* Avec une photo, le nom ne doit jamais être écrasé : la tuile grandit à la place */
+.tuile__nom, .tuile__bas { flex-shrink: 0; }
 .tuile--pulse { animation: pulse .25s ease-out; }
 @keyframes pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--cat) 35%, transparent); } }
 
