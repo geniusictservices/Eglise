@@ -11,7 +11,6 @@ use App\Console\Reglages;
 use App\Console\SessionConsole;
 use App\Core\BaseConsole;
 use App\Core\Messagerie;
-use App\Repositories\DetteRepository;
 
 /**
  * API de messagerie, communes à tous les clients : Africa's Talking (SMS) et WhatsApp Cloud API (Meta).
@@ -97,7 +96,7 @@ final class MessagerieController extends Base
     {
         $this->poste();
         $canal = ($_POST['canal'] ?? '') === 'whatsapp' ? 'whatsapp' : 'sms';
-        $telephone = DetteRepository::normaliserTelephone(self::texte('telephone', 32));
+        $telephone = \App\Console\Affichage::telephone(self::texte('telephone', 32));
         if ($telephone === null) {
             $this->afficher(['essai' => t('console.erreur_telephone')], [], 422);
             return;

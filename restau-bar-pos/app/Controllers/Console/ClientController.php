@@ -14,7 +14,6 @@ use App\Console\Sauvegarde;
 use App\Console\SessionConsole;
 use App\Core\Config;
 use App\Core\Installation;
-use App\Repositories\DetteRepository;
 use PDOException;
 use Throwable;
 
@@ -282,7 +281,7 @@ final class ClientController extends Base
         try {
             Installation::ecrireConfig($sousDomaine, $configDb, 'la console super admin');
             $migrations = Installation::installerTables($pdo, $client['nom'], false, $client['langue']);
-            $telephone = DetteRepository::normaliserTelephone($client['contact_telephone']);
+            $telephone = \App\Console\Affichage::telephone($client['contact_telephone']);
             $proprietaire = Installation::creerProprietaire($pdo, (string) $client['contact_email'], $client['contact_nom'] ?: $client['nom'], $telephone, $client['langue'], true);
         } catch (Throwable $e) {
             error_log('Installation de ' . $sousDomaine . ' : ' . $e->getMessage());
@@ -440,7 +439,7 @@ final class ClientController extends Base
             $erreurs['contact_email'] = t('console.client.erreur_email');
         }
         if ($v['contact_telephone'] !== '') {
-            $normalise = DetteRepository::normaliserTelephone($v['contact_telephone']);
+            $normalise = \App\Console\Affichage::telephone($v['contact_telephone']);
             if ($normalise === null) {
                 $erreurs['contact_telephone'] = t('console.erreur_telephone');
             } else {

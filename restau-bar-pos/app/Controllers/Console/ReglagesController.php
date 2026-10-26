@@ -8,7 +8,6 @@ use App\Console\Journal;
 use App\Console\Relances;
 use App\Console\Reglages;
 use App\Console\SessionConsole;
-use App\Repositories\DetteRepository;
 
 /** Réglages de la plateforme : nom et contact (montrés aux bars), e-mail d'envoi, relances d'abonnement, installation. */
 final class ReglagesController extends Base
@@ -38,7 +37,7 @@ final class ReglagesController extends Base
             $erreurs['plateforme_nom'] = t('console.reglages.erreur_nom');
         }
         if ($v['plateforme.contact_telephone'] !== '') {
-            $tel = DetteRepository::normaliserTelephone($v['plateforme.contact_telephone']);
+            $tel = \App\Console\Affichage::telephone($v['plateforme.contact_telephone']);
             $tel === null ? $erreurs['plateforme_contact_telephone'] = t('console.erreur_telephone') : $v['plateforme.contact_telephone'] = $tel;
         }
         foreach (['plateforme.contact_email' => 'plateforme_contact_email', 'email.expediteur' => 'email_expediteur'] as $cle => $champ) {

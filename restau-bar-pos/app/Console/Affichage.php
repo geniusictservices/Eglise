@@ -60,6 +60,21 @@ final class Affichage
         return $html;
     }
 
+    /** Numéro au format international (+243…), indicatif de la RDC par défaut ; null s'il n'est pas valable. */
+    public static function telephone(?string $saisie, string $indicatif = '243'): ?string
+    {
+        $chiffres = preg_replace('/\D+/', '', (string) $saisie) ?? '';
+        if ($chiffres === '') {
+            return null;
+        }
+        if (str_starts_with(trim((string) $saisie), '+') || str_starts_with($chiffres, '00')) {
+            $chiffres = ltrim(str_starts_with($chiffres, '00') ? substr($chiffres, 2) : $chiffres, '0');
+        } elseif (!(str_starts_with($chiffres, $indicatif) && strlen($chiffres) > 10)) {
+            $chiffres = $indicatif . ltrim($chiffres, '0');
+        }
+        return strlen($chiffres) >= 8 && strlen($chiffres) <= 15 ? '+' . $chiffres : null;
+    }
+
     /** « dans 5 j », « aujourd'hui », « il y a 3 j » pour l'échéance. */
     public static function relatif(?int $jours): string
     {
