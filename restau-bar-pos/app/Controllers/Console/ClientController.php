@@ -266,7 +266,7 @@ final class ClientController extends Base
             $this->afficherFiche($client, ['base' => ['general' => Instances::expliquer($e)]], ['base' => $db], 422);
             return;
         }
-        if ($examen['etat'] !== 'vide') {
+        if ($examen['etat'] !== 'vide' && $examen['etat'] !== 'importee') {
             $this->afficherFiche($client, ['base' => ['general' => t('console.installation_instance.erreur_pas_vide', ['n' => $examen['tables']])]], ['base' => $db], 422);
             return;
         }
@@ -280,7 +280,7 @@ final class ClientController extends Base
         }
         try {
             Installation::ecrireConfig($sousDomaine, $configDb, 'la console super admin');
-            $migrations = Installation::installerTables($pdo, $client['nom'], false, $client['langue']);
+            $migrations = Installation::installerTables($pdo, $client['nom'], false, $client['langue'], $examen['etat'] === 'importee');
             $telephone = \App\Console\Affichage::telephone($client['contact_telephone']);
             $proprietaire = Installation::creerProprietaire($pdo, (string) $client['contact_email'], $client['contact_nom'] ?: $client['nom'], $telephone, $client['langue'], true);
         } catch (Throwable $e) {

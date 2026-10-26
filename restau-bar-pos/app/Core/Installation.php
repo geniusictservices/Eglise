@@ -100,7 +100,8 @@ final class Installation
     }
 
     /**
-     * Ce que contient la base : « vide », « instance » (tables d'une instance déjà installée) ou « autre ».
+     * Ce que contient la base : « vide », « importee » (tables d'une instance sans aucun utilisateur : le fichier
+     * installation/instance-vide.sql importé avec phpMyAdmin), « instance » (instance déjà installée) ou « autre ».
      * @return array{etat: string, tables: int, version: string}
      */
     public static function examinerBase(PDO $pdo): array
@@ -111,6 +112,9 @@ final class Installation
             return ['etat' => 'vide', 'tables' => 0, 'version' => $version];
         }
         $instance = in_array('parametres', $tables, true) && in_array('utilisateurs', $tables, true) && in_array('schema_migrations', $tables, true);
+        if ($instance && (int) $pdo->query('SELECT COUNT(*) FROM utilisateurs')->fetchColumn() === 0) {
+            return ['etat' => 'importee', 'tables' => count($tables), 'version' => $version];
+        }
         return ['etat' => $instance ? 'instance' : 'autre', 'tables' => count($tables), 'version' => $version];
     }
 
@@ -119,9 +123,12 @@ final class Installation
      * $nomClient null : garder celui de la démonstration.
      * @return string[] migrations appliquées
      */
-    public static function installerTables(PDO $pdo, ?string $nomClient, bool $demo = false, ?string $langue = null): array
+    public static function installerTables(PDO $pdo, ?string $nomClient, bool $demo = false, ?string $langue = null, bool $dejaImportee = false): array
     {
-        Migrations::executerFichier($pdo, RACINE . '/database/schema.sql');
+        // Base importée depuis installation/instance-vide.sql : seulement les migrations plus récentes que le fichier
+        if (!$dejaImportee) {
+            Migrations::executerFichier($pdo, RACINE . '/database/schema.sql');
+        }
         $migrations = Migrations::appliquer($pdo);
         if ($demo) {
             Migrations::executerFichier($pdo, RACINE . '/database/demo.sql');
@@ -132,7 +139,7 @@ final class Installation
                 }
             }
         } else {
-            $pdo->prepare('INSERT INTO parametres (cle, valeur) VALUES (?, ?), (?, ?), (?, ?)')->execute([
+            $pdo->prepare('REPLACE INTO parametres (cle, valeur) VALUES (?, ?), (?, ?), (?, ?)')->execute([
                 'nom_client', (string) $nomClient,
                 'langue_defaut', in_array($langue, Config::get('langues', ['fr']), true) ? $langue : Config::get('langue_defaut'),
                 'fuseau_horaire', Config::get('fuseau_horaire'),

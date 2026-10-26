@@ -173,3 +173,8 @@ Pour essayer la caisse partagée : se connecter comme Patrick, ouvrir la caisse,
 - À chaque mise à jour du code : « Mettre à jour toutes les instances » dans la console, ou `php bin/migrer.php --toutes`.
 - Tâches cron (chaque heure) : `bin/relances.php --toutes` et `bin/console-relances.php` (voir docs/console.md, section 13).
 - Photos envoyées depuis la gestion : jusqu'à 8 Mo si PHP le permet (`upload_max_filesize = 8M`, `post_max_size = 10M`) ; sinon la limite de PHP s'applique et elle est affichée dans les formulaires. Le dossier `public/uploads/` doit être accessible en écriture par PHP.
+
+## Mise en ligne sur LWS (mutualisé cPanel)
+
+- Guide pas à pas, sans SSH : [docs/installation-lws.md](docs/installation-lws.md) (dépôt du code, console super admin, création des clients, tâches cron, SMS et WhatsApp, mises à jour).
+- Archive prête à déposer : `php bin/paquet-lws.php [--demo=rbp_demo]` → `restau-bar-pos-lws-AAAAMMJJ.zip` (le code du dernier commit et `installation/` : base vide d'une instance, base vide de la console, démonstration en option).
