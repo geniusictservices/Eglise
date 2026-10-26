@@ -556,16 +556,17 @@ Principe : chaque personne ne voit que ce dont elle a besoin, au bon moment, sur
 
 Chaque phase est utilisable seule.
 
-| Phase | Contenu |
-|---|---|
-| 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · **écran de caisse en grille** (sans enregistrement des ventes) · gestion des établissements, des devises et taux, du compte · design Volcan · français et anglais |
-| 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules) · ~~utilisateurs, rôles et permissions~~ (fait : rôles avec portée, PIN, caisse partagée, journal) · dépôts, comptoirs, points de vente |
-| 3 | Caisse : commandes, encaissement multi-devises, taux de change, sessions de caisse · stock simple et transferts · **rapport des ventes par utilisateur et serveur de la période** |
-| 4 | Clients et dettes · **dettes des clients liées aux utilisateurs** (servi par, accordé par, responsable) · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
-| 5 | Modules lounge et nightclub (bouteilles, VIP, entrées, invités, vestiaire, cashless, mode comptoir rapide) · vente en gros au dépôt et consignes |
-| 6 | ERP : achats et fournisseurs, stock avancé (les comptes de trésorerie, les transferts et les dépenses sont avancés en phase 1) |
-| 7 | Ressources humaines : présence par code QR, plannings, paie, commissions · événements |
-| 8 | Tableaux de bord avancés · facturation automatique des abonnements · export comptable |
+| Phase | Contenu | État |
+|---|---|---|
+| 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, tailles, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · **écran de caisse en grille** · gestion des établissements, des devises et taux, du compte · design Volcan · français et anglais | Fait |
+| 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules, API de messagerie) · utilisateurs, rôles et permissions (portée, PIN, caisse partagée, journal) · dépôts, comptoirs, points de vente | Fait |
+| 3 | Caisse : encaissement multi-devises, comptes choisis directement, taux de change, **sessions de caisse** (au choix par établissement) · stock et transferts · **rapport des ventes par utilisateur et serveur de la période** | Fait |
+| 4 | Clients et dettes (ardoise, garant, relances SMS et WhatsApp) · **dettes des clients liées aux utilisateurs** (servi par, accordé par, garant, responsable) · plan de salle et notes ouvertes · cuisine (circuit des commandes, écran de cuisine, fiches techniques) · services horaires, happy hour, journée d'exploitation, réservations | Fait |
+| 5 | Modules lounge et nightclub (bouteilles et formules, minimum VIP, entrées, invités et promoteurs, vestiaire, cashless à code QR, mode comptoir rapide) · remises et fidélité · vente en gros au dépôt et consignes | En cours |
+| 6 | ERP : achats et fournisseurs, stock avancé (inventaires, pertes, recettes, coût de revient, consignes) | Fait (préparations, péremption et suivi des coûts de la cuisine en cours) |
+| 7 | Ressources humaines : présence par code QR et GPS, plannings, congés, paie en $ et en FC avec retenues, avances, commissions · événements | Fait |
+| 8 | Tableaux de bord de la direction · exports PDF et CSV, export comptable · suivi des abonnements dans la console (la facturation en ligne n'est pas prévue : suivi simple) | Fait |
+| — | **Mode hors ligne** de la caisse (section 15) | À faire |
 
 ## 17. Décisions prises
 
@@ -593,6 +594,8 @@ Chaque phase est utilisable seule.
 | Mode hors ligne | La caisse vend sans réseau : les ventes payées attendent sur l'appareil et partent au retour du réseau, sans double comptage ; ardoises et remboursements demandent le réseau |
 | Retenues sur la paie | Ardoises mises à la charge d'un employé et manquants de caisse proposés sur le bulletin ; le gérant peut réduire ou étaler avant de valider |
 | Pointage | Code QR changeant + position GPS (rayon réglable, 100 m par défaut) ; « pointage obligatoire pour ouvrir la caisse » au choix par établissement ; pointage de secours à la caisse avec PIN validé par le gérant |
+| Notes ouvertes et stock | En mode « bloquer », un article épuisé ne peut plus être ajouté ni envoyé ; une note déjà servie se paie toujours. Le stock baisse au paiement |
+| Caisse partagée et notes | Le verrouillage après chaque encaissement s'applique aussi après « Envoyer » une note : chaque commande reste au nom de qui l'a prise |
 | Cashless | Carte ou bracelet à code QR scanné par la caméra de la tablette ; solde par devise, recharge, remboursement du solde |
 | Ardoises (dettes) | La dette engage la personne qui a servi, sauf si un garant (agent, gérant, promoteur) l'accepte plus tard ; après l'échéance, le gérant décide de la mettre à la charge du responsable ; relances automatiques seulement, par SMS (Africa's Talking) ou WhatsApp Business, au client et au responsable (section 7.2 bis) |
 
