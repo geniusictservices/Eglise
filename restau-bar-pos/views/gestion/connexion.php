@@ -5,6 +5,7 @@
  */
 ?>
 <section class="connexion">
+    <p class="surtitre"><?= e(t('gestion.nom')) ?></p>
     <h1><?= e(t('gestion.connexion')) ?></h1>
     <?php if ($erreur): ?>
         <p class="alerte alerte--erreur" role="alert"><?= e($erreur) ?></p>

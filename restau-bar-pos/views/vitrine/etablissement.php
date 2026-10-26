@@ -36,13 +36,16 @@ $couverture = urlImageSure($etab['couverture']);
                 <?= e(t('etat.ferme')) ?>
             <?php endif; ?>
         </p>
+        <?php if ($couverture && !empty($etab['couverture_credit'])): ?>
+            <p class="entete__credit"><?= e(t('vitrine.photo_credit', ['credit' => $etab['couverture_credit']])) ?></p>
+        <?php endif; ?>
     </div>
 </header>
 
 <div class="barre" id="barre">
     <div class="barre__ligne enveloppe">
         <?php if ($zone): ?>
-            <span class="zone"><?= e(champ($zone, 'nom')) ?></span>
+            <span class="zone badge badge--contour"><?= e(champ($zone, 'nom')) ?></span>
         <?php endif; ?>
         <?php if (count($devises) > 1): ?>
             <nav class="choix" aria-label="<?= e(t('vitrine.devise')) ?>">
@@ -56,11 +59,12 @@ $couverture = urlImageSure($etab['couverture']);
         <a class="langue" href="<?= e(urlAvec(['lang' => $autreLangue])) ?>" hreflang="<?= e($autreLangue) ?>" lang="<?= e($autreLangue) ?>">
             <?= $autreLangue === 'en' ? 'English' : 'Français' ?>
         </a>
+        <?= App\Core\View::rendre('layouts/_bouton-theme', ['classe' => 'barre__theme']) ?>
     </div>
     <?php if ($menu): ?>
         <nav class="categories enveloppe" aria-label="<?= e(t('vitrine.categories')) ?>">
             <?php foreach ($menu as $categorie): ?>
-                <a class="categories__lien" href="#cat-<?= (int) $categorie['id'] ?>"><?= e(champ($categorie, 'nom')) ?></a>
+                <a class="categories__lien puce puce--accent" href="#cat-<?= (int) $categorie['id'] ?>"><?= e(champ($categorie, 'nom')) ?></a>
             <?php endforeach; ?>
         </nav>
     <?php endif; ?>
@@ -85,7 +89,7 @@ $couverture = urlImageSure($etab['couverture']);
                         <li class="produit<?= $produit['disponible'] ? '' : ' produit--epuise' ?>" data-produit
                             data-recherche="<?= e(mb_strtolower($produit['nom_fr'] . ' ' . $produit['nom_en'] . ' ' . champ($produit, 'description'))) ?>">
                             <?php if ($produit['photo']): ?>
-                                <img class="produit__photo" src="<?= e($produit['photo']) ?>" alt="" loading="lazy" width="72" height="72">
+                                <img class="produit__photo" src="<?= e($produit['photo']) ?>" alt="" loading="lazy" width="80" height="80">
                             <?php endif; ?>
                             <div class="produit__texte">
                                 <h3 class="produit__nom">
@@ -116,6 +120,9 @@ $couverture = urlImageSure($etab['couverture']);
                                     </div>
                                 <?php endforeach; ?>
                             </dl>
+                            <?php if ($produit['photo'] && !empty($produit['photo_credit'])): ?>
+                                <p class="produit__credit"><?= e(t('vitrine.photo_credit', ['credit' => $produit['photo_credit']])) ?></p>
+                            <?php endif; ?>
                         </li>
                     <?php endforeach; ?>
                 </ul>

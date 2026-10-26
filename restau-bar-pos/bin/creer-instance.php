@@ -98,6 +98,10 @@ Migrations::executerFichier($pdo, RACINE . '/database/schema.sql');
 Migrations::appliquer($pdo);
 if (isset($options['demo'])) {
     Migrations::executerFichier($pdo, RACINE . '/database/demo.sql');
+    // Illustrations SVG des produits et des établissements de démonstration
+    if (is_file(RACINE . '/database/demo-illustrations.sql')) {
+        Migrations::executerFichier($pdo, RACINE . '/database/demo-illustrations.sql');
+    }
 } else {
     $pdo->prepare('INSERT INTO parametres (cle, valeur) VALUES (?, ?), (?, ?), (?, ?)')->execute([
         'nom_client', $options['nom'] ?? $sousDomaine,

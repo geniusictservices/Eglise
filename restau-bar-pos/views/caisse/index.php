@@ -53,9 +53,9 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
                 <button type="button" data-taille="moyenne" aria-pressed="false" title="<?= e(t('caisse.taille_moyenne')) ?>">M</button>
                 <button type="button" data-taille="grande" aria-pressed="false" title="<?= e(t('caisse.taille_grande')) ?>">L</button>
             </div>
-            <button type="button" class="icone" id="theme" aria-pressed="false" title="<?= e(t('caisse.theme_sombre')) ?>">
-                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12.7 2.1a1 1 0 0 0-1.1 1.3 7.5 7.5 0 0 1-9.3 9.3 1 1 0 0 0-1.2 1.2A10 10 0 1 0 12.7 2.1Z"/></svg>
-                <span class="visuellement-cache"><?= e(t('caisse.theme_sombre')) ?></span>
+            <button type="button" class="icone" id="theme" data-bascule-theme aria-pressed="false" title="<?= e(t('theme.nuit')) ?>">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2v16a8 8 0 0 1 0-16Z"/></svg>
+                <span class="visuellement-cache"><?= e(t('theme.nuit')) ?></span>
             </button>
             <a class="haut__utilisateur" href="/gestion" title="<?= e(t('gestion.tableau')) ?>"><?= e($utilisateur['nom']) ?></a>
         </div>
@@ -83,7 +83,7 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
                 <div class="totaux__principal"><span><?= e(t('caisse.total')) ?></span><strong id="total">—</strong></div>
                 <p class="totaux__autres" id="autres-devises"></p>
             </div>
-            <button type="button" class="encaisser" disabled aria-describedby="note-encaisser"><?= e(t('caisse.encaisser')) ?></button>
+            <button type="button" class="encaisser bouton bouton--large" disabled aria-describedby="note-encaisser"><?= e(t('caisse.encaisser')) ?></button>
             <p class="note" id="note-encaisser"><?= e(t('caisse.note_phase3')) ?></p>
         </aside>
     </div>

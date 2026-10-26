@@ -3,18 +3,19 @@
  * @var array $qr
  * @var string $url
  */
-$accent = preg_match('/^#[0-9a-fA-F]{6}$/', (string) $qr['couleur']) ? $qr['couleur'] : '#1F6F78';
+$accent = couleurValide($qr['couleur']) ?? '#E04A12';
 ?>
 <!doctype html>
-<html lang="<?= e(App\Core\I18n::langue()) ?>">
+<html lang="<?= e(App\Core\I18n::langue()) ?>" data-theme="jour">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title><?= e($qr['etablissement'] . ' · ' . $qr['libelle']) ?></title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@800&display=swap">
+    <?= App\Core\View::rendre('layouts/_polices') ?>
+    <link rel="stylesheet" href="/assets/css/volcan.css">
     <link rel="stylesheet" href="/assets/css/gestion.css">
-    <style>:root { --accent: <?= e($accent) ?>; }</style>
+    <style>:root { --accent: <?= e($accent) ?>; --sur-accent: <?= e(texteSurCouleur($accent)) ?>; --accent-texte: <?= e(couleurLisible($accent, '#FFFFFF')) ?>; }</style>
 </head>
 <body class="impression">
 <p class="impression__aide"><button class="bouton" type="button" data-imprimer><?= e(t('gestion.imprimer')) ?></button></p>

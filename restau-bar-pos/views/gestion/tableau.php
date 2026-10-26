@@ -8,6 +8,7 @@
  * @var int $scans7j
  */
 ?>
+<p class="surtitre"><?= e(t('gestion.tableau')) ?></p>
 <h1><?= e(t('gestion.bonjour', ['nom' => $utilisateur['nom']])) ?></h1>
 
 <div class="chiffres">

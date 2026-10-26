@@ -93,3 +93,49 @@ function urlImageSure(?string $url): ?string
     }
     return $url;
 }
+
+/** Couleur au format #RRGGBB (en majuscules), sinon null. */
+function couleurValide(?string $couleur): ?string
+{
+    return $couleur !== null && preg_match('/^#[0-9a-fA-F]{6}$/', $couleur) ? strtoupper($couleur) : null;
+}
+
+/** Luminance relative d'une couleur #RRGGBB (WCAG 2), de 0 (noir) à 1 (blanc). */
+function luminanceCouleur(string $hex): float
+{
+    $canaux = array_map(static function (string $paire): float {
+        $v = hexdec($paire) / 255;
+        return $v <= 0.03928 ? $v / 12.92 : (($v + 0.055) / 1.055) ** 2.4;
+    }, str_split(substr($hex, 1, 6), 2));
+    return 0.2126 * $canaux[0] + 0.7152 * $canaux[1] + 0.0722 * $canaux[2];
+}
+
+/** Rapport de contraste entre deux couleurs #RRGGBB (de 1 à 21). */
+function contrasteCouleurs(string $a, string $b): float
+{
+    $la = luminanceCouleur($a);
+    $lb = luminanceCouleur($b);
+    return (max($la, $lb) + 0.05) / (min($la, $lb) + 0.05);
+}
+
+/** Couleur du texte posé sur un fond #RRGGBB : noir basalte (#111315) ou blanc, selon le meilleur contraste. */
+function texteSurCouleur(string $fond): string
+{
+    return contrasteCouleurs($fond, '#111315') >= contrasteCouleurs($fond, '#FFFFFF') ? '#111315' : '#FFFFFF';
+}
+
+/**
+ * Variante d'une couleur utilisable comme texte sur un fond donné : assombrie (fond clair)
+ * ou éclaircie (fond sombre) par petits pas jusqu'au contraste demandé.
+ */
+function couleurLisible(string $couleur, string $fond, float $ratio = 4.5): string
+{
+    $cible = luminanceCouleur($fond) > 0.4 ? 0 : 255;
+    $rgb = array_map('hexdec', str_split(substr($couleur, 1, 6), 2));
+    $resultat = strtoupper($couleur);
+    for ($pas = 0; $pas <= 20 && contrasteCouleurs($resultat, $fond) < $ratio; $pas++) {
+        $rgb = array_map(static fn (float|int $v): float => $v + ($cible - $v) * 0.08, $rgb);
+        $resultat = sprintf('#%02X%02X%02X', ...array_map(static fn (float $v): int => (int) round($v), $rgb));
+    }
+    return $resultat;
+}

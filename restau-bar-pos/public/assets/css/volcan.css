@@ -1,0 +1,427 @@
+/* Système de design « Volcan » : basalte et lave du Nyiragongo.
+   Jetons des deux thèmes (jour, nuit) et composants de base communs à la vitrine, la caisse et la gestion.
+   Le thème se choisit avec l'attribut data-theme (« jour », « nuit » ou « auto ») sur <html>
+   ou sur n'importe quel bloc. Documentation : docs/design-system.md, page vivante : /gestion/design. */
+
+/* ---------- Jetons communs ---------- */
+
+:root {
+  --police-titre: "Unbounded", "Arial Black", "Segoe UI", system-ui, sans-serif;
+  --police-texte: "Sora", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --rayon: 10px;
+  --rayon-carte: 16px;
+  --rayon-badge: 4px;
+  --rayon-rond: 999px;
+  --hauteur-bouton: 48px;
+  --cible: 44px;
+
+  --espace-1: 4px;
+  --espace-2: 8px;
+  --espace-3: 12px;
+  --espace-4: 16px;
+  --espace-5: 24px;
+  --espace-6: 32px;
+
+  --taille-xs: .75rem;
+  --taille-s: .875rem;
+  --taille-m: 1rem;
+  --taille-l: 1.25rem;
+  --taille-xl: 1.75rem;
+  --taille-xxl: clamp(2rem, 8.5vw, 3.25rem);
+
+  --transition: .15s ease-out;
+}
+
+/* ---------- Thème jour (par défaut) ---------- */
+
+:root,
+[data-theme="jour"] {
+  --fond: #F4F3F1;
+  --surface: #FFFFFF;
+  --surface-2: #ECEAE6;
+  --ligne: #DEDCD8;
+  --ligne-forte: #C4C1BB;
+  --encre: #111315;
+  --doux: #5B6168;
+  --lave: #E04A12;
+  --sur-lave: #111315;
+  --lave-texte: #B93A10;
+  --braise: #9A5B00;
+  --glace: #1F7F93;
+  --glace-texte: #1A6E80;
+  --erreur: #C0341F;
+  --sur-erreur: #FFFFFF;
+  --succes: #1E7A46;
+  --saisie: #FFFFFF;
+  --tuile-fond: #FFFFFF;
+  --ombre: 0 1px 2px rgb(17 19 21 / .06), 0 8px 24px rgb(17 19 21 / .08);
+  --voile: rgb(17 19 21 / .45);
+
+  /* Couleurs des catégories de la caisse : texte blanc lisible dessus (4,5:1 au moins) */
+  --cat-1: #C2410C;
+  --cat-2: #9A5B00;
+  --cat-3: #1F7F93;
+  --cat-4: #7C4DDB;
+  --cat-5: #2E7D46;
+  --cat-6: #C2416F;
+  --cat-7: #2F6FD0;
+  --cat-8: #6B6560;
+  --sur-cat: #FFFFFF;
+
+  color-scheme: light;
+}
+
+/* ---------- Thème nuit ---------- */
+
+[data-theme="nuit"] {
+  --fond: #111315;
+  --surface: #1C1F23;
+  --surface-2: #24282D;
+  --ligne: #2C3035;
+  --ligne-forte: #3A3F45;
+  --encre: #F2EFEA;
+  --doux: #A3A9AF;
+  --lave: #FF5A1F;
+  --sur-lave: #111315;
+  --lave-texte: #FF5A1F;
+  --braise: #FFB547;
+  --glace: #6CC3D5;
+  --glace-texte: #6CC3D5;
+  --erreur: #FF7A66;
+  --sur-erreur: #111315;
+  --succes: #5CC98A;
+  --saisie: #111315;
+  --tuile-fond: #24282D;
+  --ombre: 0 1px 2px rgb(0 0 0 / .3), 0 10px 30px rgb(0 0 0 / .35);
+  --voile: rgb(0 0 0 / .6);
+
+  /* Couleurs des catégories : texte #111315 lisible dessus */
+  --cat-1: #FF5A1F;
+  --cat-2: #FFB547;
+  --cat-3: #6CC3D5;
+  --cat-4: #B98CFF;
+  --cat-5: #7BD88F;
+  --cat-6: #FF8FB1;
+  --cat-7: #5FA8FF;
+  --cat-8: #E8E3D9;
+  --sur-cat: #111315;
+
+  color-scheme: dark;
+}
+
+/* « auto » : suit la préférence du système (espace de gestion) */
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    --fond: #111315;
+    --surface: #1C1F23;
+    --surface-2: #24282D;
+    --ligne: #2C3035;
+    --ligne-forte: #3A3F45;
+    --encre: #F2EFEA;
+    --doux: #A3A9AF;
+    --lave: #FF5A1F;
+    --sur-lave: #111315;
+    --lave-texte: #FF5A1F;
+    --braise: #FFB547;
+    --glace: #6CC3D5;
+    --glace-texte: #6CC3D5;
+    --erreur: #FF7A66;
+    --sur-erreur: #111315;
+    --succes: #5CC98A;
+    --saisie: #111315;
+    --tuile-fond: #24282D;
+    --ombre: 0 1px 2px rgb(0 0 0 / .3), 0 10px 30px rgb(0 0 0 / .35);
+    --voile: rgb(0 0 0 / .6);
+    --cat-1: #FF5A1F;
+    --cat-2: #FFB547;
+    --cat-3: #6CC3D5;
+    --cat-4: #B98CFF;
+    --cat-5: #7BD88F;
+    --cat-6: #FF8FB1;
+    --cat-7: #5FA8FF;
+    --cat-8: #E8E3D9;
+    --sur-cat: #111315;
+    color-scheme: dark;
+  }
+}
+
+/* Jetons dérivés : recalculés sur chaque bloc thématisé.
+   --accent vaut la lave, sauf sur la vitrine d'un établissement qui a sa propre couleur. */
+:root,
+[data-theme] {
+  --accent: var(--lave);
+  --sur-accent: var(--sur-lave);
+  --accent-texte: var(--lave-texte);
+  --prix: var(--braise);
+  --info: var(--glace-texte);
+  --focus: var(--accent-texte);
+  --teinte-accent: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  --teinte-braise: color-mix(in srgb, var(--braise) 14%, var(--surface));
+  --teinte-glace: color-mix(in srgb, var(--glace) 14%, var(--surface));
+  --teinte-erreur: color-mix(in srgb, var(--erreur) 13%, var(--surface));
+  --teinte-succes: color-mix(in srgb, var(--succes) 14%, var(--surface));
+}
+
+/* ---------- Base ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--encre);
+  font: 400 1rem/1.5 var(--police-texte);
+}
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+img { max-width: 100%; }
+
+.visuellement-cache {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Titres et surtitre */
+.titre-1, .titre-2, .titre-3 { margin: 0; font-family: var(--police-titre); font-weight: 800; line-height: 1.05; text-wrap: balance; }
+.titre-1 { font-size: var(--taille-xxl); }
+.titre-2 { font-size: var(--taille-xl); }
+.titre-3 { font-size: var(--taille-l); font-weight: 600; }
+.surtitre {
+  margin: 0;
+  font-size: var(--taille-xs);
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--doux);
+}
+.montant { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.prix-volcan { font-weight: 700; color: var(--prix); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- Boutons ---------- */
+
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espace-2);
+  min-height: var(--hauteur-bouton);
+  padding: 0 20px;
+  border: 1.5px solid transparent;
+  border-radius: var(--rayon);
+  background: var(--accent);
+  color: var(--sur-accent);
+  font: 700 var(--taille-m)/1.2 var(--police-texte);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: filter var(--transition), transform .08s ease-out, background-color var(--transition);
+}
+.bouton:hover { filter: brightness(1.07); }
+.bouton:active:not(:disabled) { transform: scale(.98); }
+.bouton:disabled, .bouton[aria-disabled="true"] { opacity: .45; cursor: not-allowed; filter: none; }
+.bouton--secondaire { background: transparent; color: var(--encre); border-color: var(--encre); }
+.bouton--secondaire:hover { background: var(--surface-2); filter: none; }
+.bouton--fantome { background: transparent; color: var(--encre); }
+.bouton--fantome:hover { background: var(--surface-2); filter: none; }
+.bouton--danger { background: var(--erreur); color: var(--sur-erreur); }
+.bouton--petit { min-height: var(--cible); padding: 0 14px; font-size: var(--taille-s); }
+.bouton--large { display: flex; width: 100%; min-height: 56px; font-size: 1.0625rem; }
+
+/* Bouton carré avec une icône (thème, fermer…) : libellé dans un .visuellement-cache */
+.bouton-icone {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: var(--cible);
+  height: var(--cible);
+  padding: 0;
+  border: 1px solid var(--ligne-forte);
+  border-radius: var(--rayon);
+  background: transparent;
+  color: var(--encre);
+  cursor: pointer;
+}
+.bouton-icone:hover { background: var(--surface-2); }
+.bouton-icone[aria-pressed="true"] { background: var(--encre); color: var(--fond); border-color: var(--encre); }
+.bouton-icone svg { width: 20px; height: 20px; }
+
+.lien {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: var(--doux);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.lien:hover { color: var(--encre); }
+.lien:disabled { opacity: .4; cursor: default; }
+
+/* ---------- Badges : capitales espacées ---------- */
+
+.badge {
+  display: inline-block;
+  padding: .2em .55em;
+  border-radius: var(--rayon-badge);
+  background: var(--surface-2);
+  color: var(--encre);
+  font: 700 .6875rem/1.3 var(--police-texte);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: .15em;
+}
+.badge--lave { background: var(--teinte-accent); color: var(--accent-texte); }
+.badge--braise, .badge--populaire { background: var(--teinte-braise); color: var(--braise); }
+.badge--glace, .badge--nouveau { background: var(--teinte-glace); color: var(--glace-texte); }
+.badge--erreur, .badge--epice { background: var(--teinte-erreur); color: var(--erreur); }
+.badge--succes { background: var(--teinte-succes); color: var(--succes); }
+.badge--neutre, .badge--epuise { background: var(--ligne); color: var(--doux); }
+.badge--plein { background: var(--encre); color: var(--fond); }
+.badge--contour { background: transparent; color: var(--accent-texte); box-shadow: inset 0 0 0 1.5px currentColor; }
+
+/* ---------- Puces (filtres, catégories, choix) ---------- */
+
+.puce {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-height: var(--cible);
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--rayon-rond);
+  background: var(--surface-2);
+  color: var(--encre);
+  font: 600 var(--taille-s)/1.2 var(--police-texte);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.puce:hover { box-shadow: inset 0 0 0 1.5px var(--ligne-forte); }
+.puce[aria-pressed="true"], .puce[aria-current], .puce--active { background: var(--encre); color: var(--fond); box-shadow: none; }
+.puce--accent[aria-pressed="true"], .puce--accent[aria-current], .puce--accent.puce--active { background: var(--accent); color: var(--sur-accent); }
+
+/* ---------- Cartes ---------- */
+
+.carte {
+  padding: 20px;
+  border: 1px solid var(--ligne);
+  border-radius: var(--rayon-carte);
+  background: var(--surface);
+  color: var(--encre);
+}
+.carte--accent { border-top: 4px solid var(--accent); }
+
+/* ---------- Champs de formulaire ---------- */
+
+.champ { display: grid; gap: 6px; align-content: start; }
+.champ > label, .champ__libelle { font-size: var(--taille-s); font-weight: 600; }
+.saisie,
+.champ input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+.champ select,
+.champ textarea {
+  width: 100%;
+  min-height: var(--hauteur-bouton);
+  padding: 0 14px;
+  border: 1.5px solid var(--ligne-forte);
+  border-radius: var(--rayon);
+  background: var(--saisie);
+  color: var(--encre);
+  font: 400 var(--taille-m)/1.4 var(--police-texte);
+}
+.champ textarea, textarea.saisie { padding-block: 12px; min-height: 6.5rem; resize: vertical; }
+.saisie:focus, .champ input:focus, .champ select:focus, .champ textarea:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 0; }
+.saisie[aria-invalid="true"], .champ [aria-invalid="true"], .champ--erreur input, .champ--erreur select, .champ--erreur textarea { border-color: var(--erreur); }
+.champ__aide { margin: 0; font-size: var(--taille-xs); color: var(--doux); }
+.champ__erreur { margin: 0; font-size: var(--taille-s); font-weight: 600; color: var(--erreur); }
+
+/* Case à cocher et bouton radio : zone tactile de 44 px */
+.coche { display: inline-flex; align-items: center; gap: 10px; min-height: var(--cible); cursor: pointer; }
+.coche input { width: 22px; height: 22px; margin: 0; accent-color: var(--accent); }
+
+/* ---------- Tableaux ---------- */
+
+.defile { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tableau { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+.tableau th, .tableau td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--ligne); vertical-align: middle; }
+.tableau th {
+  font-size: var(--taille-xs);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--doux);
+  white-space: nowrap;
+}
+.tableau tbody tr:hover { background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+.tableau .nombre, .nombre { font-variant-numeric: tabular-nums; }
+.tableau td.nombre, .tableau th.nombre { text-align: right; }
+
+/* ---------- Tuiles de caisse ----------
+   --cat : couleur de la catégorie (une des --cat-1 à --cat-8). */
+
+.tuile {
+  --cat: var(--accent);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: var(--tuile-haut, 96px);
+  padding: 12px 12px 14px;
+  border: 1px solid var(--ligne);
+  border-bottom: 4px solid var(--cat);
+  border-radius: var(--rayon);
+  background: var(--tuile-fond);
+  color: var(--encre);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform .08s ease-out, background-color var(--transition);
+}
+.tuile:active:not(:disabled) { transform: scale(.97); }
+.tuile__nom {
+  font-size: var(--tuile-nom, 1rem);
+  font-weight: 700;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  padding-right: 30px;
+}
+.tuile__bas { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.tuile__format { font-size: .8rem; color: var(--doux); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tuile__prix { margin-left: auto; font-weight: 700; font-size: 1.0625rem; color: var(--prix); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tuile__qte {
+  position: absolute;
+  top: 8px; right: 8px;
+  min-width: 28px; height: 28px;
+  padding: 0 6px;
+  border-radius: var(--rayon-rond);
+  display: grid; place-items: center;
+  background: var(--cat);
+  color: var(--sur-cat);
+  font-size: .875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tuile__qte:empty { display: none; }
+.tuile--choisie {
+  border-color: transparent;
+  outline: 2px solid var(--cat);
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--cat) 14%, var(--tuile-fond));
+}
+.tuile--epuise { opacity: .45; cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
+}

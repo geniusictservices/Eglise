@@ -1,10 +1,22 @@
 <?php
 /** @var string $contenu */
-$accent = isset($etab['couleur']) && preg_match('/^#[0-9a-fA-F]{6}$/', (string) $etab['couleur']) ? $etab['couleur'] : '#1F6F78';
 $description = isset($etab) ? champ($etab, 'slogan') : '';
+
+// Thème selon le contexte : nightclub et lounge de nuit, restaurant-bar de jour.
+// Page d'accueil : de jour seulement si tous les établissements sont des restaurants-bars.
+if (isset($etab)) {
+    $theme = in_array($etab['type'], ['nightclub', 'lounge'], true) ? 'nuit' : 'jour';
+} elseif (!empty($etablissements)) {
+    $theme = array_diff(array_column($etablissements, 'type'), ['restaurant_bar']) === [] ? 'jour' : 'nuit';
+} else {
+    $theme = 'nuit';
+}
+
+// Couleur propre à l'établissement : remplace la lave, avec un texte lisible posé dessus
+$accent = couleurValide($etab['couleur'] ?? null);
 ?>
 <!doctype html>
-<html lang="<?= e(App\Core\I18n::langue()) ?>">
+<html lang="<?= e(App\Core\I18n::langue()) ?>" data-theme="<?= e($theme) ?>" data-theme-cle="vitrine.theme">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -14,12 +26,18 @@ $description = isset($etab) ? champ($etab, 'slogan') : '';
         <meta property="og:title" content="<?= e($titre ?? '') ?>">
         <meta property="og:description" content="<?= e($description) ?>">
     <?php endif; ?>
-    <meta name="theme-color" content="<?= e($accent) ?>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800&display=swap">
+    <meta name="theme-color" content="<?= $theme === 'nuit' ? '#111315' : '#F4F3F1' ?>">
+    <?= App\Core\View::rendre('layouts/_polices') ?>
+    <link rel="stylesheet" href="/assets/css/volcan.css">
     <link rel="stylesheet" href="/assets/css/vitrine.css">
-    <style>:root { --accent: <?= e($accent) ?>; }</style>
+    <?php if ($accent): ?>
+        <style>
+            :root { --accent: <?= e($accent) ?>; --sur-accent: <?= e(texteSurCouleur($accent)) ?>; }
+            [data-theme="jour"] { --accent-texte: <?= e(couleurLisible($accent, '#F4F3F1')) ?>; }
+            [data-theme="nuit"] { --accent-texte: <?= e(couleurLisible($accent, '#24282D')) ?>; }
+        </style>
+    <?php endif; ?>
+    <script src="/assets/js/theme.js"></script>
 </head>
 <body>
 <?= $contenu ?>

@@ -6,7 +6,8 @@
   var D = JSON.parse(document.getElementById('donnees-caisse').textContent);
   var T = D.textes;
   var racine = document.getElementById('caisse');
-  var PALETTE = ['#1F6F78', '#B4432F', '#7A5AA6', '#C48A1B', '#2F7D4F', '#3B5BA9', '#A63D6B', '#6B7A2A'];
+  // Couleurs des catégories : variables de volcan.css, lisibles en thème jour comme en thème nuit
+  var PALETTE = [1, 2, 3, 4, 5, 6, 7, 8].map(function (n) { return 'var(--cat-' + n + ')'; });
 
   // ---------- Données ----------
 
@@ -20,7 +21,8 @@
   var devises = {};
   D.devises.forEach(function (d) { devises[d.code] = d; });
 
-  // ---------- Préférences de l'appareil (taille des tuiles, thème) ----------
+  // ---------- Préférences de l'appareil (taille des tuiles) ----------
+  // Le thème jour / nuit est géré par theme.js (bouton #theme, mémorisé par établissement).
 
   function lire(cle, defaut) {
     try { var v = localStorage.getItem('caisse.' + cle); return v === null ? defaut : v; } catch (e) { return defaut; }
@@ -30,22 +32,15 @@
   }
 
   var taille = lire('taille.' + D.mode, D.mode === 'rapide' ? 'grande' : 'moyenne');
-  // Un nightclub travaille dans la pénombre : thème sombre par défaut
-  var sombre = lire('sombre.' + D.cle, D.mode === 'rapide' ? '1' : '0') === '1';
 
   function appliquerReglages() {
     racine.dataset.taille = taille;
-    racine.dataset.theme = sombre ? 'sombre' : 'clair';
-    document.querySelectorAll('[data-taille]').forEach(function (b) {
+    document.querySelectorAll('.segments [data-taille]').forEach(function (b) {
       b.setAttribute('aria-pressed', String(b.dataset.taille === taille));
     });
-    document.getElementById('theme').setAttribute('aria-pressed', String(sombre));
   }
-  document.querySelectorAll('[data-taille]').forEach(function (b) {
+  document.querySelectorAll('.segments [data-taille]').forEach(function (b) {
     b.addEventListener('click', function () { taille = b.dataset.taille; ecrire('taille.' + D.mode, taille); appliquerReglages(); });
-  });
-  document.getElementById('theme').addEventListener('click', function () {
-    sombre = !sombre; ecrire('sombre.' + D.cle, sombre ? '1' : '0'); appliquerReglages();
   });
   appliquerReglages();
 

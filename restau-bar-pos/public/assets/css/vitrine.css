@@ -1,58 +1,16 @@
 /* Vitrine publique : présentation et menu d'un établissement.
-   Mobile d'abord. La couleur --accent vient de l'établissement. */
+   Mobile d'abord. S'appuie sur volcan.css (jetons et composants) ;
+   --accent vient de l'établissement quand il a sa propre couleur. */
 
 :root {
-  --accent: #1F6F78;
-  --fond: #F5F6F4;
-  --surface: #FFFFFF;
-  --encre: #17201E;
-  --doux: #5A6764;
-  --ligne: #DCE2DF;
-  --ouvert: #1E7A46;
-  --ferme: #A23B2A;
-  --accent-texte: color-mix(in oklab, var(--accent) 85%, black);
-  --police-titre: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --police-texte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color-scheme: light;
+  --ouvert: var(--succes);
+  --ferme: var(--erreur);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --fond: #0E1413;
-    --surface: #161F1D;
-    --encre: #ECF1EF;
-    --doux: #9AA8A4;
-    --ligne: #27322F;
-    --ouvert: #5CC98A;
-    --ferme: #F08A74;
-    --accent-texte: color-mix(in oklab, var(--accent) 55%, white);
-    color-scheme: dark;
-  }
-}
-
-*, *::before, *::after { box-sizing: border-box; }
-
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: 7.5rem; }
-
-body {
-  margin: 0;
-  background: var(--fond);
-  color: var(--encre);
-  font: 1rem/1.5 var(--police-texte);
-}
-
-img { max-width: 100%; display: block; }
-a { color: var(--accent-texte); }
-[hidden] { display: none !important; }
-:focus-visible { outline: 3px solid var(--accent-texte); outline-offset: 2px; }
-
-.visuellement-cache {
-  position: absolute !important;
-  width: 1px; height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
+html { scroll-padding-top: 8.5rem; }
+body { line-height: 1.5; }
+img { display: block; }
+a { color: var(--accent-texte); text-underline-offset: 3px; }
 
 .enveloppe {
   width: 100%;
@@ -65,35 +23,63 @@ a { color: var(--accent-texte); }
 /* ---------- En-tête ---------- */
 
 .entete {
-  background: var(--accent);
-  color: #fff;
+  position: relative;
+  color: var(--encre);
+  border-bottom: 3px solid var(--accent);
+  background:
+    radial-gradient(110% 85% at 105% -10%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 62%),
+    var(--fond);
   background-size: cover;
   background-position: center;
 }
-.entete--photo { box-shadow: inset 0 -12rem 8rem -4rem rgb(0 0 0 / .65); }
+.entete a { color: inherit; }
+.entete--photo {
+  color: #F2EFEA;
+  box-shadow: inset 0 -14rem 9rem -4rem rgb(17 19 21 / .85), inset 0 6rem 5rem -3rem rgb(17 19 21 / .5);
+}
 .entete__contenu {
   display: flex;
   flex-direction: column;
-  gap: .35rem;
-  padding-block: calc(2rem + env(safe-area-inset-top, 0px)) 1.75rem;
+  gap: .4rem;
+  padding-block: calc(2rem + env(safe-area-inset-top, 0px)) 1.6rem;
 }
-.entete a { color: inherit; }
-.entete__retour { font-size: .875rem; opacity: .85; margin-bottom: .75rem; }
+.entete__retour {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cible);
+  margin: -.75rem 0 .25rem;
+  font-size: var(--taille-s);
+  font-weight: 600;
+  text-decoration: none;
+}
+.entete__retour:hover { text-decoration: underline; }
 .entete__type {
   margin: 0;
-  font-size: .75rem;
-  letter-spacing: .12em;
+  font-size: var(--taille-xs);
+  font-weight: 600;
+  letter-spacing: .14em;
   text-transform: uppercase;
-  opacity: .9;
+  color: var(--doux);
 }
+.entete--photo .entete__type { color: rgb(242 239 234 / .85); }
 .entete__nom {
   margin: 0;
-  font: 800 clamp(2.75rem, 12vw, 4.5rem)/.92 var(--police-titre);
-  text-transform: uppercase;
-  letter-spacing: .01em;
+  font: 800 var(--taille-xxl)/1.02 var(--police-titre);
+  letter-spacing: -.01em;
   text-wrap: balance;
+  overflow-wrap: anywhere;
 }
-.entete__slogan { margin: .25rem 0 0; max-width: 34rem; opacity: .95; }
+.entete__slogan { margin: .25rem 0 0; max-width: 34rem; color: var(--doux); }
+.entete--photo .entete__slogan { color: rgb(242 239 234 / .92); }
+.entete__credit {
+  margin: .75rem 0 0;
+  font-size: .6875rem;
+  color: rgb(242 239 234 / .8);
+  align-self: flex-end;
+  text-align: right;
+}
+.entete__outils { display: flex; justify-content: flex-end; align-items: center; gap: .75rem; margin-bottom: .75rem; }
 
 .etat {
   display: inline-flex;
@@ -101,24 +87,29 @@ a { color: var(--accent-texte); }
   gap: .5rem;
   align-self: flex-start;
   margin: .75rem 0 0;
-  padding: .3rem .75rem;
-  border-radius: 999px;
-  font-size: .875rem;
+  padding: .35rem .8rem;
+  border-radius: var(--rayon-rond);
+  font-size: var(--taille-s);
   font-weight: 600;
-  background: rgb(255 255 255 / .16);
+  background: var(--surface-2);
+  color: var(--encre);
 }
-.etat__point { width: .55rem; height: .55rem; border-radius: 50%; background: currentColor; }
-.entete .etat--ouvert .etat__point { background: #7CF0A8; }
-.entete .etat--ferme .etat__point { background: #FFB4A3; }
+.etat__point { width: .55rem; height: .55rem; border-radius: 50%; background: currentColor; flex: none; }
+.etat--ouvert { background: var(--teinte-braise); color: var(--braise); }
+.etat--ouvert .etat__point { background: var(--succes); box-shadow: 0 0 0 3px color-mix(in srgb, var(--succes) 30%, transparent); }
+.etat--ferme .etat__point { background: var(--erreur); }
+.entete--photo .etat { background: rgb(17 19 21 / .7); color: #FFB547; }
+.entete--photo .etat--ferme { color: #F2EFEA; }
 
-/* ---------- Barre collante : zone, devise, langue, catégories ---------- */
+/* ---------- Barre collante : zone, devise, langue, thème, catégories ---------- */
 
 .barre {
   position: sticky;
   top: 0;
   z-index: 10;
   background: color-mix(in srgb, var(--fond) 92%, transparent);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--ligne);
   padding-top: env(safe-area-inset-top, 0px);
 }
@@ -126,75 +117,74 @@ a { color: var(--accent-texte); }
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: .5rem 1rem;
-  padding-block: .6rem;
+  gap: .5rem .75rem;
+  padding-block: .5rem;
 }
-.zone {
-  font-size: .75rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--accent-texte);
-  border: 1.5px solid currentColor;
-  border-radius: 4px;
-  padding: .15rem .45rem;
-}
-.choix { display: flex; border: 1px solid var(--ligne); border-radius: 999px; overflow: hidden; }
+.zone { font-size: .6875rem; }
+.choix { display: flex; gap: 2px; padding: 2px; border-radius: var(--rayon-rond); background: var(--surface-2); }
 .choix__option {
-  padding: .3rem .7rem;
-  font-size: .8125rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 .85rem;
+  border-radius: var(--rayon-rond);
+  font-size: var(--taille-s);
+  font-weight: 700;
   color: var(--doux);
   text-decoration: none;
   font-variant-numeric: tabular-nums;
 }
 .choix__option--actif { background: var(--encre); color: var(--fond); }
-.langue { margin-left: auto; font-size: .875rem; }
-.langue--entete { align-self: flex-end; margin: 0 0 1rem; }
+.langue {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--cible);
+  margin-left: auto;
+  padding: 0 .25rem;
+  font-size: var(--taille-s);
+  font-weight: 600;
+  color: var(--accent-texte);
+}
+.entete .langue { margin-left: 0; }
+.barre__theme { flex: none; }
 
 .categories {
   position: relative;
   display: flex;
-  gap: .25rem;
+  gap: .4rem;
   overflow-x: auto;
   scrollbar-width: none;
-  padding-bottom: .55rem;
+  padding-bottom: .6rem;
 }
 .categories::-webkit-scrollbar { display: none; }
-.categories__lien {
-  flex: none;
-  padding: .35rem .8rem;
-  border-radius: 999px;
-  font-size: .875rem;
-  color: var(--encre);
-  text-decoration: none;
-  white-space: nowrap;
-}
-.categories__lien--actif { background: var(--accent); color: #fff; }
+.categories__lien { background: transparent; color: var(--doux); }
+.categories__lien:hover { color: var(--encre); }
+.categories__lien--actif { background: var(--accent); color: var(--sur-accent); }
+.categories__lien--actif:hover { color: var(--sur-accent); }
 
 /* ---------- Menu ---------- */
 
 .menu { padding-block: 1.25rem 2.5rem; }
 
-.recherche { display: grid; gap: .35rem; margin-bottom: 1.5rem; }
-.recherche__label { font-size: .8125rem; color: var(--doux); }
+.recherche { display: grid; gap: .35rem; margin-bottom: 1.75rem; }
+.recherche__label { font-size: var(--taille-s); font-weight: 600; color: var(--doux); }
 .recherche__champ {
   width: 100%;
-  padding: .7rem .9rem;
-  border: 1px solid var(--ligne);
-  border-radius: 10px;
-  background: var(--surface);
+  min-height: var(--hauteur-bouton);
+  padding: 0 1rem;
+  border: 1.5px solid var(--ligne-forte);
+  border-radius: var(--rayon);
+  background: var(--saisie);
   color: var(--encre);
   font: inherit;
 }
+.recherche__champ:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 0; }
 .recherche__aucun, .vide { color: var(--doux); }
 
-.categorie + .categorie { margin-top: 2rem; }
+.categorie + .categorie { margin-top: 2.25rem; }
 .categorie__titre {
   margin: 0 0 .25rem;
-  font: 700 1.75rem/1.1 var(--police-titre);
-  text-transform: uppercase;
-  letter-spacing: .02em;
+  font: 800 1.375rem/1.15 var(--police-titre);
   color: var(--accent-texte);
 }
 
@@ -203,49 +193,36 @@ a { color: var(--accent-texte); }
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: .25rem 1rem;
-  padding-block: .9rem;
+  padding-block: .95rem;
   border-bottom: 1px solid var(--ligne);
 }
-.produit:has(.produit__photo) { grid-template-columns: 72px minmax(0, 1fr) auto; }
-.produit__photo { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; }
+.produit:has(.produit__photo) { grid-template-columns: 80px minmax(0, 1fr) auto; }
+.produit__photo { width: 80px; height: 80px; object-fit: cover; border-radius: var(--rayon); background: var(--surface-2); }
 .produit__texte { min-width: 0; }
 .produit__nom {
   margin: 0;
-  font-size: 1.0625rem;
-  font-weight: 650;
-  line-height: 1.3;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
+.produit__nom .badge { margin-left: .35rem; }
 .produit__description, .produit__allergenes {
-  margin: .15rem 0 0;
-  font-size: .875rem;
+  margin: .2rem 0 0;
+  font-size: var(--taille-s);
   color: var(--doux);
 }
 .produit__allergenes { font-size: .8125rem; font-style: italic; }
-.produit--epuise .produit__nom, .produit--epuise .produit__prix { opacity: .5; }
+.produit__credit { grid-column: 1 / -1; margin: 0; font-size: .6875rem; color: var(--doux); }
+.produit--epuise .produit__nom, .produit--epuise .produit__prix, .produit--epuise .produit__photo { opacity: .55; }
 .produit--epuise .prix__montant { text-decoration: line-through; }
 
-.badge {
-  display: inline-block;
-  margin-left: .35rem;
-  padding: .05rem .4rem;
-  border-radius: 4px;
-  font-size: .6875rem;
-  font-weight: 700;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  vertical-align: .15em;
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
-  color: var(--accent-texte);
-}
-.badge--epice { background: color-mix(in srgb, var(--ferme) 15%, transparent); color: var(--ferme); }
-.badge--epuise { background: var(--encre); color: var(--fond); }
-
-.produit__prix { margin: 0; display: grid; gap: .15rem; align-content: start; text-align: right; }
+.produit__prix { margin: 0; display: grid; gap: .2rem; align-content: start; text-align: right; }
 .prix { display: flex; justify-content: flex-end; align-items: baseline; gap: .6rem; }
 .prix__format { font-size: .8125rem; color: var(--doux); }
 .prix__montant {
   margin: 0;
   font-weight: 700;
+  color: var(--prix);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -262,15 +239,13 @@ a { color: var(--accent-texte); }
 }
 @media (min-width: 40rem) { .infos__grille { grid-template-columns: 1fr 1fr; } }
 .infos__titre {
-  margin: 0 0 .75rem;
-  font: 700 1.375rem/1.1 var(--police-titre);
-  text-transform: uppercase;
-  letter-spacing: .03em;
+  margin: 0 0 .9rem;
+  font: 800 1.125rem/1.15 var(--police-titre);
 }
 .infos__description { margin: 0 0 .75rem; color: var(--doux); }
 
 .horaires { margin: 0; display: grid; gap: .9rem; }
-.horaires dt { font-weight: 650; }
+.horaires dt { font-weight: 700; }
 .horaires dd {
   margin: 0;
   display: flex;
@@ -281,39 +256,46 @@ a { color: var(--accent-texte); }
 }
 .horaires__heures { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--encre); }
 
-.contacts { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+.contacts { list-style: none; margin: 0; padding: 0; display: grid; gap: .15rem; }
+.contacts li { min-height: var(--cible); display: flex; flex-wrap: wrap; align-items: center; gap: 0 .35rem; }
 
 /* ---------- Accueil : liste des établissements ---------- */
 
-.entete--accueil .entete__contenu { padding-block: calc(1.25rem + env(safe-area-inset-top, 0px)) 2.25rem; }
+.entete--accueil .entete__contenu { padding-block: calc(1rem + env(safe-area-inset-top, 0px)) 2.25rem; }
 .liste-etablissements { display: grid; gap: 1rem; padding-block: 1.5rem 3rem; }
 @media (min-width: 40rem) { .liste-etablissements { grid-template-columns: 1fr 1fr; } }
 .carte-etab {
   display: flex;
   flex-direction: column;
-  gap: .4rem;
+  gap: .45rem;
   padding: 1.25rem;
-  border-radius: 12px;
+  border-radius: var(--rayon-carte);
   background: var(--surface);
   border: 1px solid var(--ligne);
-  border-top: 6px solid var(--accent-etab);
+  border-top: 6px solid var(--accent-etab, var(--accent));
   color: var(--encre);
   text-decoration: none;
+  transition: transform var(--transition), border-color var(--transition);
 }
-.carte-etab:hover { border-color: var(--accent-etab); }
-.carte-etab__type { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--doux); }
-.carte-etab__nom { font: 800 2rem/1 var(--police-titre); text-transform: uppercase; }
+.carte-etab:hover { border-color: var(--accent-etab, var(--accent)); transform: translateY(-2px); }
+.carte-etab__type { font-size: var(--taille-xs); font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--doux); }
+.carte-etab__nom { font: 800 1.5rem/1.05 var(--police-titre); overflow-wrap: anywhere; }
 .carte-etab__slogan { color: var(--doux); }
-.carte-etab .etat { background: transparent; padding: 0; margin: .25rem 0; }
-.carte-etab .etat--ouvert { color: var(--ouvert); }
-.carte-etab .etat--ferme { color: var(--ferme); }
-.carte-etab__action { margin-top: auto; font-weight: 650; }
+.carte-etab .etat { margin: .35rem 0; }
+.carte-etab__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--hauteur-bouton);
+  margin-top: auto;
+  border-radius: var(--rayon);
+  border: 1.5px solid var(--encre);
+  font-weight: 700;
+}
+.carte-etab:hover .carte-etab__action { background: var(--encre); color: var(--fond); }
 
 /* ---------- Erreurs ---------- */
 
 .erreur { padding-block: 4rem; }
+.erreur h1 { font: 800 var(--taille-xl)/1.1 var(--police-titre); margin: .5rem 0; }
 .erreur__code { margin: 0; font: 800 5rem/1 var(--police-titre); color: var(--accent-texte); }
-
-@media (prefers-reduced-motion: reduce) {
-  * { scroll-behavior: auto !important; }
-}

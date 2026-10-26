@@ -34,7 +34,7 @@ INSERT INTO etablissements (id, slug, nom, type, slogan_fr, slogan_en, descripti
   'Grilled tilapia, skewers and braised chicken at lunch, then the bar and terrace at sunset.',
   'Avenue du Lac, Himbi', 'Goma', 'https://www.openstreetmap.org/search?query=Goma',
   '+243 970 000 001', '+243970000001', 'contact@comptoir-du-lac.example', 'https://instagram.com/',
-  '#1F6F78', 1, 1, 1),
+  '#6CC3D5', 1, 1, 1),
  (2, 'volcano-club', 'Volcano Club', 'nightclub',
   'Les nuits de Goma, du jeudi au samedi',
   'Goma nights, Thursday to Saturday',
@@ -42,7 +42,7 @@ INSERT INTO etablissements (id, slug, nom, type, slogan_fr, slogan_en, descripti
   'Resident DJs, VIP area with bottle service and a dance floor until dawn.',
   'Boulevard Kanyamuhanga', 'Goma', 'https://www.openstreetmap.org/search?query=Goma',
   '+243 970 000 002', '+243970000002', NULL, 'https://instagram.com/',
-  '#B4432F', 1, 1, 2);
+  '#FF5A1F', 1, 1, 2);
 
 INSERT INTO etablissement_devises (etablissement_id, devise_id) VALUES
  (1, 1), (1, 2), (1, 3),
