@@ -23,7 +23,7 @@ final class TableauController
             'etablissements' => (new EtablissementRepository())->actifs(),
             'devises' => $devises->actives(),
             'reference' => $devises->reference(),
-            'nbProduits' => (int) Database::un('SELECT COUNT(*) AS n FROM produits WHERE actif = 1')['n'],
+            'nbProduits' => (int) Database::un('SELECT COUNT(*) AS n FROM produits WHERE actif = 1 AND parent_id IS NULL')['n'], // tailles non comptées
             'scans7j' => (int) Database::un(
                 'SELECT COALESCE(SUM(nombre), 0) AS n FROM qr_scans WHERE jour >= ?',
                 [date('Y-m-d', strtotime('-6 days'))]

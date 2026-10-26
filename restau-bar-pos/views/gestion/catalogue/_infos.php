@@ -1,11 +1,19 @@
 <?php
 /**
  * Champs de la section « Informations » (création et fiche).
+ * Pour une taille ($parent renseigné), la catégorie et le nom viennent du produit principal :
+ * on saisit à la place le nom de la taille et sa contenance.
  * @var array $infos
  * @var array $categories
+ * @var ?array $parent produit principal quand la fiche est celle d'une taille
  */
+$parent ??= null;
 $badges = array_filter(explode(',', (string) ($infos['badges'] ?? '')));
 ?>
+<?php if ($parent !== null): ?>
+    <?= App\Core\View::rendre('gestion/catalogue/_taille', ['prefixe' => 'taille', 'valeurs' => $infos]) ?>
+    <p class="aide"><?= e(t('tailles.infos_aide', ['nom' => champ($parent, 'nom')])) ?></p>
+<?php else: ?>
 <div class="champ">
     <label for="categorie_id"><?= e(t('catalogue.categorie')) ?></label>
     <select id="categorie_id" name="categorie_id" required>
@@ -39,6 +47,8 @@ $badges = array_filter(explode(',', (string) ($infos['badges'] ?? '')));
     </div>
 </div>
 
+<?php endif; ?>
+
 <div class="champ">
     <label for="unite_base"><?= e(t('catalogue.unite_base')) ?></label>
     <select id="unite_base" name="unite_base" required data-unite>
@@ -49,6 +59,7 @@ $badges = array_filter(explode(',', (string) ($infos['badges'] ?? '')));
     <p class="aide"><?= e(t('catalogue.unite_aide')) ?></p>
 </div>
 
+<?php if ($parent === null): ?>
 <fieldset class="cat-cases">
     <legend><?= e(t('catalogue.badges')) ?> <span class="cat-facultatif"><?= e(t('catalogue.facultatif')) ?></span></legend>
     <?php foreach (App\Repositories\GestionCatalogueRepository::BADGES as $badge): ?>
@@ -69,3 +80,4 @@ $badges = array_filter(explode(',', (string) ($infos['badges'] ?? '')));
         <input id="allergenes_en" name="allergenes_en" maxlength="255" lang="en" value="<?= e($infos['allergenes_en'] ?? '') ?>" placeholder="<?= e(t('catalogue.allergenes_exemple_en')) ?>">
     </div>
 </div>
+<?php endif; ?>

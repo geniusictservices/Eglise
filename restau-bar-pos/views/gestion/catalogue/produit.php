@@ -4,6 +4,10 @@
  * @var ?string $flash
  * @var array $produit
  * @var ?array $categorie
+ * @var ?array $categorieParente catégorie principale quand le produit est rangé dans une sous-catégorie
+ * @var ?array $parent produit principal quand cette fiche est celle d'une taille
+ * @var array $tailles tailles du produit principal (avec leurs formats vendus et le prix de référence)
+ * @var array $nouvelleTaille saisie du formulaire « Ajouter une taille »
  * @var array $infos
  * @var string $credit
  * @var array $categories
@@ -24,11 +28,14 @@
  */
 use App\Controllers\Gestion\CatalogueSaisie;
 use App\Core\Images;
+use App\Repositories\GestionCatalogueRepository;
 
 $id = (int) $produit['id'];
 $jeton = e(App\Core\Session::jetonCsrf());
 $base = '/gestion/catalogue/produits/' . $id;
-$nom = champ($produit, 'nom');
+$libelleTaille = $parent !== null ? GestionCatalogueRepository::libelleTaille($produit) : '';
+// Une taille s'appelle « Primus Petite 33 cl » : nom du produit principal, puis la taille
+$nom = $parent !== null ? champ($parent, 'nom') . ' ' . $libelleTaille : champ($produit, 'nom');
 $unite = t('unite.' . $produit['unite_base']);
 $vendables = array_values(array_filter($formats, static fn (array $f) => (bool) $f['vendable']));
 $lieuVitrine = null;
@@ -38,13 +45,32 @@ foreach ($etablissements as $etab) {
         break;
     }
 }
-// Le produit apparaît-il quelque part ? (format vendable avec un prix, établissement, actif)
+// Le produit apparaît-il quelque part ? (format vendable avec un prix, ou une taille avec un prix ; établissement ; actif)
 $avecPrix = false;
 foreach ($vendables as $format) {
     if (!empty($prix[$format['id']])) {
         $avecPrix = true;
     }
 }
+foreach ($tailles as $taille) {
+    foreach ($taille['formats'] as $format) {
+        if ($format['montant'] !== null) {
+            $avecPrix = true;
+        }
+    }
+}
+// Sections numérotées : la section « Tailles » n'existe que sur un produit principal
+$sections = ['infos' => t('catalogue.section_infos'), 'photo' => t('catalogue.section_photo')];
+if ($parent === null) {
+    $sections['tailles'] = t('tailles.section');
+}
+$sections['formats'] = t('catalogue.section_formats');
+$sections['vente'] = t('catalogue.section_vente');
+if ($produit['actif']) {
+    $sections['desactiver'] = $parent !== null ? t('tailles.section_desactiver') : t('catalogue.section_desactiver');
+}
+$numero = array_flip(array_keys($sections));
+$n = static fn (string $section): string => ($numero[$section] + 1) . '. ';
 ?>
 <link rel="stylesheet" href="/assets/css/gestion-catalogue.css">
 <link rel="stylesheet" href="/assets/css/champ-image.css">
@@ -63,7 +89,15 @@ foreach ($vendables as $format) {
         </div>
     <?php endif; ?>
 </div>
-<p class="aide"><?= e($categorie ? champ($categorie, 'nom') : '') ?></p>
+<p class="aide"><?= e($categorie ? ($categorieParente ? champ($categorieParente, 'nom') . ' › ' : '') . champ($categorie, 'nom') : '') ?></p>
+
+<?php if ($parent !== null): ?>
+    <p class="alerte cat-bandeau-taille">
+        <span><?= e(t('tailles.bandeau_avant', ['taille' => champ($produit, 'taille')])) ?></span>
+        <a class="lien" href="/gestion/catalogue/produits/<?= (int) $parent['id'] ?>#tailles"><?= e(champ($parent, 'nom')) ?></a>
+        <span class="cat-bandeau-taille__aide"><?= e(t('tailles.bandeau_aide')) ?></span>
+    </p>
+<?php endif; ?>
 
 <?php if ($flash): ?>
     <p class="alerte cat-annonce" role="status"><?= e($flash) ?></p>
@@ -82,20 +116,18 @@ foreach ($vendables as $format) {
 <?php endif; ?>
 
 <nav class="cat-sommaire" aria-label="<?= e(t('catalogue.sommaire')) ?>">
-    <a href="#infos">1. <?= e(t('catalogue.section_infos')) ?></a>
-    <a href="#photo">2. <?= e(t('catalogue.section_photo')) ?></a>
-    <a href="#formats">3. <?= e(t('catalogue.section_formats')) ?></a>
-    <a href="#vente">4. <?= e(t('catalogue.section_vente')) ?></a>
-    <?php if ($produit['actif']): ?><a href="#desactiver">5. <?= e(t('catalogue.section_desactiver')) ?></a><?php endif; ?>
+    <?php foreach ($sections as $ancre => $titreSection): ?>
+        <a href="#<?= $ancre ?>"><?= $n($ancre) ?><?= e($titreSection) ?></a>
+    <?php endforeach; ?>
 </nav>
 
 <!-- 1. Informations -->
 <section class="bloc cat-section" id="infos">
-    <h2>1. <?= e(t('catalogue.section_infos')) ?></h2>
+    <h2><?= $n('infos') ?><?= e(t('catalogue.section_infos')) ?></h2>
     <?= App\Core\View::rendre('gestion/catalogue/_erreurs', ['erreurs' => $erreurs['infos'] ?? []]) ?>
     <form class="formulaire cat-formulaire" method="post" action="<?= $base ?>#infos" data-suivi>
         <input type="hidden" name="csrf" value="<?= $jeton ?>">
-        <?= App\Core\View::rendre('gestion/catalogue/_infos', ['infos' => $infos, 'categories' => $categories]) ?>
+        <?= App\Core\View::rendre('gestion/catalogue/_infos', ['infos' => $infos, 'categories' => $categories, 'parent' => $parent]) ?>
         <div class="cat-actions">
             <button class="bouton" type="submit"><?= e(t('catalogue.enregistrer')) ?></button>
             <span class="cat-modifie" hidden><?= e(t('catalogue.non_enregistre')) ?></span>
@@ -105,7 +137,7 @@ foreach ($vendables as $format) {
 
 <!-- 2. Photo -->
 <section class="bloc cat-section" id="photo">
-    <h2>2. <?= e(t('catalogue.section_photo')) ?></h2>
+    <h2><?= $n('photo') ?><?= e(t('catalogue.section_photo')) ?></h2>
     <?= App\Core\View::rendre('gestion/catalogue/_erreurs', ['erreurs' => $erreurs['photo'] ?? []]) ?>
     <form class="formulaire cat-photo" method="post" action="<?= $base ?>/photo#photo" enctype="multipart/form-data" data-suivi>
         <input type="hidden" name="csrf" value="<?= $jeton ?>">
@@ -136,10 +168,77 @@ foreach ($vendables as $format) {
     <?php endif; ?>
 </section>
 
-<!-- 3. Formats et prix -->
+<?php if ($parent === null): ?>
+<!-- Tailles : bouteilles différentes (Petite 33 cl, Grande 72 cl), chacune avec ses formats et prix -->
+<section class="bloc cat-section" id="tailles">
+    <h2><?= $n('tailles') ?><?= e(t('tailles.section')) ?></h2>
+    <p class="aide"><?= e(t('tailles.aide')) ?></p>
+    <?= App\Core\View::rendre('gestion/catalogue/_erreurs', ['erreurs' => $erreurs['tailles'] ?? []]) ?>
+    <?php if ($tailles !== []): ?>
+        <ul class="cat-tailles">
+            <?php foreach ($tailles as $t => $taille):
+                $tid = (int) $taille['id'];
+                $libelle = GestionCatalogueRepository::libelleTaille($taille);
+                $principal = $taille['principal'];
+                ?>
+                <li class="cat-taille<?= $taille['disponible'] ? '' : ' cat-taille--epuisee' ?>" id="taille-<?= $tid ?>">
+                    <div class="cat-taille__texte">
+                        <p class="cat-taille__nom">
+                            <a href="/gestion/catalogue/produits/<?= $tid ?>"><?= e($libelle) ?></a>
+                            <?php if (!$taille['disponible']): ?><span class="pastille pastille--alerte"><?= e(t('badge.epuise')) ?></span><?php endif; ?>
+                            <?php if (!$taille['visible_public']): ?><span class="pastille pastille--alerte"><?= e(t('catalogue.cache_public')) ?></span><?php endif; ?>
+                        </p>
+                        <p class="cat-taille__prix">
+                            <?php if ($principal !== null): ?>
+                                <span class="nombre"><?= e($principal['nom']) ?> · <?= e($principal['montant']) ?></span>
+                                <?php if (count($taille['formats']) > 1): ?>
+                                    <span class="aide"><?= e(count($taille['formats']) === 2 ? t('catalogue.plus_un_format') : t('catalogue.plus_n_formats', ['n' => count($taille['formats']) - 1])) ?></span>
+                                <?php endif; ?>
+                            <?php else: ?>
+                                <span class="pastille pastille--alerte"><?= e($taille['formats'] === [] ? t('catalogue.sans_format') : t('catalogue.sans_prix')) ?></span>
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                    <a class="bouton bouton--secondaire cat-taille__ouvrir" href="/gestion/catalogue/produits/<?= $tid ?>"><?= e(t('tailles.ouvrir')) ?><span class="cat-cache"> · <?= e($libelle) ?></span></a>
+                    <div class="cat-ordre">
+                        <form method="post" action="<?= $base ?>/tailles/<?= $tid ?>/monter">
+                            <input type="hidden" name="csrf" value="<?= $jeton ?>">
+                            <button class="cat-ordre__bouton" type="submit" <?= $t === 0 ? 'disabled' : '' ?> aria-label="<?= e(t('catalogue.monter', ['nom' => $libelle])) ?>" title="<?= e(t('catalogue.monter', ['nom' => $libelle])) ?>">↑</button>
+                        </form>
+                        <form method="post" action="<?= $base ?>/tailles/<?= $tid ?>/descendre">
+                            <input type="hidden" name="csrf" value="<?= $jeton ?>">
+                            <button class="cat-ordre__bouton" type="submit" <?= $t === count($tailles) - 1 ? 'disabled' : '' ?> aria-label="<?= e(t('catalogue.descendre', ['nom' => $libelle])) ?>" title="<?= e(t('catalogue.descendre', ['nom' => $libelle])) ?>">↓</button>
+                        </form>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
+
+    <?php if ($produit['actif']): ?>
+        <div class="cat-format cat-format--nouveau" id="nouvelle-taille">
+            <h3><?= e(t('tailles.ajouter')) ?></h3>
+            <form class="formulaire cat-format__champs" method="post" action="<?= $base ?>/tailles#tailles" data-suivi>
+                <input type="hidden" name="csrf" value="<?= $jeton ?>">
+                <?= App\Core\View::rendre('gestion/catalogue/_taille', ['prefixe' => 'nt', 'valeurs' => $nouvelleTaille]) ?>
+                <p class="aide"><?= e(t('tailles.ajouter_aide')) ?></p>
+                <div class="cat-actions">
+                    <button class="bouton" type="submit">+ <?= e(t('tailles.ajouter')) ?></button>
+                    <span class="cat-modifie" hidden><?= e(t('catalogue.non_enregistre')) ?></span>
+                </div>
+            </form>
+        </div>
+    <?php endif; ?>
+</section>
+<?php endif; ?>
+
+<!-- Formats et prix -->
 <section class="bloc cat-section" id="formats">
-    <h2>3. <?= e(t('catalogue.section_formats')) ?></h2>
+    <h2><?= $n('formats') ?><?= e(t('catalogue.section_formats')) ?></h2>
     <p class="aide"><?= e(t('catalogue.formats_aide', ['unite' => $unite])) ?></p>
+    <?php if ($tailles !== []): ?>
+        <p class="alerte cat-annonce"><?= e(t('tailles.formats_du_principal')) ?></p>
+    <?php endif; ?>
 
     <div class="cat-formats">
         <?php foreach ($formats as $format):
@@ -259,9 +358,10 @@ foreach ($vendables as $format) {
     <?php endif; ?>
 </section>
 
-<!-- 4. Où il est vendu -->
+<!-- Où il est vendu -->
 <section class="bloc cat-section" id="vente">
-    <h2>4. <?= e(t('catalogue.section_vente')) ?></h2>
+    <h2><?= $n('vente') ?><?= e(t('catalogue.section_vente')) ?></h2>
+    <?php if ($tailles !== []): ?><p class="aide"><?= e(t('tailles.vente_aide')) ?></p><?php endif; ?>
     <form class="formulaire cat-formulaire" method="post" action="<?= $base ?>/vente#vente" data-suivi>
         <input type="hidden" name="csrf" value="<?= $jeton ?>">
         <?= App\Core\View::rendre('gestion/catalogue/_vente', ['vente' => $vente, 'etablissements' => $etablissements]) ?>
@@ -272,15 +372,20 @@ foreach ($vendables as $format) {
     </form>
 </section>
 
-<!-- 5. Désactiver -->
+<!-- Désactiver -->
 <?php if ($produit['actif']): ?>
     <section class="bloc cat-section" id="desactiver">
-        <h2>5. <?= e(t('catalogue.section_desactiver')) ?></h2>
-        <p class="aide"><?= e(t('catalogue.desactiver_aide')) ?></p>
+        <h2><?= $n('desactiver') ?><?= e($sections['desactiver']) ?></h2>
+        <p class="aide"><?= e($parent !== null ? t('tailles.desactiver_aide') : t('catalogue.desactiver_aide')) ?></p>
+        <?php if ($tailles !== []): ?>
+            <p class="aide"><strong><?= e(count($tailles) === 1 ? t('tailles.desactiver_avec_une') : t('tailles.desactiver_avec_n', ['n' => count($tailles)])) ?></strong></p>
+        <?php endif; ?>
         <details class="cat-confirmer">
-            <summary class="bouton bouton--secondaire"><?= e(t('catalogue.desactiver')) ?></summary>
+            <summary class="bouton bouton--secondaire"><?= e($parent !== null ? t('tailles.desactiver') : t('catalogue.desactiver')) ?></summary>
             <div class="cat-confirmer__corps">
-                <p><?= e(t('catalogue.desactiver_confirmer', ['nom' => $nom])) ?></p>
+                <p><?= e($tailles !== []
+                    ? t('tailles.desactiver_confirmer', ['nom' => $nom, 'liste' => implode(', ', array_map(static fn (array $tl) => GestionCatalogueRepository::libelleTaille($tl), $tailles))])
+                    : t('catalogue.desactiver_confirmer', ['nom' => $nom])) ?></p>
                 <form method="post" action="<?= $base ?>/desactiver">
                     <input type="hidden" name="csrf" value="<?= $jeton ?>">
                     <button class="bouton cat-bouton-danger" type="submit"><?= e(t('catalogue.desactiver_oui')) ?></button>

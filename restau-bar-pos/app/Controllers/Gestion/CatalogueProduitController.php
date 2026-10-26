@@ -16,8 +16,12 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Fiche produit : informations, photo, formats et prix, établissements, désactivation.
+ * Fiche produit : informations, photo, tailles, formats et prix, établissements, désactivation.
  * Chaque section a son propre formulaire. En cas d'erreur, la fiche est réaffichée avec la saisie.
+ *
+ * Tailles : une taille (Petite 33 cl, Grande 72 cl) est un produit rattaché au produit principal (parent_id),
+ * avec son stock, ses formats et ses prix. Sa fiche n'a pas de section « Tailles » ; sa catégorie et son nom
+ * suivent le produit principal. Désactiver le produit principal désactive ses tailles.
  *
  * Photo : choisie dans la médiathèque (champ caché « photo_media ») ou envoyée par l'ancien champ fichier,
  * alors ajoutée à la médiathèque. Remplacer ou retirer la photo ne supprime jamais le fichier :
@@ -158,13 +162,86 @@ final class CatalogueProduitController
     public function enregistrerInfos(string $id): void
     {
         [$utilisateur, $produit] = $this->debutPost($id);
-        [$infos, $erreurs] = $this->saisie->informations($_POST);
+        $parent = $this->parentDe($produit);
+        if ($parent === null) {
+            [$infos, $erreurs] = $this->saisie->informations($_POST);
+            $taille = null;
+        } else {
+            // Une taille garde la catégorie et le nom de son produit principal ; on y saisit la taille et l'unité.
+            // La description, les badges et les allergènes affichés sont ceux du produit principal : ceux de la taille restent tels quels.
+            $post = [
+                'categorie_id' => $parent['categorie_id'], 'nom_fr' => $parent['nom_fr'], 'nom_en' => $parent['nom_en'],
+                'description_fr' => (string) $produit['description_fr'], 'description_en' => (string) $produit['description_en'],
+                'allergenes_fr' => (string) $produit['allergenes_fr'], 'allergenes_en' => (string) $produit['allergenes_en'],
+                'badges' => array_filter(explode(',', (string) $produit['badges'])),
+            ] + $_POST;
+            [$infos, $erreurs] = $this->saisie->informations($post);
+            [$taille, $erreursTaille] = $this->saisie->taille($_POST);
+            $erreurs = array_merge($erreurs, $erreursTaille);
+        }
         if ($erreurs !== []) {
-            $this->afficherFiche($utilisateur, $produit, ['infos' => $infos, 'erreurs' => ['infos' => $erreurs]], 422);
+            $this->afficherFiche($utilisateur, $produit, ['infos' => $infos + ($taille ?? []), 'erreurs' => ['infos' => $erreurs]], 422);
             return;
         }
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
         $this->catalogue->modifierInformations((int) $produit['id'], $infos);
+        if ($taille !== null) {
+            $this->catalogue->definirTaille((int) $produit['id'], $taille['taille_fr'], $taille['taille_en'], $taille['contenance']);
+        }
+        $pdo->commit();
         $this->succes($produit, 'catalogue.infos_enregistrees', 'infos');
+    }
+
+    // Tailles
+
+    /** Ajoute une taille au produit principal, puis ouvre sa fiche pour saisir ses formats et prix. */
+    public function ajouterTaille(string $id): void
+    {
+        [$utilisateur, $produit] = $this->debutPost($id);
+        if ($produit['parent_id'] !== null || !$produit['actif']) {
+            pageIntrouvable();
+        }
+        [$taille, $erreurs] = $this->saisie->taille($_POST);
+        if ($erreurs !== []) {
+            $this->afficherFiche($utilisateur, $produit, ['nouvelleTaille' => $taille, 'erreurs' => ['tailles' => $erreurs]], 422);
+            return;
+        }
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        $tailleId = $this->catalogue->creerTaille($produit, $taille['taille_fr'], $taille['taille_en'], $taille['contenance']);
+        // Premier format à l'unité (Bouteille = 1) quand l'unité de base en propose un ; son prix reste à saisir
+        if (isset(self::FORMAT_PAR_DEFAUT[$produit['unite_base']])) {
+            [$nomFr, $nomEn] = self::FORMAT_PAR_DEFAUT[$produit['unite_base']];
+            $this->catalogue->ajouterFormat($tailleId, [
+                'nom_fr' => $nomFr, 'nom_en' => $nomEn, 'quantite_base' => '1.000',
+                'vendable' => true, 'achetable' => false, 'code_barres' => null,
+            ]);
+        }
+        $pdo->commit();
+        Session::flash(t('tailles.ajoutee', ['taille' => $taille['taille_fr'], 'nom' => $produit['nom_fr']]));
+        rediriger('/gestion/catalogue/produits/' . $tailleId . '#formats');
+    }
+
+    public function monterTaille(string $id, string $taille): void
+    {
+        $this->deplacerTaille($id, $taille, -1);
+    }
+
+    public function descendreTaille(string $id, string $taille): void
+    {
+        $this->deplacerTaille($id, $taille, 1);
+    }
+
+    private function deplacerTaille(string $id, string $taille, int $sens): void
+    {
+        [, $produit] = $this->debutPost($id);
+        $variante = ctype_digit($taille) ? $this->catalogue->produit((int) $taille) : null;
+        if ($variante === null || (int) $variante['parent_id'] !== (int) $produit['id']) {
+            pageIntrouvable();
+        }
+        $this->catalogue->deplacerProduit((int) $variante['id'], $sens);
+        rediriger('/gestion/catalogue/produits/' . (int) $produit['id'] . '#taille-' . (int) $variante['id']);
     }
 
     public function envoyerPhoto(string $id): void
@@ -320,8 +397,16 @@ final class CatalogueProduitController
     public function desactiver(string $id): void
     {
         [, $produit] = $this->debutPost($id);
+        $nbTailles = $produit['parent_id'] === null ? count($this->catalogue->tailles((int) $produit['id'], 0, null)) : 0;
         $this->catalogue->desactiver((int) $produit['id']);
-        Session::flash(t('catalogue.produit_desactive', ['nom' => champ($produit, 'nom')]));
+        if ($produit['parent_id'] !== null) {
+            // Une taille seule : retour au produit principal
+            Session::flash(t('tailles.desactivee', ['nom' => champ($produit, 'nom')]));
+            rediriger('/gestion/catalogue/produits/' . (int) $produit['parent_id'] . '#tailles');
+        }
+        Session::flash($nbTailles > 0
+            ? t('tailles.produit_desactive', ['nom' => champ($produit, 'nom'), 'n' => $nbTailles])
+            : t('catalogue.produit_desactive', ['nom' => champ($produit, 'nom')]));
         rediriger('/gestion/catalogue');
     }
 
@@ -383,6 +468,22 @@ final class CatalogueProduitController
 
         $etablissements = (new EtablissementRepository())->actifs();
         $categorie = Database::un('SELECT * FROM categories WHERE id = ?', [$produit['categorie_id']]);
+        $parente = $categorie && $categorie['parent_id'] !== null
+            ? Database::un('SELECT * FROM categories WHERE id = ?', [$categorie['parent_id']])
+            : null;
+        $parent = $this->parentDe($produit);
+        $tailles = $parent === null ? $this->catalogue->tailles($id, $grilleDefaut, $reference ? (int) $reference['id'] : null) : [];
+        foreach ($tailles as &$taille) {
+            // Prix principal de la taille : premier format vendu qui a un prix, en devise de référence
+            $taille['principal'] = null;
+            foreach ($taille['formats'] as $format) {
+                if ($format['montant'] !== null && $reference !== null) {
+                    $taille['principal'] = ['nom' => champ($format, 'nom'), 'montant' => $this->devises->formater((float) $format['montant'], $reference, false)];
+                    break;
+                }
+            }
+        }
+        unset($taille);
 
         View::afficher('gestion/catalogue/produit', [
             'titre' => champ($produit, 'nom'),
@@ -390,6 +491,10 @@ final class CatalogueProduitController
             'flash' => Session::lireFlash(),
             'produit' => $produit,
             'categorie' => $categorie,
+            'categorieParente' => $parente,
+            'parent' => $parent,
+            'tailles' => $tailles,
+            'nouvelleTaille' => $etat['nouvelleTaille'] ?? [],
             'infos' => ($etat['infos'] ?? []) + $produit,
             'credit' => array_key_exists('credit', $etat) ? (string) $etat['credit'] : (string) $produit['photo_credit'],
             'categories' => $this->catalogue->categories(),
@@ -466,6 +571,12 @@ final class CatalogueProduitController
         $utilisateur = Session::exigerConnexion();
         Session::verifierCsrf();
         return [$utilisateur, $this->produitOu404($id)];
+    }
+
+    /** Produit principal d'une taille, ou null pour un produit principal. */
+    private function parentDe(array $produit): ?array
+    {
+        return $produit['parent_id'] === null ? null : $this->catalogue->produit((int) $produit['parent_id']);
     }
 
     private function produitOu404(string $id): array
