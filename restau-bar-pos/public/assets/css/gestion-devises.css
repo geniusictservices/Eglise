@@ -39,7 +39,7 @@
 /* Devise de référence */
 .dev-reference {
   margin-top: 1.5rem; padding: 1.25rem; background: var(--surface);
-  border: 1px solid var(--ligne); border-left: 6px solid var(--accent); border-radius: 12px;
+  border: 1px solid var(--ligne); border-radius: 12px;
 }
 .dev-reference__surtitre { margin: 0; font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--doux); }
 .dev-reference__nom { display: flex; align-items: center; gap: .75rem; margin: .4rem 0 0; font-size: 1.25rem; font-weight: 700; }

@@ -25,7 +25,7 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 .entete {
   position: relative;
   color: var(--encre);
-  border-bottom: 3px solid var(--accent);
+  border-bottom: 1px solid var(--ligne);
   background:
     radial-gradient(110% 85% at 105% -10%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 62%),
     var(--fond);
@@ -299,7 +299,6 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
   border-radius: var(--rayon-carte);
   background: var(--surface);
   border: 1px solid var(--ligne);
-  border-top: 6px solid var(--accent-etab, var(--accent));
   color: var(--encre);
   text-decoration: none;
   transition: transform var(--transition), border-color var(--transition);

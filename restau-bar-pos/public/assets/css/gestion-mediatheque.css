@@ -98,7 +98,7 @@
 .med-confirmer__corps {
   margin-top: .75rem;
   padding: 1rem;
-  border-left: 4px solid var(--erreur);
+  border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne));
   border-radius: var(--rayon);
   background: var(--teinte-erreur);
 }

@@ -55,10 +55,8 @@ h2 { margin: 0 0 .75rem; font: 600 1.0625rem/1.25 var(--police-titre); }
 .chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem; margin-top: 1.25rem; }
 .chiffre {
   display: grid; gap: .25rem; padding: 1rem 1.25rem; background: var(--surface);
-  border: 1px solid var(--ligne); border-radius: var(--rayon-carte); border-bottom: 4px solid var(--lave);
+  border: 1px solid var(--ligne); border-radius: var(--rayon-carte);
 }
-.chiffre:nth-child(3n+2) { border-bottom-color: var(--braise); }
-.chiffre:nth-child(3n+3) { border-bottom-color: var(--glace); }
 .chiffre__valeur { font: 800 1.875rem/1.1 var(--police-titre); font-variant-numeric: tabular-nums; }
 .chiffre__libelle { color: var(--doux); font-size: var(--taille-s); }
 
@@ -73,9 +71,9 @@ h2 { margin: 0 0 .75rem; font: 600 1.0625rem/1.25 var(--police-titre); }
 
 .alerte {
   margin: 1rem 0 0; padding: .85rem 1rem; border-radius: var(--rayon);
-  border-left: 4px solid var(--succes); background: var(--teinte-succes); color: var(--encre);
+  border: 1px solid color-mix(in srgb, var(--succes) 45%, var(--ligne)); background: var(--teinte-succes); color: var(--encre);
 }
-.alerte--erreur { border-left-color: var(--erreur); background: var(--teinte-erreur); color: var(--encre); }
+.alerte--erreur { border-color: color-mix(in srgb, var(--erreur) 45%, var(--ligne)); background: var(--teinte-erreur); color: var(--encre); }
 .alerte--erreur::before { content: "!"; display: inline-grid; place-items: center; width: 1.3em; height: 1.3em; margin-right: .5rem; border-radius: 50%; background: var(--erreur); color: var(--sur-erreur); font-weight: 800; font-size: .85em; }
 
 /* ---------- Formulaires ---------- */
@@ -105,7 +103,7 @@ h2 { margin: 0 0 .75rem; font: 600 1.0625rem/1.25 var(--police-titre); }
 
 .connexion {
   max-width: 26rem; margin: 3rem auto; padding: 1.75rem;
-  background: var(--surface); border: 1px solid var(--ligne); border-top: 4px solid var(--lave); border-radius: var(--rayon-carte);
+  background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--rayon-carte);
 }
 .connexion .bouton { margin-top: 1rem; width: 100%; }
 

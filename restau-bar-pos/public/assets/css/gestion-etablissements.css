@@ -180,7 +180,7 @@
 .etb-confirmer[open] summary { display: none; }
 .etb-depliant[open] > summary { margin-bottom: .5rem; }
 .etb-confirmer__corps {
-  padding: 1rem; border-radius: 8px; border-left: 4px solid var(--erreur);
+  padding: 1rem; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne));
   background: color-mix(in srgb, var(--erreur) 10%, var(--surface));
 }
 .etb-confirmer__corps p { margin: 0 0 .75rem; }

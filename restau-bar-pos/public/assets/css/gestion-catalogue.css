@@ -147,7 +147,7 @@
 .cat-confirmer summary::-webkit-details-marker, .cat-depliant summary::-webkit-details-marker { display: none; }
 .cat-confirmer[open] summary { display: none; }
 .cat-confirmer__corps {
-  padding: 1rem; border-radius: 8px; border-left: 4px solid var(--erreur);
+  padding: 1rem; border-radius: 8px; border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne));
   background: color-mix(in srgb, var(--erreur) 10%, var(--surface));
 }
 .cat-confirmer__corps p { margin: 0 0 .75rem; }
@@ -207,7 +207,7 @@
 }
 
 /* Liste du catalogue : groupe d'une sous-catégorie, en retrait */
-.cat-groupe--sous { margin-left: 1.5rem; border-left: 3px solid var(--accent); }
+.cat-groupe--sous { margin-left: 1.5rem; }
 .cat-groupe__parente { display: block; font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--doux); }
 @media (max-width: 600px) { .cat-groupe--sous { margin-left: .5rem; } }
 

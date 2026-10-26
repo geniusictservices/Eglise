@@ -285,7 +285,6 @@ button { cursor: pointer; }
   padding: 0 18px;
   border-radius: var(--rayon);
   border: 1px solid var(--ligne);
-  border-left: 6px solid var(--cat);
   background: var(--tuile-fond);
   font-size: 1.0625rem;
 }

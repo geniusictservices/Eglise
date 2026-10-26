@@ -81,7 +81,7 @@
 .champ-image__erreur {
   margin: 0;
   padding: .6rem .8rem;
-  border-left: 4px solid var(--erreur);
+  border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne));
   border-radius: var(--rayon);
   background: var(--teinte-erreur);
   color: var(--encre);
@@ -167,7 +167,7 @@
 .envoi__etat { font-size: var(--taille-s); color: var(--doux); overflow-wrap: anywhere; }
 .envoi__etat .lien { color: var(--encre); }
 .envoi--ok .envoi__etat { color: var(--succes); font-weight: 600; }
-.envoi--erreur { border-left: 4px solid var(--erreur); background: var(--teinte-erreur); }
+.envoi--erreur { border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne)); background: var(--teinte-erreur); }
 .envoi--erreur .envoi__etat { color: var(--encre); font-weight: 600; }
 
 /* ---------- Fenêtre « Choisir dans la médiathèque » ---------- */

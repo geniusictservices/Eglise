@@ -12,7 +12,8 @@ Direction choisie par le client parmi les quatre propositions (B · Volcan). Som
 2. **Une couleur, un rôle.** Lave = action principale (un seul bouton plein par écran si possible). Braise = prix et mises en avant. Glace = information, nouveauté. Les catégories de la caisse ont leur propre palette.
 3. **Toucher plutôt que taper.** Cibles d'au moins 44 px, boutons de 48 px, bouton « Encaisser » de 56 à 60 px.
 4. **Peu de texte, des repères visuels.** Couleur de catégorie sur les onglets de la caisse ; la sélection (tuile choisie, pastille de quantité) est à la couleur d'accent ; grandes images sur les tuiles.
-5. **Les mêmes noms partout.** Les classes et variables historiques (`--accent --fond --surface --encre --doux --ligne --erreur`, `.bouton`, `.tableau`, `.champ`…) sont conservées : les vues existantes et celles des autres modules prennent le design sans changement.
+5. **Pas de bandes de couleur sur un seul côté.** Cartes, chiffres, alertes, lignes du ticket et blocs ont un contour fin et égal sur tous les côtés (couleur `--ligne`, ou teinte de l'état pour une alerte) ; la couleur passe par le fond teinté, une pastille ou le texte, jamais par une bordure plus épaisse à gauche, en haut ou en bas.
+6. **Les mêmes noms partout.** Les classes et variables historiques (`--accent --fond --surface --encre --doux --ligne --erreur`, `.bouton`, `.tableau`, `.champ`…) sont conservées : les vues existantes et celles des autres modules prennent le design sans changement.
 
 ## Typographie
 
@@ -95,7 +96,7 @@ Mise en place : le gabarit écrit `data-theme` et `data-theme-cle` sur `<html>` 
 
 ### Couleur propre à un établissement
 
-Si `etablissements.couleur` est renseignée (`#RRGGBB`), elle remplace la lave sur la vitrine de cet établissement (bordure de l'en-tête, catégorie active, titres de catégories, liens). Le gabarit calcule avec les fonctions de `app/helpers.php` :
+Si `etablissements.couleur` est renseignée (`#RRGGBB`), elle remplace la lave sur la vitrine de cet établissement (catégorie active, titres de catégories, liens). Le gabarit calcule avec les fonctions de `app/helpers.php` :
 
 - `texteSurCouleur($couleur)` : `#111315` ou `#FFFFFF`, celui qui contraste le mieux (luminance WCAG) → `--sur-accent` ;
 - `couleurLisible($couleur, $fond)` : la couleur assombrie (jour) ou éclaircie (nuit) jusqu'à 4,5:1 → `--accent-texte`.

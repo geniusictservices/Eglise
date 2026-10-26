@@ -25,7 +25,7 @@
 .tre-pied .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
 
 .tre-erreurs ul, .tre-avertissement ul { margin: .4rem 0 0; padding-left: 1.2rem; }
-.tre-note { border-left-color: var(--glace); background: var(--teinte-glace); }
+.tre-note { border-color: color-mix(in srgb, var(--glace) 45%, var(--ligne)); background: var(--teinte-glace); }
 
 /* Avertissement avant d'enregistrer (découvert, taux inhabituel) */
 .tre-avertissement {
@@ -74,7 +74,7 @@
 
 .tre-solde {
   display: grid; gap: .15rem; padding: .75rem 1.25rem; border-radius: var(--rayon-carte);
-  background: var(--surface); border: 1px solid var(--ligne); border-bottom: 4px solid var(--accent); text-align: right;
+  background: var(--surface); border: 1px solid var(--ligne); text-align: right;
 }
 .tre-solde__libelle { font-size: var(--taille-s); color: var(--doux); }
 .tre-solde__valeur { font: 800 1.625rem/1.1 var(--police-titre); }

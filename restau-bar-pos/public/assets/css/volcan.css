@@ -319,7 +319,7 @@ img { max-width: 100%; }
   background: var(--surface);
   color: var(--encre);
 }
-.carte--accent { border-top: 4px solid var(--accent); }
+.carte--accent { border-color: color-mix(in srgb, var(--accent) 45%, var(--ligne)); }
 
 /* ---------- Champs de formulaire ---------- */
 
