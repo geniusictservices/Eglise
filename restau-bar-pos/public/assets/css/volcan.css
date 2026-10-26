@@ -75,13 +75,13 @@
 /* ---------- Thème nuit ---------- */
 
 [data-theme="nuit"] {
-  --fond: #111315;
-  --surface: #1C1F23;
-  --surface-2: #24282D;
-  --ligne: #2C3035;
-  --ligne-forte: #3A3F45;
-  --encre: #F2EFEA;
-  --doux: #A3A9AF;
+  --fond: #0F1113;
+  --surface: #15181B;
+  --surface-2: #1F2327;
+  --ligne: #2A2F34;
+  --ligne-forte: #3A4046;
+  --encre: #F3F0EB;
+  --doux: #A2A8AE;
   --lave: #FF5A1F;
   --sur-lave: #111315;
   --lave-texte: #FF5A1F;
@@ -91,8 +91,8 @@
   --erreur: #FF7A66;
   --sur-erreur: #111315;
   --succes: #5CC98A;
-  --saisie: #111315;
-  --tuile-fond: #24282D;
+  --saisie: #1A1D21;
+  --tuile-fond: #171A1D;
   --ombre: 0 1px 2px rgb(0 0 0 / .3), 0 10px 30px rgb(0 0 0 / .35);
   --voile: rgb(0 0 0 / .6);
 
@@ -113,13 +113,13 @@
 /* « auto » : suit la préférence du système (espace de gestion) */
 @media (prefers-color-scheme: dark) {
   [data-theme="auto"] {
-    --fond: #111315;
-    --surface: #1C1F23;
-    --surface-2: #24282D;
-    --ligne: #2C3035;
-    --ligne-forte: #3A3F45;
-    --encre: #F2EFEA;
-    --doux: #A3A9AF;
+    --fond: #0F1113;
+    --surface: #15181B;
+    --surface-2: #1F2327;
+    --ligne: #2A2F34;
+    --ligne-forte: #3A4046;
+    --encre: #F3F0EB;
+    --doux: #A2A8AE;
     --lave: #FF5A1F;
     --sur-lave: #111315;
     --lave-texte: #FF5A1F;
@@ -129,8 +129,8 @@
     --erreur: #FF7A66;
     --sur-erreur: #111315;
     --succes: #5CC98A;
-    --saisie: #111315;
-    --tuile-fond: #24282D;
+    --saisie: #1A1D21;
+    --tuile-fond: #171A1D;
     --ombre: 0 1px 2px rgb(0 0 0 / .3), 0 10px 30px rgb(0 0 0 / .35);
     --voile: rgb(0 0 0 / .6);
     --cat-1: #FF5A1F;
@@ -378,7 +378,8 @@ img { max-width: 100%; }
 .tableau td.nombre, .tableau th.nombre { text-align: right; }
 
 /* ---------- Tuiles de caisse ----------
-   --cat : couleur de la catégorie (une des --cat-1 à --cat-8). */
+   Style « Volcan Pro » : grande image en haut, nom, puis format et prix ; tuile choisie en couleur d'accent.
+   --cat : couleur de la catégorie (une des --cat-1 à --cat-8), reprise sur l'onglet et la ligne du ticket. */
 
 .tuile {
   --cat: var(--accent);
@@ -386,21 +387,22 @@ img { max-width: 100%; }
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   min-height: var(--tuile-haut, 96px);
-  padding: 12px 12px 14px;
+  padding: 8px 8px 10px;
   border: 1px solid var(--ligne);
-  border-bottom: 4px solid var(--cat);
-  border-radius: var(--rayon);
+  border-radius: var(--rayon-carte);
   background: var(--tuile-fond);
   color: var(--encre);
   font: inherit;
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
-  transition: transform .08s ease-out, background-color var(--transition);
+  transition: transform .08s ease-out, background-color var(--transition), border-color var(--transition);
 }
+.tuile:hover:not(:disabled) { border-color: var(--ligne-forte); }
 .tuile:active:not(:disabled) { transform: scale(.97); }
+.tuile__tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 6px; padding: 0 4px; }
 .tuile__nom {
   font-size: var(--tuile-nom, 1rem);
   font-weight: 700;
@@ -409,30 +411,33 @@ img { max-width: 100%; }
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  padding-right: 30px;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
-.tuile__bas { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
-.tuile__format { font-size: .8rem; color: var(--doux); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tuile__prix { margin-left: auto; font-weight: 700; font-size: 1.0625rem; color: var(--prix); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tuile > .tuile__nom { padding: 0 34px 0 4px; }
+/* Le prix passe sous le format quand la tuile est étroite */
+.tuile__bas { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 2px 6px; padding: 0 4px; }
+.tuile__format { font-size: .8rem; color: var(--doux); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tuile__prix { margin-left: auto; font: 600 1rem/1.2 var(--police-titre); color: var(--prix); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tuile__qte {
-  position: absolute;
-  top: 8px; right: 8px;
-  min-width: 28px; height: 28px;
-  padding: 0 6px;
+  flex: none;
+  min-width: 26px; height: 26px;
+  padding: 0 7px;
   border-radius: var(--rayon-rond);
   display: grid; place-items: center;
-  background: var(--cat);
-  color: var(--sur-cat);
-  font-size: .875rem;
-  font-weight: 700;
+  background: var(--accent);
+  color: var(--sur-accent);
+  font-size: .8125rem;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
+/* Tuile sans en-tête (page du système de design) : pastille en haut à droite */
+.tuile > .tuile__qte { position: absolute; top: 8px; right: 8px; }
 .tuile__qte:empty { display: none; }
 .tuile--choisie {
-  border-color: transparent;
-  outline: 2px solid var(--cat);
-  outline-offset: -2px;
-  background: color-mix(in srgb, var(--cat) 11%, var(--tuile-fond));
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: color-mix(in srgb, var(--accent) 9%, var(--tuile-fond));
 }
 .tuile--epuise { opacity: .45; cursor: not-allowed; }
 

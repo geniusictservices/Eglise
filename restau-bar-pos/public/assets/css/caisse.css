@@ -3,12 +3,12 @@
    taille des tuiles réglée par appareil ; un nightclub démarre de nuit avec de grandes tuiles. */
 
 .caisse {
-  --tuile: 150px;
   --tuile-haut: 104px;
-  --tuile-nom: 1rem;
+  --tuile-nom: .9375rem;
+  --photo: 16 / 10;
 }
-.caisse[data-taille="petite"] { --tuile: 118px; --tuile-haut: 84px; --tuile-nom: .9rem; }
-.caisse[data-taille="grande"] { --tuile: 190px; --tuile-haut: 132px; --tuile-nom: 1.125rem; }
+.caisse[data-taille="petite"] { --tuile-haut: 84px; --tuile-nom: .875rem; --photo: 2 / 1; }
+.caisse[data-taille="grande"] { --tuile-haut: 132px; --tuile-nom: 1.0625rem; --photo: 4 / 3; }
 
 html, body { height: 100%; margin: 0; }
 body { font-size: 15px; line-height: 1.35; }
@@ -33,22 +33,25 @@ button { cursor: pointer; }
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 12px;
-  padding: calc(8px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 8px max(12px, env(safe-area-inset-left, 0px));
-  background: var(--surface);
+  padding: calc(12px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 12px max(20px, env(safe-area-inset-left, 0px));
+  background: var(--fond);
   border-bottom: 1px solid var(--ligne);
 }
 .haut__lieu { display: flex; gap: 8px; margin: 0; min-width: 0; }
+/* Établissement et zone en pastilles, recherche avec sa loupe */
 .haut select, .haut input {
-  height: var(--cible);
-  padding: 0 12px;
-  border: 1.5px solid var(--ligne-forte);
-  border-radius: var(--rayon);
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--ligne);
+  border-radius: 12px;
   background: var(--saisie);
 }
-.haut select { font-weight: 600; max-width: 15rem; }
+.haut select { font-weight: 700; max-width: 15rem; }
+#zone { font-weight: 600; }
 .haut input:focus, .haut select:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 0; }
-.haut__recherche { flex: 1 1 14rem; min-width: 0; }
-.haut__recherche input { width: 100%; user-select: text; }
+.haut__recherche { position: relative; flex: 1 1 14rem; min-width: 0; }
+.haut__recherche svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--doux); pointer-events: none; }
+.haut__recherche input { width: 100%; padding-left: 42px; user-select: text; }
 .haut__reglages { display: flex; align-items: center; gap: 8px; }
 .haut__utilisateur {
   display: inline-flex;
@@ -61,20 +64,23 @@ button { cursor: pointer; }
 }
 .haut__utilisateur:hover { color: var(--encre); }
 
-.segments { display: flex; gap: 2px; padding: 2px; border-radius: var(--rayon); background: var(--surface-2); }
+.segments { display: flex; gap: 2px; padding: 2px; border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie); }
 .segments button { width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; font-weight: 700; color: var(--doux); }
 .segments button[aria-pressed="true"] { background: var(--encre); color: var(--fond); }
 .icone {
   position: relative;
   flex: none;
-  width: var(--cible);
-  height: var(--cible);
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
-  border: 1px solid var(--ligne-forte);
-  border-radius: var(--rayon);
-  background: transparent;
+  border: 1px solid var(--ligne);
+  border-radius: 12px;
+  background: var(--saisie);
 }
+.icone:hover { border-color: var(--ligne-forte); }
+#quitter { background: transparent; color: var(--doux); }
+#quitter:hover { color: var(--encre); }
 .icone[aria-pressed="true"] { background: var(--encre); color: var(--fond); border-color: var(--encre); }
 .lien { min-height: var(--cible); padding: 0 8px; }
 
@@ -88,7 +94,7 @@ button { cursor: pointer; }
   gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 10px max(12px, env(safe-area-inset-left, 0px));
+  padding: 14px max(20px, env(safe-area-inset-left, 0px)) 10px;
 }
 .onglets::-webkit-scrollbar { display: none; }
 .onglet {
@@ -100,7 +106,8 @@ button { cursor: pointer; }
   padding: 0 16px;
   border: 0;
   border-radius: var(--rayon-rond);
-  background: var(--surface-2);
+  background: var(--saisie);
+  box-shadow: inset 0 0 0 1px var(--ligne);
   color: var(--encre);
   font-weight: 600;
   white-space: nowrap;
@@ -112,7 +119,7 @@ button { cursor: pointer; }
   border-radius: 50%;
   background: var(--cat);
 }
-.onglet[aria-pressed="true"] { background: var(--cat, var(--encre)); color: var(--sur-cat); }
+.onglet[aria-pressed="true"] { background: var(--cat, var(--encre)); color: var(--sur-cat); box-shadow: none; }
 .onglet[aria-pressed="true"]:not([style]) { color: var(--fond); }
 .onglet[aria-pressed="true"]::before { background: currentColor; }
 
@@ -124,7 +131,7 @@ button { cursor: pointer; }
   overflow-x: auto;
   scrollbar-width: none;
   margin-top: -2px;
-  padding: 0 max(12px, env(safe-area-inset-left, 0px)) 10px;
+  padding: 0 max(20px, env(safe-area-inset-left, 0px)) 10px;
 }
 .sous-onglets[hidden] { display: none; }
 .sous-onglets::-webkit-scrollbar { display: none; }
@@ -154,22 +161,28 @@ button { cursor: pointer; }
   display: grid;
   grid-template-columns: repeat(var(--colonnes), minmax(0, 1fr));
   grid-auto-rows: max-content; /* la grille défile : « auto » resterait au min-height des tuiles */
-  gap: 10px;
+  gap: 14px;
   align-content: start;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 2px max(12px, env(safe-area-inset-left, 0px)) 96px;
+  padding: 4px max(20px, env(safe-area-inset-left, 0px)) 96px;
 }
 
 /* Tuile : composant .tuile de volcan.css */
-/* Hauteur fixe (pas aspect-ratio) : la ligne de la grille en tient compte et la tuile grandit */
-.tuile__photo { flex: none; display: block; width: 100%; height: calc(var(--tuile-haut) * .6); object-fit: cover; border-radius: 6px; }
+/* Grande image au format de la taille S/M/L ; la tuile grandit avec elle */
+.tuile__photo { flex: none; display: block; width: 100%; height: auto; aspect-ratio: var(--photo); object-fit: cover; border-radius: 12px; }
 /* Avec une photo, le nom ne doit jamais être écrasé : la tuile grandit à la place */
-.tuile__nom, .tuile__bas { flex-shrink: 0; }
+.tuile__tete, .tuile__bas { flex-shrink: 0; }
+.tuile__tete .tuile__nom { flex: 1 1 auto; }
+/* Tuile étroite : la pastille de quantité passe sur l'image pour laisser toute la largeur au nom */
+.grille .tuile { container-type: inline-size; }
+@container (max-width: 150px) {
+  .tuile__tete .tuile__qte { position: absolute; top: 12px; right: 12px; box-shadow: 0 0 0 2px var(--tuile-fond); }
+}
 .tuile--pulse { animation: pulse .25s ease-out; }
-@keyframes pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--cat) 35%, transparent); } }
+@keyframes pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 35%, transparent); } }
 
-.vide { color: var(--doux); padding: 24px max(12px, env(safe-area-inset-left, 0px)); }
+.vide { color: var(--doux); padding: 24px max(20px, env(safe-area-inset-left, 0px)); }
 
 /* ---------- Ticket ---------- */
 
@@ -179,21 +192,33 @@ button { cursor: pointer; }
   min-height: 0;
   background: var(--surface);
   border-left: 1px solid var(--ligne);
-  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) 16px;
+  padding: 18px max(18px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) 18px;
 }
 .ticket__tete { display: flex; align-items: center; gap: 8px; }
-.ticket__tete h2 { margin: 0; font: 800 1.0625rem/1.2 var(--police-titre); flex: 1; }
+.ticket__tete h2 { margin: 0; font: 600 1.125rem/1.2 var(--police-titre); flex: 1; }
+.ticket__tete .lien {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--ligne);
+  border-radius: 10px;
+  font-size: .8125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
 .ticket__fermer { display: none; }
 
-.lignes { list-style: none; margin: 8px 0 0; padding: 0; overflow-y: auto; flex: 1; min-height: 0; }
+/* Lignes en cartes simples, contour fin (comme la maquette « Volcan Pro ») */
+.lignes { list-style: none; margin: 14px 0 0; padding: 0; overflow-y: auto; flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
 .ligne {
+  flex: none;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 10px;
-  padding: 8px 0 8px 10px;
-  border-bottom: 1px solid var(--ligne);
-  border-left: 4px solid var(--cat);
+  padding: 6px 10px 6px 14px;
+  border-radius: 12px;
+  background: var(--saisie);
+  border: 1px solid var(--ligne);
 }
 .ligne__texte { display: grid; min-width: 0; }
 /* Nom sur deux lignes au plus : « Mützig Grande 65 cl » reste lisible en entier */
@@ -209,18 +234,32 @@ button { cursor: pointer; }
 }
 .ligne__format { font-size: .8rem; color: var(--doux); }
 .ligne__montant { font-weight: 700; font-variant-numeric: tabular-nums; min-width: 4.5rem; text-align: right; }
-.pas { display: flex; align-items: center; border-radius: var(--rayon); background: var(--surface-2); }
-.pas__bouton { width: 44px; height: 44px; border: 0; background: transparent; font-size: 1.3rem; font-weight: 700; line-height: 1; border-radius: var(--rayon); }
+.pas { display: flex; align-items: center; gap: 4px; }
+.pas__bouton { width: 44px; height: 44px; border: 0; background: var(--surface-2); font-size: 1.3rem; font-weight: 700; line-height: 1; border-radius: 10px; }
 .pas__bouton:active { background: var(--ligne-forte); }
 .pas__qte { min-width: 2ch; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
 .ticket__vide { color: var(--doux); margin: 16px 0; flex: 1; }
 
-.totaux { border-top: 2px solid var(--encre); margin-top: 8px; padding-top: 10px; }
-.totaux__principal { display: flex; justify-content: space-between; align-items: baseline; font-size: 1.0625rem; }
-.totaux__principal strong { font: 800 1.75rem/1.1 var(--police-titre); font-variant-numeric: tabular-nums; }
+.totaux { border-top: 1px solid var(--ligne); margin-top: 12px; padding-top: 14px; }
+.totaux__principal { display: flex; justify-content: space-between; align-items: baseline; color: var(--doux); }
+.totaux__principal strong { font: 800 2.25rem/1.1 var(--police-titre); color: var(--encre); font-variant-numeric: tabular-nums; }
 .totaux__autres { margin: 4px 0 0; text-align: right; color: var(--doux); font-variant-numeric: tabular-nums; min-height: 1.35em; }
 
-.encaisser { margin-top: 12px; min-height: 60px; font-size: 1.125rem; }
+/* Modes de paiement puis « Encaisser » avec le total (actifs en phase 3) */
+.paiements { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.paiement {
+  min-height: 48px;
+  padding: 0 8px;
+  border: 1px solid var(--ligne);
+  border-radius: 12px;
+  background: var(--saisie);
+  font-size: .8125rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.paiement:disabled { opacity: .55; cursor: not-allowed; }
+.encaisser:disabled { opacity: .7; }
+.encaisser { margin-top: 8px; min-height: 62px; border-radius: var(--rayon-carte); font-size: 1.125rem; font-weight: 800; }
 .note { margin: 6px 0 0; font-size: .8rem; color: var(--doux); text-align: center; }
 
 /* ---------- Choix du format ---------- */
@@ -270,7 +309,7 @@ button { cursor: pointer; }
   align-items: center;
   padding: 0 18px;
   border: 0;
-  border-radius: 14px;
+  border-radius: 18px;
   background: var(--accent);
   color: var(--sur-accent);
   font-size: 1rem;
@@ -281,6 +320,15 @@ button { cursor: pointer; }
 
 @media (min-width: 900px) {
   .resume { display: none !important; }
+}
+
+/* Tablette : ticket un peu plus étroit pour garder 5 tuiles lisibles */
+@media (min-width: 900px) and (max-width: 1199px) {
+  .corps { grid-template-columns: minmax(0, 1fr) 330px; }
+  .grille { gap: 10px; }
+  /* Ligne du ticket sur deux rangées : le nom en entier, puis quantité et montant */
+  .ligne { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; padding-block: 8px; }
+  .ligne__texte { grid-column: 1 / -1; }
 }
 
 @media (max-width: 899px) {

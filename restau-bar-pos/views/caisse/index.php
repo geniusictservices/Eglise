@@ -46,6 +46,7 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
 
         <div class="haut__recherche">
             <label class="visuellement-cache" for="recherche"><?= e(t('caisse.rechercher')) ?></label>
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
             <input id="recherche" type="search" autocomplete="off" placeholder="<?= e(t('caisse.rechercher')) ?>" enterkeyhint="done">
         </div>
 
@@ -91,7 +92,12 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
                 <div class="totaux__principal"><span><?= e(t('caisse.total')) ?></span><strong id="total">—</strong></div>
                 <p class="totaux__autres" id="autres-devises"></p>
             </div>
-            <button type="button" class="encaisser bouton bouton--large" disabled aria-describedby="note-encaisser"><?= e(t('caisse.encaisser')) ?></button>
+            <div class="paiements" role="group" aria-label="<?= e(t('caisse.mode_paiement')) ?>">
+                <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.especes')) ?></button>
+                <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.mobile_money')) ?></button>
+                <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.credit_client')) ?></button>
+            </div>
+            <button type="button" class="encaisser bouton bouton--large" disabled aria-describedby="note-encaisser"><?= e(t('caisse.encaisser')) ?> <span id="encaisser-total"></span></button>
             <p class="note" id="note-encaisser"><?= e(t('caisse.note_phase3')) ?></p>
         </aside>
     </div>

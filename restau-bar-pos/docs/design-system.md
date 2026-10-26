@@ -11,7 +11,7 @@ Direction choisie par le client parmi les quatre propositions (B · Volcan). Som
 1. **Lisible dans la pénombre comme au soleil.** Deux thèmes complets, choisis selon le contexte, toujours modifiables par l'utilisateur.
 2. **Une couleur, un rôle.** Lave = action principale (un seul bouton plein par écran si possible). Braise = prix et mises en avant. Glace = information, nouveauté. Les catégories de la caisse ont leur propre palette.
 3. **Toucher plutôt que taper.** Cibles d'au moins 44 px, boutons de 48 px, bouton « Encaisser » de 56 à 60 px.
-4. **Peu de texte, des repères visuels.** Couleur de catégorie reprise partout dans la caisse (onglet, barre de la tuile, ligne du ticket).
+4. **Peu de texte, des repères visuels.** Couleur de catégorie sur les onglets de la caisse ; la sélection (tuile choisie, pastille de quantité) est à la couleur d'accent ; grandes images sur les tuiles.
 5. **Les mêmes noms partout.** Les classes et variables historiques (`--accent --fond --surface --encre --doux --ligne --erreur`, `.bouton`, `.tableau`, `.champ`…) sont conservées : les vues existantes et celles des autres modules prennent le design sans changement.
 
 ## Typographie
@@ -33,13 +33,13 @@ Les jetons se règlent avec l'attribut `data-theme` sur `<html>` ou sur n'import
 
 | Jeton | Rôle | Nuit | Jour |
 |---|---|---|---|
-| `--fond` | fond de page | `#111315` | `#F4F3F1` |
-| `--surface` | cartes, barres, ticket | `#1C1F23` | `#FFFFFF` |
-| `--surface-2` | puces, champs secondaires | `#24282D` | `#ECEAE6` |
-| `--tuile-fond` | tuiles de caisse | `#24282D` | `#FFFFFF` |
-| `--ligne` / `--ligne-forte` | séparateurs / contours de champs | `#2C3035` / `#3A3F45` | `#DEDCD8` / `#C4C1BB` |
-| `--encre` | texte | `#F2EFEA` | `#111315` |
-| `--doux` | texte secondaire | `#A3A9AF` | `#5B6168` |
+| `--fond` | fond de page | `#0F1113` | `#F4F3F1` |
+| `--surface` | cartes, barres, ticket | `#15181B` | `#FFFFFF` |
+| `--surface-2` | puces, champs secondaires | `#1F2327` | `#ECEAE6` |
+| `--tuile-fond` | tuiles de caisse | `#171A1D` | `#FFFFFF` |
+| `--ligne` / `--ligne-forte` | séparateurs / contours de champs | `#2A2F34` / `#3A4046` | `#DEDCD8` / `#C4C1BB` |
+| `--encre` | texte | `#F3F0EB` | `#111315` |
+| `--doux` | texte secondaire | `#A2A8AE` | `#5B6168` |
 | `--lave` | action principale | `#FF5A1F` | `#E04A12` |
 | `--sur-lave` | texte posé sur la lave | `#111315` | `#111315` |
 | `--lave-texte` | lave utilisée comme texte | `#FF5A1F` | `#B93A10` |
@@ -75,7 +75,7 @@ Jetons dérivés (recalculés sur chaque bloc thématisé) : `--accent` (= lave,
 | Carte | `.carte`, `.carte--accent` | Surface, rayon 16 px. |
 | Champ | `.champ` (libellé + saisie), `.saisie`, `.champ__aide`, `.champ__erreur`, `.champ--erreur`, `aria-invalid="true"`, `.coche` | 48 px de haut, contour 1,5 px, focus à la couleur d'accent. |
 | Tableau | `.tableau`, `.defile` (conteneur qui défile), `.nombre` | En-têtes en capitales espacées. |
-| Tuile de caisse | `.tuile`, `__nom`, `__bas`, `__format`, `__prix`, `__qte`, `--choisie`, `--epuise` ; variable `--cat` | Fond `--tuile-fond`, barre de 4 px en bas à la couleur de la catégorie ; tuile choisie : contour 2 px de la catégorie et fond teinté ; pastille de quantité ronde. |
+| Tuile de caisse | `.tuile`, `__tete`, `__nom`, `__qte`, `__bas`, `__format`, `__prix`, `--choisie`, `--epuise` ; variable `--cat` | Style « Volcan Pro » : fond `--tuile-fond`, contour fin, rayon 16 px, grande image (16/10, 2/1 en S, 4/3 en L) ; nom et pastille de quantité côte à côte (pastille sur l'image si la tuile est étroite) ; prix en police de titre ; tuile choisie : contour et fond teinté à la couleur d'accent. |
 
 Composants propres à un espace : en-tête, barre collante, état d'ouverture et ligne de menu (`vitrine.css`) ; onglets, rangée des sous-catégories (`.sous-onglet`), ticket, choix de la taille et du format, résumé sur téléphone (`caisse.css`) ; intertitre de sous-catégorie (`.sous-categorie__titre`) sur la vitrine ; barre de navigation, blocs, chiffres, alertes, codes QR et chevalet (`gestion.css`).
 

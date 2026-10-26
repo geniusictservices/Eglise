@@ -175,6 +175,7 @@
     document.getElementById('resume-texte').textContent =
       nbArticles + ' ' + (nbArticles > 1 ? T.articles : T.article) + ' · ' + T.voirTicket;
     document.getElementById('resume-total').textContent = elTotal.textContent;
+    document.getElementById('encaisser-total').textContent = vide ? '' : elTotal.textContent;
   }
 
   elVider.addEventListener('click', function () {
@@ -262,12 +263,13 @@
         img.className = 'tuile__photo'; img.src = p.photo; img.alt = ''; img.loading = 'lazy';
         t.appendChild(img);
       }
-      t.appendChild(el('span', 'tuile__nom', p.nom));
+      var tete = el('span', 'tuile__tete');
+      tete.append(el('span', 'tuile__nom', p.nom), el('span', 'tuile__qte'));
+      t.appendChild(tete);
       var bas = el('span', 'tuile__bas');
       bas.appendChild(el('span', 'tuile__format', p.disponible ? texteFormat(p) : T.epuise));
       bas.appendChild(el('span', 'tuile__prix', textePrix(p)));
       t.appendChild(bas);
-      t.appendChild(el('span', 'tuile__qte'));
       t.addEventListener('click', function () { choisir(p); });
       tuiles[p.id] = t;
       elGrille.appendChild(t);
