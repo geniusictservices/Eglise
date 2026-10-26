@@ -334,6 +334,16 @@ Au choix, par produit ou par carte :
 - Chaque ligne de paiement enregistre : moyen, compte, devise, montant, taux appliqué, contre-valeur dans la devise de référence.
 - La même règle vaut pour **toutes les opérations d'argent** : ventes, achats aux fournisseurs, paiements et remboursements de dettes, **dépenses**, salaires, transferts.
 
+**Calcul retenu (fait)** : chaque devise a son propre total, avec ses propres prix (88 000 FC ou 31 $ pour le même ticket). Un paiement couvre une **part** du ticket dans sa devise : 20 $ sur 31 $ = 64,5 %. Le reste à payer s'affiche dans chaque devise, arrondi vers le haut ; le ticket est réglé quand il reste moins d'un demi-pas d'arrondi de la devise du ticket (moins de 50 FC) ; la monnaie se rend en espèces, dans la devise choisie, arrondie vers le bas. La caisse calcule pour l'affichage, le serveur refait tout (prix, totaux, règlement) et refuse ce qui ne colle pas.
+
+**À l'encaissement (fait)** :
+- « Encaisser » ou les boutons Espèces / Mobile money / Banque ouvrent la fenêtre : payer en FC, en $ ou les deux ; pour chaque devise, le montant reçu, le moyen et le compte (choix s'il y en a plusieurs, par exemple M-Pesa ou Airtel Money) ; montants rapides en espèces (montant exact, billets ronds).
+- Chaque paiement entre dans son compte de trésorerie ; la monnaie sort de la caisse en espèces de sa devise.
+- La vente garde le numéro du ticket par établissement (CDL-000123), qui a vendu, sur quel appareil, les lignes au prix du moment et le taux de chaque devise.
+- Un double toucher ou une réponse perdue ne crée jamais deux ventes (clé unique par ticket).
+- Reçu à l'écran, imprimable au format des imprimantes de tickets (80 mm) : total en devise locale, puis en dollars.
+- Un rôle sans le droit « encaisser » (serveur) prépare le ticket et appelle un caissier.
+
 Exemple : note de **50 $**. Taux : 1 € = 1,08 $ · 1 $ = 1 300 RWF · 1 $ = 2 800 CDF.
 
 | Paiement | Valeur en dollars | Reste à payer |
