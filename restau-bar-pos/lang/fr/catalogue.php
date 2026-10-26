@@ -174,7 +174,7 @@ return [
 
     // Catégories
     'categories.titre' => 'Catégories',
-    'categories.aide' => 'L\'ordre des catégories est celui du menu et des onglets de la caisse.',
+    'categories.aide' => 'L\'ordre des catégories est celui du menu et des onglets de la caisse. Une sous-catégorie se range dans sa catégorie (Bières > Locales, Importées) ; les flèches règlent l\'ordre à l\'intérieur de chaque niveau.',
     'categories.ajouter' => 'Ajouter une catégorie',
     'categories.nom' => 'Nom de la catégorie',
     'categories.nom_fr' => 'Nom en français',

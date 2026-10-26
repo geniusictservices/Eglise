@@ -174,7 +174,7 @@ return [
 
     // Categories
     'categories.titre' => 'Categories',
-    'categories.aide' => 'The order of the categories is the order of the menu and of the till tabs.',
+    'categories.aide' => 'The order of the categories is the order of the menu and of the till tabs. A sub-category sits inside its category (Beers > Local, Imported); the arrows set the order within each level.',
     'categories.ajouter' => 'Add a category',
     'categories.nom' => 'Category name',
     'categories.nom_fr' => 'Name in French',
