@@ -18,6 +18,9 @@ Phase 1 en cours. Déjà disponible :
 - résolution de l'instance par sous-domaine (`monbar.<domaine>` → `config/instances/monbar.php`) ;
 - **vitrine publique** de chaque établissement : présentation, horaires, état d'ouverture, menu avec les prix dans la devise choisie, prix de la zone (VIP…), photos des produits avec leur crédit, recherche, français et anglais, thème jour ou nuit selon le type d'établissement ;
 - **codes QR** : `/q/<code>` compte le scan puis ouvre le menu (avec la zone) ; création, téléchargement (SVG) et chevalet de table à imprimer depuis l'espace de gestion ;
+- **écran des modules** après la connexion (Caisse, Ventes, Achats, Stock, Personnel et paie, Finance, Rapports, Carte et vitrine, Paramètres), filtré selon les rôles ; dans un module, barre latérale sur ordinateur et barre du bas sur téléphone ;
+- **rôles et permissions** vérifiés avant chaque action, connexion par téléphone ou e-mail ;
+- **caisse partagée** : un gérant autorise une tablette, puis chacun choisit son nom et tape son PIN de 6 chiffres ; verrouillage, blocage après 5 PIN faux ;
 - **écran de caisse** (`/caisse`) : produits en grille par catégorie (et sous-catégorie), choix de la taille et du format, ticket avec totaux dans chaque devise acceptée, prix de la zone, adapté au type d'établissement (grandes tuiles et thème nuit pour un nightclub ou un lounge), utilisable sur tablette et téléphone. L'enregistrement des ventes arrive en phase 3 ;
 - **espace de gestion** (`/gestion`), en français et en anglais, utilisable sur téléphone :
   - connexion (limite des essais, langue préférée du compte appliquée) et tableau de bord ;
@@ -28,6 +31,7 @@ Phase 1 en cours. Déjà disponible :
   - **mon compte** (`/gestion/compte`) : nom, langue préférée, mot de passe ;
   - **médiathèque** (`/gestion/mediatheque`) : toutes les images, ajout par glisser-déposer, collage ou choix de fichiers, fiche (textes alternatifs, crédit, utilisations), suppression des images non utilisées ; le même champ image (glisser-déposer, collage, choix dans la médiathèque) sert pour la photo des produits, le logo et la couverture des établissements ;
   - codes QR et chevalet (`/gestion/qr`) ;
+  - **utilisateurs** (`/gestion/utilisateurs`) : personnes (téléphone, e-mail, poste), rôles avec leur portée (tous les établissements ou un seul), PIN de caisse (tapé ou tiré au hasard), mot de passe de gestion, déblocage, désactivation ; rôles modifiables (cases à cocher par module) ; appareils de caisse partagée ; journal des actions sensibles ;
   - **aide** (`/gestion/aide`) : le manuel d'utilisation et sa version PDF ;
   - **système de design** (`/gestion/design`) : page vivante des couleurs, contrastes, typographie et composants, en jour et en nuit.
 
@@ -113,6 +117,22 @@ Pour afficher les erreurs PHP en développement, créer `config/app.local.php` :
 ```php
 <?php return ['debug' => true];
 ```
+
+### Comptes de démonstration
+
+Créés avec `--demo` (en plus de l'administrateur, propriétaire, dont le mot de passe est affiché à la création) :
+
+| Personne | Rôle et portée | Gestion (identifiant · mot de passe) | PIN de caisse |
+|---|---|---|---|
+| Patrick Kambale | Gérant, Comptoir du Lac | `patrick@demo.test` ou `+243 81 000 0101` · `Gerant-Goma-2026` | 482913 |
+| Grace Mwamini | Comptable, tous | `grace@demo.test` · `Compta-Goma-2026` | — |
+| Riziki Amani | Superviseure, Volcano Club | `riziki@demo.test` · `Superviseur-2026` | 662607 |
+| Aline Mukeba | Serveuse, Comptoir du Lac | — | 271828 |
+| Esther Kahindo | Caissière, Comptoir du Lac | — | 314159 |
+| Jean-Paul Bahati | Barman, Volcano Club | — | 161803 |
+| Christian Mugisho | Serveur, Volcano Club | — | 577215 |
+
+Pour essayer la caisse partagée : se connecter comme Patrick, ouvrir la caisse, toucher son nom en haut puis « Faire de cet appareil une caisse partagée ».
 
 ## Mise en production
 

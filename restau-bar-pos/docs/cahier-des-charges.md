@@ -177,6 +177,14 @@ Le **super admin** n'est pas un rôle de l'instance : il n'existe que dans la co
 - **Changement rapide d'utilisateur** sur une tablette partagée, avec le PIN.
 - **Historique complet** : qui a fait quoi, quand, sur quel appareil.
 
+### 6.3 Connexion et caisse partagée (décidé)
+- **Gestion** : connexion avec le **numéro de téléphone ou l'e-mail** et un mot de passe (10 caractères au moins). Blocage de 5 minutes après 5 essais, par compte. Seules les personnes qui ont un module de gestion reçoivent un mot de passe.
+- **Caisse** : **PIN de 6 chiffres**. Un PIN trop simple (000000, 123456…) est refusé, et deux personnes actives n'ont jamais le même PIN. Après 5 PIN faux, le PIN est bloqué ; le gérant le débloque.
+- **Caisse partagée** : seul un **appareil autorisé par un gérant** accepte les PIN (tablette du bar…). Sur cet appareil, on touche son nom puis on tape son PIN. Un appareil perdu se retire dans Paramètres > Utilisateurs > Appareils.
+- **Verrouillage après chaque encaissement** : la caisse revient à « Qui êtes-vous ? », pour que chaque vente soit au nom de la bonne personne. Un bouton « Verrouiller » le fait aussi à tout moment. Chacun garde son propre ticket en cours.
+- **Quitter la caisse** : seules les personnes qui ont des modules de gestion voient « Revenir aux modules », et la gestion leur demande leur mot de passe. Un serveur ne voit que la caisse.
+- **Pas d'élévation de droits** : on ne donne que les droits qu'on a soi-même, pour les établissements où on les a. On ne modifie que les personnes dont on pourrait donner tous les rôles. Seul un propriétaire modifie un propriétaire, et il reste toujours au moins un propriétaire actif.
+
 ## 7. Clients et dettes
 
 ### 7.1 Fiche client
@@ -530,7 +538,7 @@ Chaque phase est utilisable seule.
 | Phase | Contenu |
 |---|---|
 | 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · **écran de caisse en grille** (sans enregistrement des ventes) · gestion des établissements, des devises et taux, du compte · design Volcan · français et anglais |
-| 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules) · utilisateurs, rôles et permissions (chaque vente et chaque dette pourra être liée à un utilisateur) · établissements, dépôts, comptoirs, points de vente |
+| 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules) · ~~utilisateurs, rôles et permissions~~ (fait : rôles avec portée, PIN, caisse partagée, journal) · dépôts, comptoirs, points de vente |
 | 3 | Caisse : commandes, encaissement multi-devises, taux de change, sessions de caisse · stock simple et transferts · **rapport des ventes par utilisateur et serveur de la période** |
 | 4 | Clients et dettes · **dettes des clients liées aux utilisateurs** (servi par, accordé par, responsable) · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
 | 5 | Modules lounge et nightclub (bouteilles, VIP, entrées, invités, vestiaire, cashless, mode comptoir rapide) · vente en gros au dépôt et consignes |
@@ -553,6 +561,8 @@ Chaque phase est utilisable seule.
 | Images | Illustrations SVG pour la démonstration ; les vraies photos s'ajoutent depuis la gestion du catalogue ; import de photos libres possible (docs/photos.md) |
 | Devises à l'affichage | Devise locale d'abord (tickets et factures), le dollar toujours en deuxième position, puis les autres (section 10.1) |
 | Paiements | Toute opération d'argent précise le moyen (espèces, mobile money, banque), la devise ou les deux, et le compte ; plusieurs comptes de trésorerie avec transferts (sections 10.4 et 10.5) |
+| Connexion | Gestion : téléphone ou e-mail et mot de passe ; caisse : PIN de 6 chiffres sur un appareil autorisé, verrouillage après chaque encaissement (section 6.3) |
+| Navigation | Après la connexion, écran des modules ; dans un module, barre latérale sur ordinateur et barre du bas sur téléphone, sans menu caché |
 | Rapports du personnel | Serveur ou serveuse de la période (classement configurable) et dettes des clients liées à chaque utilisateur (section 13.7) |
 
 ## 18. Questions ouvertes

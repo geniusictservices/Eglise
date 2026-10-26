@@ -88,6 +88,19 @@ function normaliserTelephone(string $numero): string
     return $plus . preg_replace('/\D+/', '', $numero);
 }
 
+/** Numéro lisible : « +243810000101 » → « +243 81 000 0101 » (RDC), « +250788123456 » → « +250 788 123 456 » (Rwanda). */
+function afficherTelephone(?string $numero): string
+{
+    $numero = (string) $numero;
+    if (preg_match('/^\+243(\d{2})(\d{3})(\d{4})$/', $numero, $m)) {
+        return '+243 ' . $m[1] . ' ' . $m[2] . ' ' . $m[3];
+    }
+    if (preg_match('/^\+(\d{3})(\d{3})(\d{3})(\d{3})$/', $numero, $m)) {
+        return '+' . $m[1] . ' ' . $m[2] . ' ' . $m[3] . ' ' . $m[4];
+    }
+    return $numero;
+}
+
 function lienWhatsapp(string $numero): string
 {
     return 'https://wa.me/' . preg_replace('/\D+/', '', $numero);
