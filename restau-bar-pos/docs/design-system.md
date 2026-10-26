@@ -123,3 +123,8 @@ Sur la vitrine seulement, `produits.photo_credit` s'affiche en petit sous la pho
 2. Réutiliser les composants ci-dessus avant d'en créer ; ne jamais écrire une couleur en dur, toujours un jeton.
 3. Si un style propre est nécessaire, le mettre dans une feuille du module, qui ne s'appuie que sur les jetons.
 4. Vérifier l'écran dans les deux thèmes (bouton ◐) et sur téléphone.
+
+## Champ image
+
+Partout où l'on ajoute une image (photo du produit, logo et couverture d'un établissement), on utilise le même composant : le partiel `views/gestion/_champ-image.php`, `public/assets/js/champ-image.js` et `public/assets/css/champ-image.css`. Il accepte le glisser-déposer, le choix d'un fichier, le collage (Ctrl+V) et le choix dans la médiathèque (`/gestion/mediatheque`), avec un repli sans JavaScript (champ fichier classique). Une image ajoutée entre dans la médiathèque ; la retirer d'une fiche ne supprime jamais le fichier.
+

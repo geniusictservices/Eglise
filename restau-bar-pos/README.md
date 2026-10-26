@@ -25,7 +25,9 @@ Phase 1 en cours. Déjà disponible :
   - **établissements** (`/gestion/etablissements`) : liste avec l'état ouvert / fermé, création, fiche en six sections (informations et liens, apparence : couleur, logo et couverture, prix et devises, horaires par service, zones avec leur grille, activation) ; **grilles de prix** (`/gestion/grilles`) ;
   - **devises et taux** (`/gestion/devises`) : devise de référence, taux du jour (avec date de début, éventuellement programmée), ajout et modification des devises (format, décimales, arrondi), activation, historique des taux ;
   - **mon compte** (`/gestion/compte`) : nom, langue préférée, mot de passe ;
+  - **médiathèque** (`/gestion/mediatheque`) : toutes les images, ajout par glisser-déposer, collage ou choix de fichiers, fiche (textes alternatifs, crédit, utilisations), suppression des images non utilisées ; le même champ image (glisser-déposer, collage, choix dans la médiathèque) sert pour la photo des produits, le logo et la couverture des établissements ;
   - codes QR et chevalet (`/gestion/qr`) ;
+  - **aide** (`/gestion/aide`) : le manuel d'utilisation et sa version PDF ;
   - **système de design** (`/gestion/design`) : page vivante des couleurs, contrastes, typographie et composants, en jour et en nuit.
 
 Photos de démonstration : l'outil `bin/importer-photos.php` est prêt mais n'a pas encore pu être lancé (accès réseau à Wikimedia Commons refusé) ; la démo utilise des illustrations SVG. Voir [docs/photos.md](docs/photos.md).

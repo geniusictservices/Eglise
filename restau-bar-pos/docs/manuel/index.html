@@ -115,6 +115,7 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
     <li><a href="#caisse">La caisse</a></li>
     <li><a href="#catalogue">Le catalogue</a></li>
     <li><a href="#etablissements">Les établissements</a></li>
+    <li><a href="#mediatheque">Médiathèque</a></li>
     <li><a href="#devises">Devises et taux</a></li>
     <li><a href="#qr">Codes QR</a></li>
     <li><a href="#compte">Mon compte</a></li>
@@ -161,7 +162,8 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
     <figure><img src="captures/gestion-connexion-tel.jpg" alt="Page de connexion sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Connexion</figcaption></figure>
   </div>
   <h3>Le tableau de bord</h3>
-  <p>Il résume vos établissements, le nombre de produits, les scans de codes QR sur 7 jours et les devises actives avec leur taux. Le menu du haut mène à chaque écran : <span class="libelle">Tableau de bord, Caisse, Catalogue, Établissements, Devises et taux, Codes QR, Mon compte, Voir la vitrine</span>. En haut à droite : la langue (FR / EN), le thème ◐ et <span class="libelle">Se déconnecter</span>.</p>
+  <p>Il résume vos établissements, le nombre de produits, les scans de codes QR sur 7 jours et les devises actives avec leur taux. Le menu du haut mène à chaque écran : <span class="libelle">Tableau de bord, Caisse, Catalogue, Établissements, Devises et taux, Médiathèque, Codes QR, Mon compte, Aide, Voir la vitrine</span>. En haut à droite : la langue (FR / EN), le thème ◐ et <span class="libelle">Se déconnecter</span>.</p>
+  <p><span class="libelle">Aide</span> ouvre ce manuel dans l'application, avec un lien pour télécharger sa version PDF.</p>
   <div class="captures">
     <figure><img src="captures/gestion-tableau-ordi.jpg" alt="Tableau de bord sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Tableau de bord</figcaption></figure>
     <figure><img src="captures/gestion-tableau-tel.jpg" alt="Tableau de bord sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Sur téléphone, le menu défile horizontalement</figcaption></figure>
@@ -294,7 +296,14 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
   <p>Catégorie, nom et description en français et en anglais, <strong>unité de base</strong> (l'unité dans laquelle on compte le stock : bouteille pour une bière, cl pour un whisky servi à la dose, kg pour le riz), badges du menu et allergènes.</p>
   <div class="captures captures--seule"><figure><img src="captures/produit-infos-ordi.jpg" alt="Section Informations" loading="lazy"><figcaption>Section Informations</figcaption></figure></div>
   <h3>2. Photo</h3>
-  <p>Choisissez une photo (JPEG, PNG ou WebP) prise avec le téléphone : elle est redimensionnée automatiquement. Indiquez son crédit (auteur et licence) si elle n'est pas de vous : il s'affiche en petit sous la photo sur la vitrine. <span class="libelle">Retirer la photo</span> revient à l'illustration ou à l'absence d'image.</p>
+  <p>Le champ photo accepte une image de quatre façons :</p>
+  <ul>
+    <li><strong>glisser-déposer</strong> un fichier depuis l'ordinateur sur la zone de l'image ;</li>
+    <li><span class="libelle">Choisir un fichier</span> (sur téléphone : appareil photo ou galerie) ;</li>
+    <li><strong>coller</strong> une image copiée (Ctrl+V) ;</li>
+    <li><span class="libelle">Choisir dans la médiathèque</span> une image déjà enregistrée (voir le <a href="#mediatheque">chapitre Médiathèque</a>).</li>
+  </ul>
+  <p>Une image ajoutée ici entre aussi dans la médiathèque. Elle est redimensionnée automatiquement (JPEG, PNG ou WebP, 8 Mo au plus). Touchez ensuite <span class="bouton">Enregistrer la photo</span>. Indiquez son crédit (auteur et licence) si elle n'est pas de vous : il s'affiche en petit sous la photo sur la vitrine, et il est pré-rempli si l'image de la médiathèque en a un. <span class="libelle">Retirer la photo</span> enlève l'image du produit sans l'effacer de la médiathèque.</p>
   <div class="captures captures--seule"><figure><img src="captures/produit-photo-ordi.jpg" alt="Section Photo" loading="lazy"><figcaption>Section Photo</figcaption></figure></div>
   <h3>3. Formats et prix</h3>
   <p>Un <strong>format</strong> est une façon de vendre ou d'acheter le produit, exprimée en unité de base : bouteille = 1, casier = 12, dose = 4 cl. Cochez <span class="libelle">Vendu aux clients</span> pour qu'il apparaisse sur le menu et à la caisse, <span class="libelle">Acheté aux fournisseurs</span> pour les achats (le casier, par exemple).</p>
@@ -338,7 +347,7 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
   <div class="note note--attention"><p><strong>Attention</strong>Changer l'adresse web casse les liens déjà partagés. Les codes QR, eux, continuent de marcher.</p></div>
   <div class="captures captures--seule"><figure><img src="captures/etablissement-infos-ordi.jpg" alt="Section Informations de l'établissement" loading="lazy"><figcaption>Section Informations du Volcano Club</figcaption></figure></div>
   <h3>Apparence</h3>
-  <p>La couleur d'accent de la vitrine (décochez pour garder la couleur du design), le logo et la photo de couverture, avec son crédit. Le texte posé sur la couleur choisie reste toujours lisible : il passe en noir ou en blanc automatiquement.</p>
+  <p>La couleur d'accent de la vitrine (décochez pour garder la couleur du design), le logo et la photo de couverture, avec son crédit. Le logo et la couverture utilisent le même champ image que les produits : glisser-déposer, choix d'un fichier, collage ou choix dans la médiathèque. Le texte posé sur la couleur choisie reste toujours lisible : il passe en noir ou en blanc automatiquement.</p>
   <div class="captures captures--seule"><figure><img src="captures/etablissement-apparence-ordi.jpg" alt="Section Apparence" loading="lazy"><figcaption>Section Apparence</figcaption></figure></div>
   <h3>Prix et devises</h3>
   <p>La grille de prix par défaut (appliquée partout, sauf dans les zones qui ont la leur), les devises acceptées (affichées dans le sélecteur de la vitrine) et la devise affichée à l'arrivée du visiteur.</p>
@@ -362,8 +371,42 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
   </div>
 </section>
 
+<section class="chapitre" id="mediatheque">
+  <h2><span class="num">7</span>Médiathèque</h2>
+  <p class="intro">Toutes les images de vos produits et de vos établissements, au même endroit. Une même image peut servir à plusieurs endroits. Menu de gestion → <span class="libelle">Médiathèque</span>.</p>
+  <h3>Ajouter des images</h3>
+  <ol class="etapes">
+    <li>Glissez une ou plusieurs images depuis l'ordinateur sur la grande zone en haut de la page (ou n'importe où sur la page). Vous pouvez aussi toucher la zone pour choisir des fichiers, ou coller une image avec Ctrl+V.</li>
+    <li>Chaque image affiche son aperçu et une barre de progression, puis « Ajoutée ». Une image refusée (type ou poids) affiche la raison.</li>
+  </ol>
+  <p>Formats acceptés : JPEG, PNG ou WebP, 8 Mo au plus. Les images sont redimensionnées à 1600 px de côté au plus. Sur téléphone, la zone devient un grand bouton <span class="libelle">Ajouter des images</span>.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/mediatheque-depot-ordi.jpg" alt="Dépôt d'images dans la médiathèque" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Glisser-déposer : une image ajoutée, une autre en cours d'envoi</figcaption></figure>
+  </div>
+  <h3>Retrouver une image</h3>
+  <p>La grille montre chaque image avec son nom, ses dimensions, son poids et le nombre d'endroits où elle sert. Recherchez par nom, filtrez <span class="libelle">Toutes</span>, <span class="libelle">Utilisées</span> ou <span class="libelle">Non utilisées</span>, et triez par date ou par nom.</p>
+  <div class="captures">
+    <figure><img src="captures/mediatheque-ordi.jpg" alt="Médiathèque sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>La médiathèque</figcaption></figure>
+    <figure><img src="captures/mediatheque-tel.jpg" alt="Médiathèque sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>La médiathèque</figcaption></figure>
+  </div>
+  <h3>La fiche d'une image</h3>
+  <p>Touchez une image pour ouvrir sa fiche : grand aperçu, nom, textes alternatifs en français et en anglais (une description courte de l'image, lue par les lecteurs d'écran), crédit, et la liste des produits et établissements qui l'utilisent, avec un lien vers chacun. <span class="libelle">Copier l'adresse</span> copie le lien de l'image.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/mediatheque-fiche-ordi.jpg" alt="Fiche d'une image" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fiche de l'image du Kivu Sunset</figcaption></figure>
+  </div>
+  <h3>Supprimer une image</h3>
+  <p>Seule une image qui ne sert nulle part peut être supprimée, avec une confirmation dans la page. Si elle est encore utilisée, la fiche indique où : changez d'abord l'image de ces produits ou établissements.</p>
+  <h3>Choisir une image depuis une fiche</h3>
+  <p>Sur la fiche d'un produit (photo) ou d'un établissement (logo, couverture), <span class="libelle">Choisir dans la médiathèque</span> ouvre une fenêtre avec la grille et la recherche. Touchez une image pour la choisir, puis enregistrez la section. Vous pouvez aussi glisser une nouvelle image dans la fenêtre : elle est ajoutée à la médiathèque et choisie aussitôt.</p>
+  <div class="captures">
+    <figure><img src="captures/champ-image-choix-ordi.jpg" alt="Fenêtre Choisir dans la médiathèque" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Choisir dans la médiathèque</figcaption></figure>
+    <figure><img src="captures/champ-image-tel.jpg" alt="Champ image sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Le champ photo d'un produit</figcaption></figure>
+  </div>
+  <div class="note"><p><strong>Les images ne disparaissent pas par erreur.</strong>Remplacer ou retirer la photo d'un produit, ou le logo d'un établissement, ne supprime jamais le fichier : l'image reste dans la médiathèque et peut resservir.</p></div>
+</section>
+
 <section class="chapitre" id="devises">
-  <h2><span class="num">7</span>Devises et taux</h2>
+  <h2><span class="num">8</span>Devises et taux</h2>
   <p class="intro">Les devises acceptées par vos établissements et le taux du jour de chacune. Menu de gestion → <span class="libelle">Devises et taux</span>.</p>
   <h3>La devise de référence</h3>
   <p>Les prix du catalogue sont saisis dans cette devise (USD dans la démonstration). Les autres devises sont calculées avec leur taux, sauf les prix fixés à la main. On ne peut changer de devise de référence que tant qu'aucun prix n'est enregistré dans l'ancienne ; l'écran explique pourquoi quand c'est impossible.</p>
@@ -402,7 +445,7 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
 </section>
 
 <section class="chapitre" id="qr">
-  <h2><span class="num">8</span>Codes QR</h2>
+  <h2><span class="num">9</span>Codes QR</h2>
   <p class="intro">Chaque code QR ouvre le menu d'un établissement. Un code lié à une zone affiche les prix de cette zone. Menu de gestion → <span class="libelle">Codes QR</span>.</p>
   <ol class="etapes">
     <li>Dans <span class="libelle">Nouveau code QR</span>, choisissez l'établissement, la zone (facultatif) et donnez un libellé (« Table 12 », « Comptoir », « Entrée »).</li>
@@ -417,7 +460,7 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
 </section>
 
 <section class="chapitre" id="compte">
-  <h2><span class="num">9</span>Mon compte</h2>
+  <h2><span class="num">10</span>Mon compte</h2>
   <p class="intro">Votre nom, la langue de l'interface et votre mot de passe. Menu de gestion → <span class="libelle">Mon compte</span>.</p>
   <ul>
     <li><strong>Nom</strong> : affiché en haut du tableau de bord et dans l'historique des taux.</li>
@@ -431,7 +474,7 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
 </section>
 
 <section class="chapitre" id="design">
-  <h2><span class="num">10</span>Système de design</h2>
+  <h2><span class="num">11</span>Système de design</h2>
   <p class="intro">Le design « Volcan », choisi parmi quatre propositions, est décrit dans une page vivante : lien <span class="libelle">Système de design</span> en bas des pages de gestion, ou <span class="chemin">/gestion/design</span>.</p>
   <p>On y voit les couleurs des thèmes jour et nuit avec leurs contrastes calculés, les couleurs des catégories, la typographie (Unbounded pour les titres, Sora pour le texte) et tous les composants : boutons, badges, champs, tableaux, tuiles de caisse. C'est la référence pour tout nouvel écran.</p>
   <div class="captures">
@@ -441,7 +484,7 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
 </section>
 
 <section class="chapitre" id="faq">
-  <h2><span class="num">11</span>Questions fréquentes</h2>
+  <h2><span class="num">12</span>Questions fréquentes</h2>
   <dl class="faq">
     <dt>Un produit n'apparaît pas sur le menu ni à la caisse.</dt>
     <dd>Ouvrez sa fiche : un message en haut indique ce qui manque. Le plus souvent, aucun format vendu n'a de prix, ou aucun établissement n'est coché dans « Où il est vendu ». Vérifiez aussi qu'il n'est pas désactivé et que sa catégorie n'est pas cachée du menu.</dd>
@@ -453,6 +496,8 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
     <dd>Vérifiez la ligne d'horaires de la veille : pour un service qui passe minuit, l'heure de fermeture doit être plus petite que l'heure d'ouverture (22:00 → 05:00), et le jour coché est celui de l'ouverture.</dd>
     <dt>Le code QR de la terrasse affiche les prix normaux.</dt>
     <dd>Le code doit être lié à la zone (Codes QR), et la zone doit avoir sa propre grille (Établissements → Zones).</dd>
+    <dt>Où retrouver une photo que j'ai retirée d'un produit ?</dt>
+    <dd>Dans la médiathèque : retirer une photo d'un produit ne l'efface pas. Filtrez « Non utilisées » pour la retrouver.</dd>
     <dt>La photo est refusée.</dt>
     <dd>Formats acceptés : JPEG, PNG ou WebP. La taille maximale est affichée sous le champ ; elle dépend de la configuration du serveur.</dd>
     <dt>Le thème ne me convient pas sur cet appareil.</dt>
@@ -463,7 +508,7 @@ footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--li
 </section>
 
 <section class="chapitre" id="technique">
-  <h2><span class="num">12</span>Partie technique</h2>
+  <h2><span class="num">13</span>Partie technique</h2>
   <p class="intro">Pour la personne qui installe et met à jour le logiciel.</p>
   <h3>Technologie</h3>
   <p>PHP 8.1 ou plus sans framework ni dépendance, MySQL 8 ou MariaDB 10.6+ (une base par client), HTML, CSS et JavaScript natifs.</p>
@@ -490,7 +535,7 @@ php bin/creer-instance.php demo --email=admin@demo.test --demo --db-hote=localho
     <li><span class="chemin">docs/design-system.md</span> : le système de design Volcan.</li>
     <li><span class="chemin">README.md</span> : installation et organisation du code.</li>
   </ul>
-  <footer class="fin">restau-bar-pos · manuel de la phase 1 · captures réalisées sur la version de démonstration le 26 octobre 2026.</footer>
+  <footer class="fin">restau-bar-pos · manuel de la phase 1, avec la médiathèque · captures réalisées sur la version de démonstration le 26 octobre 2026.</footer>
 </section>
 </main>
 </div>
