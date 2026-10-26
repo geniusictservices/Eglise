@@ -50,6 +50,7 @@ return [
     // Gestion
     'gestion.nom' => 'Gestion',
     'gestion.connexion' => 'Connexion',
+    'gestion.identifiant' => 'E-mail ou téléphone',
     'gestion.email' => 'Adresse e-mail',
     'gestion.mot_de_passe' => 'Mot de passe',
     'gestion.se_connecter' => 'Se connecter',

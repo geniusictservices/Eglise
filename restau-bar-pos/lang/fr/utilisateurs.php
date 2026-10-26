@@ -1,0 +1,30 @@
+<?php
+
+// Utilisateurs, rôles et permissions, accès refusé, caisse partagée et PIN
+return [
+    'acces.interdit_titre' => 'Vous n\'avez pas accès à cet écran',
+    'acces.interdit_texte' => 'Votre rôle ne donne pas ce droit. Demandez au propriétaire ou au gérant de vous l\'ajouter dans Paramètres > Utilisateurs.',
+    'caisse.session_titre' => 'Compte connecté',
+    'caisse.session_partagee' => 'Caisse partagée « {appareil} ». Verrouillez-la avant de la passer à quelqu\'un d\'autre : votre ticket en cours reste gardé à votre nom.',
+    'caisse.session_personnelle' => 'Vous vendez avec votre compte sur cet appareil. Le ticket en cours reste gardé sur cet appareil.',
+    'caisse.verrouiller' => 'Verrouiller la caisse',
+    'caisse.partager' => 'Faire de cet appareil une caisse partagée',
+    'caisse.partager_texte' => 'Chaque serveur ou barman se connectera ici avec son PIN, pour {etablissement}. Vous serez déconnecté de cet appareil.',
+    'caisse.partager_nom' => 'Nom de l\'appareil',
+    'caisse.partager_exemple' => 'Tablette du bar',
+    'caisse.partager_oui' => 'Autoriser cet appareil',
+    'caisse_pin.titre' => 'Qui êtes-vous ?',
+    'caisse_pin.taper' => 'Tapez votre PIN de {n} chiffres.',
+    'caisse_pin.pin' => 'PIN',
+    'caisse_pin.effacer' => 'Effacer un chiffre',
+    'caisse_pin.annuler' => 'Annuler',
+    'caisse_pin.valider' => 'Valider',
+    'caisse_pin.choisir' => 'Choisissez votre nom, puis tapez votre PIN.',
+    'caisse_pin.incorrect' => 'PIN incorrect. Encore {reste} essai(s) avant blocage.',
+    'caisse_pin.bloque' => 'Le PIN de {nom} est bloqué après 5 essais. Le gérant peut le débloquer dans Paramètres > Utilisateurs.',
+    'caisse_pin.bloque_court' => 'PIN bloqué',
+    'caisse_pin.appareil_sature' => 'Trop de PIN incorrects sur cet appareil. Attendez 10 minutes ou appelez le gérant.',
+    'caisse_pin.appareil_requis' => 'Cet appareil n\'est pas une caisse partagée.',
+    'caisse_pin.personne' => 'Personne ne peut encore vendre ici avec un PIN. Le gérant ajoute les serveurs et leur PIN dans Paramètres > Utilisateurs.',
+    'caisse_pin.nom_defaut' => 'Caisse {etablissement}',
+];

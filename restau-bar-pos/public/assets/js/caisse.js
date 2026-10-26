@@ -70,7 +70,7 @@
 
   // ---------- Ticket ----------
 
-  var cleTicket = 'caisse.ticket.' + D.cle;
+  var cleTicket = 'caisse.ticket.' + D.cleTicket;
   var ticket = [];   // [{ id: id du format, qte: n }]
   try {
     // Ticket gardé par un chargement précédent : on ne garde que les lignes dont le format est encore vendu

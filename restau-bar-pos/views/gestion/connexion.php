@@ -12,8 +12,8 @@
     <?php endif; ?>
     <form method="post" action="/gestion/connexion" class="formulaire">
         <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
-        <label for="email"><?= e(t('gestion.email')) ?></label>
-        <input id="email" name="email" type="email" required autocomplete="username" value="<?= e($email) ?>">
+        <label for="email"><?= e(t('gestion.identifiant')) ?></label>
+        <input id="email" name="email" type="text" inputmode="email" required autocomplete="username" autocapitalize="none" spellcheck="false" value="<?= e($email) ?>">
         <label for="mot_de_passe"><?= e(t('gestion.mot_de_passe')) ?></label>
         <input id="mot_de_passe" name="mot_de_passe" type="password" required autocomplete="current-password">
         <button class="bouton" type="submit"><?= e(t('gestion.se_connecter')) ?></button>

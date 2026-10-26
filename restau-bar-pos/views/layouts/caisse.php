@@ -19,6 +19,8 @@ $theme = in_array($etab['type'] ?? '', ['nightclub', 'lounge'], true) ? 'nuit' :
 </head>
 <body>
 <?= $contenu ?>
-<script src="/assets/js/caisse.js" defer></script>
+<?php foreach ($scripts ?? ['/assets/js/caisse.js'] as $script): ?>
+<script src="<?= e($script) ?>" defer></script>
+<?php endforeach; ?>
 </body>
 </html>

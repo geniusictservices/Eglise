@@ -52,6 +52,9 @@ $routeur->get('/q/{code}', [VitrineController::class, 'scanQr']);
 
 // Caisse
 $routeur->get('/caisse', [CaisseController::class, 'index']);
+$routeur->post('/caisse/pin', [CaisseController::class, 'pin']);
+$routeur->post('/caisse/verrouiller', [CaisseController::class, 'verrouiller']);
+$routeur->post('/caisse/appareil', [CaisseController::class, 'autoriserAppareil']);
 
 // Espace de gestion
 $routeur->get('/gestion', [ModulesController::class, 'index']);
@@ -68,4 +71,8 @@ foreach (glob(RACINE . '/app/routes/*.php') ?: [] as $fichierRoutes) {
     require $fichierRoutes;
 }
 
-$routeur->traiter($_SERVER['REQUEST_METHOD'] ?? 'GET', parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
+$methode = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+// Droits de la personne connectée sur l'écran demandé (rôles et permissions), avant toute action
+App\Core\Acces::garder($methode, $chemin);
+$routeur->traiter($methode, $chemin);

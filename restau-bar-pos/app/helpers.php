@@ -80,6 +80,14 @@ function formatJours(array $jours): string
 }
 
 /** Lien WhatsApp à partir d'un numéro au format international. */
+/** Numéro de téléphone comparable : chiffres seulement, « + » gardé en tête (« +243 81 555 0101 » → « +243815550101 »). */
+function normaliserTelephone(string $numero): string
+{
+    $numero = trim($numero);
+    $plus = str_starts_with($numero, '+') ? '+' : '';
+    return $plus . preg_replace('/\D+/', '', $numero);
+}
+
 function lienWhatsapp(string $numero): string
 {
     return 'https://wa.me/' . preg_replace('/\D+/', '', $numero);

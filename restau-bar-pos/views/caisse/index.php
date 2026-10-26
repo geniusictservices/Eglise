@@ -26,12 +26,16 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
 <div class="caisse" data-mode="<?= e($donnees['mode']) ?>" id="caisse">
     <header class="haut">
         <form class="haut__lieu" method="get" action="/caisse" data-auto-envoi>
-            <label class="visuellement-cache" for="e"><?= e(t('gestion.etablissement')) ?></label>
-            <select id="e" name="e">
-                <?php foreach ($etablissements as $option): ?>
-                    <option value="<?= e($option['slug']) ?>" <?= $option['id'] === $etab['id'] ? 'selected' : '' ?>><?= e($option['nom']) ?></option>
-                <?php endforeach; ?>
-            </select>
+            <?php if (count($etablissements) > 1): ?>
+                <label class="visuellement-cache" for="e"><?= e(t('gestion.etablissement')) ?></label>
+                <select id="e" name="e">
+                    <?php foreach ($etablissements as $option): ?>
+                        <option value="<?= e($option['slug']) ?>" <?= $option['id'] === $etab['id'] ? 'selected' : '' ?>><?= e($option['nom']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            <?php else: ?>
+                <span class="haut__etab"><?= e($etab['nom']) ?></span>
+            <?php endif; ?>
             <?php if ($zones): ?>
                 <label class="visuellement-cache" for="zone"><?= e(t('gestion.zone')) ?></label>
                 <select id="zone" name="zone">
@@ -60,9 +64,10 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2v16a8 8 0 0 1 0-16Z"/></svg>
                 <span class="visuellement-cache"><?= e(t('theme.nuit')) ?></span>
             </button>
-            <button type="button" class="icone" id="quitter" aria-haspopup="dialog" title="<?= e(t('caisse.quitter')) ?>">
-                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
-                <span class="visuellement-cache"><?= e(t('caisse.quitter')) ?></span>
+            <?php $initiales = mb_strtoupper(implode('', array_map(static fn (string $m) => mb_substr($m, 0, 1), array_slice(preg_split('/\s+/', trim($utilisateur['nom'])) ?: [], 0, 2)))); ?>
+            <button type="button" class="personne" id="quitter" aria-haspopup="dialog" title="<?= e(t('caisse.session_titre')) ?>">
+                <span class="personne__initiales" aria-hidden="true"><?= e($initiales) ?></span>
+                <span class="personne__nom"><?= e($utilisateur['nom']) ?></span>
             </button>
         </div>
     </header>
@@ -109,14 +114,33 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
     </button>
 
     <dialog class="formats" id="fenetre-quitter" aria-labelledby="quitter-titre">
-        <form method="dialog">
-            <h2 id="quitter-titre"><?= e(t('caisse.quitter_titre')) ?></h2>
-            <p class="quitter__texte"><?= e(t('caisse.quitter_texte', ['nom' => $utilisateur['nom']])) ?></p>
-            <div class="formats__liste">
-                <a class="bouton" href="/gestion"><?= e(t('caisse.quitter_oui')) ?></a>
-                <button class="bouton bouton--secondaire" value="rester"><?= e(t('caisse.quitter_non')) ?></button>
-            </div>
-        </form>
+        <h2 id="quitter-titre"><?= e($utilisateur['nom']) ?></h2>
+        <p class="quitter__texte"><?= e(t($partagee ? 'caisse.session_partagee' : 'caisse.session_personnelle', ['appareil' => $appareil['nom'] ?? ''])) ?></p>
+        <div class="formats__liste">
+            <?php if ($partagee): ?>
+                <form method="post" action="/caisse/verrouiller">
+                    <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
+                    <button class="bouton" type="submit" id="verrouiller"><?= e(t('caisse.verrouiller')) ?></button>
+                </form>
+            <?php endif; ?>
+            <?php if ($aLaGestion): ?>
+                <a class="bouton<?= $partagee ? ' bouton--secondaire' : '' ?>" href="/gestion"><?= e(t('caisse.quitter_oui')) ?></a>
+            <?php endif; ?>
+            <?php if ($peutAutoriser): ?>
+                <details class="partager">
+                    <summary class="bouton bouton--secondaire"><?= e(t('caisse.partager')) ?></summary>
+                    <form method="post" action="/caisse/appareil" class="partager__form">
+                        <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
+                        <input type="hidden" name="e" value="<?= e($etab['slug']) ?>">
+                        <p class="quitter__texte"><?= e(t('caisse.partager_texte', ['etablissement' => $etab['nom']])) ?></p>
+                        <label for="nom-appareil"><?= e(t('caisse.partager_nom')) ?></label>
+                        <input id="nom-appareil" name="nom" maxlength="80" placeholder="<?= e(t('caisse.partager_exemple')) ?>">
+                        <button class="bouton" type="submit"><?= e(t('caisse.partager_oui')) ?></button>
+                    </form>
+                </details>
+            <?php endif; ?>
+            <form method="dialog"><button class="bouton bouton--secondaire" value="rester"><?= e(t('caisse.quitter_non')) ?></button></form>
+        </div>
     </dialog>
 
     <dialog class="formats" id="formats">

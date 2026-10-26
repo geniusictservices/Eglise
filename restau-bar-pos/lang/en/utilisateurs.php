@@ -1,0 +1,30 @@
+<?php
+
+// Utilisateurs, rôles et permissions, accès refusé, caisse partagée et PIN
+return [
+    'acces.interdit_titre' => 'You don\'t have access to this screen',
+    'acces.interdit_texte' => 'Your role does not include this right. Ask the owner or the manager to add it in Settings > Users.',
+    'caisse.session_titre' => 'Signed-in account',
+    'caisse.session_partagee' => 'Shared till “{appareil}”. Lock it before handing it to someone else: your current ticket stays saved under your name.',
+    'caisse.session_personnelle' => 'You are selling with your own account on this device. The current ticket stays saved on this device.',
+    'caisse.verrouiller' => 'Lock the till',
+    'caisse.partager' => 'Make this device a shared till',
+    'caisse.partager_texte' => 'Each waiter or bartender will sign in here with their PIN, for {etablissement}. You will be signed out of this device.',
+    'caisse.partager_nom' => 'Device name',
+    'caisse.partager_exemple' => 'Bar tablet',
+    'caisse.partager_oui' => 'Authorise this device',
+    'caisse_pin.titre' => 'Who are you?',
+    'caisse_pin.taper' => 'Enter your {n}-digit PIN.',
+    'caisse_pin.pin' => 'PIN',
+    'caisse_pin.effacer' => 'Delete a digit',
+    'caisse_pin.annuler' => 'Cancel',
+    'caisse_pin.valider' => 'Confirm',
+    'caisse_pin.choisir' => 'Choose your name, then enter your PIN.',
+    'caisse_pin.incorrect' => 'Wrong PIN. {reste} attempt(s) left before it is blocked.',
+    'caisse_pin.bloque' => '{nom}\'s PIN is blocked after 5 attempts. The manager can unblock it in Settings > Users.',
+    'caisse_pin.bloque_court' => 'PIN blocked',
+    'caisse_pin.appareil_sature' => 'Too many wrong PINs on this device. Wait 10 minutes or call the manager.',
+    'caisse_pin.appareil_requis' => 'This device is not a shared till.',
+    'caisse_pin.personne' => 'Nobody can sell here with a PIN yet. The manager adds waiters and their PIN in Settings > Users.',
+    'caisse_pin.nom_defaut' => '{etablissement} till',
+];

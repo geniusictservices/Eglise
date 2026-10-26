@@ -124,6 +124,13 @@ $pdo->prepare('INSERT INTO utilisateurs (nom, email, mot_de_passe) VALUES (?, ?,
     $options['email'],
     password_hash($motDePasseAdmin, PASSWORD_DEFAULT),
 ]);
+// L'administrateur est propriétaire : tous les droits, dans tous les établissements
+$pdo->prepare("INSERT INTO utilisateur_roles (utilisateur_id, role_id) SELECT ?, id FROM roles WHERE code = 'proprietaire'")
+    ->execute([(int) $pdo->lastInsertId()]);
+// Employés de démonstration (serveurs, barmen, gérant, comptable…), après l'administrateur
+if (isset($options['demo']) && is_file(RACINE . '/database/demo-utilisateurs.sql')) {
+    Migrations::executerFichier($pdo, RACINE . '/database/demo-utilisateurs.sql');
+}
 
 $contenu = "<?php\n\n// Instance « $sousDomaine », créée le " . date('Y-m-d H:i') . " par bin/creer-instance.php\nreturn "
     . var_export(['actif' => true, 'db' => $configDb], true) . ";\n";

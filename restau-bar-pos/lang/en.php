@@ -50,6 +50,7 @@ return [
     // Back office
     'gestion.nom' => 'Back office',
     'gestion.connexion' => 'Sign in',
+    'gestion.identifiant' => 'Email or phone',
     'gestion.email' => 'Email address',
     'gestion.mot_de_passe' => 'Password',
     'gestion.se_connecter' => 'Sign in',

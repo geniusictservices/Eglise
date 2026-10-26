@@ -6,8 +6,11 @@ use App\Core\Icones;
 use App\Core\Modules;
 
 // Module de la page (barre latérale sur ordinateur, barre du bas sur téléphone) ; aucun sur l'accueil des modules
-$modules = Modules::tous();
+$modules = !empty($utilisateur) ? Modules::pour((int) $utilisateur['id']) : [];
 $module = !empty($utilisateur) ? Modules::courant($chemin) : null;
+if ($module !== null && !isset($modules[$module['module']])) {
+    $module = null;
+}
 ?>
 <!doctype html>
 <html lang="<?= e(App\Core\I18n::langue()) ?>" data-theme="auto" data-theme-cle="gestion.theme"

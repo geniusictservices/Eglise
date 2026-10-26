@@ -18,7 +18,7 @@ final class ModulesController
             'titre' => t('modules.titre'),
             'utilisateur' => $utilisateur,
             'flash' => Session::lireFlash(),
-            'modules' => Modules::tous(),
+            'modules' => Modules::pour((int) $utilisateur['id']),
         ], 'gestion');
     }
 }
