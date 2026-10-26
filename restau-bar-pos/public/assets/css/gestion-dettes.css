@@ -79,6 +79,7 @@
 .det-infos dt { color: var(--doux); font-size: var(--taille-s); }
 .det-infos dd { margin: 0; overflow-wrap: anywhere; }
 .det-infos dd .badge { margin-left: .35rem; }
+.det-infos dd > .lien, .det-compte .lien, .det-infos dd > a { display: inline-flex; align-items: center; min-height: var(--cible); }
 
 .det-annule {
   margin: 1rem 0 0; padding: 1rem 1.25rem; border-radius: var(--rayon-carte);
@@ -224,3 +225,4 @@ a.det-resultat:hover { background: var(--surface-2); border-color: var(--ligne-f
   .det-part .tre-categories__barre { flex: 1 1 auto; width: auto; min-width: 4rem; }
   .det-part { display: flex; }
 }
+.det-coche + .tre-paire, .det-coche + .champ, .det-coche + .tre-groupe-champs { margin-top: .75rem; }

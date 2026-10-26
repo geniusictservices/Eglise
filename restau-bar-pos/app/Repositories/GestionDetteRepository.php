@@ -114,7 +114,8 @@ final class GestionDetteRepository
         $params = [];
         $q = trim((string) ($filtres['q'] ?? ''));
         if ($q !== '') {
-            $chiffres = preg_replace('/\D+/', '', $q) ?? '';
+            // Chiffres du téléphone, sans le 0 d'un numéro local (0971… est enregistré +243971…)
+            $chiffres = ltrim(preg_replace('/\D+/', '', $q) ?? '', '0');
             $conditions[] = "(c.nom LIKE ? OR c.email LIKE ? OR (? <> '' AND REPLACE(c.telephone, '+', '') LIKE ?))";
             array_push($params, '%' . $q . '%', '%' . $q . '%', $chiffres, '%' . $chiffres . '%');
         }
@@ -192,7 +193,8 @@ final class GestionDetteRepository
         $conditions = ["d.statut = 'ouverte'", 'd.reste > 0', $portee];
         $q = trim((string) ($filtres['q'] ?? ''));
         if ($q !== '') {
-            $chiffres = preg_replace('/\D+/', '', $q) ?? '';
+            // Chiffres du téléphone, sans le 0 d'un numéro local (0971… est enregistré +243971…)
+            $chiffres = ltrim(preg_replace('/\D+/', '', $q) ?? '', '0');
             $conditions[] = "(c.nom LIKE ? OR c.email LIKE ? OR (? <> '' AND REPLACE(c.telephone, '+', '') LIKE ?))";
             array_push($params, '%' . $q . '%', '%' . $q . '%', $chiffres, '%' . $chiffres . '%');
         }
@@ -837,8 +839,16 @@ final class GestionDetteRepository
         }
         $where = implode(' AND ', $conditions);
         $total = (int) (Database::un('SELECT COUNT(*) AS n FROM messages m WHERE ' . $where, $params)['n'] ?? 0);
+        // Nombre par statut avec les autres filtres (les puces de statut montrent chacune son compte)
+        $sansStatut = $conditions;
+        $paramsSansStatut = $params;
+        if (!empty($f['statut']) && in_array($f['statut'], self::STATUTS_MESSAGE, true)) {
+            $i = array_search('m.statut = ?', $sansStatut, true);
+            unset($sansStatut[$i]);
+            array_splice($paramsSansStatut, $i + 1, 1);
+        }
         $compte = array_fill_keys(self::STATUTS_MESSAGE, 0);
-        foreach (Database::tous('SELECT m.statut, COUNT(*) AS n FROM messages m WHERE ' . $where . ' GROUP BY m.statut', $params) as $l) {
+        foreach (Database::tous('SELECT m.statut, COUNT(*) AS n FROM messages m WHERE ' . implode(' AND ', $sansStatut) . ' GROUP BY m.statut', $paramsSansStatut) as $l) {
             $compte[$l['statut']] = (int) $l['n'];
         }
         $decalage = max(0, ($page - 1) * self::PAR_PAGE);

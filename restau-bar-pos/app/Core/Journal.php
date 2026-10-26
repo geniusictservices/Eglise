@@ -9,7 +9,10 @@ final class Journal
 {
     public static function ecrire(string $action, ?string $cible = null, array $details = [], ?int $utilisateurId = null, ?int $appareilId = null): void
     {
-        $utilisateurId ??= isset(Session::utilisateur()['id']) ? (int) Session::utilisateur()['id'] : null;
+        // En ligne de commande (scripts, relances), pas de session : l'appelant donne l'utilisateur
+        if ($utilisateurId === null && PHP_SAPI !== 'cli') {
+            $utilisateurId = isset(Session::utilisateur()['id']) ? (int) Session::utilisateur()['id'] : null;
+        }
         Database::executer(
             'INSERT INTO journal (utilisateur_id, action, cible, details, appareil_id, ip) VALUES (?, ?, ?, ?, ?, ?)',
             [

@@ -10,7 +10,8 @@ declare(strict_types=1);
  *       [--db-hote=127.0.0.1] [--db-port=3306] [--db-admin=root] [--db-admin-mdp=...]
  *
  * --demo charge les données de démonstration (database/demo.sql, puis demo-illustrations.sql et demo-tresorerie.sql),
- * les employés (demo-utilisateurs.sql) et trois semaines de ventes (bin/demo-ventes.php).
+ * les employés (demo-utilisateurs.sql) et trois semaines de ventes (bin/demo-ventes.php), dont quelques ardoises de clients
+ * avec leurs remboursements, garants et rappels.
  * Le mot de passe MySQL administrateur peut aussi venir de la variable RBP_DB_ADMIN_MDP.
  */
 

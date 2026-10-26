@@ -73,7 +73,8 @@ final class DetteRepository
         if (mb_strlen($q) < 2) {
             return [];
         }
-        $chiffres = preg_replace('/\D+/', '', $q) ?? '';
+        // Un numéro local (0971…) se cherche sans son zéro : le numéro est gardé au format +243971…
+        $chiffres = ltrim(preg_replace('/\D+/', '', $q) ?? '', '0');
         $lignes = Database::tous(
             "SELECT * FROM clients
               WHERE actif = 1 AND type <> 'personnel'

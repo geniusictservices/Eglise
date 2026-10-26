@@ -39,7 +39,7 @@ final class Modules
                 ['cle' => 'clients', 'icone' => 'clients', 'lien' => '/gestion/clients', 'voir' => 'clients.voir', 'modifier' => 'clients.modifier'],
                 ['cle' => 'dettes', 'icone' => 'dettes', 'lien' => '/gestion/dettes', 'voir' => 'dettes.voir', 'modifier' => 'dettes.gerer'],
                 ['cle' => 'sessions', 'icone' => 'caisse', 'lien' => '/gestion/sessions-caisse', 'voir' => 'ventes.voir', 'modifier' => 'ventes.voir'],
-                ['cle' => 'remboursements', 'icone' => 'remboursement', 'lien' => '/gestion/remboursements', 'voir' => 'dettes.voir', 'modifier' => 'dettes.rembourser'],
+                ['cle' => 'remboursements', 'icone' => 'remboursement', 'lien' => '/gestion/remboursements', 'voir' => 'dettes.voir', 'modifier' => 'dettes.voir'],   // saisie (dettes.rembourser) et annulation (dettes.gerer) vérifiées par l'écran
                 // Garanties demandées à la personne connectée : chacun répond pour lui-même
                 ['cle' => 'garanties', 'icone' => 'garantie', 'lien' => '/gestion/garanties', 'voir' => null],
             ]],
