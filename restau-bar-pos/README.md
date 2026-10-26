@@ -1,10 +1,10 @@
 # restau-bar-pos
 
-Dossier de travail du projet.
+Système de caisse (POS) adaptable aux restaurants-bars, lounge bars et nightclubs.
 
-## Objectif
+## Documentation
 
-_À définir._
+- [Cahier des charges](docs/cahier-des-charges.md)
 
 ## Organisation
 
