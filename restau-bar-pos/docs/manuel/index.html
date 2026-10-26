@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manuel restau-bar-pos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Sora:wght@400;600;700&display=swap">
+<style>
+/* Mise en page : sommaire collant à gauche sur grand écran, une colonne de lecture, captures ordinateur + téléphone côte à côte. */
+:root {
+  --fond: #F4F3F1; --surface: #FFFFFF; --encre: #111315; --doux: #5B6168; --ligne: #DEDCD8;
+  --lave: #E04A12; --lave-texte: #B23A0C; --braise: #9A5B00; --glace: #1F7F93; --nuit: #111315;
+  --titre: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --texte: "Sora", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #111315; --surface: #1C1F23; --encre: #F2EFEA; --doux: #A3A9AF; --ligne: #2C3035;
+    --lave: #FF5A1F; --lave-texte: #FF7A45; --braise: #FFB547; --glace: #6CC3D5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #111315; --surface: #1C1F23; --encre: #F2EFEA; --doux: #A3A9AF; --ligne: #2C3035;
+  --lave: #FF5A1F; --lave-texte: #FF7A45; --braise: #FFB547; --glace: #6CC3D5; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--fond); color: var(--encre); font: 16px/1.6 var(--texte);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px; margin: 0;
+}
+a { color: var(--lave-texte); }
+:focus-visible { outline: 3px solid var(--lave); outline-offset: 2px; }
+.cadre { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 48px; }
+@media (max-width: 900px) { .cadre { grid-template-columns: minmax(0, 1fr); gap: 0; } .sommaire { display: none; } }
+
+.couverture { padding-block: 48px 32px; border-bottom: 1px solid var(--ligne); margin-bottom: 8px; }
+.couverture__sur { margin: 0; font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--doux); }
+.couverture h1 { margin: 8px 0 12px; font: 800 clamp(40px, 9vw, 76px)/.95 var(--titre); color: var(--lave-texte); text-wrap: balance; }
+.couverture__chapeau { margin: 0; max-width: 62ch; font-size: 18px; color: var(--doux); }
+.trois { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.trois span { font: 600 13px/1 var(--titre); text-transform: uppercase; letter-spacing: .04em; padding: 8px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--ligne); }
+
+.sommaire { position: sticky; top: 24px; align-self: start; max-height: calc(100vh - 48px); overflow: auto; padding-top: 48px; font-size: 14px; }
+.sommaire p { margin: 0 0 8px; font: 600 12px var(--titre); letter-spacing: .08em; text-transform: uppercase; color: var(--doux); }
+.sommaire ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.sommaire a { color: var(--encre); text-decoration: none; }
+.sommaire a:hover { color: var(--lave-texte); }
+
+main { min-width: 0; }
+section.chapitre { padding-top: 40px; }
+h2 { font: 800 30px/1.1 var(--titre); margin: 0 0 6px; text-wrap: balance; }
+h2 .num { color: var(--lave-texte); margin-right: 10px; }
+h3 { font: 600 19px/1.25 var(--titre); margin: 28px 0 8px; }
+p, li { max-width: 72ch; }
+.intro { color: var(--doux); font-size: 17px; margin-top: 0; }
+ol.etapes { padding-left: 22px; }
+ol.etapes li { margin: 6px 0; }
+.chemin { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .9em; background: var(--surface); border: 1px solid var(--ligne); border-radius: 6px; padding: 1px 6px; overflow-wrap: anywhere; }
+.bouton { display: inline-block; font-weight: 700; font-size: .92em; padding: 1px 8px; border-radius: 6px; background: var(--lave); color: #111315; white-space: nowrap; }
+.libelle { font-weight: 700; }
+
+.captures { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 1fr); gap: 16px; align-items: start; margin: 16px 0 8px; }
+.captures--seule { grid-template-columns: minmax(0, 1fr); }
+.captures--tels { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 560px; }
+@media (max-width: 640px) { .captures { grid-template-columns: minmax(0, 1fr); } .captures--tels { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+figure { margin: 0; min-width: 0; }
+figure img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--ligne); background: var(--surface); max-width: 100%; }
+figcaption { font-size: 13px; color: var(--doux); margin-top: 6px; }
+.etiquette { font: 600 11px var(--titre); letter-spacing: .08em; text-transform: uppercase; color: var(--glace); margin-right: 6px; }
+
+.note { border-left: 4px solid var(--glace); background: var(--surface); padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 16px 0; max-width: 72ch; }
+.note--attention { border-left-color: var(--lave); }
+.note p { margin: 0; }
+.note strong:first-child { display: block; margin-bottom: 2px; }
+
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+.tableau { overflow-x: auto; margin: 12px 0; max-width: 100%; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--ligne); vertical-align: top; }
+th { font-size: 13px; color: var(--doux); font-weight: 600; }
+td:first-child { font-weight: 600; white-space: nowrap; }
+dl.faq dt { font-weight: 700; margin-top: 16px; }
+dl.faq dd { margin: 4px 0 0; color: var(--encre); max-width: 72ch; }
+pre { background: var(--nuit); color: #F2EFEA; padding: 12px 14px; border-radius: 10px; overflow-x: auto; font-size: 14px; }
+footer.fin { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--ligne); font-size: 13px; color: var(--doux); }
+
+@media print {
+  body { background: #fff; color: #111315; padding: 0; font-size: 11pt; }
+  .sommaire { display: none; }
+  .cadre { display: block; max-width: none; }
+  .couverture { min-height: 250mm; display: flex; flex-direction: column; justify-content: center; border: 0; }
+  .couverture h1 { font-size: 64pt; }
+  section.chapitre { break-before: page; padding-top: 0; }
+  figure, .note, tr { break-inside: avoid; }
+  h2, h3 { break-after: avoid; }
+  .captures { gap: 10px; }
+  figure img { max-height: 200mm; object-fit: contain; object-position: top left; }
+  a { color: #B23A0C; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="cadre">
+<nav class="sommaire" aria-label="Sommaire">
+  <p>Sommaire</p>
+  <ol>
+    <li><a href="#bienvenue">Bienvenue</a></li>
+    <li><a href="#premiers-pas">Premiers pas</a></li>
+    <li><a href="#vitrine">La vitrine</a></li>
+    <li><a href="#caisse">La caisse</a></li>
+    <li><a href="#catalogue">Le catalogue</a></li>
+    <li><a href="#etablissements">Les établissements</a></li>
+    <li><a href="#devises">Devises et taux</a></li>
+    <li><a href="#qr">Codes QR</a></li>
+    <li><a href="#compte">Mon compte</a></li>
+    <li><a href="#design">Système de design</a></li>
+    <li><a href="#faq">Questions fréquentes</a></li>
+    <li><a href="#technique">Partie technique</a></li>
+  </ol>
+</nav>
+
+<main>
+<header class="couverture">
+  <p class="couverture__sur">Manuel d'utilisation · version de la phase 1 · 26 octobre 2026</p>
+  <h1>restau-bar-pos</h1>
+  <p class="couverture__chapeau">La caisse et la gestion de votre restaurant-bar, de votre lounge ou de votre nightclub, avec une vitrine publique que vos clients ouvrent en scannant un code QR.</p>
+  <div class="trois"><span>Restaurant-bar</span><span>Lounge</span><span>Nightclub</span></div>
+</header>
+
+<section class="chapitre" id="bienvenue">
+  <h2><span class="num">1</span>Bienvenue</h2>
+  <p class="intro">restau-bar-pos réunit trois espaces, qui partagent les mêmes produits, les mêmes prix et les mêmes devises.</p>
+  <div class="tableau"><table>
+    <thead><tr><th>Espace</th><th>Pour qui</th><th>Adresse</th></tr></thead>
+    <tbody>
+      <tr><td>La vitrine</td><td>Vos clients : présentation de l'établissement, horaires et menu avec les prix.</td><td><span class="chemin">monbar.&lt;domaine&gt;/</span></td></tr>
+      <tr><td>La caisse</td><td>Les barmans, serveurs et caissiers : produits en grille et ticket.</td><td><span class="chemin">monbar.&lt;domaine&gt;/caisse</span></td></tr>
+      <tr><td>La gestion</td><td>Le propriétaire et le gérant : catalogue, établissements, devises, codes QR.</td><td><span class="chemin">monbar.&lt;domaine&gt;/gestion</span></td></tr>
+    </tbody>
+  </table></div>
+  <p>Chaque client a sa propre adresse (son sous-domaine) et ses propres données. Tout fonctionne dans un navigateur, sur ordinateur, tablette ou téléphone, en français et en anglais.</p>
+  <p>Les captures de ce manuel viennent de la version de démonstration : un restaurant-bar, <strong>Le Comptoir du Lac</strong>, et un nightclub, <strong>Volcano Club</strong>, à Goma. Chaque écran est montré sur ordinateur et sur téléphone.</p>
+  <div class="note"><p><strong>Le design s'adapte au lieu.</strong> Le nightclub et le lounge s'affichent en thème « nuit » (sombre), le restaurant-bar en thème « jour » (clair). Chacun peut changer de thème avec le bouton ◐, et le choix est mémorisé sur l'appareil.</p></div>
+</section>
+
+<section class="chapitre" id="premiers-pas">
+  <h2><span class="num">2</span>Premiers pas</h2>
+  <h3>Se connecter</h3>
+  <ol class="etapes">
+    <li>Ouvrez <span class="chemin">monbar.&lt;domaine&gt;/gestion</span>.</li>
+    <li>Saisissez votre adresse e-mail et votre mot de passe, puis touchez <span class="bouton">Se connecter</span>.</li>
+  </ol>
+  <p>Après 5 essais manqués, la connexion est bloquée pendant 5 minutes.</p>
+  <div class="captures">
+    <figure><img src="captures/gestion-connexion-ordi.jpg" alt="Page de connexion sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Connexion</figcaption></figure>
+    <figure><img src="captures/gestion-connexion-tel.jpg" alt="Page de connexion sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Connexion</figcaption></figure>
+  </div>
+  <h3>Le tableau de bord</h3>
+  <p>Il résume vos établissements, le nombre de produits, les scans de codes QR sur 7 jours et les devises actives avec leur taux. Le menu du haut mène à chaque écran : <span class="libelle">Tableau de bord, Caisse, Catalogue, Établissements, Devises et taux, Codes QR, Mon compte, Voir la vitrine</span>. En haut à droite : la langue (FR / EN), le thème ◐ et <span class="libelle">Se déconnecter</span>.</p>
+  <div class="captures">
+    <figure><img src="captures/gestion-tableau-ordi.jpg" alt="Tableau de bord sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Tableau de bord</figcaption></figure>
+    <figure><img src="captures/gestion-tableau-tel.jpg" alt="Tableau de bord sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Sur téléphone, le menu défile horizontalement</figcaption></figure>
+  </div>
+  <h3>L'ordre conseillé pour démarrer</h3>
+  <ol class="etapes">
+    <li><a href="#devises">Devises et taux</a> : vérifiez la devise de référence et saisissez le taux du jour des autres devises.</li>
+    <li><a href="#etablissements">Établissements</a> : informations, horaires, devises acceptées et zones (terrasse, carré VIP…).</li>
+    <li><a href="#catalogue">Catalogue</a> : créez vos catégories, puis vos produits avec leurs formats et leurs prix.</li>
+    <li><a href="#qr">Codes QR</a> : créez un code par zone et imprimez les chevalets de table.</li>
+    <li><a href="#caisse">La caisse</a> : ouvrez-la sur la tablette ou le téléphone du comptoir.</li>
+  </ol>
+</section>
+
+<section class="chapitre" id="vitrine">
+  <h2><span class="num">3</span>La vitrine</h2>
+  <p class="intro">C'est ce que voient vos clients quand ils scannent un code QR ou ouvrent votre adresse. Aucune connexion n'est nécessaire.</p>
+  <h3>La page d'accueil</h3>
+  <p>Si vous avez plusieurs établissements, l'accueil les présente avec leur type, leur slogan et l'indication « Ouvert en ce moment » ou « Fermé ». Avec un seul établissement, le visiteur arrive directement sur sa page.</p>
+  <div class="captures">
+    <figure><img src="captures/vitrine-accueil-ordi.jpg" alt="Accueil de la vitrine sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Accueil avec les deux établissements</figcaption></figure>
+    <figure><img src="captures/vitrine-accueil-tel.jpg" alt="Accueil de la vitrine sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Accueil</figcaption></figure>
+  </div>
+  <h3>La page d'un établissement</h3>
+  <p>En haut : le nom, le type, le slogan, la photo de couverture et l'état d'ouverture calculé avec les horaires (« Fermé · ouvre à 17:00 »). Juste en dessous, une barre qui reste visible quand on fait défiler la page :</p>
+  <ul>
+    <li><strong>la devise des prix</strong> (USD, CDF, RWF…), parmi celles que l'établissement accepte ;</li>
+    <li><strong>la langue</strong> (English / Français) ;</li>
+    <li><strong>le thème</strong> ◐ ;</li>
+    <li><strong>les catégories</strong>, pour aller directement aux bières, aux cocktails ou aux plats.</li>
+  </ul>
+  <div class="captures">
+    <figure><img src="captures/vitrine-restaurant-ordi.jpg" alt="Page du restaurant-bar sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Le Comptoir du Lac, thème jour</figcaption></figure>
+    <figure><img src="captures/vitrine-restaurant-tel.jpg" alt="Page du restaurant-bar sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Le Comptoir du Lac</figcaption></figure>
+  </div>
+  <h3>Le menu</h3>
+  <p>Chaque produit montre son illustration ou sa photo, son nom, sa description, ses badges (Populaire, Nouveau, Épicé), ses allergènes et le prix de chaque format (verre, dose, bouteille…). Un produit en rupture est marqué <strong>Épuisé</strong> et son prix est barré. La recherche filtre le menu dès la première lettre, sans tenir compte des accents.</p>
+  <div class="captures">
+    <figure><img src="captures/vitrine-restaurant-menu-ordi.jpg" alt="Menu sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Le menu, catégorie Bières</figcaption></figure>
+    <figure><img src="captures/vitrine-recherche-tel.jpg" alt="Recherche dans le menu sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Recherche « tilapia »</figcaption></figure>
+  </div>
+  <h3>Les prix d'une zone</h3>
+  <p>Un code QR posé dans une zone (par exemple le carré VIP) ouvre le menu avec les prix de cette zone : l'étiquette de la zone s'affiche dans la barre. Ici, le carré VIP du club, avec les prix en francs congolais arrondis à 100 FC.</p>
+  <div class="captures">
+    <figure><img src="captures/vitrine-club-vip-ordi.jpg" alt="Carré VIP du club sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Volcano Club, carré VIP, thème nuit</figcaption></figure>
+    <figure><img src="captures/vitrine-club-vip-tel.jpg" alt="Carré VIP du club sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Prix VIP en CDF</figcaption></figure>
+  </div>
+  <h3>Horaires et contact</h3>
+  <p>En bas de page : les horaires de chaque service, regroupés par jours (« Lun – Jeu »), l'adresse avec le lien vers la carte, le téléphone, WhatsApp et les réseaux sociaux.</p>
+  <div class="captures">
+    <figure><img src="captures/vitrine-infos-ordi.jpg" alt="Horaires et contact sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Horaires et contact</figcaption></figure>
+    <figure><img src="captures/vitrine-infos-tel.jpg" alt="Horaires et contact sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Horaires et contact</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="caisse">
+  <h2><span class="num">4</span>La caisse</h2>
+  <p class="intro">Les produits sont en grille : un toucher ajoute un article au ticket. La caisse s'ouvre depuis le menu de gestion (<span class="libelle">Caisse</span>) ou à l'adresse <span class="chemin">/caisse</span>.</p>
+  <div class="note note--attention"><p><strong>À savoir dans cette version</strong>Le ticket et les totaux fonctionnent, mais les ventes ne sont pas encore enregistrées : le bouton <span class="libelle">Encaisser</span> arrive avec la phase 3 (encaissement, sessions de caisse, stock). Le ticket en cours est gardé tant que l'onglet du navigateur reste ouvert.</p></div>
+  <h3>Choisir l'établissement et la zone</h3>
+  <p>En haut à gauche, choisissez l'établissement puis la zone. La zone applique sa grille de prix : au carré VIP, les prix VIP.</p>
+  <h3>La grille des produits</h3>
+  <ul>
+    <li><strong>5 tuiles par ligne</strong> sur ordinateur et tablette, 3 sur téléphone.</li>
+    <li>Chaque catégorie a sa couleur, reprise sur les onglets, les tuiles et les lignes du ticket.</li>
+    <li>Les onglets en haut filtrent la grille ; <span class="libelle">Tout</span> montre tous les produits.</li>
+    <li>La pastille sur une tuile indique combien d'articles de ce produit sont déjà dans le ticket.</li>
+    <li>Un produit épuisé est grisé et ne peut pas être touché.</li>
+  </ul>
+  <div class="captures captures--seule">
+    <figure><img src="captures/caisse-restaurant-ordi.jpg" alt="Caisse du restaurant sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Caisse du Comptoir du Lac : grille de 5 tuiles par ligne et ticket à droite</figcaption></figure>
+  </div>
+  <h3>Les produits à plusieurs formats</h3>
+  <p>Quand un produit se vend en plusieurs formats (dose de 4 cl ou bouteille de 70 cl), sa tuile indique « 2 formats » et le prix le plus bas suivi de « + ». Un toucher ouvre une fenêtre qui propose chaque format avec son prix.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/caisse-formats-ordi.jpg" alt="Choix du format" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Choix du format pour le whisky</figcaption></figure>
+  </div>
+  <h3>Le ticket</h3>
+  <ul>
+    <li>Les boutons <strong>−</strong> et <strong>+</strong> changent la quantité ; à zéro, la ligne disparaît.</li>
+    <li>Le total s'affiche dans la devise principale et, juste en dessous, dans chaque autre devise acceptée. Les prix fixés en francs (par exemple 5 500 FC pour la Primus) sont respectés.</li>
+    <li><span class="libelle">Vider</span> efface tout le ticket.</li>
+  </ul>
+  <div class="captures">
+    <figure><img src="captures/caisse-club-vip-tablette.jpg" alt="Caisse du club sur tablette" loading="lazy"><figcaption><span class="etiquette">Tablette</span>Volcano Club, carré VIP : thème nuit, grandes tuiles</figcaption></figure>
+    <figure><img src="captures/caisse-ticket-ordi.jpg" alt="Détail du ticket" loading="lazy"><figcaption><span class="etiquette">Détail</span>Ticket avec les totaux en USD, CDF et RWF</figcaption></figure>
+  </div>
+  <h3>Aller plus vite</h3>
+  <ul>
+    <li><strong>Recherche</strong> : la touche <span class="chemin">/</span> place le curseur dans la recherche ; <span class="chemin">Entrée</span> ajoute le produit s'il est le seul résultat ; <span class="chemin">Échap</span> efface la recherche.</li>
+    <li><strong>Taille des tuiles</strong> : S, M ou L règlent la hauteur des tuiles et la taille du texte. Le nightclub démarre en L.</li>
+    <li><strong>Thème</strong> : ◐ bascule entre jour et nuit. Le réglage est mémorisé par appareil et par établissement.</li>
+  </ul>
+  <h3>Sur téléphone</h3>
+  <p>La grille prend tout l'écran. Une barre en bas résume le ticket (« 3 articles · voir le ticket » et le total) ; un toucher ouvre le ticket dans un panneau, fermé avec ✕.</p>
+  <div class="captures captures--tels">
+    <figure><img src="captures/caisse-tel.jpg" alt="Caisse sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Grille de 3 tuiles et barre du ticket</figcaption></figure>
+    <figure><img src="captures/caisse-tel-ticket.jpg" alt="Ticket ouvert sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Ticket ouvert</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="catalogue">
+  <h2><span class="num">5</span>Le catalogue</h2>
+  <p class="intro">Vos produits, tels qu'ils apparaissent sur le menu et à la caisse. Menu de gestion → <span class="libelle">Catalogue</span>.</p>
+  <h3>La liste des produits</h3>
+  <ul>
+    <li>Les produits sont groupés par catégorie, avec leur illustration, leur prix principal et les établissements où ils sont vendus.</li>
+    <li>Filtres : catégorie, établissement et recherche par nom.</li>
+    <li>Le bouton <span class="libelle">Disponible</span> d'un produit le passe en <strong>épuisé</strong> d'un seul toucher, sans ouvrir sa fiche. Un second toucher le remet en vente. Le changement est immédiat sur la vitrine et la caisse.</li>
+    <li>Les flèches changent l'ordre des produits dans leur catégorie.</li>
+    <li><span class="libelle">Voir les produits désactivés</span> retrouve les produits retirés de la vente, pour les réactiver.</li>
+  </ul>
+  <div class="captures">
+    <figure><img src="captures/catalogue-liste-ordi.jpg" alt="Liste du catalogue sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Catalogue</figcaption></figure>
+    <figure><img src="captures/catalogue-liste-tel.jpg" alt="Liste du catalogue sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Catalogue</figcaption></figure>
+  </div>
+  <h3>Créer un produit</h3>
+  <ol class="etapes">
+    <li>Touchez <span class="bouton">Nouveau produit</span>.</li>
+    <li>Choisissez la catégorie, écrivez le nom en français (le nom anglais est facultatif : laissé vide, le français est affiché).</li>
+    <li>Indiquez le premier format (par exemple « Bouteille ») et son prix au moins dans la devise de référence. Les autres devises sont calculées avec le taux du jour si vous les laissez vides.</li>
+    <li>Touchez <span class="bouton">Créer le produit</span>. La fiche complète s'ouvre : vous pouvez ajouter une photo et d'autres formats.</li>
+  </ol>
+  <div class="captures captures--seule">
+    <figure><img src="captures/produit-nouveau-ordi.jpg" alt="Création d'un produit" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Nouveau produit : tout tient sur une page</figcaption></figure>
+  </div>
+  <h3>La fiche produit, section par section</h3>
+  <p>Le sommaire en haut de la fiche mène à chaque section. Chaque section a son propre bouton d'enregistrement. Exemple : le Johnnie Walker Black Label, vendu à la dose et à la bouteille.</p>
+  <h3>1. Informations</h3>
+  <p>Catégorie, nom et description en français et en anglais, <strong>unité de base</strong> (l'unité dans laquelle on compte le stock : bouteille pour une bière, cl pour un whisky servi à la dose, kg pour le riz), badges du menu et allergènes.</p>
+  <div class="captures captures--seule"><figure><img src="captures/produit-infos-ordi.jpg" alt="Section Informations" loading="lazy"><figcaption>Section Informations</figcaption></figure></div>
+  <h3>2. Photo</h3>
+  <p>Choisissez une photo (JPEG, PNG ou WebP) prise avec le téléphone : elle est redimensionnée automatiquement. Indiquez son crédit (auteur et licence) si elle n'est pas de vous : il s'affiche en petit sous la photo sur la vitrine. <span class="libelle">Retirer la photo</span> revient à l'illustration ou à l'absence d'image.</p>
+  <div class="captures captures--seule"><figure><img src="captures/produit-photo-ordi.jpg" alt="Section Photo" loading="lazy"><figcaption>Section Photo</figcaption></figure></div>
+  <h3>3. Formats et prix</h3>
+  <p>Un <strong>format</strong> est une façon de vendre ou d'acheter le produit, exprimée en unité de base : bouteille = 1, casier = 12, dose = 4 cl. Cochez <span class="libelle">Vendu aux clients</span> pour qu'il apparaisse sur le menu et à la caisse, <span class="libelle">Acheté aux fournisseurs</span> pour les achats (le casier, par exemple).</p>
+  <div class="captures captures--seule"><figure><img src="captures/produit-formats-ordi.jpg" alt="Section Formats" loading="lazy"><figcaption>Les formats du whisky : dose de 4 cl et bouteille de 70 cl</figcaption></figure></div>
+  <p>Le tableau des <strong>prix de vente</strong> croise les formats, les tarifs (normal, VIP…) et les devises.</p>
+  <ul>
+    <li>Une <strong>case vide</strong> est calculée automatiquement, et le montant calculé est affiché en gris dans la case : depuis le prix en devise de référence avec le taux du jour, ou depuis le prix normal pour les autres tarifs.</li>
+    <li>Remplissez une case pour <strong>fixer un montant rond</strong>, par exemple 5 500 FC au lieu de 5 700 FC.</li>
+  </ul>
+  <div class="captures captures--seule"><figure><img src="captures/produit-prix-ordi.jpg" alt="Tableau des prix" loading="lazy"><figcaption>Prix de vente : formats × tarifs × devises</figcaption></figure></div>
+  <h3>4. Où il est vendu</h3>
+  <p>Cochez les établissements qui proposent le produit. <span class="libelle">Visible sur le menu public</span> : décoché, le produit reste vendu à la caisse mais n'apparaît pas sur la vitrine. <span class="libelle">Disponible</span> : décoché, il est épuisé.</p>
+  <div class="captures captures--seule"><figure><img src="captures/produit-vente-ordi.jpg" alt="Section Où il est vendu" loading="lazy"><figcaption>Section Où il est vendu</figcaption></figure></div>
+  <h3>5. Désactiver</h3>
+  <p>Pour un produit que vous ne vendez plus : il disparaît du menu et de la caisse mais reste dans l'historique. La confirmation se fait dans la page ; vous pourrez le réactiver plus tard.</p>
+  <div class="captures captures--seule"><figure><img src="captures/produit-desactiver-ordi.jpg" alt="Section Désactiver" loading="lazy"><figcaption>Section Désactiver</figcaption></figure></div>
+  <h3>Sur téléphone</h3>
+  <p>La fiche passe sur une seule colonne. Le tableau des prix défile horizontalement dans son cadre.</p>
+  <div class="captures captures--tels">
+    <figure><img src="captures/produit-haut-tel.jpg" alt="Fiche produit sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Haut de la fiche</figcaption></figure>
+    <figure><img src="captures/produit-prix-tel.jpg" alt="Prix sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Tableau des prix</figcaption></figure>
+  </div>
+  <h3>Les catégories</h3>
+  <p>Catalogue → <span class="libelle">Catégories</span>. Ajoutez une catégorie (nom en français et en anglais), cachez-la du menu public si besoin, et changez l'ordre avec les flèches : c'est l'ordre des onglets de la vitrine et de la caisse. Une catégorie qui contient des produits actifs ne peut pas être supprimée.</p>
+  <div class="captures">
+    <figure><img src="captures/categories-ordi.jpg" alt="Catégories sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Catégories</figcaption></figure>
+    <figure><img src="captures/categories-tel.jpg" alt="Catégories sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Catégories</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="etablissements">
+  <h2><span class="num">6</span>Les établissements</h2>
+  <p class="intro">Vos lieux : présentation, horaires, zones et prix affichés sur leur vitrine. Menu de gestion → <span class="libelle">Établissements</span>.</p>
+  <p>La liste montre chaque établissement avec son type, son état ouvert ou fermé en ce moment et le lien vers sa vitrine. <span class="bouton">Nouvel établissement</span> demande seulement le nom et le type ; le reste peut être complété ensuite.</p>
+  <div class="captures">
+    <figure><img src="captures/etablissements-liste-ordi.jpg" alt="Liste des établissements" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Établissements</figcaption></figure>
+    <figure><img src="captures/etablissements-liste-tel.jpg" alt="Liste des établissements sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Établissements</figcaption></figure>
+  </div>
+  <h3>Informations</h3>
+  <p>Nom, adresse web (proposée à partir du nom, par exemple <span class="chemin">/e/volcano-club</span>), type (restaurant-bar, lounge ou nightclub : le type choisit aussi le thème de la vitrine et de la caisse), slogan et description en deux langues, adresse, lien de carte, téléphone, WhatsApp (avec l'indicatif +243), e-mail et réseaux sociaux.</p>
+  <div class="note note--attention"><p><strong>Attention</strong>Changer l'adresse web casse les liens déjà partagés. Les codes QR, eux, continuent de marcher.</p></div>
+  <div class="captures captures--seule"><figure><img src="captures/etablissement-infos-ordi.jpg" alt="Section Informations de l'établissement" loading="lazy"><figcaption>Section Informations du Volcano Club</figcaption></figure></div>
+  <h3>Apparence</h3>
+  <p>La couleur d'accent de la vitrine (décochez pour garder la couleur du design), le logo et la photo de couverture, avec son crédit. Le texte posé sur la couleur choisie reste toujours lisible : il passe en noir ou en blanc automatiquement.</p>
+  <div class="captures captures--seule"><figure><img src="captures/etablissement-apparence-ordi.jpg" alt="Section Apparence" loading="lazy"><figcaption>Section Apparence</figcaption></figure></div>
+  <h3>Prix et devises</h3>
+  <p>La grille de prix par défaut (appliquée partout, sauf dans les zones qui ont la leur), les devises acceptées (affichées dans le sélecteur de la vitrine) et la devise affichée à l'arrivée du visiteur.</p>
+  <div class="captures captures--seule"><figure><img src="captures/etablissement-prix-ordi.jpg" alt="Section Prix et devises" loading="lazy"><figcaption>Section Prix et devises</figcaption></figure></div>
+  <h3>Horaires</h3>
+  <p>Une ligne par service (restaurant, bar, club…) et par horaire : nom du service, jours cochés, heure d'ouverture et de fermeture. Une fermeture plus tôt que l'ouverture veut dire <strong>le lendemain</strong> : un club ouvert de 22:00 à 05:00 compte pour la soirée où il ouvre. <span class="libelle">Ajouter une ligne</span> crée un nouveau créneau.</p>
+  <div class="captures">
+    <figure><img src="captures/etablissement-horaires-ordi.jpg" alt="Section Horaires" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Horaires du club : jeudi, vendredi, samedi, jusqu'au lendemain</figcaption></figure>
+    <figure><img src="captures/etablissement-horaires-tel.jpg" alt="Horaires sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Horaires</figcaption></figure>
+  </div>
+  <h3>Zones</h3>
+  <p>Salle, terrasse, piste, carré VIP… Une zone peut avoir ses propres prix (choisissez sa grille). Un code QR posé dans la zone affiche ces prix, et la caisse les applique quand on choisit la zone.</p>
+  <div class="captures captures--seule"><figure><img src="captures/etablissement-zones-ordi.jpg" alt="Section Zones" loading="lazy"><figcaption>Zones du Volcano Club : la piste au prix normal, le carré VIP au prix VIP</figcaption></figure></div>
+  <h3>Activer ou désactiver</h3>
+  <p>Un établissement désactivé disparaît de la vitrine et de la caisse. Rien n'est effacé : sa réactivation le rend visible tout de suite, codes QR compris.</p>
+  <h3>Les grilles de prix</h3>
+  <p>Depuis la liste des établissements ou la section Prix et devises. Une grille regroupe un jeu de prix : normal, VIP, nuit, gros… Les prix eux-mêmes se saisissent sur la fiche de chaque produit. Une grille utilisée ne peut pas être supprimée.</p>
+  <div class="captures">
+    <figure><img src="captures/grilles-ordi.jpg" alt="Grilles de prix" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Grilles de prix</figcaption></figure>
+    <figure><img src="captures/grilles-tel.jpg" alt="Grilles de prix sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Grilles de prix</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="devises">
+  <h2><span class="num">7</span>Devises et taux</h2>
+  <p class="intro">Les devises acceptées par vos établissements et le taux du jour de chacune. Menu de gestion → <span class="libelle">Devises et taux</span>.</p>
+  <h3>La devise de référence</h3>
+  <p>Les prix du catalogue sont saisis dans cette devise (USD dans la démonstration). Les autres devises sont calculées avec leur taux, sauf les prix fixés à la main. On ne peut changer de devise de référence que tant qu'aucun prix n'est enregistré dans l'ancienne ; l'écran explique pourquoi quand c'est impossible.</p>
+  <div class="captures">
+    <figure><img src="captures/devises-ordi.jpg" alt="Devises et taux sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Devises et taux</figcaption></figure>
+    <figure><img src="captures/devises-tel.jpg" alt="Devises et taux sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Devises et taux</figcaption></figure>
+  </div>
+  <h3>Saisir le taux du jour</h3>
+  <ol class="etapes">
+    <li>Dans <span class="libelle">Taux du jour</span>, changez seulement les taux qui ont bougé : « 1 USD = … CDF ».</li>
+    <li>Un exemple calculé en direct à côté du champ montre le résultat avec l'arrondi de la devise (« 10 $ → 28 500 FC »).</li>
+    <li>La date de début vaut « maintenant » par défaut. Une date plus tard programme le changement.</li>
+    <li>Touchez <span class="bouton">Enregistrer les taux</span>. Les prix convertis changent aussitôt sur la vitrine et la caisse ; les prix fixés à la main ne bougent pas.</li>
+  </ol>
+  <div class="captures captures--seule"><figure><img src="captures/devises-taux-ordi.jpg" alt="Taux du jour" loading="lazy"><figcaption>Taux du jour avec l'exemple de conversion</figcaption></figure></div>
+  <h3>Ajouter ou modifier une devise</h3>
+  <p><span class="bouton">Ajouter une devise</span>, ou touchez une devise de la liste :</p>
+  <div class="tableau"><table>
+    <thead><tr><th>Champ</th><th>À quoi il sert</th></tr></thead>
+    <tbody>
+      <tr><td>Code</td><td>3 lettres : USD, CDF, EUR, RWF…</td></tr>
+      <tr><td>Symbole</td><td>$, FC, FRw, € ; avant ou après le montant.</td></tr>
+      <tr><td>Décimales</td><td>2 pour le dollar ou l'euro (2,50), 0 pour le franc congolais.</td></tr>
+      <tr><td>Arrondi</td><td>0 = pas d'arrondi. Avec 100, un prix converti de 28 437 FC devient 28 400 FC.</td></tr>
+      <tr><td>Position</td><td>L'ordre d'affichage des devises.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Une devise désactivée n'apparaît plus sur la vitrine ni à la caisse ; ses réglages sont gardés. La devise de référence reste toujours active.</p>
+  <div class="captures">
+    <figure><img src="captures/devise-fiche-ordi.jpg" alt="Fiche d'une devise" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fiche du franc congolais</figcaption></figure>
+    <figure><img src="captures/devise-fiche-tel.jpg" alt="Fiche d'une devise sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Fiche d'une devise</figcaption></figure>
+  </div>
+  <h3>L'historique</h3>
+  <p>Les 30 derniers taux, avec la date, le taux et le nom de la personne qui l'a saisi.</p>
+  <div class="captures captures--seule"><figure><img src="captures/devises-historique-ordi.jpg" alt="Historique des taux" loading="lazy"><figcaption>Historique des taux</figcaption></figure></div>
+</section>
+
+<section class="chapitre" id="qr">
+  <h2><span class="num">8</span>Codes QR</h2>
+  <p class="intro">Chaque code QR ouvre le menu d'un établissement. Un code lié à une zone affiche les prix de cette zone. Menu de gestion → <span class="libelle">Codes QR</span>.</p>
+  <ol class="etapes">
+    <li>Dans <span class="libelle">Nouveau code QR</span>, choisissez l'établissement, la zone (facultatif) et donnez un libellé (« Table 12 », « Comptoir », « Entrée »).</li>
+    <li>Touchez <span class="bouton">Créer le code QR</span>.</li>
+    <li><span class="libelle">Imprimer</span> ouvre un chevalet de table prêt à imprimer ; <span class="libelle">Télécharger (SVG)</span> donne l'image du code pour un imprimeur.</li>
+  </ol>
+  <p>Chaque scan est compté : la carte du code indique le total et les 7 derniers jours. Le tableau de bord additionne les scans de la semaine.</p>
+  <div class="captures">
+    <figure><img src="captures/qr-ordi.jpg" alt="Codes QR sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Codes QR et statistiques de scans</figcaption></figure>
+    <figure><img src="captures/qr-chevalet-ordi.jpg" alt="Chevalet de table" loading="lazy"><figcaption><span class="etiquette">Impression</span>Chevalet du carré VIP</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="compte">
+  <h2><span class="num">9</span>Mon compte</h2>
+  <p class="intro">Votre nom, la langue de l'interface et votre mot de passe. Menu de gestion → <span class="libelle">Mon compte</span>.</p>
+  <ul>
+    <li><strong>Nom</strong> : affiché en haut du tableau de bord et dans l'historique des taux.</li>
+    <li><strong>Langue préférée</strong> : s'applique tout de suite sur l'appareil, puis à chaque connexion.</li>
+    <li><strong>Mot de passe</strong> : saisissez le mot de passe actuel, puis le nouveau (au moins 10 caractères ; une phrase courte est facile à retenir) deux fois.</li>
+  </ul>
+  <div class="captures">
+    <figure><img src="captures/compte-ordi.jpg" alt="Mon compte sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Mon compte</figcaption></figure>
+    <figure><img src="captures/compte-tel.jpg" alt="Mon compte sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Mon compte</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="design">
+  <h2><span class="num">10</span>Système de design</h2>
+  <p class="intro">Le design « Volcan », choisi parmi quatre propositions, est décrit dans une page vivante : lien <span class="libelle">Système de design</span> en bas des pages de gestion, ou <span class="chemin">/gestion/design</span>.</p>
+  <p>On y voit les couleurs des thèmes jour et nuit avec leurs contrastes calculés, les couleurs des catégories, la typographie (Unbounded pour les titres, Sora pour le texte) et tous les composants : boutons, badges, champs, tableaux, tuiles de caisse. C'est la référence pour tout nouvel écran.</p>
+  <div class="captures">
+    <figure><img src="captures/design-ordi.jpg" alt="Système de design sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Page du système de design</figcaption></figure>
+    <figure><img src="captures/design-tel.jpg" alt="Système de design sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Système de design</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="faq">
+  <h2><span class="num">11</span>Questions fréquentes</h2>
+  <dl class="faq">
+    <dt>Un produit n'apparaît pas sur le menu ni à la caisse.</dt>
+    <dd>Ouvrez sa fiche : un message en haut indique ce qui manque. Le plus souvent, aucun format vendu n'a de prix, ou aucun établissement n'est coché dans « Où il est vendu ». Vérifiez aussi qu'il n'est pas désactivé et que sa catégorie n'est pas cachée du menu.</dd>
+    <dt>Le prix en francs n'est pas celui que j'attendais.</dt>
+    <dd>Une case vide est convertie avec le taux du jour puis arrondie selon la devise (à 100 FC dans la démonstration). Pour un montant précis, remplissez la case du tableau des prix.</dd>
+    <dt>Un produit est épuisé : comment le cacher vite ?</dt>
+    <dd>Catalogue → touchez le bouton « Disponible » du produit. Il passe en épuisé sur la vitrine et la caisse. Un second toucher le remet en vente.</dd>
+    <dt>Le club affiche « Fermé » alors qu'il est 1 h du matin.</dt>
+    <dd>Vérifiez la ligne d'horaires de la veille : pour un service qui passe minuit, l'heure de fermeture doit être plus petite que l'heure d'ouverture (22:00 → 05:00), et le jour coché est celui de l'ouverture.</dd>
+    <dt>Le code QR de la terrasse affiche les prix normaux.</dt>
+    <dd>Le code doit être lié à la zone (Codes QR), et la zone doit avoir sa propre grille (Établissements → Zones).</dd>
+    <dt>La photo est refusée.</dt>
+    <dd>Formats acceptés : JPEG, PNG ou WebP. La taille maximale est affichée sous le champ ; elle dépend de la configuration du serveur.</dd>
+    <dt>Le thème ne me convient pas sur cet appareil.</dt>
+    <dd>Touchez ◐ : le choix est mémorisé sur l'appareil (par établissement pour la caisse).</dd>
+    <dt>Puis-je encaisser ?</dt>
+    <dd>Pas encore : l'encaissement, les sessions de caisse et le stock arrivent avec la phase 3. La caisse sert aujourd'hui à composer un ticket et à voir les totaux dans chaque devise.</dd>
+  </dl>
+</section>
+
+<section class="chapitre" id="technique">
+  <h2><span class="num">12</span>Partie technique</h2>
+  <p class="intro">Pour la personne qui installe et met à jour le logiciel.</p>
+  <h3>Technologie</h3>
+  <p>PHP 8.1 ou plus sans framework ni dépendance, MySQL 8 ou MariaDB 10.6+ (une base par client), HTML, CSS et JavaScript natifs.</p>
+  <h3>Créer un client</h3>
+  <pre><code>php bin/creer-instance.php monbar --email=gerant@monbar.cd --nom="Mon Bar"
+# avec les données de démonstration :
+php bin/creer-instance.php demo --email=admin@demo.test --demo --db-hote=localhost</code></pre>
+  <p>Le script crée la base, un utilisateur MySQL dédié, les tables, le compte administrateur (il affiche son mot de passe) et le fichier <span class="chemin">config/instances/monbar.php</span>.</p>
+  <h3>Mettre à jour</h3>
+  <pre><code>php bin/migrer.php --toutes</code></pre>
+  <p>Applique les évolutions de la base de données (<span class="chemin">database/migrations/</span>) à tous les clients, une seule fois et dans l'ordre.</p>
+  <h3>Mise en production</h3>
+  <ul>
+    <li>Un enregistrement DNS générique <span class="chemin">*.&lt;domaine&gt;</span> et un certificat HTTPS générique.</li>
+    <li>Racine web : le dossier <span class="chemin">public/</span>. Apache utilise <span class="chemin">public/.htaccess</span> ; avec Nginx : <span class="chemin">try_files $uri /index.php?$query_string;</span>.</li>
+    <li>Dans <span class="chemin">config/app.local.php</span> : <span class="chemin">domaine_base</span> et <span class="chemin">instance_par_defaut</span> à <span class="chemin">null</span>.</li>
+    <li>Photos jusqu'à 8 Mo : <span class="chemin">upload_max_filesize = 8M</span> et <span class="chemin">post_max_size = 10M</span> dans PHP. Le dossier <span class="chemin">public/uploads/</span> doit être accessible en écriture.</li>
+  </ul>
+  <h3>Photos libres de droits pour la démonstration</h3>
+  <p>La démonstration utilise des illustrations SVG. Un import de photos libres depuis Wikimedia Commons est prêt (<span class="chemin">php bin/importer-photos.php --instance=demo --essai</span>), mais il demande d'autoriser <span class="chemin">commons.wikimedia.org</span> et <span class="chemin">upload.wikimedia.org</span> dans le réseau du serveur ; il n'a pas encore pu être lancé. Détails dans <span class="chemin">docs/photos.md</span>.</p>
+  <h3>Documents de référence</h3>
+  <ul>
+    <li><span class="chemin">docs/cahier-des-charges.md</span> : le cahier des charges complet et les 8 phases.</li>
+    <li><span class="chemin">docs/design-system.md</span> : le système de design Volcan.</li>
+    <li><span class="chemin">README.md</span> : installation et organisation du code.</li>
+  </ul>
+  <footer class="fin">restau-bar-pos · manuel de la phase 1 · captures réalisées sur la version de démonstration le 26 octobre 2026.</footer>
+</section>
+</main>
+</div>
+
+</body>
+</html>

@@ -5,6 +5,7 @@ Chaque client dispose de sa propre instance sur un sous-domaine, gérée depuis 
 
 ## Documentation
 
+- [Manuel d'utilisation](docs/manuel/index.html) (HTML avec captures ordinateur et téléphone) et sa [version PDF](docs/manuel/manuel-restau-bar-pos.pdf)
 - [Cahier des charges](docs/cahier-des-charges.md)
 - [Présentation du projet (PDF)](docs/restau-bar-pos-presentation.pdf)
 - [Système de design « Volcan »](docs/design-system.md)
