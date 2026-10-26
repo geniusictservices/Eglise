@@ -120,6 +120,7 @@ return [
     'caisse.mode_paiement' => 'Payment method',
     'caisse.especes' => 'Cash',
     'caisse.mobile_money' => 'Mobile money',
+    'caisse.banque' => 'Bank',
     'caisse.credit_client' => 'Customer credit',
     'caisse.annuler' => 'Cancel',
     'caisse.quitter' => 'Leave the point of sale',

@@ -42,7 +42,10 @@ final class CaisseController
         $grille = $zone && $zone['grille_prix_id'] ? (int) $zone['grille_prix_id'] : $grilleDefaut;
 
         $acceptees = $devises->accepteesParmi($etablissements->deviseIds($id));
-        $principale = $acceptees[(int) $etab['devise_affichage_id']] ?? $devises->reference() ?? reset($acceptees);
+        // Tickets en devise locale, le dollar en deuxième position (ordre de DeviseRepository::actives())
+        $locale = $devises->locale();
+        $principale = ($locale ? ($acceptees[(int) $locale['id']] ?? null) : null)
+            ?? $acceptees[(int) $etab['devise_affichage_id']] ?? $devises->reference() ?? reset($acceptees);
 
         View::afficher('caisse/index', [
             'titre' => t('caisse.titre'),

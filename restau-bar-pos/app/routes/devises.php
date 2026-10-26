@@ -13,6 +13,7 @@ $routeur->get('/gestion/devises', [DeviseController::class, 'index']);
 // Chemins fixes avant {id}, que le motif accepterait aussi
 $routeur->post('/gestion/devises/taux', [DeviseController::class, 'enregistrerTaux']);
 $routeur->post('/gestion/devises/reference', [DeviseController::class, 'choisirReference']);
+$routeur->post('/gestion/devises/locale', [DeviseController::class, 'choisirLocale']);
 $routeur->get('/gestion/devises/nouvelle', [DeviseController::class, 'nouvelle']);
 $routeur->post('/gestion/devises/nouvelle', [DeviseController::class, 'creer']);
 $routeur->get('/gestion/devises/{id}', [DeviseController::class, 'fiche']);

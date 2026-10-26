@@ -149,4 +149,11 @@ return [
     'devises.erreur_arrondi_precision' => 'L\'arrondi a trop de chiffres après la virgule (4 au plus).',
     'devises.erreur_arrondi_decimales' => 'Avec {n} décimale(s), l\'arrondi doit être un multiple de {pas}. Changez l\'arrondi ou le nombre de décimales.',
     'devises.erreur_position' => 'L\'ordre doit être un nombre entier entre 0 et 999.',
+    'devises.locale_titre' => 'Devise locale (tickets et factures)',
+    'devises.locale_explication' => 'Les tickets et factures sont en {code}, avec l\'équivalent en dollars en deuxième position. Partout, les montants s\'affichent dans cet ordre : {code}, dollar, puis les autres devises.',
+    'devises.locale_aucune' => 'Aucune devise locale : les tickets sont dans la devise de référence.',
+    'devises.locale_choisir' => 'Devise locale',
+    'devises.locale_enregistrer' => 'Enregistrer',
+    'devises.locale_changee' => 'Devise locale : {code}. Les tickets et factures sont maintenant en {code}, avec le dollar en deuxième position.',
+    'devises.erreur_locale_choix' => 'Choisissez une devise active comme devise locale.',
 ];

@@ -124,6 +124,40 @@ $candidates = array_values(array_filter($devises, static fn (array $d) => !$d['e
     </details>
 </section>
 
+<?php
+$actives = array_values(array_filter($devises, static fn (array $d) => (bool) $d['active']));
+$locale = null;
+foreach ($actives as $devise) {
+    if ($devise['est_locale']) {
+        $locale = $devise;
+    }
+}
+?>
+<section class="dev-reference" id="locale" aria-labelledby="dev-locale-titre">
+    <p class="dev-reference__surtitre" id="dev-locale-titre"><?= e(t('devises.locale_titre')) ?></p>
+    <?php if ($locale): ?>
+        <p class="dev-reference__nom">
+            <span class="dev-reference__symbole" aria-hidden="true"><?= e($locale['symbole']) ?></span>
+            <span><?= e(champ($locale, 'nom')) ?> <span class="dev-code">(<?= e($locale['code']) ?>)</span></span>
+        </p>
+        <p class="aide"><?= e(t('devises.locale_explication', ['code' => $locale['code']])) ?></p>
+    <?php else: ?>
+        <p class="aide"><?= e(t('devises.locale_aucune')) ?></p>
+    <?php endif; ?>
+    <form method="post" action="/gestion/devises/locale" class="formulaire formulaire--ligne">
+        <input type="hidden" name="csrf" value="<?= $jeton ?>">
+        <div class="champ">
+            <label for="locale-devise"><?= e(t('devises.locale_choisir')) ?></label>
+            <select id="locale-devise" name="devise_id" required>
+                <?php foreach ($actives as $devise): ?>
+                    <option value="<?= (int) $devise['id'] ?>" <?= $locale && (int) $locale['id'] === (int) $devise['id'] ? 'selected' : '' ?>><?= e($devise['code'] . ' · ' . champ($devise, 'nom')) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <button class="bouton bouton--secondaire" type="submit"><?= e(t('devises.locale_enregistrer')) ?></button>
+    </form>
+</section>
+
 <section class="bloc dev-taux" id="taux" aria-labelledby="dev-taux-titre">
     <h2 id="dev-taux-titre"><?= e(t('devises.taux_du_jour')) ?></h2>
     <?php if ($autres === []): ?>

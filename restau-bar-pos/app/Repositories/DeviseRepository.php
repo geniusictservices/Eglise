@@ -10,6 +10,7 @@ use App\Core\I18n;
 /**
  * Devises configurées, taux en vigueur, conversions et affichage des montants.
  * Un taux = nombre d'unités de la devise pour 1 unité de la devise de référence.
+ * Ordre d'affichage partout : devise locale, dollar américain, puis les autres (position).
  */
 final class DeviseRepository
 {
@@ -27,7 +28,7 @@ final class DeviseRepository
                           ORDER BY t.valable_depuis DESC, t.id DESC LIMIT 1) AS taux
                    FROM devises d
                   WHERE d.active = 1
-                  ORDER BY d.position, d.code',
+                  ORDER BY d.est_locale DESC, d.code = "USD" DESC, d.position, d.code',
                 // Heure locale de l'instance (les taux sont saisis en heure locale)
                 [date('Y-m-d H:i:s')]
             );
@@ -46,6 +47,17 @@ final class DeviseRepository
     {
         foreach ($this->actives() as $devise) {
             if ($devise['est_reference']) {
+                return $devise;
+            }
+        }
+        return null;
+    }
+
+    /** Devise locale : celle des tickets et factures (le dollar vient en deuxième position). */
+    public function locale(): ?array
+    {
+        foreach ($this->actives() as $devise) {
+            if ($devise['est_locale']) {
                 return $devise;
             }
         }

@@ -164,6 +164,23 @@ final class DeviseController
         rediriger('/gestion/devises');
     }
 
+    /** Devise locale : celle des tickets et factures, le dollar venant en deuxième position. */
+    public function choisirLocale(): void
+    {
+        $utilisateur = Session::exigerConnexion();
+        Session::verifierCsrf();
+
+        $id = (int) ($_POST['devise_id'] ?? 0);
+        $devise = $id > 0 ? $this->devises->parId($id) : null;
+        if ($devise === null || !$devise['active']) {
+            $this->afficher($utilisateur, ['erreurs' => [t('devises.erreur_locale_choix')]], 422);
+            return;
+        }
+        $this->devises->choisirLocale($id);
+        Session::flash(t('devises.locale_changee', ['code' => $devise['code']]));
+        rediriger('/gestion/devises#locale');
+    }
+
     public function nouvelle(): void
     {
         $utilisateur = Session::exigerConnexion();

@@ -27,7 +27,7 @@ final class GestionDeviseRepository
                       ORDER BY t.valable_depuis DESC, t.id DESC LIMIT 1) AS taux_depuis,
                     (SELECT COUNT(*) FROM etablissement_devises ed WHERE ed.devise_id = d.id) AS nb_etablissements
                FROM devises d
-              ORDER BY d.position, d.code',
+              ORDER BY d.est_locale DESC, d.code = "USD" DESC, d.position, d.code',
             [$maintenant, $maintenant]
         );
     }
@@ -175,6 +175,13 @@ final class GestionDeviseRepository
      * référence (1 nouvelle = 1 / taux_nouvelle ancienne), et les taux programmés pour plus tard,
      * exprimés dans l'ancienne référence, sont supprimés.
      */
+    /** Devise locale (tickets et factures) : une seule à la fois, parmi les devises actives. */
+    public function choisirLocale(int $id): void
+    {
+        Database::executer('UPDATE devises SET est_locale = (id = ?) WHERE active = 1 OR id = ?', [$id, $id]);
+        Database::executer('UPDATE devises SET est_locale = 0 WHERE active = 0');
+    }
+
     public function changerReference(int $ancienneId, int $nouvelleId, float $tauxNouvelle, int $utilisateurId): void
     {
         $maintenant = date('Y-m-d H:i:s');

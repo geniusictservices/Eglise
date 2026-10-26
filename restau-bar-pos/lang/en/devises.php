@@ -149,4 +149,11 @@ return [
     'devises.erreur_arrondi_precision' => 'Rounding has too many digits after the decimal point (4 at most).',
     'devises.erreur_arrondi_decimales' => 'With {n} decimal(s), rounding must be a multiple of {pas}. Change the rounding or the number of decimals.',
     'devises.erreur_position' => 'The order must be a whole number between 0 and 999.',
+    'devises.locale_titre' => 'Local currency (receipts and invoices)',
+    'devises.locale_explication' => 'Receipts and invoices are in {code}, with the dollar equivalent second. Amounts are always shown in this order: {code}, dollar, then the other currencies.',
+    'devises.locale_aucune' => 'No local currency: receipts use the reference currency.',
+    'devises.locale_choisir' => 'Local currency',
+    'devises.locale_enregistrer' => 'Save',
+    'devises.locale_changee' => 'Local currency: {code}. Receipts and invoices are now in {code}, with the dollar second.',
+    'devises.erreur_locale_choix' => 'Choose an active currency as the local currency.',
 ];

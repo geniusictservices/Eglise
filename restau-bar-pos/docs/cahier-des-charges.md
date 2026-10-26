@@ -295,6 +295,8 @@ Affichage :
 ### 10.1 Principe
 - **Devises entièrement configurables** : le propriétaire ajoute ou retire les devises qu'il accepte. Pour chacune, il définit le code (USD, CDF, EUR…), le symbole, le nombre de décimales et la règle d'arrondi.
 - **Une devise de référence**, choisie par le propriétaire, pour la comptabilité et les rapports.
+- **Une devise locale** (le franc congolais à Goma), choisie dans « Devises et taux » : **par défaut, les tickets et les factures sont en devise locale, avec leur équivalent en dollars**.
+- **Ordre d'affichage partout : la devise locale, puis le dollar américain, toujours en deuxième position, puis les autres devises** (par exemple « 88 000 FC · 31 $ · 44 950 FRw »). La caisse, les tickets, les factures, la trésorerie et les rapports suivent cet ordre.
 - **Devises acceptées à choisir** par établissement, par point de vente et par moyen de paiement.
 - Valeurs proposées à l'installation : USD comme devise de référence, USD et CDF acceptés. Tout se modifie ensuite.
 
@@ -312,10 +314,15 @@ Au choix, par produit ou par carte :
 **Règles d'arrondi par devise** (par exemple à 100 ou 500 CDF). L'écart d'arrondi est enregistré.
 
 ### 10.4 Encaissement
-- **Total affiché dans toutes les devises acceptées**, à l'écran et sur le ticket.
+- **Total affiché dans toutes les devises acceptées**, à l'écran et sur le ticket : la devise locale en grand, le dollar en deuxième position.
 - **Paiement en plusieurs devises** pour une même note, et **reste à payer** recalculé dans chaque devise après chaque paiement.
 - **Monnaie rendue dans la devise choisie**.
-- Chaque ligne de paiement enregistre : devise, montant, moyen de paiement, taux appliqué, contre-valeur dans la devise de référence.
+- **Chaque paiement précise toujours** :
+  - le **moyen** : **espèces**, **mobile money** ou **banque** (virement, carte, chèque) ; à la vente s'ajoute le **crédit client** (dette, section 7) ;
+  - la **devise** : la devise locale, le dollar, **ou les deux** (par exemple 20 $ en espèces et 15 000 FC en mobile money pour une même note) ;
+  - le **compte de trésorerie** qui reçoit l'argent (section 10.5).
+- Chaque ligne de paiement enregistre : moyen, compte, devise, montant, taux appliqué, contre-valeur dans la devise de référence.
+- La même règle vaut pour **toutes les opérations d'argent** : ventes, achats aux fournisseurs, paiements et remboursements de dettes, **dépenses**, salaires, transferts.
 
 Exemple : note de **50 $**. Taux : 1 € = 1,08 $ · 1 $ = 1 300 RWF · 1 $ = 2 800 CDF.
 
@@ -329,7 +336,9 @@ L'écart de 20 CDF est enregistré comme écart d'arrondi.
 
 ### 10.5 Caisse, trésorerie et rapports
 - **Fond de caisse, clôture et écarts par devise** : les écarts de deux devises ne se compensent pas.
-- **Trésorerie par devise** : caisse USD, caisse CDF, banque, mobile money.
+- **Plusieurs comptes de trésorerie**, chacun d'**un type** (espèces, mobile money, banque) et d'**une devise** : par exemple Caisse CDF, Caisse USD, M-Pesa CDF, M-Pesa USD, Airtel Money CDF, Rawbank USD, Equity BCDC CDF. Chaque compte peut être lié à un établissement, avec l'opérateur ou la banque et le numéro.
+- **Solde de chaque compte** calculé à partir de ses mouvements (solde d'ouverture, ventes, dépenses, achats, transferts…) ; total par devise et total converti dans la devise de référence.
+- **Transferts entre comptes** : de la caisse vers la banque, de M-Pesa vers la caisse… Entre deux devises (caisse USD vers M-Pesa CDF), le montant reçu est proposé avec le taux du jour, modifiable, et le taux réellement appliqué est enregistré.
 - **Encaissements par devise**, et totaux convertis dans la devise de référence.
 - **Gains et pertes de change** calculés automatiquement.
 - Achats fournisseurs dans n'importe quelle devise, avec conversion du coût de revient.
@@ -402,6 +411,7 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 
 ### 13.3 Dépenses et trésorerie
 - Dépenses par catégorie : loyer, électricité, carburant du groupe électrogène, entretien, sécurité, artistes…
+- **Chaque dépense précise le moyen (espèces, mobile money, banque), la devise ou les deux, et le compte payeur** ; une dépense peut être payée en partie en dollars et en partie en francs (section 10.4).
 - Comptes de trésorerie par devise (section 10.5), avec les transferts entre eux.
 - Vue de la trésorerie : entrées (ventes, remboursements de dettes) et sorties (fournisseurs, dépenses, salaires).
 - TVA et taxes, export vers un logiciel comptable ou un comptable.
@@ -516,7 +526,7 @@ Chaque phase est utilisable seule.
 | 3 | Caisse : commandes, encaissement multi-devises, taux de change, sessions de caisse · stock simple et transferts · **rapport des ventes par utilisateur et serveur de la période** |
 | 4 | Clients et dettes · **dettes des clients liées aux utilisateurs** (servi par, accordé par, responsable) · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
 | 5 | Modules lounge et nightclub (bouteilles, VIP, entrées, invités, vestiaire, cashless, mode comptoir rapide) · vente en gros au dépôt et consignes |
-| 6 | ERP : achats et fournisseurs, stock avancé, dépenses et trésorerie |
+| 6 | ERP : achats et fournisseurs, stock avancé (les comptes de trésorerie, les transferts et les dépenses sont avancés en phase 1) |
 | 7 | Ressources humaines : présence par code QR, plannings, paie, commissions · événements |
 | 8 | Tableaux de bord avancés · facturation automatique des abonnements · export comptable |
 
@@ -533,6 +543,8 @@ Chaque phase est utilisable seule.
 | Interfaces | Simples et adaptées au contexte (établissement, service, rôle, lieu, appareil) ; à la caisse, les produits sont en grille |
 | Design | Direction « Volcan », choisie parmi 4 propositions : thème nuit (nightclub, lounge) et thème jour (restaurant-bar), polices Unbounded et Sora (voir docs/design-system.md) |
 | Images | Illustrations SVG pour la démonstration ; les vraies photos s'ajoutent depuis la gestion du catalogue ; import de photos libres possible (docs/photos.md) |
+| Devises à l'affichage | Devise locale d'abord (tickets et factures), le dollar toujours en deuxième position, puis les autres (section 10.1) |
+| Paiements | Toute opération d'argent précise le moyen (espèces, mobile money, banque), la devise ou les deux, et le compte ; plusieurs comptes de trésorerie avec transferts (sections 10.4 et 10.5) |
 | Rapports du personnel | Serveur ou serveuse de la période (classement configurable) et dettes des clients liées à chaque utilisateur (section 13.7) |
 
 ## 18. Questions ouvertes

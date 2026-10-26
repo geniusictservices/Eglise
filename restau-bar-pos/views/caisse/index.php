@@ -95,6 +95,7 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
             <div class="paiements" role="group" aria-label="<?= e(t('caisse.mode_paiement')) ?>">
                 <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.especes')) ?></button>
                 <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.mobile_money')) ?></button>
+                <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.banque')) ?></button>
                 <button type="button" class="paiement" disabled aria-describedby="note-encaisser"><?= e(t('caisse.credit_client')) ?></button>
             </div>
             <button type="button" class="encaisser bouton bouton--large" disabled aria-describedby="note-encaisser"><?= e(t('caisse.encaisser')) ?> <span id="encaisser-total"></span></button>
