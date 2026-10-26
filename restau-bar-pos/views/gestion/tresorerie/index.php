@@ -79,10 +79,14 @@ $ligneCompte = static function (array $compte) use ($devises): string {
         </div>
         <?php if ($reference && $totalReference !== null && count($totaux) > 0): ?>
             <p class="tre-total-general">
-                <?= e(t('tresorerie.total_general', ['code' => $reference['code']])) ?>
-                <strong class="montant"><?= e(A::montant($totalReference, $reference)) ?></strong>
-                <?php if ($totalLocale !== null && $locale): ?>
-                    <span class="tre-total-general__equivalent montant">≈ <?= e(A::montant($totalLocale, $locale)) ?></span>
+                <?php /* Devise locale d'abord, l'équivalent en dollars (référence) ensuite */ ?>
+                <?php if ($totalLocale !== null && $locale && (int) $locale['id'] !== (int) $reference['id']): ?>
+                    <?= e(t('tresorerie.total_general', ['code' => $locale['code']])) ?>
+                    <strong class="montant"><?= e(A::montant($totalLocale, $locale)) ?></strong>
+                    <span class="tre-total-general__equivalent montant">≈ <?= e(A::montant($totalReference, $reference)) ?></span>
+                <?php else: ?>
+                    <?= e(t('tresorerie.total_general', ['code' => $reference['code']])) ?>
+                    <strong class="montant"><?= e(A::montant($totalReference, $reference)) ?></strong>
                 <?php endif; ?>
             </p>
             <?php if ($sansTaux): ?>
