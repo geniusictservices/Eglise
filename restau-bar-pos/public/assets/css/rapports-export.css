@@ -1,0 +1,13 @@
+/* Boutons « Exporter » des rapports (CSV, Imprimer / PDF) et en-tête imprimé.
+   Partiel views/gestion/rapports/_exporter.php ; l'impression elle-même : rapports-impression.css. */
+.rap-export { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.rap-export__titre { font-size: var(--taille-s); font-weight: 600; color: var(--doux); }
+.rap-export__bouton { gap: .4rem; }
+.rap-export__bouton svg { flex: none; }
+.rap-impression-entete { display: none; }
+.rap-retour-impression { margin: 0 0 1rem; }
+.rap-retour-impression .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+@media (max-width: 600px) {
+  .rap-export { width: 100%; }
+  .rap-export__bouton { flex: 1 1 auto; }
+}

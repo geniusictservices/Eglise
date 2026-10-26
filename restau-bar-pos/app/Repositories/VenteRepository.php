@@ -78,7 +78,8 @@ final class VenteRepository
      *              paiements: list<array{moyen: string, compte: array, devise: array, recu: float, taux: ?float}>,
      *              rendu: ?array{montant: float, devise: array, compte: array, taux: ?float}, date?: string,
      *              credits?: list<array{client_id: int, devise: array, montant: float, echeance: string, servi_par: ?int, garant_id: ?int, note: ?string}>,
-     *              session_id?: ?int} $v
+     *              session_id?: ?int, apres?: callable(int): void} $v
+     *        quantite : décimale pour une part d'une note partagée en parts égales (1/3 de Tilapia)
      *        credits : part du ticket mise à l'ardoise d'un client (une dette par ligne, accordée par utilisateur_id)
      *        date (facultative, « Y-m-d H:i:s ») : heure de la vente et de ses mouvements de trésorerie,
      *        maintenant si absente (la caisse ne l'envoie jamais ; bin/demo-ventes.php l'utilise)
@@ -144,7 +145,7 @@ final class VenteRepository
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     [
                         $id, $l['produit_id'], $l['conditionnement_id'], mb_substr($l['libelle'], 0, 160), $l['format'] !== null ? mb_substr($l['format'], 0, 80) : null,
-                        $l['quantite'], self::decimal($l['prix']), self::decimal($l['prix'] * $l['quantite']),
+                        is_int($l['quantite']) ? $l['quantite'] : number_format((float) $l['quantite'], 3, '.', ''), self::decimal($l['prix']), self::decimal($l['prix'] * $l['quantite']),
                         $l['prix_reference'] !== null ? self::decimal($l['prix_reference']) : null,
                     ]
                 );
@@ -174,6 +175,10 @@ final class VenteRepository
                     'Monnaie rendue ' . $numero, $v['utilisateur_id'], (int) $v['rendu']['devise']['id']);
             }
             (new StockRepository())->sortieVente($id);
+            // Suite dans la même transaction (payer une note : marquer ce qui est payé) ; une exception annule la vente
+            if (isset($v['apres']) && is_callable($v['apres'])) {
+                ($v['apres'])($id);
+            }
             $pdo->commit();
             return $id;
         } catch (\Throwable $e) {

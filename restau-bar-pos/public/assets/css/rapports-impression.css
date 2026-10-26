@@ -1,0 +1,49 @@
+/* Impression des rapports (et « Enregistrer au format PDF ») : A4, noir sur blanc, sans navigation ni filtres.
+   Chargée avec media="print" par views/gestion/rapports/_exporter.php, ou pour tout l'écran avec ?imprimer=1
+   (présentation d'impression sans JavaScript). Seule feuille du design où les couleurs sont fixées : le papier
+   est toujours blanc, comme pour le reçu et le chevalet. */
+@page { size: A4 portrait; margin: 12mm 10mm; }
+
+html, html[data-theme], [data-theme] {
+  --fond: #fff; --surface: #fff; --surface-2: #eeeeee; --tuile-fond: #fff;
+  --ligne: #c9c9c9; --ligne-forte: #8f8f8f; --encre: #000; --doux: #3d3d3d;
+  --accent: #b93a10; --accent-texte: #b93a10; --lave-texte: #b93a10; --prix: #6b3f00; --braise: #9a5b00;
+  --teinte-accent: #f7e3da; --teinte-braise: #f5ead9; --teinte-glace: #dfeef2; --teinte-erreur: #f8e1dd; --teinte-succes: #dff0e5;
+  --graph-1: #C2410C; --graph-2: #2F6FD0; --graph-grille: #d0d0d0;
+  color-scheme: light;
+}
+* { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+html, body { background: #fff !important; color: #000 !important; }
+body { font-size: 10pt; }
+body.avec-module { padding: 0 !important; }
+
+.haut, .lateral, .barre-bas, .plf-bandeaux, .rap-export, .rap-retour-impression, .rap-pas-imprimer,
+.tre-filtres, .rap-filtres, .tre-entete__actions, .tre-periode, .alerte, .bouton, .puce,
+form, details > summary .rap-indice { display: none !important; }
+
+.cadre, .avec-module .cadre { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+.page, .avec-module .page { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
+
+.rap-impression-entete {
+  display: flex !important; flex-wrap: wrap; justify-content: space-between; gap: 2mm 6mm;
+  margin: 0 0 5mm; padding: 0 0 3mm; border-bottom: 1px solid #000; font-size: 9pt;
+}
+h1 { font-size: 16pt; margin: 0 0 2mm; }
+h2 { font-size: 12pt; }
+.aide { color: #3d3d3d !important; }
+
+.bloc, .chiffre, .rap-carte, .rap-graphique { break-inside: avoid; page-break-inside: avoid; background: #fff !important; border-color: #c9c9c9 !important; box-shadow: none !important; }
+.bloc { overflow: visible !important; margin-top: 5mm !important; padding: 3mm 4mm !important; }
+.chiffres { gap: 3mm !important; margin-top: 3mm !important; }
+.chiffre { padding: 2.5mm 3mm !important; }
+.chiffre__valeur { font-size: 13pt !important; white-space: normal !important; }
+.defile, .ven-defile, .rap-defile { overflow: visible !important; }
+
+table { width: 100% !important; border-collapse: collapse; font-size: 8.5pt; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; page-break-inside: avoid; }
+th, td { padding: 1.2mm 1.5mm !important; }
+a { color: inherit !important; text-decoration: none !important; }
+details { display: block; }
+details > :not(summary) { display: block !important; }
+svg { max-width: 100%; }

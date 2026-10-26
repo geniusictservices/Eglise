@@ -110,14 +110,14 @@ final class Clients
         $pdo = BaseConsole::pdo();
         $pdo->beginTransaction();
         try {
-            $actuel = BaseConsole::un('SELECT echeance, essai, jours_grace, jours_lecture_seule FROM clients WHERE id = ? FOR UPDATE', [(int) $client['id']]);
+            $actuel = BaseConsole::un('SELECT echeance, essai, periode, jours_grace, jours_lecture_seule FROM clients WHERE id = ? FOR UPDATE', [(int) $client['id']]);
             // Date du paiement : un client suspendu repart de ce jour-là
             $nouvelle = $v['echeance'] ?? Abonnement::prolonger($actuel, $v['periode'], (int) $v['periodes'], $v['paye_le']);
             BaseConsole::executer(
-                'INSERT INTO paiements (client_id, montant, devise, moyen, reference, paye_le, periode, periodes, echeance_avant, echeance_apres, essai_avant, note, saisi_par)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                'INSERT INTO paiements (client_id, montant, devise, moyen, reference, paye_le, periode, periodes, echeance_avant, echeance_apres, essai_avant, periode_avant, note, saisi_par)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 [(int) $client['id'], $v['montant'], $v['devise'], $v['moyen'], $v['reference'] ?: null, $v['paye_le'], $v['periode'], (int) $v['periodes'],
-                 $actuel['echeance'], $nouvelle, (int) $actuel['essai'], $v['note'] ?: null, $adminId]
+                 $actuel['echeance'], $nouvelle, (int) $actuel['essai'], $actuel['periode'], $v['note'] ?: null, $adminId]
             );
             $id = BaseConsole::dernierId();
             BaseConsole::executer('UPDATE clients SET echeance = ?, essai = 0, periode = ? WHERE id = ?', [$nouvelle, $v['periode'], (int) $client['id']]);
@@ -129,7 +129,7 @@ final class Clients
         return ['id' => $id, 'echeance_avant' => $actuel['echeance'], 'echeance_apres' => $nouvelle];
     }
 
-    /** Annule le dernier paiement encore valable (saisi par erreur) : l'échéance revient à sa valeur d'avant. */
+    /** Annule le dernier paiement encore valable (saisi par erreur) : l'échéance (et la période) reviennent à leur valeur d'avant. */
     public static function annulerPaiement(int $clientId, int $paiementId, string $motif, int $adminId): bool
     {
         $dernier = BaseConsole::un('SELECT * FROM paiements WHERE client_id = ? AND annule_le IS NULL ORDER BY id DESC LIMIT 1', [$clientId]);
@@ -137,7 +137,8 @@ final class Clients
             return false;
         }
         BaseConsole::executer('UPDATE paiements SET annule_le = NOW(), annule_par = ?, annule_motif = ? WHERE id = ?', [$adminId, $motif, $paiementId]);
-        BaseConsole::executer('UPDATE clients SET echeance = ?, essai = ? WHERE id = ?', [$dernier['echeance_avant'], (int) $dernier['essai_avant'], $clientId]);
+        BaseConsole::executer('UPDATE clients SET echeance = ?, essai = ?, periode = COALESCE(?, periode) WHERE id = ?',
+            [$dernier['echeance_avant'], (int) $dernier['essai_avant'], $dernier['periode_avant'], $clientId]);
         return true;
     }
 

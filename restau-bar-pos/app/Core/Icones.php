@@ -50,6 +50,15 @@ final class Icones
         'recette' => '<path d="M7 14a4 4 0 0 1-.9-7.9 5 5 0 0 1 9.8 0A4 4 0 0 1 17 14"/><path d="M7 14h10v6H7z"/><path d="M10 17h4"/>',
         'emballage' => '<rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M3 12h18M7.5 8v12M12 8v12M16.5 8v12"/><path d="M8 8V5h8v3"/>',
         'lieux' => '<path d="M3 21V9l9-5 9 5v12"/><path d="M7 21v-8h10v8"/><path d="M7 17h10"/>',
+        // Personnel : congés et absences justifiées (calendrier coché)
+        'conge' => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="M8.5 15.5l2.2 2.2 4.8-4.8"/>',
+        // Événements : soirées (note de musique)
+        // Salle et cuisine : table et chaises (plan), marmite (cuisine), calendrier et horloge (réservations, services)
+        'salle' => '<rect x="5" y="9" width="14" height="6" rx="1.5"/><path d="M8 15v5M16 15v5M3 6h4M17 6h4M5 6v3M19 6v3"/>',
+        'cuisine' => '<path d="M4 11h16v3a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6z"/><path d="M2 11h20"/><path d="M9 7c0-1.5 1-1.5 1-3M14 7c0-1.5 1-1.5 1-3"/>',
+        'reservation' => '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15.5" r="2.5"/>',
+        'horloge' => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+        'evenement' => '<path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/><path d="M9 9l11-2"/>',
     ];
 
     public static function svg(string $nom, int $taille = 22): string

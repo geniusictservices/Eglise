@@ -1,0 +1,93 @@
+/* Console super admin (admin.<domaine>). Complète gestion.css ; n'utilise que les jetons de volcan.css (jour et nuit).
+   Contours fins et égaux sur tous les côtés, jamais de bande de couleur d'un seul côté. */
+
+/* Barre du bas : pas de « retour aux modules » ici, tous les liens se valent */
+@media (max-width: 899px) {
+  .console .barre-bas__lien:first-child { flex-grow: 1; color: var(--doux); }
+  .console .barre-bas__lien:first-child[aria-current] { color: var(--accent-texte); }
+}
+.con-marque { margin-left: .25rem; }
+@media (max-width: 600px) { .console .haut__client { display: none; } }
+
+.con-entete { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .75rem 1.5rem; }
+.con-entete h2 { margin: 0; }
+.con-boutons, .con-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
+.con-boutons form, .con-actions form { margin: 0; }
+.con-actions { margin-top: 1rem; }
+.con-petit { font-size: var(--taille-s); }
+.con-lien-fort { font-weight: 700; color: var(--encre); }
+.con-resume { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; margin: .25rem 0 0; }
+.con-resume .lien { display: inline-flex; align-items: center; min-height: var(--cible); overflow-wrap: anywhere; }
+
+.con-puces { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.25rem; }
+.con-puces .puce { gap: .4rem; }
+.con-chiffres { grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
+.con-chiffres .chiffre, .con-chiffres-petits .chiffre { align-content: start; }
+.con-chiffres .chiffre__valeur { font-size: clamp(1.375rem, 2.4vw, 1.875rem); overflow-wrap: anywhere; }
+.con-chiffres-petits { grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr)); margin-top: .75rem; }
+.con-chiffres-petits .chiffre { padding: .75rem 1rem; }
+.con-chiffres-petits .chiffre__valeur { font-size: 1.5rem; }
+.con-chiffres-petits small { font-size: .9375rem; color: var(--doux); font-family: var(--police-texte); font-weight: 600; }
+
+/* Formulaires : une colonne sur téléphone */
+.con-form { display: grid; gap: 1rem; }
+.con-form .bloc { margin-top: 1rem; }
+.con-grille { margin-top: .75rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: 1rem; }
+.con-ligne { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; }
+.con-ligne .champ { flex: 1 1 12rem; min-width: 0; }
+.con-ligne--serree { flex-wrap: nowrap; gap: .4rem; align-items: center; }
+.con-saisie-courte { width: 9.5rem; min-height: var(--cible); }
+.con-groupe { border: 1px solid var(--ligne); border-radius: var(--rayon); padding: 1rem; margin: 0; min-width: 0; }
+.con-groupe legend { padding: 0 .4rem; font-weight: 700; }
+.con-coches { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); gap: .25rem 1rem; }
+.con-sous-titre { margin: 1.25rem 0 0; font: 600 .9375rem/1.2 var(--police-titre); }
+.con-avance summary { cursor: pointer; font-weight: 700; min-height: var(--cible); display: flex; align-items: center; }
+.con-etats { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0 0; }
+
+/* Fiche : deux colonnes sur grand écran */
+.con-colonnes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: 0 1.25rem; align-items: start; }
+.con-dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .4rem 1rem; margin: .5rem 0 0; }
+.con-dl dt { color: var(--doux); font-size: var(--taille-s); }
+.con-dl dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 480px) { .con-dl { grid-template-columns: minmax(0, 1fr); gap: .1rem; } .con-dl dd { margin-bottom: .5rem; } }
+code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: .875em; padding: .1em .35em; border-radius: 6px; background: var(--surface-2); overflow-wrap: anywhere; }
+.con-code { margin: .75rem 0 0; padding: .85rem 1rem; border: 1px solid var(--ligne); border-radius: var(--rayon); background: var(--surface-2); overflow-x: auto; font-size: .8125rem; white-space: pre; }
+.con-secret { border-color: color-mix(in srgb, var(--braise) 45%, var(--ligne)); background: var(--teinte-braise); }
+.con-mdp { font-size: 1.125rem; font-weight: 700; letter-spacing: .04em; }
+.con-guide { margin: 1rem 0 0; padding-left: 1.25rem; display: grid; gap: .9rem; }
+.con-guide h3 { margin: 0; font: 600 .9375rem/1.3 var(--police-titre); }
+.con-guide p { margin: .25rem 0 0; }
+.con-liste { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.con-liste li { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.con-details summary { min-height: var(--cible); display: inline-flex; align-items: center; cursor: pointer; }
+.con-details .con-form { margin-top: .5rem; min-width: 12rem; }
+.con-annule td { color: var(--doux); text-decoration: line-through; }
+.con-annule td:last-child { text-decoration: none; }
+
+/* Échéancier : relances → échéance → grâce → lecture seule → suspension */
+.con-echeancier { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(6.9rem, 1fr)); gap: .4rem; }
+.con-jalon { display: grid; gap: .15rem; padding: .55rem .6rem; border: 1px solid var(--ligne); border-radius: var(--rayon); background: var(--surface-2); min-width: 0; }
+.con-jalon__date { font-weight: 700; font-size: var(--taille-s); }
+.con-jalon__libelle { font-size: .75rem; color: var(--doux); line-height: 1.25; }
+.con-jalon--actuel { border-color: var(--accent); background: var(--teinte-accent); }
+.con-jalon--actuel .con-jalon__libelle { color: var(--accent-texte); font-weight: 700; }
+
+/* Formules */
+.con-cartes { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr)); gap: 1rem; }
+.con-formule { display: grid; gap: .5rem; align-content: start; }
+.con-formule h2 { margin: 0; }
+.con-formule--archivee { opacity: .7; }
+.con-formule__tete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem; }
+.con-formule p { margin: 0; }
+.con-prix { display: flex; flex-wrap: wrap; gap: .25rem 1rem; }
+.con-prix strong { font: 800 1.25rem/1.1 var(--police-titre); }
+.con-modules { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .35rem; }
+
+/* Installation de la console */
+.con-installation { max-width: 46rem; margin-inline: auto; }
+.con-etapes { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: .75rem; counter-reset: etape; }
+.con-etape { padding: .8rem 1rem; border: 1px solid var(--ligne); border-radius: var(--rayon); background: var(--surface); counter-increment: etape; }
+.con-etape h2 { margin: 0; font-size: 1rem; }
+.con-etape h2::before { content: counter(etape) ". "; color: var(--doux); }
+.con-etape[aria-current="step"] { border-color: var(--accent); background: var(--teinte-accent); }
+.con-etape p { margin: .4rem 0 0; }

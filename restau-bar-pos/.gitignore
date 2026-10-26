@@ -8,6 +8,9 @@
 # Journaux
 /storage/logs/*
 !/storage/logs/.gitkeep
+# Preuve d'accès à l'hébergement pour la page d'installation de la console
+/storage/console-installation.code
+/storage/installation-*.txt
 
 # Fichiers envoyés (photos des produits…)
 /public/uploads/*

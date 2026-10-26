@@ -623,6 +623,93 @@ final class DetteRepository
         );
     }
 
+    // ---------- Retenues sur la paie (module Personnel et paie) ----------
+
+    /**
+     * Retenue sur la paie d'un membre du personnel : réduit ses dettes ouvertes (client « personnel ») sans
+     * mouvement de trésorerie, l'argent étant gardé sur le salaire. Le montant est dans $deviseId ; il couvre
+     * d'abord les dettes de cette devise puis les autres, les plus anciennes d'abord, converti au taux du jour
+     * dans la devise de chaque dette (comme un remboursement). Chaque part est notée dans bulletin_dettes.
+     * À appeler dans la transaction de la validation du bulletin.
+     * @return float montant réellement retenu (dans $deviseId)
+     * @throws \DomainException « rien_a_rembourser », « trop » (maximum dans $this->maximum), « taux », « montant »
+     */
+    public function retenirSurPaie(int $clientId, int $deviseId, float $montant, int $bulletinId, int $par): float
+    {
+        return $this->transaction(function () use ($clientId, $deviseId, $montant, $bulletinId, $par) {
+            $devises = $this->tresorerie->devises();
+            $devise = $devises[$deviseId] ?? null;
+            if ($devise === null || $montant <= 0) {
+                throw new \DomainException('montant');
+            }
+            $dettes = $this->dettesOuvertes($clientId, true);
+            if ($dettes === []) {
+                throw new \DomainException('rien_a_rembourser');
+            }
+            usort($dettes, static fn (array $a, array $b) => [(int) $a['devise_id'] !== $deviseId, $a['cree_le'], (int) $a['id']]
+                <=> [(int) $b['devise_id'] !== $deviseId, $b['cree_le'], (int) $b['id']]);
+            $date = date('Y-m-d H:i:s');
+            $disponible = $montant;
+            $maximum = 0.0;
+            $affectations = [];
+            foreach ($dettes as $dette) {
+                $deviseDette = $devises[(int) $dette['devise_id']] ?? ['decimales' => 2, 'arrondi' => 0];
+                $resteEnRetenue = $this->convertir((float) $dette['reste'], (int) $dette['devise_id'], $deviseId, $date);
+                if ($resteEnRetenue === null) {
+                    throw new \DomainException('taux');
+                }
+                $maximum += $resteEnRetenue;
+                if ($disponible <= 1e-9) {
+                    continue;
+                }
+                $pris = min($disponible, $resteEnRetenue);
+                $enDette = $this->convertir($pris, $deviseId, (int) $dette['devise_id'], $date) ?? 0.0;
+                if ((float) $dette['reste'] - $enDette < Reglement::pas($deviseDette) / 2) {
+                    $enDette = (float) $dette['reste'];
+                }
+                $affectations[] = ['dette' => $dette, 'montant' => round($enDette, 3)];
+                $disponible -= $pris;
+            }
+            if ($disponible > Reglement::pas($devise) / 2) {
+                $this->maximum = Reglement::versLeHaut($maximum, $devise);
+                throw new \DomainException('trop');
+            }
+            foreach ($affectations as $a) {
+                $reste = max(0.0, round((float) $a['dette']['reste'] - $a['montant'], 3));
+                Database::executer('UPDATE dettes SET reste = ?, statut = ?, cloturee_le = ? WHERE id = ?', [
+                    GestionTresorerieRepository::decimal($reste), $reste > 0 ? 'ouverte' : 'soldee', $reste > 0 ? null : $date, (int) $a['dette']['id'],
+                ]);
+                Database::executer(
+                    'INSERT INTO bulletin_dettes (bulletin_id, dette_id, montant) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE montant = montant + VALUES(montant)',
+                    [$bulletinId, (int) $a['dette']['id'], GestionTresorerieRepository::decimal($a['montant'])]
+                );
+            }
+            Journal::ecrire('dette_retenue_paie', 'client ' . $clientId, ['bulletin' => $bulletinId, 'montant' => $montant, 'devise' => $devise['code'],
+                'dettes' => array_map(static fn (array $a) => [(int) $a['dette']['id'], $a['montant']], $affectations)], $par);
+            return $montant - max(0.0, $disponible);
+        });
+    }
+
+    /**
+     * Annulation d'un bulletin validé : les dettes retrouvent ce que la paie avait retenu.
+     * @throws \DomainException « dette_close » (dette annulée, remise ou transférée depuis)
+     */
+    public function annulerRetenuesPaie(int $bulletinId, int $par): void
+    {
+        $this->transaction(function () use ($bulletinId, $par) {
+            foreach (Database::tous('SELECT * FROM bulletin_dettes WHERE bulletin_id = ? AND annule = 0 FOR UPDATE', [$bulletinId]) as $l) {
+                $dette = $this->dette((int) $l['dette_id'], true);
+                if (!in_array($dette['statut'], ['ouverte', 'soldee'], true)) {
+                    throw new \DomainException('dette_close');
+                }
+                Database::executer("UPDATE dettes SET reste = reste + ?, statut = 'ouverte', cloturee_le = NULL WHERE id = ?",
+                    [GestionTresorerieRepository::decimal((float) $l['montant']), (int) $l['dette_id']]);
+                Database::executer('UPDATE bulletin_dettes SET annule = 1 WHERE bulletin_id = ? AND dette_id = ?', [$bulletinId, (int) $l['dette_id']]);
+            }
+            Journal::ecrire('dette_retenue_paie_annulee', 'bulletin ' . $bulletinId, [], $par);
+        });
+    }
+
     /** @template T @param callable(): T $f @return T */
     private function transaction(callable $f): mixed
     {

@@ -17,7 +17,7 @@ final class Modules
     public const TOUJOURS = ['parametres'];
 
     /** Modules annoncés, pas encore construits, qu'une formule peut déjà inclure (console super admin). */
-    public const A_VENIR = ['cuisine', 'nightclub', 'evenements', 'cashless'];
+    public const A_VENIR = ['nightclub', 'cashless'];
 
     /**
      * Modules qu'une formule d'abonnement peut inclure ou non : ceux de tous() (sauf TOUJOURS), puis ceux à venir.
@@ -43,6 +43,18 @@ final class Modules
                 // Garanties demandées à la personne connectée : chacun répond pour lui-même
                 ['cle' => 'garanties', 'icone' => 'garantie', 'lien' => '/gestion/garanties', 'voir' => null],
             ]],
+            // Salle : plan de salle et tables, notes ouvertes, réservations, services horaires et happy hour
+            'salle' => ['icone' => 'salle', 'lien' => null, 'ecrans' => [
+                ['cle' => 'plan_salle', 'icone' => 'salle', 'lien' => '/gestion/salle', 'voir' => 'salle.voir', 'modifier' => 'salle.plan'],
+                ['cle' => 'notes_ouvertes', 'icone' => 'ventes', 'lien' => '/gestion/salle/notes', 'voir' => 'salle.voir'],
+                ['cle' => 'reservations', 'icone' => 'reservation', 'lien' => '/gestion/salle/reservations', 'voir' => 'salle.voir', 'modifier' => 'salle.reservations'],
+                ['cle' => 'services_horaires', 'icone' => 'horloge', 'lien' => '/gestion/salle/services', 'voir' => 'salle.voir', 'modifier' => 'salle.services'],
+            ]],
+            // Cuisine : écran de chaque poste (hors de la gestion, comme la caisse), postes, routage et écrans autorisés
+            'cuisine' => ['icone' => 'cuisine', 'lien' => null, 'ecrans' => [
+                ['cle' => 'ecran_cuisine', 'icone' => 'cuisine', 'lien' => '/caisse/cuisine', 'voir' => 'cuisine.voir'],
+                ['cle' => 'postes_cuisine', 'icone' => 'parametres', 'lien' => '/gestion/cuisine', 'voir' => 'cuisine.voir', 'modifier' => 'cuisine.parametrer'],
+            ]],
             // Achats et stock : les droits plus fins (commander, recevoir, payer, transférer…) sont vérifiés
             // par chaque action, pour l'établissement concerné
             'achats' => ['icone' => 'achats', 'lien' => null, 'ecrans' => [
@@ -63,11 +75,13 @@ final class Modules
                 ['cle' => 'depots', 'icone' => 'lieux', 'lien' => '/gestion/stock/lieux', 'voir' => 'stock.voir'],
             ]],
             'personnel' => ['icone' => 'personnel', 'lien' => null, 'ecrans' => [
-                ['cle' => 'employes', 'icone' => 'compte', 'lien' => null, 'voir' => 'personnel.voir'],
-                ['cle' => 'presence', 'icone' => 'qr', 'lien' => null, 'voir' => 'personnel.voir'],
-                ['cle' => 'plannings', 'icone' => 'planning', 'lien' => null, 'voir' => 'personnel.voir'],
-                ['cle' => 'paie', 'icone' => 'paie', 'lien' => null, 'voir' => 'personnel.paie'],
-                ['cle' => 'avances', 'icone' => 'depenses', 'lien' => null, 'voir' => 'personnel.paie'],
+                // Droits plus fins (gerer, presence, payer) vérifiés par chaque action, pour l'établissement concerné
+                ['cle' => 'employes', 'icone' => 'compte', 'lien' => '/gestion/personnel/employes', 'voir' => 'personnel.voir', 'modifier' => 'personnel.gerer'],
+                ['cle' => 'presence', 'icone' => 'qr', 'lien' => '/gestion/personnel/presence', 'voir' => 'personnel.voir', 'modifier' => 'personnel.presence'],
+                ['cle' => 'plannings', 'icone' => 'planning', 'lien' => '/gestion/personnel/plannings', 'voir' => 'personnel.voir', 'modifier' => 'personnel.gerer'],
+                ['cle' => 'conges', 'icone' => 'conge', 'lien' => '/gestion/personnel/conges', 'voir' => 'personnel.voir', 'modifier' => 'personnel.voir'],
+                ['cle' => 'paie', 'icone' => 'paie', 'lien' => '/gestion/personnel/paie', 'voir' => 'personnel.paie', 'modifier' => 'personnel.paie'],
+                ['cle' => 'avances', 'icone' => 'depenses', 'lien' => '/gestion/personnel/avances', 'voir' => 'personnel.paie', 'modifier' => 'personnel.payer'],
             ]],
             'finance' => ['icone' => 'finance', 'lien' => '/gestion/tresorerie', 'ecrans' => [
                 ['cle' => 'comptes', 'icone' => 'finance', 'lien' => '/gestion/tresorerie', 'voir' => 'finance.voir', 'modifier' => 'finance.comptes'],
@@ -79,7 +93,16 @@ final class Modules
                 ['cle' => 'tableau', 'icone' => 'rapports', 'lien' => '/gestion/tableau-de-bord', 'voir' => 'rapports.voir'],
                 ['cle' => 'rapport_ventes', 'icone' => 'ventes', 'lien' => '/gestion/rapports/ventes', 'voir' => 'rapports.voir'],
                 ['cle' => 'rapport_creances', 'icone' => 'dettes', 'lien' => '/gestion/rapports/creances', 'voir' => 'rapports.voir'],
-                ['cle' => 'rapport_personnel', 'icone' => 'compte', 'lien' => null, 'voir' => 'rapports.voir'],
+                // Chacun voit ses propres résultats ; le classement complet demande rapports.voir (vérifié par l'écran)
+                ['cle' => 'rapport_personnel', 'icone' => 'compte', 'lien' => '/gestion/rapports/personnel', 'voir' => null, 'chacun' => true],
+                // Présence du personnel (heures, retards, absences) et masse salariale si personnel.paie (module Personnel et paie)
+                ['cle' => 'rapport_presence', 'icone' => 'planning', 'lien' => '/gestion/rapports/presence', 'voir' => 'rapports.voir'],
+                ['cle' => 'export_comptable', 'icone' => 'journal', 'lien' => '/gestion/rapports/export-comptable', 'voir' => 'finance.voir'],
+            ]],
+            // Soirées des lounges et nightclubs : montré seulement s'il y a un établissement de ce type
+            'evenements' => ['icone' => 'evenement', 'lien' => '/gestion/evenements', 'ecrans' => [
+                ['cle' => 'soirees', 'icone' => 'evenement', 'lien' => '/gestion/evenements', 'voir' => 'evenements.voir', 'modifier' => 'evenements.gerer'],
+                ['cle' => 'rentabilite', 'icone' => 'rapports', 'lien' => '/gestion/evenements/rentabilite', 'voir' => 'evenements.voir'],
             ]],
             'carte' => ['icone' => 'carte', 'lien' => '/gestion/catalogue', 'ecrans' => [
                 ['cle' => 'produits', 'icone' => 'carte', 'lien' => '/gestion/catalogue', 'voir' => 'carte.voir', 'modifier' => 'carte.modifier'],
@@ -99,6 +122,13 @@ final class Modules
                 ['cle' => 'design', 'icone' => 'design', 'lien' => '/gestion/design', 'voir' => null],
             ]],
         ];
+    }
+
+    /** Au moins un lounge ou un nightclub actif (module Événements). */
+    public static function aDesSoirees(): bool
+    {
+        static $reponse = null;
+        return $reponse ??= Database::un("SELECT 1 AS n FROM etablissements WHERE actif = 1 AND type IN ('lounge', 'nightclub') LIMIT 1") !== null;
     }
 
     /**
@@ -145,6 +175,9 @@ final class Modules
             if (!Plateforme::moduleInclus($code)) {
                 continue;
             }
+            if ($code === 'evenements' && !self::aDesSoirees()) {
+                continue;
+            }
             if ($code === 'caisse') {
                 if (Acces::a($utilisateurId, $module['voir'])) {
                     $resultat[$code] = $module;
@@ -154,7 +187,8 @@ final class Modules
             $ecrans = array_values(array_filter($module['ecrans'], static fn (array $e) => Acces::a($utilisateurId, $e['voir'])
                 && ($e['cle'] !== 'assistance' || Plateforme::active())));
             // Un module fait seulement d'écrans ouverts à tous (Mon compte, Aide) n'est montré qu'à qui a la gestion
-            $propres = array_filter($ecrans, static fn (array $e) => $e['voir'] !== null);
+            // Un écran « chacun » (ses propres résultats) compte comme un écran propre pour qui a la gestion
+            $propres = array_filter($ecrans, static fn (array $e) => $e['voir'] !== null || (!empty($e['chacun']) && Acces::aLaGestion($utilisateurId)));
             if ($propres === [] && !($code === 'parametres' && Acces::aLaGestion($utilisateurId))) {
                 continue;
             }

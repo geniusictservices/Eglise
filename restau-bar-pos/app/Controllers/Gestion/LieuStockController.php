@@ -145,11 +145,11 @@ final class LieuStockController
         rediriger('/gestion/stock/lieux');
     }
 
-    public function routage(string $etablissementId): void
+    public function routage(string $id): void
     {
         $utilisateur = Session::exigerConnexion();
         Session::verifierCsrf();
-        $etab = $this->etablissementModifiable($etablissementId, $utilisateur);
+        $etab = $this->etablissementModifiable($id, $utilisateur);
         $comptoirs = array_map('intval', array_column(array_filter(
             $this->stock->lieux([$etab], true),
             static fn (array $l): bool => $l['type'] === 'comptoir' && (int) $l['etablissement_id'] === $etab
@@ -174,11 +174,11 @@ final class LieuStockController
         rediriger('/gestion/stock/lieux#routage-' . $etab);
     }
 
-    public function reglages(string $etablissementId): void
+    public function reglages(string $id): void
     {
         $utilisateur = Session::exigerConnexion();
         Session::verifierCsrf();
-        $etab = $this->etablissementModifiable($etablissementId, $utilisateur);
+        $etab = $this->etablissementModifiable($id, $utilisateur);
         $mode = ($_POST['mode_negatif'] ?? '') === 'bloquer' ? 'bloquer' : 'vendre';
         $this->stock->definirParametres($etab, $mode, !empty($_POST['validation_separee']), (int) $utilisateur['id']);
         Journal::ecrire('stock_reglages', (string) $etab, ['mode_negatif' => $mode], (int) $utilisateur['id']);

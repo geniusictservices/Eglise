@@ -36,7 +36,13 @@ $textes = [
     'verrouillee' => t('paiement.verrouillee'),
     'imprimerRecu' => t('paiement.imprimer'),
     'payerEn' => t('paiement.payer_en'),
+    // Précisions d'une ligne (salle et cuisine)
+    'precisions' => t('note.options'),
+    'allergie' => t('note.allergie_badge'),
+    'aLancer' => t('note.a_lancer'),
 ];
+$salle = $donnees['salle'] ?? null;
+$tables = $salle !== null && $salle['modules']['tables'];
 // Textes de l'ardoise (caisse-ardoise.js) : « ardoise.* », « garantie.* », « rembourser.* » de lang/<langue>/dettes.php
 foreach (['ardoise' => ['mettre', 'titre', 'retirer', 'chercher', 'nouveau', 'nom', 'telephone', 'whatsapp', 'creer', 'aucun', 'changer',
                         'doit', 'rien_du', 'en_retard', 'bloque', 'montant', 'servi_par', 'servi_aide', 'garant', 'sans_garant',
@@ -78,6 +84,13 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
             <?php endif; ?>
             <noscript><button type="submit"><?= e(t('caisse.changer')) ?></button></noscript>
         </form>
+        <?php if ($salle !== null && ($salle['service'] || $salle['happy'])): ?>
+            <?php // Service en cours (prix, carte et modules du moment) et happy hour ?>
+            <span class="haut__service" id="service">
+                <?php if ($salle['service']): ?><span><?= e($salle['service']['nom']) ?></span><?php endif; ?>
+                <?php if ($salle['happy']): ?><span class="haut__happy"><?= e(t('note.happy_jusqu', ['nom' => $salle['happy']['nom'], 'heure' => $salle['happy']['fin']])) ?></span><?php endif; ?>
+            </span>
+        <?php endif; ?>
 
         <div class="haut__recherche">
             <label class="visuellement-cache" for="recherche"><?= e(t('caisse.rechercher')) ?></label>
@@ -86,6 +99,14 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
         </div>
 
         <div class="haut__reglages">
+            <?php if ($tables): ?>
+                <?php // Plan de salle : tables et notes ouvertes (pastille : plats prêts pour moi) ?>
+                <button type="button" class="haut__salle" id="salle" aria-haspopup="dialog" title="<?= e(t('note.salle')) ?>">
+                    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="9" width="14" height="6" rx="1.5"/><path d="M8 15v5M16 15v5M3 6h4M17 6h4M5 6v3M19 6v3"/></svg>
+                    <span class="haut__salle-texte"><?= e(t('note.salle')) ?></span>
+                    <span class="haut__salle-prets" id="salle-prets" hidden></span>
+                </button>
+            <?php endif; ?>
             <?php if ($donnees['garanties'] !== []): ?>
                 <button type="button" class="haut__garanties" id="garanties" aria-haspopup="dialog"><span></span></button>
             <?php endif; ?>
@@ -130,8 +151,18 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
                     <span class="visuellement-cache"><?= e(t('caisse.fermer')) ?></span>
                 </button>
             </div>
-            <ul class="lignes" id="lignes"></ul>
-            <p class="ticket__vide" id="ticket-vide"><?= e(t('caisse.ticket_vide')) ?></p>
+            <?php if ($salle !== null): ?>
+                <?php // Note choisie : table ou nom, serveur, durée ; transférer, fusionner, revenir au comptoir ?>
+                <div class="destination" id="destination" hidden></div>
+            <?php endif; ?>
+            <div class="ticket__corps" id="ticket-corps">
+                <?php if ($salle !== null): ?>
+                    <ul class="note-lignes" id="note-lignes" hidden aria-label="<?= e(t('note.deja_envoye')) ?>"></ul>
+                    <p class="ticket__intertitre" id="nouveau-titre" hidden><?= e(t('note.nouveau')) ?></p>
+                <?php endif; ?>
+                <ul class="lignes" id="lignes"></ul>
+                <p class="ticket__vide" id="ticket-vide"><?= e(t('caisse.ticket_vide')) ?></p>
+            </div>
             <div class="totaux">
                 <div class="totaux__principal"><span><?= e(t('caisse.total')) ?></span><strong id="total">—</strong></div>
                 <p class="totaux__autres" id="autres-devises"></p>
@@ -150,6 +181,10 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
                     </button>
                 <?php endif; ?>
             </div>
+            <?php if ($salle !== null): ?>
+                <?php // Envoyer à la table (sans payer), addition, partage, plats à lancer : dessinés par caisse-salle.js ?>
+                <div class="actions-note" id="actions-note" hidden></div>
+            <?php endif; ?>
             <?php if ($donnees['sessions'] && !$donnees['session']): ?>
                 <button type="button" class="encaisser bouton bouton--large" id="ouvrir-session" aria-haspopup="dialog"><?= e(t('session.ouvrir')) ?></button>
             <?php endif; ?>
@@ -310,6 +345,10 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
                 <div id="ardoises-corps" class="ardoises-corps"></div>
             </div>
         </dialog>
+    <?php endif; ?>
+
+    <?php if ($salle !== null): ?>
+        <?= App\Core\View::rendre('caisse/_salle', ['salle' => $salle, 'etab' => $etab, 'zones' => $zones]) ?>
     <?php endif; ?>
 
     <dialog class="formats" id="formats">

@@ -85,7 +85,7 @@ if (!empty($admin)) {
 </div>
 <?php if (!empty($admin)): ?>
     <nav class="barre-bas" aria-label="<?= e(t('console.navigation')) ?>">
-        <?php foreach ($ecrans as $ecran): ?>
+        <?php foreach ($ecrans as $ecran): if ($ecran['cle'] === 'compte') { continue; } // « Mon compte » : icône de la barre du haut ?>
             <a class="barre-bas__lien" href="<?= e($ecran['lien']) ?>" <?= $courant === $ecran['cle'] ? 'aria-current="page"' : '' ?>><?= Icones::svg($ecran['icone'], 22) ?><span><?= e(t('console.ecran_court.' . $ecran['cle'])) ?></span></a>
         <?php endforeach; ?>
     </nav>

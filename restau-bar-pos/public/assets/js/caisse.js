@@ -1,6 +1,10 @@
 // Écran de caisse : grille de produits, ticket en cours, totaux dans chaque devise.
 // Le ticket en cours est gardé dans l'onglet du navigateur (par personne) jusqu'à l'encaissement,
 // qui l'envoie au serveur (/caisse/encaisser) : le serveur recalcule tout et enregistre la vente.
+// Avec le module Salle (caisse-salle.js, window.Caisse.note), le ticket peut aussi être envoyé à une table ou à une
+// note nommée sans être payé : le panneau montre alors les lignes déjà envoyées, puis les nouvelles ; « Encaisser »
+// paie la note (même fenêtre de paiement, source « note »). Chaque ligne peut porter une précision (cuisson),
+// une allergie et un temps d'envoi (2 : « à lancer » par le serveur).
 // Un produit à tailles (Primus Petite 33 cl, Grande 72 cl) est une seule tuile : ses formats sont ceux de
 // toutes ses tailles, chacun avec le libellé de sa taille ; la ligne du ticket affiche « Primus Grande 72 cl ».
 (function () {
@@ -72,13 +76,19 @@
   // ---------- Ticket ----------
 
   var cleTicket = 'caisse.ticket.' + D.cleTicket;
-  var ticket = [];   // [{ id: id du format, qte: n }]
+  var ticket = [];   // [{ id: id du format, qte: n, rem?: précision, all?: allergie, temps?: 2 (à lancer) }]
   try {
     // Ticket gardé par un chargement précédent : on ne garde que les lignes dont le format est encore vendu
     // (un format passé à une taille garde son id) ; un contenu illisible vide le ticket.
     var garde = JSON.parse(sessionStorage.getItem(cleTicket));
     ticket = (Array.isArray(garde) ? garde : []).filter(function (l) {
       return l && formats[l.id] && typeof l.qte === 'number' && l.qte > 0 && Math.floor(l.qte) === l.qte;
+    }).map(function (l) {
+      var ligne = { id: l.id, qte: l.qte };
+      if (typeof l.rem === 'string' && l.rem) { ligne.rem = l.rem.slice(0, 160); }
+      if (typeof l.all === 'string' && l.all) { ligne.all = l.all.slice(0, 160); }
+      if (l.temps === 2) { ligne.temps = 2; }
+      return ligne;
     });
   } catch (e) { ticket = []; }
   if (ticket.length === 0) {
@@ -96,15 +106,19 @@
   function quantiteProduit(produit) {
     return ticket.reduce(function (n, l) { return formats[l.id].produit === produit ? n + l.qte : n; }, 0);
   }
+  // Une ligne avec une précision, une allergie ou « à lancer » reste à part : un autre toucher crée une ligne simple
+  function simple(l) { return !l.rem && !l.all && l.temps !== 2; }
   function ajouter(formatId) {
-    var ligne = ticket.find(function (l) { return l.id === formatId; });
+    var ligne = ticket.find(function (l) { return l.id === formatId && simple(l); });
     if (ligne) { ligne.qte++; } else { ticket.push({ id: formatId, qte: 1 }); }
     changerTicket(formatId);
   }
-  function modifier(formatId, delta) {
-    ticket = ticket.map(function (l) { return l.id === formatId ? { id: l.id, qte: l.qte + delta } : l; })
-      .filter(function (l) { return l.qte > 0; });
-    changerTicket(formatId);
+  function modifier(index, delta) {
+    var ligne = ticket[index];
+    if (!ligne) { return; }
+    ligne.qte += delta;
+    if (ligne.qte <= 0) { ticket.splice(index, 1); }
+    changerTicket(ligne.id);
   }
   function changerTicket(formatId) {
     sauver();
@@ -129,27 +143,42 @@
     }
     return total;
   }
+  // Note ouverte choisie (caisse-salle.js) : son reste à payer s'ajoute aux nouvelles lignes
+  function noteActive() { return window.Caisse && window.Caisse.note && window.Caisse.note.actif() ? window.Caisse.note : null; }
+  function totalAffiche(code) {
+    var local = totalEn(code);
+    var note = noteActive();
+    if (!note) { return local; }
+    var reste = note.totalEn(code);
+    return local === null || reste === null ? null : local + reste;
+  }
 
   function dessinerTicket() {
     elLignes.textContent = '';
     var nbArticles = 0;
-    ticket.forEach(function (l) {
+    ticket.forEach(function (l, index) {
       var f = formats[l.id];
       nbArticles += l.qte;
       var pu = prix(f.format, D.principale);
       var li = el('li', 'ligne');
       li.style.setProperty('--cat', couleurs[f.produit.categorie]);
-      var texte = el('div', 'ligne__texte');
       var nom = nomLigne(f);
+      // Avec la salle : toucher le nom ouvre les précisions (cuisson, allergie, à lancer plus tard)
+      var options = window.Caisse && window.Caisse.optionsLigne;
+      var texte = options ? bouton('ligne__texte ligne__texte--options', undefined, (T.precisions || '') + ' : ' + nom) : el('div', 'ligne__texte');
       texte.appendChild(el('span', 'ligne__nom', nom));
       if (!f.format.unite || f.format.freres > 1) { texte.appendChild(el('span', 'ligne__format', f.format.nom)); }
+      if (l.rem) { texte.appendChild(el('span', 'ligne__precision', l.rem)); }
+      if (l.all) { texte.appendChild(el('span', 'ligne__allergie', (T.allergie || '') + ' ' + l.all)); }
+      if (l.temps === 2) { texte.appendChild(el('span', 'ligne__temps', T.aLancer || '')); }
+      if (options) { texte.addEventListener('click', function () { options(index); }); }
       li.appendChild(texte);
 
       var pas = el('div', 'pas');
       var moins = bouton('pas__bouton', '−', T.retirer + ' : ' + nom);
-      moins.addEventListener('click', function () { modifier(l.id, -1); });
+      moins.addEventListener('click', function () { modifier(index, -1); });
       var plus = bouton('pas__bouton', '+', T.ajouter + ' : ' + nom);
-      plus.addEventListener('click', function () { modifier(l.id, 1); });
+      plus.addEventListener('click', function () { modifier(index, 1); });
       var qte = el('span', 'pas__qte', String(l.qte));
       qte.setAttribute('aria-label', T.quantite + ' ' + l.qte);
       pas.append(moins, qte, plus);
@@ -160,27 +189,33 @@
     });
 
     var vide = ticket.length === 0;
-    elVide.hidden = !vide;
+    var note = noteActive();
+    // Rien à payer : ni nouvelle ligne, ni reste sur la note choisie
+    var videTout = vide && (!note || note.vide());
+    if (note) { nbArticles += note.articles(); }
+    elVide.hidden = !videTout;
     elVider.disabled = vide;
-    var total = totalEn(D.principale);
-    elTotal.textContent = vide ? formater(0, D.principale) : (total === null ? '—' : formater(total, D.principale));
+    var total = totalAffiche(D.principale);
+    elTotal.textContent = videTout ? formater(0, D.principale) : (total === null ? '—' : formater(total, D.principale));
 
     var autres = D.devises.filter(function (d) { return d.code !== D.principale; }).map(function (d) {
-      var t = totalEn(d.code);
-      return t === null ? null : formater(vide ? 0 : t, d.code);
+      var t = totalAffiche(d.code);
+      return t === null ? null : formater(videTout ? 0 : t, d.code);
     }).filter(Boolean);
     elAutres.textContent = autres.join('  ·  ');
 
     // Résumé en bas de l'écran sur téléphone
-    elResume.hidden = vide;
+    elResume.hidden = videTout && !note;
     document.getElementById('resume-texte').textContent =
       nbArticles + ' ' + (nbArticles > 1 ? T.articles : T.article) + ' · ' + T.voirTicket;
     document.getElementById('resume-total').textContent = elTotal.textContent;
-    document.getElementById('encaisser-total').textContent = vide ? '' : elTotal.textContent;
+    document.getElementById('encaisser-total').textContent = videTout ? '' : elTotal.textContent;
     // Sessions de caisse demandées par l'établissement : rien à encaisser avant d'ouvrir sa caisse
-    var peutEncaisser = !vide && D.encaisser && (!D.sessions || !!D.session);
+    var peutEncaisser = !videTout && D.encaisser && (!D.sessions || !!D.session);
     document.getElementById('encaisser').disabled = !peutEncaisser;
     document.querySelectorAll('.paiements [data-compte], .paiements [data-ardoise]').forEach(function (b) { b.disabled = !peutEncaisser; });
+    // Salle : lignes déjà envoyées de la note, boutons Envoyer, Addition, Partager, Lancer la suite
+    if (window.Caisse && window.Caisse.note && window.Caisse.note.dessiner) { window.Caisse.note.dessiner(); }
   }
 
   elVider.addEventListener('click', function () {
@@ -352,7 +387,7 @@
     if (ev.key === 'Escape') { elRecherche.value = ''; filtrer(); }
   });
   document.addEventListener('keydown', function (ev) {
-    if (ev.key === '/' && document.activeElement !== elRecherche && !dialogue.open) {
+    if (ev.key === '/' && document.activeElement !== elRecherche && !dialogue.open && !document.querySelector('dialog[open]')) {
       ev.preventDefault();
       elRecherche.focus();
     }
@@ -366,13 +401,53 @@
     if (texte !== undefined) { e.textContent = texte; }
     return e;
   }
-  // Outils partagés avec caisse-ardoise.js (ardoise, remboursement, garanties)
+  // Outils partagés avec caisse-ardoise.js (ardoise, remboursement, garanties) et caisse-salle.js (notes ouvertes)
   window.Caisse = {
     D: D, T: T, devises: devises, TYPES: ['caisse', 'mobile_money', 'banque'],
     formater: function (m, c) { return formater(m, c); }, el: function (b, c, t) { return el(b, c, t); },
     bouton: function (c, t, l) { return bouton(c, t, l); }, cle: function () { return cle(); },
-    comptesPour: function (c, t) { return comptesPour(c, t); }, imprimer: function (html) { imprimer(html); }
+    comptesPour: function (c, t) { return comptesPour(c, t); }, imprimer: function (html) { imprimer(html); },
+    // Ticket local (lignes pas encore envoyées) : lecture, changement d'une ligne, vidage, redessin
+    lignes: function () { return ticket; },
+    formatDe: function (id) { return formats[id] || null; },
+    nomLigne: function (id) { return formats[id] ? nomLigne(formats[id]) : ''; },
+    couleur: function (id) { return formats[id] ? couleurs[formats[id].produit.categorie] : ''; },
+    changerLigne: function (index, options) {
+      var l = ticket[index];
+      if (!l) { return; }
+      ['rem', 'all'].forEach(function (k) { if (options[k]) { l[k] = String(options[k]).slice(0, 160); } else { delete l[k]; } });
+      if (options.temps === 2) { l.temps = 2; } else { delete l.temps; }
+      changerTicket(l.id);
+    },
+    viderLocal: function () {
+      var produits = ticket.map(function (l) { return formats[l.id].produit; });
+      ticket = [];
+      sauver();
+      dessinerTicket();
+      produits.forEach(majTuile);
+    },
+    redessiner: function () { dessinerTicket(); },
+    ouvrirPaiement: function (compteId, ardoise, source) { ouvrirPaiement(compteId, ardoise, source); },
+    disponibilites: function (indisponibles) { disponibilites(indisponibles); },
+    fenetreOuverte: function () { return !!document.querySelector('dialog[open]'); }
   };
+  // Rupture décidée en cuisine (ou « épuisé » dans le catalogue) : la tuile se grise tout de suite, sans recharger
+  function disponibilites(indisponibles) {
+    var hors = {};
+    (indisponibles || []).forEach(function (id) { hors[id] = true; });
+    D.produits.forEach(function (p) {
+      var avant = p.disponible + ':' + p.formats.map(function (f) { return f.disponible; }).join(',');
+      p.disponible = !hors[p.id];
+      p.formats.forEach(function (f) { f.disponible = !hors[p.id] && !hors[f.tailleId]; });
+      if (avant === p.disponible + ':' + p.formats.map(function (f) { return f.disponible; }).join(',')) { return; }
+      var t = tuiles[p.id];
+      if (!t) { return; }
+      t.disabled = !p.disponible;
+      t.classList.toggle('tuile--epuise', !p.disponible);
+      var bas = t.querySelector('.tuile__format');
+      if (bas) { bas.textContent = p.disponible ? texteFormat(p) : T.epuise; }
+    });
+  }
   function imprimer(html) {
     document.getElementById('zone-impression').innerHTML = html;
     window.print();
@@ -508,14 +583,23 @@
     return choix;
   }
 
-  function ouvrirPaiement(compteId, ardoise) {
-    if (!D.encaisser || ticket.length === 0) { return; }
-    var payables = devisesPayables();
+  // source (facultative) : payer une note ouverte, ou une part de note (caisse-salle.js) :
+  // { note: {id, mode, lignes?, parts?}, version, totaux: {code: montant}, servi: id, titre }
+  function ouvrirPaiement(compteId, ardoise, source) {
+    if (!D.encaisser || (!source && ticket.length === 0)) { return; }
+    var payables = source
+      ? Object.keys(source.totaux).filter(function (code) { return devises[code] && typeof source.totaux[code] === 'number' && source.totaux[code] > 0 && comptesPour(code).length > 0; })
+      : devisesPayables();
     if (payables.length === 0) { return; }
     var totaux = {};
-    payables.forEach(function (code) { totaux[code] = totalEn(code); });
+    payables.forEach(function (code) { totaux[code] = source ? source.totaux[code] : totalEn(code); });
     var depart = payables.indexOf(D.principale) !== -1 ? D.principale : payables[0];
-    paiement = { cle: paiement && paiement.cleTicket === JSON.stringify(ticket) ? paiement.cle : cle(), cleTicket: JSON.stringify(ticket), totaux: totaux, lignes: [], credit: null, rendu: D.principale, envoi: false };
+    // Même ticket (ou même part de la même note) qu'un essai précédent : même clé, jamais deux ventes
+    var empreinte = source ? JSON.stringify(source.note) + '@' + source.version : JSON.stringify(ticket);
+    paiement = { cle: paiement && paiement.cleTicket === empreinte ? paiement.cle : cle(), cleTicket: empreinte, totaux: totaux, lignes: [], credit: null, rendu: D.principale, envoi: false, source: source || null };
+    var titre = document.getElementById('paiement-titre');
+    if (!titre.dataset.texte) { titre.dataset.texte = titre.textContent; }
+    titre.textContent = titre.dataset.texte + (source && source.titre ? ' · ' + source.titre : '');
     var choisi = compteDe(compteId);
     // Un compte choisi sur le panneau qui ne tient pas la devise du ticket : commencer dans une devise qu'il tient
     if (choisi && choisi.devises.indexOf(depart) === -1) {
@@ -557,9 +641,11 @@
   // Ardoise ajoutée : les montants proposés d'office repartent de zéro, l'ardoise prend tout le reste
   function ajouterArdoise() {
     paiement.lignes.forEach(function (l) { if (!l.saisi) { l.recu = 0; l.saisi = true; } });
+    // Une note : « servi par » proposé = le serveur qui l'a ouverte (s'il fait partie du personnel)
+    var servi = paiement.source && paiement.source.servi && (D.personnel || []).some(function (p) { return p.id === paiement.source.servi; }) ? paiement.source.servi : D.moi;
     paiement.credit = {
       client: null, devise: paiement.totaux[D.principale] !== undefined ? D.principale : Object.keys(paiement.totaux)[0],
-      montant: 0, saisi: false, servi: D.moi, garant: null, echeance: dateDans(D.delai), forcer: false, peutForcer: false
+      montant: 0, saisi: false, servi: servi, garant: null, echeance: dateDans(D.delai), forcer: false, peutForcer: false
     };
   }
   function retirerArdoise() {
@@ -736,7 +822,14 @@
     corps.append('csrf', D.csrf);
     corps.append('vente', JSON.stringify({
       cle: paiement.cle, etab: D.etab, zone: D.zone,
-      lignes: ticket.map(function (l) { return { id: l.id, qte: l.qte }; }),
+      // Une note : ses lignes viennent du serveur ; sinon le ticket (avec précisions et allergies pour la cuisine)
+      note: paiement.source ? paiement.source.note : undefined,
+      lignes: paiement.source ? [] : ticket.map(function (l) {
+        var ligne = { id: l.id, qte: l.qte };
+        if (l.rem) { ligne.rem = l.rem; }
+        if (l.all) { ligne.all = l.all; }
+        return ligne;
+      }),
       paiements: paiement.lignes.filter(function (l) { return l.recu > 0; }).map(function (l) {
         return { devise: l.devise, compte: l.compte, recu: l.recu };
       }),
@@ -773,11 +866,16 @@
 
   function venteTerminee(reponse) {
     if (reponse.csrf) { D.csrf = reponse.csrf; }
-    var produits = ticket.map(function (l) { return formats[l.id].produit; });
-    ticket = [];
-    sauver();
-    dessinerTicket();
-    produits.forEach(majTuile);
+    if (paiement.source) {
+      // Note payée (en entier ou une part) : le ticket local n'a pas bougé, la note se met à jour
+      if (window.Caisse.note && window.Caisse.note.payee) { window.Caisse.note.payee(reponse, paiement.source); }
+    } else {
+      var produits = ticket.map(function (l) { return formats[l.id].produit; });
+      ticket = [];
+      sauver();
+      dessinerTicket();
+      produits.forEach(majTuile);
+    }
     document.getElementById('paiement-corps').hidden = true;
     document.getElementById('paiement-fin').hidden = false;
     document.getElementById('paiement-recu').innerHTML = reponse.recu;
@@ -794,18 +892,26 @@
   function terminer() {
     fenetre.close();
     if (paiement && paiement.verrouille) { window.location.reload(); }
+    var source = paiement && paiement.source;
     paiement = null;
+    // Addition partagée : la part suivante
+    if (source && window.Caisse.note && window.Caisse.note.apresPaiement) { window.Caisse.note.apresPaiement(source); }
   }
 
   if (fenetre && boutonEncaisser) {
     var valider = document.getElementById('paiement-valider');
     valider.dataset.texte = valider.textContent;
-    boutonEncaisser.addEventListener('click', function () { ouvrirPaiement(null); });
+    // Une note choisie : « Encaisser » paie la note (après avoir envoyé les nouvelles lignes)
+    var demarrer = function (compteId, ardoise) {
+      var note = noteActive();
+      if (note) { note.payer(compteId, ardoise); } else { ouvrirPaiement(compteId, ardoise); }
+    };
+    boutonEncaisser.addEventListener('click', function () { demarrer(null); });
     document.querySelectorAll('.paiements [data-compte]').forEach(function (b) {
-      b.addEventListener('click', function () { ouvrirPaiement(+b.dataset.compte); });
+      b.addEventListener('click', function () { demarrer(+b.dataset.compte); });
     });
     var boutonArdoise = document.querySelector('.paiements [data-ardoise]');
-    if (boutonArdoise) { boutonArdoise.addEventListener('click', function () { ouvrirPaiement(null, true); }); }
+    if (boutonArdoise) { boutonArdoise.addEventListener('click', function () { demarrer(null, true); }); }
     valider.addEventListener('click', validerPaiement);
     document.querySelector('[data-fermer-paiement]').addEventListener('click', function () { fenetre.close(); });
     document.getElementById('paiement-suivant').addEventListener('click', terminer);

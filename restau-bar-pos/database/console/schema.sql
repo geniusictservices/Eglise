@@ -80,6 +80,7 @@ CREATE TABLE paiements (
     echeance_avant  DATE          NULL,
     echeance_apres  DATE          NOT NULL,
     essai_avant     TINYINT(1)    NOT NULL DEFAULT 0,
+    periode_avant   ENUM('mois','trimestre','annee') NULL,
     note            VARCHAR(255)  NULL,
     saisi_par       INT UNSIGNED  NULL,
     cree_le         DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,

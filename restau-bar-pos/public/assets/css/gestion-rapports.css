@@ -1,0 +1,205 @@
+/* Rapports : tableau de bord de la direction, rapports du personnel, événements, export comptable.
+   Complète gestion.css et gestion-tresorerie.css ; n'utilise que des jetons. Les deux couleurs des graphiques
+   (--graph-1 encaissé / série principale, --graph-2 crédit / seconde série) sont validées pour la vision des
+   couleurs (écart ΔE ≥ 27 en protanopie) et le contraste (≥ 3:1) sur la surface de chaque thème. */
+
+[data-theme="jour"], [data-theme="auto"] { --graph-1: #C2410C; --graph-2: #2F6FD0; --graph-grille: var(--ligne); }
+[data-theme="nuit"] { --graph-1: #E5551C; --graph-2: #4C8FE6; --graph-grille: var(--ligne); }
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] { --graph-1: #E5551C; --graph-2: #4C8FE6; }
+}
+
+.rap-entete { align-items: flex-end; }
+.rap-journee { font-size: var(--taille-s); margin-top: .75rem; }
+.rap-comparaison { font-size: var(--taille-s); margin-top: .75rem; }
+.rap-note { color: var(--doux); font-size: .8125rem; }
+.rap-sous { display: block; color: var(--doux); font-size: .8125rem; font-weight: 400; white-space: nowrap; }
+.rap-lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+.rap-gros { margin: .25rem 0 0; font: 800 1.5rem/1.2 var(--police-titre); overflow-wrap: anywhere; }
+.rap-defile { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+.rap-cache { visibility: hidden; }
+.rap-ligne-douce th, .rap-ligne-douce td { color: var(--doux); }
+
+/* ---------- Chiffres clés ---------- */
+
+.rap-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14.5rem), 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.rap-kpi {
+  display: grid; align-content: start; gap: .3rem; min-width: 0; padding: 1rem 1.15rem;
+  background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--rayon-carte);
+}
+.rap-kpi__libelle { color: var(--doux); font-size: var(--taille-s); font-weight: 600; }
+.rap-kpi__valeur { font: 800 clamp(1.25rem, 2.4vw, 1.625rem)/1.15 var(--police-titre); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.rap-kpi__second { color: var(--doux); font-weight: 600; font-variant-numeric: tabular-nums; }
+.rap-kpi__pied { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .6rem; margin-top: .25rem; font-size: .8125rem; color: var(--doux); }
+.rap-kpi--resultat { background: var(--teinte-succes); border-color: color-mix(in srgb, var(--succes) 35%, var(--ligne)); }
+.rap-kpi--negatif { background: var(--teinte-erreur); border-color: color-mix(in srgb, var(--erreur) 35%, var(--ligne)); }
+.rap-kpi--vide .rap-kpi__valeur { color: var(--doux); }
+
+.rap-ecart {
+  display: inline-flex; align-items: center; gap: .2rem; padding: .1rem .45rem; border-radius: var(--rayon-badge);
+  font-weight: 700; font-size: .75rem; white-space: nowrap; background: var(--surface-2); color: var(--encre);
+}
+.rap-ecart--bon { background: var(--teinte-succes); color: var(--succes); }
+.rap-ecart--mauvais { background: var(--teinte-erreur); color: var(--erreur); }
+.rap-ecart--neutre { color: var(--doux); font-weight: 600; }
+
+/* ---------- Grille de blocs ---------- */
+
+.rap-grille { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 0 1.25rem; align-items: start; }
+.rap-grille > .bloc { min-width: 0; }
+.bloc h2 { margin-top: 0; }
+
+/* ---------- Graphique en colonnes ---------- */
+
+.rap-graphique { margin: .75rem 0 0; min-width: 0; }
+.rap-graphique__titre { font-weight: 600; font-size: var(--taille-s); color: var(--doux); }
+.rap-legende { display: flex; flex-wrap: wrap; gap: .4rem 1.25rem; list-style: none; margin: .6rem 0 0; padding: 0; font-size: var(--taille-s); }
+.rap-legende li { display: inline-flex; align-items: center; gap: .45rem; }
+.rap-legende__cle { width: 12px; height: 12px; border-radius: 3px; }
+.rap-serie-1 { background: var(--graph-1); fill: var(--graph-1); }
+.rap-serie-2 { background: var(--graph-2); fill: var(--graph-2); }
+.rap-graphique__corps { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .5rem; margin-top: .75rem; }
+.rap-graphique__axe {
+  display: flex; flex-direction: column; justify-content: space-between; height: 12rem; padding-bottom: 1.6rem;
+  font-size: .75rem; color: var(--doux); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.rap-graphique__axe span { transform: translateY(-50%); }
+.rap-graphique__axe span:last-child { transform: translateY(50%); }
+.rap-graphique__trace { width: min(100%, calc(var(--colonnes) * 4rem)); min-width: 0; }
+.rap-graphique svg { display: block; width: 100%; height: 10.4rem; overflow: visible; }
+.rap-trait-grille, .rap-base { stroke: var(--graph-grille); stroke-width: 1; }
+.rap-base { stroke: var(--ligne-forte); }
+.rap-barre { stroke: var(--surface); stroke-width: 2; }
+.rap-cible { fill: transparent; }
+.rap-colonne { cursor: default; outline: none; }
+.rap-colonne:hover .rap-cible, .rap-colonne:focus .rap-cible { fill: var(--surface-2); }
+.rap-colonne:focus-visible .rap-cible { stroke: var(--focus); stroke-width: 3; vector-effect: non-scaling-stroke; }
+.rap-graphique__x { display: grid; grid-template-columns: repeat(var(--colonnes), minmax(0, 1fr)); margin-top: .35rem; }
+.rap-graphique__x span { font-size: .6875rem; color: var(--doux); text-align: center; white-space: nowrap; overflow: visible; }
+.rap-donnees { margin-top: .75rem; }
+.rap-donnees summary { display: inline-flex; align-items: center; min-height: var(--cible); cursor: pointer; color: var(--doux); font-size: var(--taille-s); font-weight: 600; }
+.rap-bulle {
+  position: absolute; z-index: 60; max-width: min(22rem, calc(100vw - 16px)); padding: .5rem .7rem; pointer-events: none;
+  background: var(--encre); color: var(--fond); border-radius: var(--rayon); font-size: .8125rem; line-height: 1.35;
+  box-shadow: 0 6px 18px rgb(0 0 0 / .25);
+}
+.rap-bulle[hidden] { display: none; }
+
+/* Courbe miniature (évolution jour par jour d'une personne) */
+.rap-mini { display: block; width: 7rem; height: 1.75rem; }
+.rap-mini polyline { fill: none; stroke: var(--graph-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.rap-mini line { stroke: var(--graph-grille); stroke-width: 1; }
+
+/* ---------- Tableaux, jauges, classements ---------- */
+
+.rap-tableau td, .rap-tableau th { vertical-align: middle; }
+.rap-tableau th[scope="row"] { font-weight: 600; text-align: left; }
+.rap-tableau th[scope="row"] a { display: inline-flex; align-items: center; min-height: var(--cible); text-underline-offset: 3px; }
+.rap-part { white-space: nowrap; min-width: 8rem; }
+.rap-jauge { display: inline-block; width: 5rem; height: 10px; vertical-align: middle; margin-right: .5rem; border-radius: var(--rayon-rond); background: var(--surface-2); overflow: hidden; }
+.rap-jauge span { display: block; height: 100%; border-radius: inherit; background: var(--graph-1); }
+
+.rap-classement { list-style: none; margin: .75rem 0 0; padding: 0; display: grid; gap: .65rem; counter-reset: rap; }
+.rap-classement li { counter-increment: rap; display: grid; grid-template-columns: 1.6rem minmax(0, 1fr) auto; grid-template-areas: "rang nom chiffres" "rang jauge chiffres"; gap: .2rem .6rem; align-items: center; }
+.rap-classement li::before { content: counter(rap); grid-area: rang; color: var(--doux); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.rap-classement__nom { grid-area: nom; font-weight: 600; overflow-wrap: anywhere; }
+.rap-classement .rap-jauge { grid-area: jauge; width: 100%; margin: 0; }
+.rap-classement__chiffres { grid-area: chiffres; text-align: right; }
+.rap-classement__chiffres strong { white-space: nowrap; }
+
+.rap-liste-simple { list-style: none; margin: .75rem 0 0; padding: 0; }
+.rap-liste-simple li { display: flex; justify-content: space-between; align-items: center; gap: .75rem; min-height: var(--cible); border-top: 1px solid var(--ligne); }
+.rap-liste-simple li:first-child { border-top: 0; }
+.rap-liste-simple li > span:first-child { min-width: 0; overflow-wrap: anywhere; }
+.rap-liste-simple .montant, .rap-liste-simple .nombre { white-space: nowrap; font-weight: 600; }
+
+.rap-anciennete { margin: 1rem 0 0; display: grid; gap: .5rem; }
+.rap-anciennete > div { display: grid; grid-template-columns: minmax(7rem, 9rem) minmax(0, 1fr); gap: .75rem; align-items: center; }
+.rap-anciennete dt { color: var(--doux); font-size: var(--taille-s); }
+.rap-anciennete dd { margin: 0; display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.rap-anciennete dd .rap-jauge { flex: 1 1 auto; }
+.rap-anciennete .montant { white-space: nowrap; font-weight: 600; }
+.rap-anciennete__retard { padding-top: .5rem; border-top: 1px solid var(--ligne); }
+.rap-anciennete__retard dt { color: var(--erreur); font-weight: 700; }
+
+.rap-infos { margin: .75rem 0 0; display: grid; gap: 0; }
+.rap-infos > div { display: flex; justify-content: space-between; gap: 1rem; padding: .5rem 0; border-top: 1px solid var(--ligne); }
+.rap-infos > div:first-child { border-top: 0; }
+.rap-infos dt { color: var(--doux); }
+.rap-infos dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* Serveuse ou serveur de la semaine */
+.rap-vedette { background: var(--teinte-braise); border-color: color-mix(in srgb, var(--braise) 35%, var(--ligne)); }
+.rap-vedette__corps { display: flex; gap: 1rem; align-items: center; margin-top: .75rem; }
+.rap-vedette__corps > div { min-width: 0; }
+.rap-vedette__corps p { margin: 0 0 .25rem; }
+.rap-vedette__nom { font: 700 1.125rem/1.2 var(--police-titre); }
+.rap-vedette__nom .badge { margin-left: .35rem; vertical-align: .15em; font-family: var(--police-texte); }
+.rap-vedette__chiffre { font: 800 1.375rem/1.2 var(--police-titre); }
+.rap-vedette__chiffre .rap-sous { display: inline; margin-left: .35rem; font-family: var(--police-texte); }
+
+.rap-bref summary { display: flex; align-items: center; min-height: var(--cible); cursor: pointer; list-style-position: inside; }
+.rap-bref summary h2 { display: inline; margin: 0; font-size: 1.0625rem; }
+
+/* ---------- Rapports du personnel ---------- */
+
+.rap-options { display: grid; gap: .75rem 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); align-items: end; margin-top: 1rem; }
+.rap-options .champ { margin: 0; }
+.rap-options .coche { min-height: var(--cible); display: flex; align-items: center; gap: .5rem; }
+.rap-options .bouton { justify-self: start; }
+.rap-personne { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
+.rap-personne a, .rap-personne > span:last-child { overflow-wrap: anywhere; }
+.rap-personne a { display: inline-flex; align-items: center; min-height: var(--cible); font-weight: 700; text-underline-offset: 3px; }
+.rap-rang { width: 2.25rem; color: var(--doux); font-weight: 700; }
+.rap-premier .rap-rang { color: var(--prix); }
+.rap-evolution { font-size: .75rem; white-space: nowrap; }
+.rap-moi { background: var(--teinte-accent); }
+.rap-onglets { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1.5rem; }
+
+/* ---------- Événements ---------- */
+
+.evt-mois { margin-top: 1.75rem; }
+.evt-mois > h2 { margin: 0 0 .75rem; font-size: 1.0625rem; text-transform: capitalize; }
+.evt-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
+.evt-carte {
+  display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto; gap: .9rem; align-items: center;
+  padding: .9rem 1rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--rayon-carte);
+  color: inherit; text-decoration: none; min-height: 5rem;
+}
+a.evt-carte:hover { border-color: var(--accent); }
+.evt-date {
+  display: grid; place-items: center; gap: 0; padding: .4rem 0; border-radius: var(--rayon);
+  background: var(--teinte-accent); color: var(--accent-texte); text-transform: uppercase; line-height: 1.05;
+}
+.evt-date__jour { font-size: .6875rem; font-weight: 700; letter-spacing: .06em; }
+.evt-date__num { font: 800 1.5rem/1 var(--police-titre); color: var(--encre); }
+.evt-date__mois { font-size: .6875rem; font-weight: 700; letter-spacing: .06em; }
+.evt-carte--passe .evt-date { background: var(--surface-2); color: var(--doux); }
+.evt-carte__titre { margin: 0; font: 700 1.0625rem/1.25 var(--police-titre); overflow-wrap: anywhere; }
+.evt-carte__details { margin: .2rem 0 0; color: var(--doux); font-size: var(--taille-s); overflow-wrap: anywhere; }
+.evt-carte__chiffres { text-align: right; display: grid; gap: .15rem; justify-items: end; }
+.evt-carte__chiffres .montant { font-weight: 700; white-space: nowrap; }
+.evt-resume { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.evt-infos { margin: 0; display: grid; }
+.evt-infos > div { display: grid; grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr); gap: .75rem; padding: .55rem 0; border-top: 1px solid var(--ligne); }
+.evt-infos > div:first-child { border-top: 0; }
+.evt-infos dt { color: var(--doux); font-size: var(--taille-s); }
+.evt-infos dd { margin: 0; overflow-wrap: anywhere; white-space: pre-line; }
+.evt-formulaire { display: grid; gap: 1rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.evt-formulaire .evt-large { grid-column: 1 / -1; }
+.evt-lier { list-style: none; margin: .75rem 0 0; padding: 0; }
+.evt-lier li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: .75rem; align-items: center; min-height: var(--cible); padding: .35rem 0; border-top: 1px solid var(--ligne); }
+.evt-lier li:first-child { border-top: 0; }
+.evt-lier label { display: contents; cursor: pointer; }
+.evt-lier input { width: 22px; height: 22px; }
+.evt-lier .montant { white-space: nowrap; font-weight: 600; }
+
+@media (max-width: 600px) {
+  .rap-vedette__corps { align-items: flex-start; }
+  .evt-carte { grid-template-columns: 3.75rem minmax(0, 1fr); }
+  .evt-carte__chiffres { grid-column: 2; text-align: left; justify-items: start; }
+  .evt-formulaire { grid-template-columns: minmax(0, 1fr); }
+  .evt-infos > div { grid-template-columns: minmax(0, 1fr); gap: .1rem; }
+  .rap-graphique__axe { height: 10rem; }
+  .rap-graphique svg { height: 8.4rem; }
+}

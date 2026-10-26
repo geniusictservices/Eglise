@@ -16,6 +16,8 @@ use App\Repositories\CatalogueRepository;
 use App\Repositories\DetteRepository;
 use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
+use App\Repositories\NoteRepository;
+use App\Repositories\ServiceRepository;
 use App\Repositories\SessionCaisseRepository;
 use App\Repositories\VenteRepository;
 
@@ -100,6 +102,9 @@ final class CaisseController
         }
         $donnees['etab'] = $etab['slug'];
         $donnees['zone'] = $zone['code'] ?? '';
+        // Salle et cuisine : plan de salle, notes ouvertes, envoi en cuisine (null sans le module)
+        $donnees['grille'] = $contexte['grille'];
+        $donnees['salle'] = CaisseNoteController::donneesCaisse($etab, $personne, $contexte, $zones);
         $personne['avatar'] = Database::un('SELECT avatar FROM utilisateurs WHERE id = ?', [$personne['id']])['avatar'] ?? null;
         Session::demarrer();
         $messagePhoto = $_SESSION['caisse_photo'] ?? null;
@@ -113,7 +118,8 @@ final class CaisseController
             'aLaGestion' => Acces::aLaGestion($personne['id']),
             'peutAutoriser' => $appareil === null && Acces::a($personne['id'], 'caisse.appareils', $id),
             'photoPermise' => (bool) $etab['photo_a_la_caisse'],
-            'scripts' => ['/assets/js/caisse.js', '/assets/js/caisse-ardoise.js', '/assets/js/caisse-session.js', '/assets/js/photo-profil.js'],
+            'scripts' => ['/assets/js/caisse.js', '/assets/js/caisse-ardoise.js', '/assets/js/caisse-session.js', '/assets/js/caisse-salle.js', '/assets/js/photo-profil.js'],
+            'service' => $contexte['service'], 'happy' => $contexte['happy'],
             'messagePhoto' => $messagePhoto,
             'etab' => $etab,
             'etablissements' => $liste,
@@ -133,18 +139,70 @@ final class CaisseController
      * Zone, grille de prix, devises acceptées, devise du ticket et catalogue de la caisse pour un établissement.
      * @return array{zone: ?array, grille: int, grilleDefaut: int, acceptees: array<int, array>, principale: array, donnees: array}
      */
-    private function contexte(array $etab, ?string $codeZone): array
+    public function contexte(array $etab, ?string $codeZone, bool $filtrer = true): array
     {
         $etablissements = new EtablissementRepository();
         $id = (int) $etab['id'];
         $zone = $codeZone !== null && $codeZone !== '' ? $etablissements->zoneParCode($id, $codeZone) : null;
         $grilleDefaut = (int) $etab['grille_prix_id'];
-        $grille = $zone && $zone['grille_prix_id'] ? (int) $zone['grille_prix_id'] : $grilleDefaut;
+        // Grille du moment : zone (Carré VIP), sinon happy hour, sinon service en cours, sinon établissement
+        $choix = (new ServiceRepository())->grille($etab, $zone);
+        $grille = $choix['grille'];
+        $service = $choix['service'];
+        // Catégories du service en cours (la cuisine fermée disparaît de la caisse) ; $filtrer = false pour payer une note
+        $categories = $filtrer && $service !== null ? $service['categories'] : [];
         ['acceptees' => $acceptees, 'principale' => $principale] = self::devisesCaisse($etab);
         return [
             'zone' => $zone, 'grille' => $grille, 'grilleDefaut' => $grilleDefaut, 'acceptees' => $acceptees, 'principale' => $principale,
-            'donnees' => $this->donnees($id, $grille, $grilleDefaut, $acceptees, $principale, $etab['type']),
+            'service' => $service, 'happy' => $choix['happy'], 'source' => $choix['source'],
+            'donnees' => $this->donnees($id, $grille, $grilleDefaut, $acceptees, $principale, $etab['type'], $categories, $service),
         ];
+    }
+
+    /** @var array<string, array<int, array{format: array, produit: array}>> formats de chaque grille, par établissement */
+    private array $formatsGrilles = [];
+
+    /**
+     * Formats vendus par l'établissement dans une grille, avec leurs prix dans chaque devise acceptée, sans filtre
+     * de service (pour chiffrer les lignes d'une note commandées plus tôt, avec la grille du moment de la commande).
+     * @return array<int, array{format: array, produit: array}>
+     */
+    public function formatsDeGrille(array $etab, int $grille): array
+    {
+        $cle = $etab['id'] . '-' . $grille;
+        if (!isset($this->formatsGrilles[$cle])) {
+            ['acceptees' => $acceptees, 'principale' => $principale] = self::devisesCaisse($etab);
+            $formats = [];
+            foreach ($this->donnees((int) $etab['id'], $grille, (int) $etab['grille_prix_id'], $acceptees, $principale, $etab['type'], [], null)['produits'] as $produit) {
+                foreach ($produit['formats'] as $format) {
+                    $formats[$format['id']] = ['format' => $format, 'produit' => $produit];
+                }
+            }
+            $this->formatsGrilles[$cle] = $formats;
+        }
+        return $this->formatsGrilles[$cle];
+    }
+
+    /**
+     * Prix unitaires actuels de lignes de note, dans chaque devise acceptée, avec la grille de leur commande
+     * (happy hour, VIP) ; à défaut (format retiré depuis), les prix calculés au moment de l'envoi.
+     * @return array<int, array<string, ?float>> ligne → devise → prix
+     */
+    public function prixLignesNote(array $etab, array $lignes): array
+    {
+        $codes = array_column(self::devisesCaisse($etab)['acceptees'], 'code');
+        $prix = [];
+        foreach ($lignes as $l) {
+            $grille = $l['grille_prix_id'] !== null ? (int) $l['grille_prix_id'] : (int) $etab['grille_prix_id'];
+            $f = $this->formatsDeGrille($etab, $grille)[(int) $l['conditionnement_id']] ?? null;
+            $envoi = json_decode((string) ($l['prix_devises'] ?? ''), true);
+            foreach ($codes as $code) {
+                $p = $f['format']['prix'][$code] ?? null;
+                $p ??= is_array($envoi) && is_numeric($envoi[$code] ?? null) ? (float) $envoi[$code] : null;
+                $prix[(int) $l['id']][$code] = $p === null ? null : (float) $p;
+            }
+        }
+        return $prix;
     }
 
     /**
@@ -269,7 +327,21 @@ final class CaisseController
             $this->repondreVente((int) $deja['id'], $etab, $appareil);
         }
 
-        $contexte = $this->contexte($etab, is_string($demande['zone'] ?? null) ? $demande['zone'] : null);
+        // Payer une note ouverte (en entier, par articles ou une part égale) : les lignes viennent de la note
+        $noteDemande = is_array($demande['note'] ?? null) ? $demande['note'] : null;
+        $note = null;
+        if ($noteDemande !== null) {
+            $note = (new NoteRepository())->note((int) ($noteDemande['id'] ?? 0));
+            if ($note === null || (int) $note['etablissement_id'] !== $etabId || $note['type'] !== 'note') {
+                $this->repondre(422, ['erreur' => t('encaisser.illisible')]);
+            }
+            if ($note['statut'] !== 'ouverte') {
+                $this->repondre(409, ['erreur' => t('note.deja_fermee'), 'code' => 'note_changee']);
+            }
+            $contexte = $this->contexte($etab, $note['zone_code'], false);
+        } else {
+            $contexte = $this->contexte($etab, is_string($demande['zone'] ?? null) ? $demande['zone'] : null);
+        }
         $acceptees = array_column($contexte['acceptees'], null, 'code');
         $principale = $contexte['principale'];
         $formats = [];
@@ -282,7 +354,36 @@ final class CaisseController
         // Lignes : formats existants, disponibles, avec un prix dans la devise du ticket
         $lignes = [];
         $totaux = array_fill_keys(array_keys($acceptees), 0.0);
-        foreach (is_array($demande['lignes'] ?? null) ? $demande['lignes'] : [] as $ligne) {
+        $partNote = null;
+        $pourCuisine = [];
+        if ($note !== null) {
+            // Prix recalculés avec la grille du moment de chaque commande (happy hour, VIP) ; quantités
+            // éventuellement fractionnaires (partage en parts égales)
+            try {
+                $partNote = NoteRepository::part($note, $noteDemande);
+            } catch (\InvalidArgumentException) {
+                $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
+            }
+            $prixNote = $this->prixLignesNote($etab, array_column($partNote, 'ligne'));
+            $reference = $this->devisesRepo()->reference();
+            foreach ($partNote as $p) {
+                $l = $p['ligne'];
+                $pu = $prixNote[(int) $l['id']];
+                if (($pu[$principale['code']] ?? null) === null) {
+                    $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
+                }
+                foreach (array_keys($totaux) as $code) {
+                    $totaux[$code] = ($pu[$code] ?? null) === null || $totaux[$code] === null ? null : $totaux[$code] + $pu[$code] * $p['quantite'];
+                }
+                $lignes[] = [
+                    'produit_id' => $l['produit_id'] !== null ? (int) $l['produit_id'] : null,
+                    'conditionnement_id' => $l['conditionnement_id'] !== null ? (int) $l['conditionnement_id'] : null,
+                    'libelle' => $l['libelle'], 'format' => $l['format'], 'quantite' => $p['quantite'], 'prix' => $pu[$principale['code']],
+                    'prix_reference' => $reference ? ($pu[$reference['code']] ?? null) : null,
+                ];
+            }
+        }
+        foreach ($note !== null ? [] : (is_array($demande['lignes'] ?? null) ? $demande['lignes'] : []) as $ligne) {
             $formatId = (int) ($ligne['id'] ?? 0);
             $quantite = (int) ($ligne['qte'] ?? 0);
             $f = $formats[$formatId] ?? null;
@@ -301,6 +402,13 @@ final class CaisseController
                 'libelle' => $nom, 'format' => (!$f['format']['unite'] || $f['format']['freres'] > 1) ? $f['format']['nom'] : null,
                 'quantite' => $quantite, 'prix' => (float) $f['format']['prix'][$principale['code']],
                 'prix_reference' => $reference && isset($f['format']['prix'][$reference['code']]) ? (float) $f['format']['prix'][$reference['code']] : null,
+            ];
+            // Vente directe d'un plat : il part quand même en cuisine (avec ses précisions)
+            $pourCuisine[] = end($lignes) + [
+                'categorie_id' => (int) ($f['produit']['sous'] ?: $f['produit']['categorie']),
+                'remarque' => CaisseNoteController::texteLibre($ligne['rem'] ?? null),
+                'allergie' => CaisseNoteController::texteLibre($ligne['all'] ?? null),
+                'prix_devises' => array_filter($f['format']['prix'], static fn ($p) => $p !== null), 'grille' => $contexte['grille'],
             ];
         }
         if ($lignes === []) {
@@ -366,7 +474,7 @@ final class CaisseController
         }
 
         $reference = $this->devisesRepo()->reference();
-        $id = $ventes->enregistrer([
+        $vente = [
             'etablissement' => $etab, 'cle' => $cle, 'zone_id' => $contexte['zone'] ? (int) $contexte['zone']['id'] : null,
             'grille_id' => $contexte['grille'], 'utilisateur_id' => $personne['id'], 'appareil_id' => $appareil ? (int) $appareil['id'] : null,
             'devise' => $principale, 'total' => $totaux[$principale['code']],
@@ -375,7 +483,24 @@ final class CaisseController
             'lignes' => $lignes, 'paiements' => $paiements, 'rendu' => $rendu,
             'credits' => $credit !== null ? [$credit] : [],
             'session_id' => $session !== null ? (int) $session['id'] : null,
-        ]);
+        ];
+        if ($note !== null) {
+            // Dans la transaction de la vente : la note garde ce qui est payé (et se ferme s'il ne reste rien) ;
+            // si quelqu'un a payé ou changé ces lignes entre-temps, la vente est annulée
+            $parts = ($noteDemande['mode'] ?? '') === 'egal' ? (int) $noteDemande['parts'] : null;
+            $vente['apres'] = static fn (int $venteId) => (new NoteRepository())->appliquerPaiement((int) $note['id'], $partNote, $venteId, $parts);
+            try {
+                $id = $ventes->enregistrer($vente);
+            } catch (\DomainException) {
+                $this->repondre(409, ['erreur' => t('note.changee'), 'code' => 'note_changee']);
+            }
+            NoteRepository::journal('note_payee', $note, ['vente' => $id, 'mode' => $noteDemande['mode'] ?? 'tout'], $personne['id'], $appareil ? (int) $appareil['id'] : null);
+            $apres = (new NoteRepository())->note((int) $note['id']);
+            $this->repondreVente($id, $etab, $appareil, ['note' => ['id' => (int) $note['id'], 'statut' => $apres['statut'] ?? 'payee']]);
+        }
+        $id = $ventes->enregistrer($vente);
+        // Vente directe (comptoir, à emporter) : les plats partent quand même en cuisine
+        CaisseNoteController::venteEnCuisine($id, $etab, $personne, $contexte, $pourCuisine);
         $this->repondreVente($id, $etab, $appareil);
     }
 
@@ -454,7 +579,7 @@ final class CaisseController
     }
 
     /** Réponse d'une vente enregistrée ; la caisse partagée se verrouille si l'établissement l'exige. */
-    private function repondreVente(int $id, array $etab, ?array $appareil): never
+    private function repondreVente(int $id, array $etab, ?array $appareil, array $extra = []): never
     {
         $verrouille = false;
         if ($appareil !== null && $etab['verrou_apres_encaissement']) {
@@ -467,7 +592,7 @@ final class CaisseController
             'recu' => View::rendre('caisse/_recu', $recu),
             'verrouille' => $verrouille,
             'csrf' => Session::jetonCsrf(),
-        ]);
+        ] + $extra);
     }
 
     private function repondre(int $code, array $donnees): never
@@ -632,7 +757,8 @@ final class CaisseController
      * Un produit à tailles est une seule tuile : ses formats sont ceux de toutes ses tailles,
      * chacun avec le libellé de sa taille (« Grande 72 cl ») et sa disponibilité.
      */
-    private function donnees(int $etablissementId, int $grille, int $grilleDefaut, array $acceptees, array $principale, string $type): array
+    private function donnees(int $etablissementId, int $grille, int $grilleDefaut, array $acceptees, array $principale, string $type,
+                             array $visibles = [], ?array $service = null): array
     {
         $catalogue = new CatalogueRepository(new DeviseRepository());
         $categories = [];
@@ -640,6 +766,10 @@ final class CaisseController
 
         foreach ($acceptees as $devise) {
             foreach ($catalogue->menu($etablissementId, $grille, $grilleDefaut, $devise, false) as $categorie) {
+                // Service en cours qui ne vend que certaines catégories (cuisine fermée) : les autres disparaissent
+                if ($visibles !== [] && !in_array((int) $categorie['id'], $visibles, true)) {
+                    continue;
+                }
                 $categories[$categorie['id']] ??= ['id' => $categorie['id'], 'nom' => champ($categorie, 'nom'), 'sous' => []];
                 $groupes = [[$categorie, 0]];
                 foreach ($categorie['sous_categories'] as $sous) {
@@ -664,7 +794,8 @@ final class CaisseController
         unset($categorie);
 
         return [
-            'mode' => $type === 'nightclub' ? 'rapide' : 'standard',
+            // Mode comptoir rapide : celui du service en cours (Club), sinon celui du type de lieu (nightclub)
+            'mode' => ($service !== null ? $service['rapide'] : $type === 'nightclub') ? 'rapide' : 'standard',
             'langue' => \App\Core\I18n::langue(),
             'principale' => $principale['code'],
             'devises' => array_values(array_map(static fn (array $d) => [

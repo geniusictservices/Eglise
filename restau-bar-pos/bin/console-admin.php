@@ -47,6 +47,7 @@ if (!BaseConsole::configuree()) {
     arreter('Console non configurée : copiez config/console.php.dist en config/console.php et renseignez la base (' . BaseConsole::fichier() . ').');
 }
 date_default_timezone_set(App\Core\Config::get('fuseau_horaire'));
+App\Core\I18n::initialiser('fr');
 try {
     $pdo = BaseConsole::pdo();
 } catch (Throwable $e) {
