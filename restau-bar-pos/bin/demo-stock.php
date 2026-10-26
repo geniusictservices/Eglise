@@ -342,9 +342,21 @@ foreach (Database::tous('SELECT id FROM ventes ORDER BY cree_le, id') as $v) {
     $stock->sortieVente((int) $v['id']);
 }
 $conso = [];
-foreach (Database::tous("SELECT lieu_id, produit_id, -SUM(quantite) AS q FROM stock_mouvements WHERE type IN ('vente', 'recette') GROUP BY lieu_id, produit_id") as $c) {
-    $conso[(int) $c['lieu_id']][(int) $c['produit_id']] = (float) $c['q'];
+$consoJour = [];
+foreach (Database::tous("SELECT lieu_id, produit_id, DATE(date_mouvement) AS jour, -SUM(quantite) AS q FROM stock_mouvements
+                          WHERE type IN ('vente', 'recette') GROUP BY lieu_id, produit_id, DATE(date_mouvement)") as $c) {
+    $indice = (int) $debut->setTime(0, 0)->diff(new DateTimeImmutable($c['jour']))->days;
+    $conso[(int) $c['lieu_id']][(int) $c['produit_id']] = ($conso[(int) $c['lieu_id']][(int) $c['produit_id']] ?? 0) + (float) $c['q'];
+    $consoJour[(int) $c['lieu_id']][(int) $c['produit_id']][$indice] = (float) $c['q'];
 }
+/** Ventes réelles d'un article dans un comptoir du jour $de au jour $a inclus. */
+$ventesEntre = static function (int $lieu, int $produitId, int $de, int $a) use (&$consoJour): float {
+    $total = 0.0;
+    for ($j = $de; $j <= $a; $j++) {
+        $total += $consoJour[$lieu][$produitId][$j] ?? 0.0;
+    }
+    return $total;
+};
 $pdo->rollBack();
 $stock->oublierCache();
 $parJour = static fn (int $lieu, int $produitId): float => ($conso[$lieu][$produitId] ?? 0.0) / $joursPeriode;
@@ -585,15 +597,17 @@ for ($d = 0; $d <= $joursPeriode; $d++) {
                 $pid = $cleProduit($cle);
                 $c = $parJour($comptoir, $pid);
                 $niveau = $niv[$comptoir][$pid] ?? 0;
-                if ($c <= 0 || $niveau >= 4 * $c) {
+                // Ce que le comptoir vendra jusqu'au prochain transfert (ventes réelles), plus deux jours de marge
+                $besoin = $ventesEntre($comptoir, $pid, $d, $d + 3) + 2 * $c;
+                if ($c <= 0 || $niveau >= $besoin) {
                     continue;
                 }
                 // Le champagne n'est plus monté au Bar VIP la dernière semaine : il finit en négatif (vendu quand même, avec alerte)
                 if ($comptoir === $L['vc_vip'] && $cle === 'moet' && $d > $joursPeriode - 9) {
                     continue;
                 }
-                [$cond, $taille] = $formatTransfert($cle, $pid, 6 * $c - $niveau);
-                $n = (int) ceil((6 * $c - $niveau) / $taille - 0.0001);
+                [$cond, $taille] = $formatTransfert($cle, $pid, $besoin - $niveau);
+                $n = (int) ceil(($besoin - $niveau) / $taille - 0.0001);
                 $n = min($n, (int) floor(($niv[$info['depot']][$pid] ?? 0) / $taille + 0.0001));
                 if ($n <= 0) {
                     continue;
@@ -622,13 +636,11 @@ for ($d = 0; $d <= $joursPeriode; $d++) {
             $nbTransferts++;
         }
     }
-    // Ventes de la journée (moyenne)
+    // Ventes réelles de la journée
     foreach ($comptoirs as $comptoir => $info) {
         foreach (array_keys($A) as $cle) {
             $pid = $cleProduit($cle);
-            if (($c = $parJour($comptoir, $pid)) > 0) {
-                $niv[$comptoir][$pid] = ($niv[$comptoir][$pid] ?? 0) - $c;
-            }
+            $niv[$comptoir][$pid] = ($niv[$comptoir][$pid] ?? 0) - ($consoJour[$comptoir][$pid][$d] ?? 0.0);
         }
     }
 }

@@ -180,9 +180,16 @@ if ($existantes !== []) {
     foreach (array_chunk($existantes, 500) as $paquet) {
         $marques = implode(',', array_fill(0, count($paquet), '?'));
         Database::executer("DELETE FROM mouvements_tresorerie WHERE nature = 'vente' AND source_id IN ($marques)", $paquet);
+        // Sorties de stock de ces ventes (module Stock), le stock est recalculé ensuite
+        if (Database::un("SHOW TABLES LIKE 'stock_mouvements'") !== null) {
+            Database::executer("DELETE FROM stock_mouvements WHERE type IN ('vente', 'recette', 'vide_recupere', 'annulation_vente') AND source_id IN ($marques)", $paquet);
+        }
         Database::executer("DELETE FROM ventes WHERE id IN ($marques)", $paquet);
     }
     $pdo->commit();
+    if (Database::un("SHOW TABLES LIKE 'stock_mouvements'") !== null) {
+        (new App\Repositories\StockRepository())->recalculer();
+    }
     echo count($existantes) . " ventes de démonstration supprimées.\n";
 }
 

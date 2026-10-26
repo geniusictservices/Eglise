@@ -150,9 +150,7 @@ foreach ($classement as $ligne) {
                     <th scope="col"><?= e(t('rpersonnel.col_evolution')) ?></th>
                     <th scope="col" class="nombre"><?= e(t('rapports.col_tickets')) ?></th>
                     <th scope="col" class="nombre"><?= e(t('rpersonnel.col_panier')) ?></th>
-                    <th scope="col" class="nombre"><?= e(t('rapports.col_articles')) ?></th>
                     <th scope="col" class="nombre"><?= e(t('rpersonnel.col_credit')) ?></th>
-                    <th scope="col" class="nombre"><?= e(t('rpersonnel.col_credits_accordes')) ?></th>
                     <th scope="col" class="nombre"><?= e(t('rapports.col_annulees')) ?></th>
                     <?php if ($tables !== null): ?><th scope="col" class="nombre"><?= e(t('rpersonnel.col_tables')) ?></th><?php endif; ?>
                     <th scope="col"><?= e(t('rpersonnel.col_jours')) ?></th>
@@ -179,12 +177,11 @@ foreach ($classement as $ligne) {
                                 <?php else: ?><span class="rap-ecart <?= $ecart >= 0 ? 'rap-ecart--bon' : 'rap-ecart--mauvais' ?>"><span aria-hidden="true"><?= $ecart >= 0 ? '↑' : '↓' ?></span> <?= e(R::pourcentSigne($ecart)) ?></span><?php endif; ?>
                                 <?php if ($p !== null && $toutVoir): ?><span class="rap-sous"><?= e(t('rpersonnel.rang_avant', ['rang' => $p['rang']])) ?></span><?php endif; ?>
                             </td>
-                            <td class="nombre" data-cle="tickets"><?= (int) $t['tickets'] ?></td>
+                            <td class="nombre"><span data-cle="tickets"><?= (int) $t['tickets'] ?></span><span class="rap-sous" data-cle="articles"><?= e(t('rpersonnel.n_articles', ['n' => R::nombre($t['articles'])])) ?></span></td>
                             <td class="nombre montant" data-cle="panier"><?= e($enLocale($t['panier_retenu'])) ?></td>
-                            <td class="nombre" data-cle="articles"><?= e(R::nombre($t['articles'])) ?></td>
                             <td class="nombre" data-cle="credit"><span class="montant"><?= e($enLocale($t['credit_locale'])) ?></span>
-                                <?php if ($t['non_rembourse_locale'] > 0.5): ?><span class="rap-sous"><?= e(t('rpersonnel.non_rembourse', ['montant' => $enLocale($t['non_rembourse_locale'])])) ?></span><?php endif; ?></td>
-                            <td class="nombre" data-cle="credits-accordes"><?= (int) ($c['nombre'] ?? 0) ?><?php if ($c !== null): ?><span class="rap-sous montant"><?= e($enRef($c['reference'])) ?></span><?php endif; ?></td>
+                                <?php if ($t['non_rembourse_locale'] > 0.5): ?><span class="rap-sous"><?= e(t('rpersonnel.non_rembourse', ['montant' => $enLocale($t['non_rembourse_locale'])])) ?></span><?php endif; ?>
+                                <span class="rap-sous" data-cle="credits-accordes" data-nombre="<?= (int) ($c['nombre'] ?? 0) ?>"><?= !empty($c['nombre']) ? e(t('rpersonnel.n_accordes', ['n' => (int) $c['nombre'], 'montant' => $enRef($c['reference'])])) : '' ?></span></td>
                             <td class="nombre" data-cle="annulees"><?= (int) $t['annulees'] ?><?php if ($t['annulees'] > 0): ?><span class="rap-sous montant"><?= e($enLocale($t['annulees_locale'])) ?></span><?php endif; ?></td>
                             <?php if ($tables !== null): ?><td class="nombre"><?= (int) ($tables[(int) $id] ?? 0) ?></td><?php endif; ?>
                             <td><?= $mini($jours) ?></td>

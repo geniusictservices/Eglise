@@ -12,17 +12,7 @@
  */
 $principale = array_key_first($devises);
 $montant = static fn (?float $m, string $code): string => $m === null || !isset($devises[$code]) ? '—' : $formateur->formater($m, $devises[$code]);
-$qte = static function (float $q): string {
-    if (abs($q - round($q)) < 0.0005) {
-        return (string) (int) round($q);
-    }
-    for ($k = 2; $k <= 20; $k++) {
-        if (abs($q * $k - round($q * $k)) < 0.01 * $k) {
-            return (int) round($q * $k) . '/' . $k;
-        }
-    }
-    return number_format($q, 2, ',', ' ');
-};
+$qte = static fn (float $q): string => App\Repositories\NoteRepository::quantiteLisible($q);
 ?>
 <article class="recu recu--addition" aria-label="<?= e(t('note.addition')) ?>">
     <header class="recu__tete">

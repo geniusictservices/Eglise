@@ -197,7 +197,7 @@ button { cursor: pointer; }
 .ticket__tete { display: flex; align-items: center; gap: 8px; }
 .ticket__tete h2 { margin: 0; font: 600 1.125rem/1.2 var(--police-titre); flex: 1; }
 .ticket__tete .lien {
-  min-height: 36px;
+  min-height: var(--cible);
   padding: 0 12px;
   border: 1px solid var(--ligne);
   border-radius: 10px;
@@ -844,9 +844,10 @@ button { cursor: pointer; }
 }
 
 /* Plats prêts (bandeau en haut) et petits messages (en bas) */
+/* En bas à gauche, sur la marge du bas de la grille : ne cache ni la barre du haut ni le ticket */
 .prets-bandeau {
-  position: fixed; z-index: 55; left: 50%; top: calc(12px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
-  width: min(620px, calc(100% - 24px)); display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px;
+  position: fixed; z-index: 55; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: min(560px, calc(100% - 24px)); display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px;
   border-radius: 16px; border: 1px solid var(--succes); background: var(--surface); box-shadow: var(--ombre);
 }
 .prets-bandeau[hidden] { display: none; }
@@ -860,6 +861,8 @@ button { cursor: pointer; }
 }
 .salle-toast[hidden] { display: none; }
 .salle-toast__action { color: inherit; text-decoration: underline; min-height: var(--cible); }
+@media (min-width: 900px) { .prets-bandeau { width: min(560px, calc(100% - 420px)); } }
+@media (max-width: 899px) { .prets-bandeau { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); } }
 @media (min-width: 900px) { .salle-toast { bottom: 24px; } }
 
 /* Précisions d'une ligne, annulation avec le PIN d'un supérieur */

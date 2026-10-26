@@ -67,6 +67,10 @@ final class RapportServeursController
         }
         $credits = $repo->creditsAccordes(['du' => $bornes['du'], 'au' => $bornes['au'], 'etablissement' => $etablissement], $uid, $toutVoir);
         $tables = $repo->tablesServies($ventes);
+        // Colonne « Tables servies » seulement si la salle a servi des tables sur la période
+        if ($tables !== null && array_sum($tables) === 0) {
+            $tables = null;
+        }
 
         // Évolution jour par jour (CA retenu) de chaque personne
         $journees = RapportRepository::journees($bornes['du'], $bornes['au']);

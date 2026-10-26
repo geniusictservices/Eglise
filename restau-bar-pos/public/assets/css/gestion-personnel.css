@@ -19,9 +19,10 @@
 .per-jours__choix input { min-height: var(--cible); border: 1.5px solid var(--ligne-forte); border-radius: var(--rayon); padding: 0 .6rem; background: var(--saisie); color: var(--encre); font: inherit; }
 .per-jours__titre { font: 600 1rem/1.2 var(--police-titre); padding: 0 .25rem; }
 
-.per-chiffres { margin: 0 0 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
+.per-chiffres { margin: 1rem 0 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
 .per-chiffres .chiffre__valeur { font-size: clamp(1.25rem, 3vw, 1.75rem); overflow-wrap: anywhere; }
-.per-chiffre-montant { font-size: clamp(1rem, 2.2vw, 1.25rem) !important; }
+.per-chiffre-montant { font-size: clamp(1rem, 2.2vw, 1.25rem) !important; white-space: normal; }
+.per-chiffres .chiffre { min-width: 0; }
 
 /* ---------- Employés ---------- */
 
@@ -46,7 +47,8 @@
 .per-document-formulaire { display: grid; gap: .75rem; margin-top: 1rem; }
 .per-document-formulaire input[type="file"] { min-height: var(--cible); padding: .5rem 0; border: 0; }
 
-.per-tableau th[scope="row"] { text-transform: none; letter-spacing: 0; font-size: .9375rem; color: var(--encre); font-weight: 600; }
+.bloc .defile { position: relative; }   /* les libellés cachés (position absolue) restent dans le conteneur qui défile */
+.per-tableau th[scope="row"], .per-bulletin th[scope="row"] { text-transform: none; letter-spacing: 0; font-size: .9375rem; color: var(--encre); font-weight: 600; }
 .per-tableau .tre-sous-texte, .per-bulletin .tre-sous-texte { white-space: normal; }
 .per-corrections .tre-sous-texte { overflow-wrap: anywhere; }
 
@@ -169,8 +171,22 @@
   .per-feuille__infos { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
+  .per-chiffres { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem; }
+  .per-chiffres .chiffre { padding: .75rem; }
+  /* Bulletin sur téléphone : une ligne = libellé, puis quantité et montant côte à côte */
+  .per-bulletin thead { display: none; }
+  .per-bulletin, .per-bulletin tbody, .per-bulletin tfoot { display: block; }
+  .per-bulletin tr { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .25rem .75rem; padding: .6rem 0; border-bottom: 1px solid var(--ligne); }
+  .per-bulletin th, .per-bulletin td { border: 0; padding: 0; }
+  .per-bulletin th[scope="row"] { grid-column: 1 / -1; }
+  .per-bulletin td:empty { display: none; }
+  .per-bulletin__montant { justify-self: end; grid-column: 2; }
+  .per-bulletin .per-retenue { justify-content: flex-end; }
   .per-nouvelle-ligne { grid-template-columns: 1fr; }
   .per-saisie-courte { width: 5.5rem; }
   .per-feuille__tete { flex-direction: column; }
+  .per-feuille { font-size: 9pt; }
+  .per-feuille__lignes th, .per-feuille__lignes td { padding: 1.5mm; }
+  .per-feuille__lignes .nombre { white-space: normal; }
   .per-feuille__titre { text-align: left; }
 }

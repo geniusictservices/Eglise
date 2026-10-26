@@ -43,7 +43,7 @@ $numero = is_int($i) ? $i + 1 : '__n__';
                 <label for="<?= $idBase ?>-prix"><?= e(t('achats.prix_format')) ?></label>
                 <div class="tre-montant">
                     <input id="<?= $idBase ?>-prix" name="<?= $prefixe ?>[prix]" inputmode="decimal" autocomplete="off" value="<?= e($ligne['prix'] ?? '') ?>" data-ligne-prix<?= $erreurPrix ? ' aria-invalid="true" aria-describedby="' . $idBase . '-erreur-prix"' : '' ?>>
-                    <span class="tre-montant__devise" data-symbole><?= e($symbole ?? '') ?></span>
+                    <span class="tre-montant__devise" data-symbole-prix><?= e($symbole ?? '') ?></span>
                 </div>
             </div>
         <?php endif; ?>

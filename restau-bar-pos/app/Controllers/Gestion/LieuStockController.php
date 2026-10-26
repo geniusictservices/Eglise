@@ -65,7 +65,7 @@ final class LieuStockController
             'blocs' => $blocs,
             'centraux' => array_values(array_filter($tous, static fn (array $l): bool => $l['etablissement_id'] === null)),
             'centralModifiable' => StockAcces::peut($uid, 'stock.parametrer', null),
-            'categories' => $this->depot->categories(),
+            'categories' => $this->categoriesVendues(),
             'erreurs' => $erreurs,
             'valeurs' => $valeurs,
         ], 'gestion');
@@ -184,6 +184,22 @@ final class LieuStockController
         Journal::ecrire('stock_reglages', (string) $etab, ['mode_negatif' => $mode], (int) $utilisateur['id']);
         Session::flash(t('stock.reglages_enregistres'));
         rediriger('/gestion/stock/lieux#reglages-' . $etab);
+    }
+
+    /** Catégories qui ont des produits vendus (ou dont une sous-catégorie en a) : les ingrédients et emballages ne se routent pas. */
+    private function categoriesVendues(): array
+    {
+        $vendues = array_map('intval', array_column(Database::tous(
+            'SELECT DISTINCT p.categorie_id FROM produits p JOIN conditionnements c ON c.produit_id = p.id AND c.vendable = 1 WHERE p.actif = 1'
+        ), 'categorie_id'));
+        $arbre = $this->depot->categories();
+        $parents = [];
+        foreach ($arbre as $c) {
+            if (in_array((int) $c['id'], $vendues, true) && $c['niveau'] === 1) {
+                $parents[] = (int) $c['parente']['id'];
+            }
+        }
+        return array_values(array_filter($arbre, static fn (array $c): bool => in_array((int) $c['id'], $vendues, true) || in_array((int) $c['id'], $parents, true)));
     }
 
     private function erreurNom(?int $etab, string $nom, int $saufId = 0): ?string

@@ -213,3 +213,6 @@ a.evt-carte:hover { border-color: var(--accent); }
 .rap-tableau thead th { white-space: normal; line-height: 1.25; vertical-align: bottom; }
 .rap-tableau .rap-mini { width: 5rem; }
 .rap-tableau .rap-personne .avatar { flex: none; }
+.rap-tableau td[data-cle="credit"] { max-width: 11rem; }
+.rap-tableau td[data-cle="credit"] .rap-sous { white-space: normal; }
+.rap-tableau .rap-mini { width: 4rem; }

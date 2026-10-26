@@ -130,6 +130,15 @@ if ($demo && is_file(RACINE . '/bin/demo-salle.php')) {
     }
 }
 
+// Stock et achats de démonstration (dépôts, fournisseurs, réceptions, transferts, inventaires), à la fin :
+// les sorties de stock de toutes les ventes de démonstration sont rejouées dans l'ordre
+if ($demo && is_file(RACINE . '/bin/demo-stock.php')) {
+    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(RACINE . '/bin/demo-stock.php') . ' ' . escapeshellarg($sousDomaine), $code);
+    if ($code !== 0) {
+        fwrite(STDERR, "Stock de démonstration non créé (php bin/demo-stock.php $sousDomaine pour réessayer).\n");
+    }
+}
+
 $domaine = Config::get('domaine_base');
 echo <<<TXT
 Instance « $sousDomaine » créée.

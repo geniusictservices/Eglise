@@ -62,6 +62,21 @@ final class NoteRepository
         );
     }
 
+    /** Quantité lisible : « 2 », « 1/3 » (part égale), sinon deux décimales (« 0,67 »). */
+    public static function quantiteLisible(float|string $quantite): string
+    {
+        $q = (float) $quantite;
+        if (abs($q - round($q)) < self::EPSILON) {
+            return (string) (int) round($q);
+        }
+        for ($k = 2; $k <= self::PARTS_MAX; $k++) {
+            if (abs($q * $k - round($q * $k)) < 0.01 * $k) {
+                return (int) round($q * $k) . '/' . $k;
+            }
+        }
+        return number_format($q, 2, ',', ' ');
+    }
+
     /** Reste à payer d'une ligne (0 si annulée). */
     public static function reste(array $ligne): float
     {

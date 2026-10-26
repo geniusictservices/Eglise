@@ -140,7 +140,7 @@
           if (prix !== null && quantite !== null) { somme += prix * quantite; avecPrix = true; }
         }
       });
-      formulaire.querySelectorAll('[data-symbole]').forEach(function (s) { s.textContent = symbole(); });
+      formulaire.querySelectorAll('[data-symbole-prix]').forEach(function (s) { s.textContent = symbole(); });
       if (total) {
         total.hidden = !avecPrix;
         total.textContent = remplir(formulaire.dataset.texteTotal, { total: nombre(somme) + ' ' + symbole() });

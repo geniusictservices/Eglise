@@ -83,7 +83,8 @@ final class ReservationController
         if ($tableId > 0 && ($table === null || (int) $table['etablissement_id'] !== (int) $etab['id'] || !$table['actif'])) {
             $erreurs[] = t('gsalle.resa_erreur_table');
         }
-        if ($telephone !== '' && !preg_match('/^[+0-9 ().-]{6,32}$/', $telephone)) {
+        $telephoneNormal = $telephone !== '' ? \App\Repositories\DetteRepository::normaliserTelephone($telephone) : null;
+        if ($telephone !== '' && $telephoneNormal === null) {
             $erreurs[] = t('gsalle.resa_erreur_telephone');
         }
         $retour = '/gestion/salle/reservations?etablissement=' . (int) $etab['id'] . '&jour=' . ($jour ?? Journee::aujourdhui($etab));
@@ -97,7 +98,7 @@ final class ReservationController
             $debut = date('Y-m-d H:i:s', strtotime($debut . ' +1 day'));
         }
         $resaId = $this->salle->enregistrerReservation((int) $etab['id'], $existante ? (int) $existante['id'] : null, [
-            'debut' => $debut, 'nom' => $nom, 'telephone' => $telephone !== '' ? normaliserTelephone($telephone) : null,
+            'debut' => $debut, 'nom' => $nom, 'telephone' => $telephoneNormal,
             'personnes' => SalleAcces::entier($_POST['personnes'] ?? 2, 1, 200, 2), 'table_id' => $table ? (int) $table['id'] : null,
             'notes' => SalleAcces::texte($_POST['notes'] ?? '', 255) ?: null,
         ], (int) $utilisateur['id']);

@@ -108,7 +108,7 @@ $totalEcart = 0.0;
         <?php $valider = $i['statut'] === 'compte' && $peutValider; ?>
         <?php if ($valider): ?><form method="post" action="/gestion/stock/inventaires/<?= (int) $i['id'] ?>/valider" novalidate><?= $csrf ?><?php endif; ?>
         <div class="tre-defile">
-            <table class="tableau stk-table stk-ecarts">
+            <table class="tableau stk-table stk-ecarts stk-table--cartes">
                 <thead>
                     <tr>
                         <th scope="col"><?= e(t('stock.col_article')) ?></th>
@@ -132,20 +132,20 @@ $totalEcart = 0.0;
                         ?>
                         <tr data-produit="<?= (int) $produitId ?>" data-ecart="<?= $ecart !== null ? e((string) $ecart) : '' ?>">
                             <th scope="row"><?= e(champ($a, 'nom')) ?></th>
-                            <td class="nombre"><?= e(S::quantite($l['debut'], $a)) ?></td>
-                            <td class="nombre"><?= (float) $l['entrees'] ? '+' . e(S::quantite($l['entrees'], $a)) : '—' ?></td>
-                            <td class="nombre"><?= (float) $l['ventes'] ? '−' . e(S::quantite($l['ventes'], $a)) : '—' ?></td>
-                            <td class="nombre"><?= (float) $l['pertes'] ? '−' . e(S::quantite($l['pertes'], $a)) : '—' ?></td>
-                            <td class="nombre"><?= (float) $l['autres'] ? ((float) $l['autres'] > 0 ? '+' : '') . e(S::quantite($l['autres'], $a)) : '—' ?></td>
-                            <td class="nombre"><strong><?= e(S::quantite($l['attendu'], $a)) ?></strong></td>
-                            <td class="nombre"><?= $l['compte'] !== null ? '<strong>' . e(S::quantite($l['compte'], $a)) . '</strong>' : '<span class="tre-sous-texte">' . e(t('stock.non_compte')) . '</span>' ?></td>
-                            <td class="nombre">
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_debut')) ?>"><?= e(S::quantite($l['debut'], $a)) ?></td>
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_entrees')) ?>"><?= (float) $l['entrees'] ? '+' . e(S::quantite($l['entrees'], $a)) : '—' ?></td>
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_ventes')) ?>"><?= (float) $l['ventes'] ? '−' . e(S::quantite($l['ventes'], $a)) : '—' ?></td>
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_pertes')) ?>"><?= (float) $l['pertes'] ? '−' . e(S::quantite($l['pertes'], $a)) : '—' ?></td>
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_autres')) ?>"><?= (float) $l['autres'] ? ((float) $l['autres'] > 0 ? '+' : '') . e(S::quantite($l['autres'], $a)) : '—' ?></td>
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_attendu')) ?>"><strong><?= e(S::quantite($l['attendu'], $a)) ?></strong></td>
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_compte')) ?>"><?= $l['compte'] !== null ? '<strong>' . e(S::quantite($l['compte'], $a)) . '</strong>' : '<span class="tre-sous-texte">' . e(t('stock.non_compte')) . '</span>' ?></td>
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_ecart')) ?>">
                                 <?php if ($ecart !== null && abs($ecart) > 0.0005): ?>
                                     <strong class="<?= $ecart < 0 ? 'tre-negatif' : 'tre-entree' ?>"><?= $ecart > 0 ? '+' : '' ?><?= e(S::quantite($ecart, $a)) ?></strong>
                                     <?php if ($voirValeur && $valeurEcart !== null && $reference): ?><span class="tre-sous-texte"><?= e(A::montant($valeurEcart, $reference, true)) ?></span><?php endif; ?>
                                 <?php elseif ($ecart !== null): ?><span class="badge badge--succes"><?= e(t('stock.juste')) ?></span><?php endif; ?>
                             </td>
-                            <td>
+                            <td data-libelle="<?= e(t('stock.col_justification')) ?>">
                                 <?php if ($valider && $ecart !== null && abs($ecart) > 0.0005): ?>
                                     <label class="visuellement-cache" for="j-<?= (int) $produitId ?>"><?= e(t('stock.col_justification') . ' · ' . champ($a, 'nom')) ?></label>
                                     <input class="saisie" id="j-<?= (int) $produitId ?>" name="justifications[<?= (int) $produitId ?>]" maxlength="255" value="<?= e($justifications[(int) $produitId] ?? '') ?>" placeholder="<?= e(t('stock.justification_exemple')) ?>">

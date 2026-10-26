@@ -35,9 +35,9 @@ $autres = array_values(array_filter($totaux, static fn (array $t) => (int) $t['d
         <tbody>
             <?php foreach ($lignes as $l): ?>
                 <tr>
-                    <td class="recu__qte"><?= (int) $l['quantite'] ?> ×</td>
+                    <td class="recu__qte"><?= e(App\Repositories\NoteRepository::quantiteLisible($l['quantite'])) ?> ×</td>
                     <td><?= e($l['libelle']) ?><?php if ($l['format']): ?><br><small><?= e($l['format']) ?></small><?php endif; ?>
-                        <?php if ((int) $l['quantite'] > 1): ?><br><small><?= e($montant($l['prix_unitaire'], $ticket)) ?></small><?php endif; ?></td>
+                        <?php if ((float) $l['quantite'] != 1.0): ?><br><small><?= e($montant($l['prix_unitaire'], $ticket)) ?></small><?php endif; ?></td>
                     <td class="recu__montant"><?= e($montant($l['montant'], $ticket)) ?></td>
                 </tr>
             <?php endforeach; ?>

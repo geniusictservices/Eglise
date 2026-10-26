@@ -37,7 +37,7 @@ $pas = max(1, (int) ceil($n / 6));
 $largeur = $n * 10;
 $etiquettesLongues ??= $etiquettes;
 ?>
-<figure class="rap-graphique" style="--colonnes: <?= max(1, $n) ?>" aria-labelledby="<?= e($id) ?>-titre">
+<figure class="rap-graphique" id="<?= e($id) ?>" style="--colonnes: <?= max(1, $n) ?>" aria-labelledby="<?= e($id) ?>-titre">
     <figcaption class="rap-graphique__titre" id="<?= e($id) ?>-titre"><?= e($titre) ?></figcaption>
     <?php if (count($series) > 1): ?>
         <ul class="rap-legende">

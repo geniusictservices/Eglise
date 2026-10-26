@@ -17,11 +17,11 @@ html, body { background: #fff !important; color: #000 !important; }
 body { font-size: 10pt; }
 body.avec-module { padding: 0 !important; }
 
-.haut, .lateral, .barre-bas, .plf-bandeaux, .rap-export, .rap-retour-impression, .rap-pas-imprimer,
-.tre-filtres, .rap-filtres, .tre-entete__actions, .tre-periode, .alerte, .bouton, .puce,
+.haut, .lateral, .barre-bas, .plf-bandeaux, .rap-export, .rap-pas-imprimer,
+.tre-filtres, .rap-filtres, .tre-periode, .alerte, .bouton, .puce,
 form, details > summary .rap-indice { display: none !important; }
 
-.cadre, .avec-module .cadre { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+.cadre, .avec-module .cadre { display: block !important; max-width: none !important; margin: 0 !important; padding: 0 !important; background: none !important; min-height: 0 !important; }
 .page, .avec-module .page { max-width: none !important; width: auto !important; margin: 0 !important; padding: 0 !important; }
 
 .rap-impression-entete {
@@ -47,3 +47,8 @@ a { color: inherit !important; text-decoration: none !important; }
 details { display: block; }
 details > :not(summary) { display: block !important; }
 svg { max-width: 100%; }
+/* Présentation d'impression à l'écran (?imprimer=1) : le lien de retour, caché sur le papier */
+@media print { .rap-retour-impression { display: none !important; } }
+/* En-tête imprimé (client, rapport, période, date) au-dessus du titre de la page */
+.tre-entete:has(.rap-impression-entete) { display: flex !important; flex-direction: column-reverse; align-items: stretch !important; gap: 2mm !important; }
+.tre-entete:has(.rap-impression-entete) .tre-entete__actions { display: block; }

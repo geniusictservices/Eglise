@@ -124,11 +124,18 @@ final class Modules
         ];
     }
 
-    /** Au moins un lounge ou un nightclub actif (module Événements). */
-    public static function aDesSoirees(): bool
+    /**
+     * Module Événements : au moins un lounge ou un nightclub actif, parmi les établissements où la personne
+     * voit les soirées (tous si $utilisateurId est nul).
+     */
+    public static function aDesSoirees(?int $utilisateurId = null): bool
     {
-        static $reponse = null;
-        return $reponse ??= Database::un("SELECT 1 AS n FROM etablissements WHERE actif = 1 AND type IN ('lounge', 'nightclub') LIMIT 1") !== null;
+        $ids = $utilisateurId !== null ? Acces::etablissements($utilisateurId, 'evenements.voir') : null;
+        if ($ids === []) {
+            return false;
+        }
+        $condition = $ids === null ? '' : ' AND id IN (' . implode(',', array_map('intval', $ids)) . ')';
+        return Database::un("SELECT 1 AS n FROM etablissements WHERE actif = 1 AND type IN ('lounge', 'nightclub')" . $condition . ' LIMIT 1') !== null;
     }
 
     /**
@@ -175,7 +182,7 @@ final class Modules
             if (!Plateforme::moduleInclus($code)) {
                 continue;
             }
-            if ($code === 'evenements' && !self::aDesSoirees()) {
+            if ($code === 'evenements' && !self::aDesSoirees($utilisateurId)) {
                 continue;
             }
             if ($code === 'caisse') {

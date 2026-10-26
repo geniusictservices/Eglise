@@ -30,7 +30,9 @@ foreach ($devises as $d) {
     }
 }
 $jeton = e(App\Core\Session::jetonCsrf());
-$articles = array_sum(array_map(static fn (array $l) => (int) $l['quantite'], $fiche['lignes']));
+// Quantités décimales pour une part de note partagée en parts égales (1/2 Tilapia)
+$nbArticles = array_sum(array_map(static fn (array $l) => (float) $l['quantite'], $fiche['lignes']));
+$articles = App\Repositories\NoteRepository::quantiteLisible($nbArticles);
 ?>
 <link rel="stylesheet" href="/assets/css/gestion-tresorerie.css">
 <link rel="stylesheet" href="/assets/css/gestion-ventes.css">
@@ -48,7 +50,7 @@ $articles = array_sum(array_map(static fn (array $l) => (int) $l['quantite'], $f
                 <span class="badge badge--succes"><?= e(t('gventes.badge_payee')) ?></span>
             <?php endif; ?>
         </h1>
-        <p class="aide"><?= e(A::dateHeure($vente['cree_le'])) ?> · <?= e(t($articles > 1 ? 'gventes.n_articles' : 'gventes.un_article', ['n' => $articles])) ?></p>
+        <p class="aide"><?= e(A::dateHeure($vente['cree_le'])) ?> · <?= e(t($nbArticles > 1 ? 'gventes.n_articles' : 'gventes.un_article', ['n' => $articles])) ?></p>
     </div>
     <div class="tre-entete__actions">
         <button class="bouton bouton--secondaire" type="button" data-imprimer hidden><?= e(t('gventes.imprimer_recu')) ?></button>

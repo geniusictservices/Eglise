@@ -190,10 +190,12 @@
   .stk-saisie-courte { width: 6rem; }
   .stk-par-lieu { min-width: 11rem; }
   /* État du stock : une carte par article plutôt qu'un tableau trop large */
-  .stk-table--cartes, .stk-table--cartes tbody, .stk-table--cartes tr, .stk-table--cartes td { display: block; width: 100%; }
+  .stk-table--cartes, .stk-table--cartes tbody, .stk-table--cartes tfoot, .stk-table--cartes tr, .stk-table--cartes td, .stk-table--cartes th { display: block; width: 100%; }
+  .stk-table--cartes th { border: 0; padding: .2rem 0; }
   .stk-table--cartes thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .stk-table--cartes tr { padding: .75rem .5rem; border-bottom: 1px solid var(--ligne); }
   .stk-table--cartes td { border: 0; padding: .2rem 0; text-align: left; white-space: normal; min-width: 0; }
+  .stk-table--cartes td[data-libelle]:empty { display: none; }
   .stk-table--cartes td[data-libelle] { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem .75rem; }
   .stk-table--cartes td[data-libelle]::before { content: attr(data-libelle); color: var(--doux); font-size: .8125rem; font-weight: 600; }
   .stk-table--cartes td.stk-par-lieu { display: block; }
@@ -204,3 +206,6 @@
 
 /* Liens-boutons (supprimer, annuler) : cible tactile de 44 px */
 .stk-lieu button.lien, .stk-details button.lien, .tre-actions button.lien { min-height: var(--cible); display: inline-flex; align-items: center; }
+/* En-têtes de ligne d'un tableau : texte normal (les capitales sont pour les en-têtes de colonnes) */
+.stk-table tbody th, .stk-routage tbody th { text-transform: none; letter-spacing: 0; font-size: inherit; font-weight: 700; color: var(--encre); text-align: left; }
+.stk-table tbody th .tre-sous-texte { font-weight: 400; }
