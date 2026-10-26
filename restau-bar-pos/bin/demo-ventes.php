@@ -7,9 +7,11 @@ declare(strict_types=1);
  * (Comptoir du Lac en journée et en soirée tous les jours, Volcano Club les nuits du jeudi au samedi),
  * vendus par les personnes qui ont le droit d'encaisser (caisse.encaisser), avec les produits et les prix
  * du vrai catalogue (CatalogueRepository::menu(), comme la caisse) et des paiements variés
- * (francs ou dollars en espèces, M-Pesa, Airtel Money, carte, deux devises, monnaie rendue).
+ * (francs ou dollars à la caisse, M-Pesa, Airtel Money, carte, deux devises, monnaie rendue).
  *
  * Chaque vente passe par VenteRepository::enregistrer() : les soldes de la trésorerie restent justes.
+ * Chaque paiement va sur un compte du bon type qui tient la devise payée (la caisse de l'établissement
+ * reçoit les francs et les dollars), dans cette devise.
  *
  *   php bin/demo-ventes.php demo              refuse si des ventes de démonstration existent déjà
  *   php bin/demo-ventes.php demo --reset      les supprime (avec leurs mouvements) et recommence
@@ -38,7 +40,7 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 
 const PREFIXE_CLE = 'de305a1e';
 // Types de comptes (comptes_tresorerie.type), enregistrés tels quels dans vente_paiements.moyen
-const TYPE_CAISSE = 'especes';
+const TYPE_CAISSE = 'caisse';
 const TYPE_MOBILE = 'mobile_money';
 const TYPE_BANQUE = 'banque';
 
@@ -169,9 +171,10 @@ function catalogueCaisse(CatalogueRepository $catalogue, int $etabId, int $grill
 }
 
 /**
- * Seul endroit qui choisit un compte : un compte de ce type (caisse, mobile money, banque) qui reçoit
- * cette devise, parmi les comptes actifs de l'établissement (ou communs). Aujourd'hui un compte tient
- * une seule devise (comptes_tresorerie.devise_id) ; la devise du paiement reste toujours la sienne.
+ * Seul endroit qui choisit un compte : un compte actif de ce type (caisse, mobile money, banque) qui tient
+ * cette devise, parmi ceux de l'établissement ($comptes : les siens et les communs). Le compte propre à
+ * l'établissement passe avant un compte commun ; entre deux comptes du même rang, tirage au sort.
+ * Le paiement est ensuite enregistré dans cette devise (VenteRepository : $p['devise']).
  */
 function compteCaisse(array $comptes, string $type, ?array $devise): ?array
 {
@@ -179,11 +182,13 @@ function compteCaisse(array $comptes, string $type, ?array $devise): ?array
         return null;
     }
     $liste = array_values(array_filter($comptes, static fn (array $c) =>
-        $c['type'] === $type && (int) $c['devise_id'] === (int) $devise['id']));
+        $c['type'] === $type && GestionTresorerieRepository::tient($c, (int) $devise['id'])));
+    $propres = array_values(array_filter($liste, static fn (array $c) => $c['etablissement_id'] !== null));
+    $liste = $propres ?: $liste;
     return $liste === [] ? null : $liste[mt_rand(0, count($liste) - 1)];
 }
 
-/** Arrondit un montant en espèces à ce qu'un client tend : billets de 500 FC, 1 000 FC… ou de 1, 5, 10 $. */
+/** Arrondit un montant payé en liquide à ce qu'un client tend : billets de 500 FC, 1 000 FC… ou de 1, 5, 10 $. */
 function especesTendues(float $montant, array $devise): float
 {
     if ((int) $devise['decimales'] === 0) {
@@ -365,7 +370,7 @@ foreach ($plan as $p) {
     $totaux = array_filter($totaux, static fn ($t) => $t !== null);
     $total = $totaux[$codeP];
 
-    // Paiements : francs en espèces, dollars en espèces, mobile money, carte, ou dollars + francs
+    // Paiements : francs ou dollars à la caisse, mobile money, carte, ou dollars + francs
     $compte = static fn (string $type, string $code): ?array => compteCaisse($c['comptes'], $type, $acceptees[$code] ?? null);
     $usd = $reference ? ($totaux[$reference['code']] ?? null) : null;
     $codeUsd = $reference['code'] ?? null;
@@ -396,7 +401,7 @@ foreach ($plan as $p) {
     }
     $reglement = Reglement::calculer($totaux, $acceptees, array_map(static fn (array $x) => ['devise' => $x['devise']['code'], 'recu' => $x['recu']], $paiements), $codeP);
     if (!$reglement['regle']) {
-        // Le reste en francs, en espèces (billets)
+        // Le reste en francs, à la caisse (billets)
         $ajouter(TYPE_CAISSE, $codeP, especesTendues($reglement['reste'][$codeP], $principale));
         $reglement = Reglement::calculer($totaux, $acceptees, array_map(static fn (array $x) => ['devise' => $x['devise']['code'], 'recu' => $x['recu']], $paiements), $codeP);
     }

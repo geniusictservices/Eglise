@@ -328,17 +328,17 @@ Au choix, par produit ou par carte :
 - **Paiement en plusieurs devises** pour une même note, et **reste à payer** recalculé dans chaque devise après chaque paiement.
 - **Monnaie rendue dans la devise choisie**.
 - **Chaque paiement précise toujours** :
-  - le **moyen** : **espèces**, **mobile money** ou **banque** (virement, carte, chèque) ; à la vente s'ajoute le **crédit client** (dette, section 7) ;
-  - la **devise** : la devise locale, le dollar, **ou les deux** (par exemple 20 $ en espèces et 15 000 FC en mobile money pour une même note) ;
-  - le **compte de trésorerie** qui reçoit l'argent (section 10.5).
-- Chaque ligne de paiement enregistre : moyen, compte, devise, montant, taux appliqué, contre-valeur dans la devise de référence.
+  - le **compte de trésorerie** qui reçoit l'argent (section 10.5), donc son **type** : **caisse**, **mobile money** ou **banque** (virement, carte, chèque) ; à la vente s'ajoute le **crédit client** (dette, section 7) ;
+  - la **devise** : la devise locale, le dollar, **ou les deux** (par exemple 20 $ dans la Caisse du Comptoir et 15 000 FC sur M-Pesa pour une même note).
+- Chaque ligne de paiement enregistre : compte, type du compte, devise, montant, taux appliqué, contre-valeur dans la devise de référence.
 - La même règle vaut pour **toutes les opérations d'argent** : ventes, achats aux fournisseurs, paiements et remboursements de dettes, **dépenses**, salaires, transferts.
 
 **Calcul retenu (fait)** : chaque devise a son propre total, avec ses propres prix (88 000 FC ou 31 $ pour le même ticket). Un paiement couvre une **part** du ticket dans sa devise : 20 $ sur 31 $ = 64,5 %. Le reste à payer s'affiche dans chaque devise, arrondi vers le haut ; le ticket est réglé quand il reste moins d'un demi-pas d'arrondi de la devise du ticket (moins de 50 FC) ; la monnaie se rend en espèces, dans la devise choisie, arrondie vers le bas. La caisse calcule pour l'affichage, le serveur refait tout (prix, totaux, règlement) et refuse ce qui ne colle pas.
 
 **À l'encaissement (fait)** :
-- « Encaisser » ou les boutons Espèces / Mobile money / Banque ouvrent la fenêtre : payer en FC, en $ ou les deux ; pour chaque devise, le montant reçu, le moyen et le compte (choix s'il y en a plusieurs, par exemple M-Pesa ou Airtel Money) ; montants rapides en espèces (montant exact, billets ronds).
-- Chaque paiement entre dans son compte de trésorerie ; la monnaie sort de la caisse en espèces de sa devise.
+- « Encaisser » ou les raccourcis du panneau (le compte principal de chaque type : Caisse du Comptoir, M-Pesa, Rawbank) ouvrent la fenêtre : payer en FC, en $ ou les deux ; pour chaque devise, le montant reçu et **le compte touché directement**, parmi ceux qui tiennent cette devise, rangés sous leur type (Caisse, Mobile money, Banque) ; montants rapides quand le compte est une caisse (montant exact, billets ronds).
+- Seuls les comptes de l'établissement et les comptes communs sont proposés ; le serveur refuse un compte d'ailleurs ou qui ne tient pas la devise.
+- Chaque paiement entre dans son compte, dans sa devise ; la monnaie sort d'une caisse qui tient la devise rendue (celle qui a reçu les espèces, sinon la caisse de l'établissement).
 - La vente garde le numéro du ticket par établissement (CDL-000123), qui a vendu, sur quel appareil, les lignes au prix du moment et le taux de chaque devise.
 - Un double toucher ou une réponse perdue ne crée jamais deux ventes (clé unique par ticket).
 - Reçu à l'écran, imprimable au format des imprimantes de tickets (80 mm) : total en devise locale, puis en dollars.
@@ -356,9 +356,10 @@ L'écart de 20 CDF est enregistré comme écart d'arrondi.
 
 ### 10.5 Caisse, trésorerie et rapports
 - **Fond de caisse, clôture et écarts par devise** : les écarts de deux devises ne se compensent pas.
-- **Plusieurs comptes de trésorerie**, chacun d'**un type** (espèces, mobile money, banque) et d'**une devise** : par exemple Caisse CDF, Caisse USD, M-Pesa CDF, M-Pesa USD, Airtel Money CDF, Rawbank USD, Equity BCDC CDF. Chaque compte peut être lié à un établissement, avec l'opérateur ou la banque et le numéro.
-- **Solde de chaque compte** calculé à partir de ses mouvements (solde d'ouverture, ventes, dépenses, achats, transferts…) ; total par devise et total converti dans la devise de référence.
-- **Transferts entre comptes** : de la caisse vers la banque, de M-Pesa vers la caisse… Entre deux devises (caisse USD vers M-Pesa CDF), le montant reçu est proposé avec le taux du jour, modifiable, et le taux réellement appliqué est enregistré.
+- **Trois types de comptes** : **caisse**, **mobile money**, **banque**. Ce sont des types, pas des comptes : on crée autant de comptes que nécessaire dans chaque type (Caisse du Comptoir, Caisse du Club, M-Pesa, Airtel Money, Rawbank, Equity BCDC).
+- **Un compte tient une ou plusieurs devises**, chacune avec son solde : la Caisse du Comptoir a un solde en FC et un solde en $, comptés séparément (fait). Une devise s'ajoute plus tard ; elle ne se retire que si elle n'a aucun mouvement. Chaque compte peut être lié à un établissement (sinon il est commun), avec l'opérateur ou la banque et le numéro.
+- **Solde de chaque compte et de chaque devise** calculé à partir de ses mouvements (solde d'ouverture, ventes, dépenses, achats, transferts…) ; total par devise et total converti dans la devise de référence.
+- **Transferts entre comptes** : de la caisse vers la banque, de M-Pesa vers la caisse… Chaque côté précise le compte et la devise ; un change dans une même caisse (100 $ → 284 000 FC) est un transfert. Entre deux devises, le montant reçu est proposé avec le taux du jour, modifiable, et le taux réellement appliqué est enregistré.
 - **Encaissements par devise**, et totaux convertis dans la devise de référence.
 - **Gains et pertes de change** calculés automatiquement.
 - Achats fournisseurs dans n'importe quelle devise, avec conversion du coût de revient.
@@ -431,8 +432,8 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 
 ### 13.3 Dépenses et trésorerie
 - Dépenses par catégorie : loyer, électricité, carburant du groupe électrogène, entretien, sécurité, artistes…
-- **Chaque dépense précise le moyen (espèces, mobile money, banque), la devise ou les deux, et le compte payeur** ; une dépense peut être payée en partie en dollars et en partie en francs (section 10.4).
-- Comptes de trésorerie par devise (section 10.5), avec les transferts entre eux.
+- **Chaque dépense précise le compte payeur (caisse, mobile money, banque) et la devise, ou les deux devises** ; une dépense peut être payée en partie en dollars et en partie en francs (section 10.4).
+- Comptes de trésorerie, chacun avec ses devises (section 10.5), et les transferts entre eux.
 - Vue de la trésorerie : entrées (ventes, remboursements de dettes) et sorties (fournisseurs, dépenses, salaires).
 - TVA et taxes, export vers un logiciel comptable ou un comptable.
 
@@ -461,7 +462,7 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 **Paie**
 - **Salaire fixé en dollars, en francs ou dans les deux** (par exemple 150 $ + 100 000 FC), par mois, par semaine ou par soirée pour les extras.
 - **Bulletin de paie** : salaire de base, heures supplémentaires, primes et commissions, moins les avances, les retenues (dettes du personnel, manquants de caisse) et les absences non justifiées ; montants en devise locale d'abord, le dollar en deuxième position.
-- **Chaque paiement de salaire ou d'avance précise le moyen (espèces, mobile money, banque), la devise ou les deux, et le compte payeur** : il sort du compte de trésorerie choisi (section 10.5) et apparaît dans les dépenses de salaires.
+- **Chaque paiement de salaire ou d'avance précise le compte payeur (caisse, mobile money, banque) et la devise, ou les deux devises** : il sort du compte de trésorerie choisi (section 10.5) et apparaît dans les dépenses de salaires.
 - Avances sur salaire accordées à tout moment, déduites automatiquement de la paie suivante.
 - Historique des paies par employé, et masse salariale par établissement et par mois.
 - Module « Personnel et paie » sur l'écran d'accueil des modules.
@@ -572,7 +573,7 @@ Chaque phase est utilisable seule.
 | Design | Direction « Volcan », choisie parmi 4 propositions : thème nuit (nightclub, lounge) et thème jour (restaurant-bar), polices Unbounded et Sora (voir docs/design-system.md) |
 | Images | Illustrations SVG pour la démonstration ; les vraies photos s'ajoutent depuis la gestion du catalogue ; import de photos libres possible (docs/photos.md) |
 | Devises à l'affichage | Devise locale d'abord (tickets et factures), le dollar toujours en deuxième position, puis les autres (section 10.1) |
-| Paiements | Toute opération d'argent précise le moyen (espèces, mobile money, banque), la devise ou les deux, et le compte ; plusieurs comptes de trésorerie avec transferts (sections 10.4 et 10.5) |
+| Paiements | Toute opération d'argent précise le compte (de type caisse, mobile money ou banque) et la devise, ou les deux devises ; plusieurs comptes par type, chacun avec une ou plusieurs devises, et transferts (sections 10.4 et 10.5) |
 | Connexion | Gestion : téléphone ou e-mail et mot de passe ; caisse : PIN de 6 chiffres sur un appareil autorisé, verrouillage après chaque encaissement (section 6.3) |
 | Navigation | Après la connexion, écran des modules ; dans un module, barre latérale sur ordinateur et barre du bas sur téléphone, sans menu caché |
 | Rapports du personnel | Serveur ou serveuse de la période (classement configurable) et dettes des clients liées à chaque utilisateur (section 13.7) |

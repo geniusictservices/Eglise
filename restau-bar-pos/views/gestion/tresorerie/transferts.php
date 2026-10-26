@@ -1,6 +1,7 @@
 <?php
 /**
- * Transferts entre comptes : formulaire et liste de la période.
+ * Transferts entre comptes : formulaire (compte et devise de chaque côté ; même compte et deux devises = change)
+ * et liste de la période.
  * @var ?string $flash
  * @var array $valeurs
  * @var array<string, string> $erreurs
@@ -21,10 +22,17 @@ $erreurChamp = static fn (string $champ): string => isset($erreurs[$champ])
     ? '<p class="champ__erreur" id="erreur-' . $champ . '">' . e($erreurs[$champ]) . '</p>'
     : '';
 $devisesJs = array_map([A::class, 'deviseJs'], $devises);
-$symbole = static function (?int $compteId) use ($comptes, $devises): string {
-    $compte = $compteId !== null ? ($comptes[$compteId] ?? null) : null;
-    return $compte ? (string) ($devises[(int) $compte['devise_id']]['symbole'] ?? '') : '';
+// Devise affichée d'un côté : celle choisie, sinon la seule que le compte tient
+$deviseCote = static function (string $cote) use ($comptes, $devises, $valeurs): ?array {
+    $compte = $valeurs['compte_' . $cote . '_id'] !== null ? ($comptes[$valeurs['compte_' . $cote . '_id']] ?? null) : null;
+    $deviseId = $valeurs['devise_' . $cote . '_id'];
+    if ($compte !== null && $deviseId === null) {
+        $tenues = array_keys(array_filter($compte['devises'], static fn (array $d): bool => $d['tenue']));
+        $deviseId = $tenues[0] ?? null;
+    }
+    return $deviseId !== null ? ($devises[$deviseId] ?? null) : null;
 };
+$compteCote = static fn (string $cote): ?array => $valeurs['compte_' . $cote . '_id'] !== null ? ($comptes[$valeurs['compte_' . $cote . '_id']] ?? null) : null;
 $tousLesComptes = $comptes;
 ?>
 <link rel="stylesheet" href="/assets/css/gestion-tresorerie.css">
@@ -71,18 +79,27 @@ $tousLesComptes = $comptes;
                             <option value=""><?= e(t('tresorerie.choisir_compte')) ?></option>
                             <?= View::rendre('gestion/tresorerie/_options-comptes', ['comptes' => $tousLesComptes, 'devises' => $devises, 'choisi' => $valeurs['compte_source_id']]) ?>
                         </select>
-                        <p class="champ__aide" data-solde="source" aria-live="polite"></p>
                         <?= $erreurChamp('compte_source_id') ?>
                     </div>
-                    <div class="champ">
-                        <label for="montant_source"><?= e(t('transferts.champ_montant_source')) ?></label>
-                        <div class="tre-montant">
-                            <input id="montant_source" name="montant_source" inputmode="decimal" autocomplete="off"
-                                   value="<?= e($valeurs['montant_source']) ?>"<?= $invalide('montant_source') ?>>
-                            <span class="tre-montant__devise" data-symbole="source"><?= e($symbole($valeurs['compte_source_id'])) ?></span>
+                    <div class="tre-transfert__montant">
+                        <div class="champ tre-champ-devise">
+                            <label for="devise_source_id"><?= e(t('transferts.champ_devise_source')) ?></label>
+                            <select id="devise_source_id" name="devise_source_id" data-devise="source"<?= $invalide('devise_source_id') ?>>
+                                <?= View::rendre('gestion/tresorerie/_options-devises', ['compte' => $compteCote('source'), 'devises' => $devises, 'choisie' => $deviseCote('source')['id'] ?? null]) ?>
+                            </select>
                         </div>
-                        <?= $erreurChamp('montant_source') ?>
+                        <div class="champ">
+                            <label for="montant_source"><?= e(t('transferts.champ_montant_source')) ?></label>
+                            <div class="tre-montant">
+                                <input id="montant_source" name="montant_source" inputmode="decimal" autocomplete="off"
+                                       value="<?= e($valeurs['montant_source']) ?>"<?= $invalide('montant_source') ?>>
+                                <span class="tre-montant__devise" data-symbole="source"><?= e($deviseCote('source')['symbole'] ?? '') ?></span>
+                            </div>
+                        </div>
                     </div>
+                    <?= $erreurChamp('devise_source_id') ?>
+                    <?= $erreurChamp('montant_source') ?>
+                    <p class="champ__aide tre-transfert__solde" data-solde="source" aria-live="polite"></p>
                 </div>
 
                 <div class="tre-transfert__fleche" aria-hidden="true">→</div>
@@ -94,17 +111,28 @@ $tousLesComptes = $comptes;
                             <option value=""><?= e(t('tresorerie.choisir_compte')) ?></option>
                             <?= View::rendre('gestion/tresorerie/_options-comptes', ['comptes' => $tousLesComptes, 'devises' => $devises, 'choisi' => $valeurs['compte_destination_id']]) ?>
                         </select>
-                        <p class="champ__aide" data-solde="destination" aria-live="polite"></p>
                         <?= $erreurChamp('compte_destination_id') ?>
                     </div>
-                    <div class="champ" data-bloc-destination>
-                        <label for="montant_destination"><?= e(t('transferts.champ_montant_destination')) ?></label>
-                        <div class="tre-montant">
-                            <input id="montant_destination" name="montant_destination" inputmode="decimal" autocomplete="off"
-                                   value="<?= e($valeurs['montant_destination']) ?>"<?= $invalide('montant_destination') ?>
-                                   aria-describedby="aide-destination">
-                            <span class="tre-montant__devise" data-symbole="destination"><?= e($symbole($valeurs['compte_destination_id'])) ?></span>
+                    <div class="tre-transfert__montant">
+                        <div class="champ tre-champ-devise">
+                            <label for="devise_destination_id"><?= e(t('transferts.champ_devise_destination')) ?></label>
+                            <select id="devise_destination_id" name="devise_destination_id" data-devise="destination"<?= $invalide('devise_destination_id') ?>>
+                                <?= View::rendre('gestion/tresorerie/_options-devises', ['compte' => $compteCote('destination'), 'devises' => $devises, 'choisie' => $deviseCote('destination')['id'] ?? null]) ?>
+                            </select>
                         </div>
+                        <div class="champ" data-bloc-destination>
+                            <label for="montant_destination"><?= e(t('transferts.champ_montant_destination')) ?></label>
+                            <div class="tre-montant">
+                                <input id="montant_destination" name="montant_destination" inputmode="decimal" autocomplete="off"
+                                       value="<?= e($valeurs['montant_destination']) ?>"
+                                       aria-describedby="aide-destination<?= isset($erreurs['montant_destination']) ? ' erreur-montant_destination" aria-invalid="true' : '' ?>">
+                                <span class="tre-montant__devise" data-symbole="destination"><?= e($deviseCote('destination')['symbole'] ?? '') ?></span>
+                            </div>
+                        </div>
+                    </div>
+                    <?= $erreurChamp('devise_destination_id') ?>
+                    <p class="champ__aide tre-transfert__solde" data-solde="destination" aria-live="polite"></p>
+                    <div class="tre-transfert__proposition" data-bloc-proposition>
                         <p class="champ__aide" id="aide-destination" data-proposition aria-live="polite"><?= e(t('transferts.champ_montant_destination_aide')) ?></p>
                         <p class="tre-taux-applique" data-taux-applique aria-live="polite"></p>
                         <button type="button" class="lien tre-reprendre" data-reprendre hidden><?= e(t('transferts.reprendre_propose')) ?></button>
@@ -153,15 +181,17 @@ $tousLesComptes = $comptes;
                 </thead>
                 <tbody>
                 <?php foreach ($transferts as $tr):
-                    $ds = $devises[(int) $tr['source_devise_id']] ?? null;
-                    $dd = $devises[(int) $tr['destination_devise_id']] ?? null;
+                    $ds = $devises[(int) $tr['devise_source_id']] ?? null;
+                    $dd = $devises[(int) $tr['devise_destination_id']] ?? null;
                     $change = $ds && $dd && (int) $ds['id'] !== (int) $dd['id'];
+                    $interne = (int) $tr['compte_source_id'] === (int) $tr['compte_destination_id'];
                     ?>
                     <tr id="transfert-<?= (int) $tr['id'] ?>">
                         <td class="nombre tre-journal__date"><?= e(A::date($tr['date_transfert'])) ?></td>
                         <td>
                             <a href="/gestion/tresorerie/comptes/<?= (int) $tr['compte_source_id'] ?>"><?= e($tr['source_nom']) ?></a>
                             → <a href="/gestion/tresorerie/comptes/<?= (int) $tr['compte_destination_id'] ?>"><?= e($tr['destination_nom']) ?></a>
+                            <?php if ($interne && $ds && $dd): ?><span class="badge badge--glace"><?= e(t('transferts.badge_change', ['de' => $ds['code'], 'vers' => $dd['code']])) ?></span><?php endif; ?>
                             <?php if ($tr['auteur']): ?><span class="tre-sous-texte"><?= e(t('tresorerie.par', ['nom' => $tr['auteur']])) ?></span><?php endif; ?>
                         </td>
                         <td class="nombre montant" data-libelle="<?= e(t('transferts.col_envoye')) ?> :"><?= $ds ? e(A::montant($tr['montant_source'], $ds)) : '' ?></td>

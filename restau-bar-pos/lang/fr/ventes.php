@@ -8,7 +8,7 @@ return [
     'encaisser.droit' => 'Votre rôle ne permet pas d\'encaisser. Appelez un caissier ou le gérant.',
     'encaisser.ligne_invalide' => 'Un article du ticket n\'est plus en vente ou n\'a pas de prix. Rechargez la caisse.',
     'encaisser.vide' => 'Le ticket est vide.',
-    'encaisser.paiement_invalide' => 'Un paiement est invalide (devise, moyen ou compte). Vérifiez et recommencez.',
+    'encaisser.paiement_invalide' => 'Un paiement est invalide (devise ou compte). Vérifiez et recommencez.',
     'encaisser.sans_paiement' => 'Indiquez au moins un paiement.',
     'encaisser.reste' => 'Il reste {reste} à payer.',
     'encaisser.rendu_impossible' => 'Pas de caisse en espèces en {devise} pour rendre la monnaie. Choisissez une autre devise pour la monnaie.',

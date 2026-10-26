@@ -15,7 +15,6 @@ use App\Core\View;
 use App\Repositories\CatalogueRepository;
 use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
-use App\Repositories\GestionTresorerieRepository;
 use App\Repositories\VenteRepository;
 
 /**
@@ -77,7 +76,7 @@ final class CaisseController
         $contexte = $this->contexte($etab, is_string($_GET['zone'] ?? null) ? $_GET['zone'] : null);
         $zone = $contexte['zone'];
         $donnees = $contexte['donnees'];
-        // Comptes de trésorerie où peuvent entrer les paiements de cet établissement, par moyen et devise
+        // Comptes de trésorerie où peuvent entrer les paiements de cet établissement, par type, avec leurs devises
         $donnees['comptes'] = $this->comptesCaisse($id, $contexte['acceptees']);
         $donnees['encaisser'] = Acces::a($personne['id'], 'caisse.encaisser', $id);
         $donnees['etab'] = $etab['slug'];
@@ -134,18 +133,37 @@ final class CaisseController
         ];
     }
 
-    /** @return list<array{id: int, nom: string, moyen: string, devise: string}> comptes actifs de l'établissement (ou de tous) dans une devise acceptée */
+    /**
+     * Comptes actifs de l'établissement (ou communs à tous) qui tiennent au moins une devise acceptée,
+     * rangés par type (caisse, mobile money, banque) puis ceux de l'établissement avant les communs.
+     * @return list<array{id: int, nom: string, type: string, commun: bool, devises: list<string>}>
+     */
     private function comptesCaisse(int $etablissementId, array $acceptees): array
     {
         $codes = array_column($acceptees, 'code', 'id');
+        $lignes = Database::tous(
+            "SELECT c.id, c.nom, c.type, c.etablissement_id, cd.devise_id
+               FROM comptes_tresorerie c JOIN compte_devises cd ON cd.compte_id = c.id
+              WHERE c.active = 1 AND (c.etablissement_id IS NULL OR c.etablissement_id = ?)
+              ORDER BY FIELD(c.type, 'caisse', 'mobile_money', 'banque'), c.etablissement_id IS NULL, c.nom, c.id",
+            [$etablissementId]
+        );
         $comptes = [];
-        foreach ((new GestionTresorerieRepository())->comptesActifs() as $compte) {
-            $portee = $compte['etablissement_id'] === null ? null : (int) $compte['etablissement_id'];
-            if (($portee === null || $portee === $etablissementId) && isset($codes[(int) $compte['devise_id']])) {
-                $comptes[] = ['id' => (int) $compte['id'], 'nom' => $compte['nom'], 'moyen' => $compte['type'], 'devise' => $codes[(int) $compte['devise_id']]];
+        foreach ($lignes as $ligne) {
+            $code = $codes[(int) $ligne['devise_id']] ?? null;
+            if ($code === null) {
+                continue;
             }
+            $id = (int) $ligne['id'];
+            $comptes[$id] ??= ['id' => $id, 'nom' => $ligne['nom'], 'type' => $ligne['type'], 'commun' => $ligne['etablissement_id'] === null, 'devises' => []];
+            $comptes[$id]['devises'][] = $code;
         }
-        return $comptes;
+        // Devises dans l'ordre de la caisse (locale d'abord, dollar ensuite)
+        $ordre = array_flip(array_values($codes));
+        foreach ($comptes as &$compte) {
+            usort($compte['devises'], static fn (string $a, string $b) => $ordre[$a] <=> $ordre[$b]);
+        }
+        return array_values($comptes);
     }
 
     /**
@@ -242,20 +260,18 @@ final class CaisseController
         }
         $totaux = array_filter($totaux, static fn ($t) => $t !== null);
 
-        // Paiements : devise du ticket, moyen et compte de cet établissement, montant positif
+        // Paiements : un compte de cet établissement (ou commun) qui tient la devise, montant positif ;
+        // le moyen enregistré est le type du compte (caisse, mobile money, banque)
         $comptes = array_column($this->comptesCaisse($etabId, $contexte['acceptees']), null, 'id');
-        $tresorerie = new GestionTresorerieRepository();
-        $tous = $tresorerie->comptesActifs();
         $paiements = [];
         foreach (is_array($demande['paiements'] ?? null) ? $demande['paiements'] : [] as $p) {
             $code = is_string($p['devise'] ?? null) ? $p['devise'] : '';
-            $moyen = is_string($p['moyen'] ?? null) ? $p['moyen'] : '';
             $compte = $comptes[(int) ($p['compte'] ?? 0)] ?? null;
             $recu = is_numeric($p['recu'] ?? null) ? round((float) $p['recu'], (int) ($acceptees[$code]['decimales'] ?? 2)) : 0.0;
-            if (!isset($totaux[$code]) || $compte === null || $compte['moyen'] !== $moyen || $compte['devise'] !== $code || $recu <= 0 || $recu > 1e12) {
+            if (!isset($totaux[$code]) || $compte === null || !in_array($code, $compte['devises'], true) || $recu <= 0 || $recu > 1e12) {
                 $this->repondre(422, ['erreur' => t('encaisser.paiement_invalide')]);
             }
-            $paiements[] = ['moyen' => $moyen, 'compte' => $tous[$compte['id']], 'devise' => $acceptees[$code], 'recu' => $recu, 'taux' => $this->taux($acceptees[$code])];
+            $paiements[] = ['moyen' => $compte['type'], 'compte' => $compte, 'devise' => $acceptees[$code], 'recu' => $recu, 'taux' => $this->taux($acceptees[$code])];
         }
         if ($paiements === []) {
             $this->repondre(422, ['erreur' => t('encaisser.sans_paiement')]);
@@ -269,14 +285,21 @@ final class CaisseController
             $this->repondre(422, ['erreur' => t('encaisser.reste', ['reste' => $this->devisesRepo()->formater($reglement['reste'][$principale['code']], $principale)])]);
         }
 
-        // Monnaie rendue en espèces, dans la devise choisie, depuis la caisse de cette devise
+        // Monnaie rendue dans la devise choisie, depuis une caisse qui tient cette devise :
+        // celle qui a reçu des espèces dans cette devise, sinon la première caisse de l'établissement
         $rendu = null;
         if (array_sum($reglement['rendu']) > 0) {
             $codeRendu = is_string($demande['rendu'] ?? null) && isset($reglement['rendu'][$demande['rendu']]) ? $demande['rendu'] : $principale['code'];
             $caisseRendu = null;
-            foreach ($comptes as $compte) {
-                if ($compte['moyen'] === 'especes' && $compte['devise'] === $codeRendu) {
-                    $caisseRendu = $tous[$compte['id']];
+            foreach ($paiements as $p) {
+                if ($p['moyen'] === 'caisse' && in_array($codeRendu, $p['compte']['devises'], true)) {
+                    $caisseRendu = $p['compte'];
+                    break;
+                }
+            }
+            foreach ($caisseRendu === null ? $comptes : [] as $compte) {
+                if ($compte['type'] === 'caisse' && in_array($codeRendu, $compte['devises'], true)) {
+                    $caisseRendu = $compte;
                     break;
                 }
             }

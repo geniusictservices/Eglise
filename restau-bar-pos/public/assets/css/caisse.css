@@ -245,7 +245,8 @@ button { cursor: pointer; }
 .totaux__principal strong { font: 800 2.25rem/1.1 var(--police-titre); color: var(--encre); font-variant-numeric: tabular-nums; }
 .totaux__autres { margin: 4px 0 0; text-align: right; color: var(--doux); font-variant-numeric: tabular-nums; min-height: 1.35em; }
 
-/* Moyens de paiement (espèces, mobile money, banque, crédit client) puis « Encaisser » avec le total (actifs en phase 3) */
+/* Raccourcis de paiement : le compte principal de chaque type (Caisse du bar, M-Pesa, Rawbank), crédit client,
+   puis « Encaisser » avec le total */
 .paiements { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
 .paiement {
   min-height: 46px;
@@ -257,6 +258,9 @@ button { cursor: pointer; }
   font-weight: 600;
   line-height: 1.15;
 }
+.paiement[data-compte] { display: grid; align-content: center; gap: 2px; padding: 6px 10px; text-align: left; }
+.paiement__nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.paiement__type { font-size: .6875rem; font-weight: 500; color: var(--doux); }
 .paiement:disabled { opacity: .55; cursor: not-allowed; }
 .encaisser:disabled { opacity: .7; }
 .encaisser { margin-top: 8px; min-height: 62px; border-radius: var(--rayon-carte); font-size: 1.125rem; font-weight: 800; }
@@ -533,7 +537,15 @@ button { cursor: pointer; }
 }
 .paiement-ligne__montant:focus { border-color: var(--accent); outline: 2px solid var(--accent); outline-offset: 0; }
 .paiement-ligne__libelle { font-size: .8125rem; color: var(--doux); }
-.paiement-ligne__moyens, .paiement-ligne__comptes, .paiement-ligne__rapides { display: flex; flex-wrap: wrap; gap: 6px; }
+.paiement-ligne__rapides { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Comptes sous leur type : « Caisse », « Mobile money », « Banque » */
+.paiement-ligne__comptes { display: grid; gap: 8px; }
+.paiement-type { display: grid; grid-template-columns: 104px minmax(0, 1fr); align-items: center; gap: 8px; }
+.paiement-type__nom { font-size: .75rem; font-weight: 600; color: var(--doux); }
+.paiement-type__comptes { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 420px) {
+  .paiement-type { grid-template-columns: 1fr; gap: 4px; }
+}
 .paiement-rapide {
   min-height: 40px; padding: 0 12px; border: 1px dashed var(--ligne-forte); border-radius: 10px; background: transparent;
   font-weight: 700; font-variant-numeric: tabular-nums;

@@ -21,7 +21,7 @@ $textes = [
     'ajouter' => t('caisse.ajouter'),
     'quantite' => t('caisse.quantite'),
     'verrouBientot' => t('verrou.bientot'),
-    'moyens' => ['especes' => t('caisse.especes'), 'mobile_money' => t('caisse.mobile_money'), 'banque' => t('caisse.banque')],
+    'types' => ['caisse' => t('tresorerie.type_caisse'), 'mobile_money' => t('tresorerie.type_mobile_money'), 'banque' => t('tresorerie.type_banque')],
     'lesDeux' => t('paiement.les_deux'),
     'recu' => t('paiement.recu'),
     'resteAPayer' => t('paiement.reste'),
@@ -35,6 +35,11 @@ $textes = [
     'terminer' => t('paiement.terminer'),
     'verrouillee' => t('paiement.verrouillee'),
 ];
+// Raccourcis du panneau : le premier compte de chaque type (celui de l'établissement avant les communs)
+$raccourcis = [];
+foreach ($donnees['comptes'] as $compte) {
+    $raccourcis[$compte['type']] ??= $compte;
+}
 $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'csrf' => App\Core\Session::jetonCsrf()], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
 ?>
 <div class="caisse" data-mode="<?= e($donnees['mode']) ?>" id="caisse">
@@ -111,9 +116,12 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
                 <p class="totaux__autres" id="autres-devises"></p>
             </div>
             <div class="paiements" role="group" aria-label="<?= e(t('caisse.mode_paiement')) ?>">
-                <button type="button" class="paiement" data-moyen="especes" disabled><?= e(t('caisse.especes')) ?></button>
-                <button type="button" class="paiement" data-moyen="mobile_money" disabled><?= e(t('caisse.mobile_money')) ?></button>
-                <button type="button" class="paiement" data-moyen="banque" disabled><?= e(t('caisse.banque')) ?></button>
+                <?php foreach ($raccourcis as $compte): ?>
+                    <button type="button" class="paiement" data-compte="<?= (int) $compte['id'] ?>" disabled>
+                        <span class="paiement__nom"><?= e($compte['nom']) ?></span>
+                        <span class="paiement__type"><?= e(t('tresorerie.type_' . $compte['type'])) ?></span>
+                    </button>
+                <?php endforeach; ?>
                 <button type="button" class="paiement" disabled title="<?= e(t('modules.bientot')) ?>"><?= e(t('caisse.credit_client')) ?> <span class="paiement__bientot"><?= e(t('modules.bientot')) ?></span></button>
             </div>
             <button type="button" class="encaisser bouton bouton--large" id="encaisser" disabled><?= e(t('caisse.encaisser')) ?> <span id="encaisser-total"></span></button>

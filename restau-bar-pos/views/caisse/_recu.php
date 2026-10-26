@@ -13,7 +13,6 @@
 $formateur = new App\Repositories\DeviseRepository();
 $montant = static fn (float|string $m, int $deviseId): string => isset($devises[$deviseId]) ? $formateur->formater((float) $m, $devises[$deviseId]) : (string) $m;
 $ticket = (int) $vente['devise_id'];
-$moyens = ['especes' => t('caisse.especes'), 'mobile_money' => t('caisse.mobile_money'), 'banque' => t('caisse.banque')];
 $autres = array_values(array_filter($totaux, static fn (array $t) => (int) $t['devise_id'] !== $ticket));
 ?>
 <article class="recu<?= $vente['statut'] === 'annulee' ? ' recu--annule' : '' ?>" aria-labelledby="recu-numero-<?= (int) $vente['id'] ?>">
@@ -53,7 +52,7 @@ $autres = array_values(array_filter($totaux, static fn (array $t) => (int) $t['d
     <table class="recu__paiements">
         <tbody>
             <?php foreach ($paiements as $p): ?>
-                <tr><td><?= e($moyens[$p['moyen']] ?? $p['moyen']) ?><br><small><?= e($p['compte']) ?></small></td><td class="recu__montant"><?= e($montant($p['recu'], (int) $p['devise_id'])) ?></td></tr>
+                <tr><td><?= e($p['compte']) ?><br><small><?= e(t('tresorerie.type_' . $p['moyen'])) ?></small></td><td class="recu__montant"><?= e($montant($p['recu'], (int) $p['devise_id'])) ?></td></tr>
             <?php endforeach; ?>
             <?php if ((float) $vente['rendu'] > 0): ?>
                 <tr class="recu__rendu"><td><?= e(t('recu.rendu')) ?></td><td class="recu__montant"><?= e($montant($vente['rendu'], (int) $vente['rendu_devise_id'])) ?></td></tr>

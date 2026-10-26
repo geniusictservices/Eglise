@@ -35,7 +35,7 @@
 
 /* ---------- Totaux ---------- */
 
-.tre-totaux .chiffres { margin-top: 1.25rem; }
+.tre-totaux .chiffres { margin-top: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); }
 .tre-totaux .chiffre__valeur { font-size: clamp(1.25rem, 4.2vw, 1.75rem); overflow-wrap: anywhere; }
 .tre-total-general {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin: 1rem 0 0;
@@ -57,22 +57,26 @@
 .tre-comptes { list-style: none; margin: .75rem 0 0; padding: 0; }
 .tre-comptes li + li { border-top: 1px solid var(--ligne); }
 .tre-compte {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nom solde" "details solde";
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nom soldes" "details soldes";
   align-items: center; gap: .1rem 1rem; min-height: 56px; padding: .6rem .5rem; margin-inline: -.5rem;
   border-radius: var(--rayon); text-decoration: none; color: inherit;
 }
 .tre-compte:hover { background: var(--surface-2); }
 .tre-compte__nom { grid-area: nom; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
 .tre-compte__details { grid-area: details; font-size: .8125rem; color: var(--doux); overflow-wrap: anywhere; }
-.tre-compte__solde { grid-area: solde; font: 700 1.125rem/1.2 var(--police-texte); text-align: right; }
+/* Un solde par devise, l'un sous l'autre (devise locale d'abord) */
+.tre-compte__soldes { grid-area: soldes; display: grid; justify-items: end; gap: .1rem; }
+.tre-compte__solde { font: 700 1.125rem/1.25 var(--police-texte); text-align: right; white-space: nowrap; }
+.tre-groupe__totaux span { white-space: nowrap; }
 .tre-inactifs summary { display: flex; align-items: center; min-height: var(--cible); cursor: pointer; font-weight: 700; }
 .tre-inactifs .tre-compte { opacity: .75; }
 
 /* ---------- Fiche d'un compte ---------- */
 
+.tre-soldes { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: flex-end; }
 .tre-solde {
   display: grid; gap: .15rem; padding: .75rem 1.25rem; border-radius: var(--rayon-carte);
-  background: var(--surface); border: 1px solid var(--ligne); text-align: right;
+  background: var(--surface); border: 1px solid var(--ligne); text-align: right; min-width: 9rem;
 }
 .tre-solde__libelle { font-size: var(--taille-s); color: var(--doux); }
 .tre-solde__valeur { font: 800 1.625rem/1.1 var(--police-titre); }
@@ -90,7 +94,9 @@
 .tre-journal__report td { color: var(--doux); font-style: italic; }
 .tre-journal tfoot th, .tre-journal tfoot td { border-bottom: 0; border-top: 2px solid var(--ligne-forte); color: var(--encre); }
 .tre-journal tfoot th { text-transform: none; letter-spacing: 0; font-size: var(--taille-s); }
-.tre-journal td:nth-child(2) { min-width: 12rem; }
+.tre-journal__libelle { min-width: 12rem; }
+.tre-journal__devise { white-space: nowrap; font-weight: 700; font-size: var(--taille-s); color: var(--doux); }
+.tre-filtre-devise { margin-bottom: .75rem; }
 .tre-journal a, .tre-transferts a { text-underline-offset: 3px; }
 .tre-transferts td:nth-child(2) { min-width: 13rem; }
 .tre-journal .montant, .tre-transferts .montant { white-space: nowrap; }
@@ -101,6 +107,20 @@
 .tre-formulaire > .bloc { margin-top: 0; }
 .tre-paire { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .tre-champ-court { max-width: 12rem; }
+.tre-champ-moyen { max-width: 18rem; }
+
+/* Devises tenues par un compte : une case par devise, avec son solde initial */
+.tre-devises__aide { margin: 0 0 .6rem; }
+.tre-devises { display: grid; gap: .6rem; }
+.tre-devise {
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 16rem); align-items: end; gap: .5rem 1rem;
+  padding: .75rem 1rem; border: 1px solid var(--ligne-forte); border-radius: var(--rayon); background: var(--fond);
+}
+.tre-devise--tenue { background: var(--teinte-accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--ligne-forte)); }
+.tre-devise__coche { align-self: center; }
+.tre-devise__coche input:disabled { opacity: .7; }
+.tre-devise__solde { margin: 0; }
+.tre-devise__verrou, .tre-devise .champ__erreur { grid-column: 1 / -1; margin: 0; }
 .tre-groupe-champs { margin: 0; padding: 0; border: 0; min-width: 0; }
 .tre-groupe-champs legend { padding: 0; margin-bottom: .4rem; font-size: var(--taille-s); font-weight: 600; }
 .tre-valeur-fixe { margin: 0; min-height: var(--hauteur-bouton); display: flex; align-items: center; }
@@ -132,7 +152,12 @@
 
 /* Transfert : source → destination */
 .tre-transfert { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 1rem; align-items: start; }
-.tre-transfert__cote { display: grid; gap: 1rem; min-width: 0; }
+.tre-transfert__cote { display: grid; gap: 1rem; min-width: 0; align-content: start; }
+.tre-transfert__montant { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: .75rem; align-items: end; }
+.tre-transfert__cote > .champ__erreur, .tre-transfert__solde { margin: -.5rem 0 0; }
+.tre-transfert__solde:empty { display: none; }
+.tre-transfert__proposition { display: grid; gap: .25rem; }
+.tre-transfert__proposition .champ__aide { margin: 0; }
 .tre-transfert__fleche { align-self: center; font: 800 1.75rem/1 var(--police-titre); color: var(--accent-texte); }
 .tre-taux-applique { margin: 0; font-weight: 700; font-size: var(--taille-s); }
 .tre-taux-applique:empty { display: none; }
@@ -145,7 +170,8 @@
   border: 1px solid var(--ligne-forte); border-radius: var(--rayon-carte); background: var(--fond);
 }
 .tre-paiement__titre { padding: 0 .35rem; font-weight: 700; font-size: var(--taille-s); }
-.tre-paiement__ligne { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1rem; }
+.tre-paiement__ligne { display: grid; grid-template-columns: minmax(0, 1.5fr) 7.5rem minmax(0, 1fr); gap: 1rem; align-items: end; }
+.tre-paiement > .champ__erreur { margin: -.25rem 0 0; }
 .tre-paiement__solde { margin: -.25rem 0 0; }
 .tre-paiement__solde:empty { display: none; }
 .tre-paiement__retirer { justify-self: start; min-height: var(--cible); }
@@ -221,10 +247,16 @@
   .tre-categories__barre { grid-column: 1 / -1; grid-row: 2; }
 }
 @media (max-width: 600px) {
-  .tre-paire, .tre-paiement__ligne { grid-template-columns: minmax(0, 1fr); }
+  .tre-paire { grid-template-columns: minmax(0, 1fr); }
+  .tre-paiement__ligne { grid-template-columns: 6.5rem minmax(0, 1fr); }
+  .tre-paiement__compte { grid-column: 1 / -1; }
+  .tre-transfert__montant { grid-template-columns: 6.5rem minmax(0, 1fr); }
+  .tre-devise { grid-template-columns: minmax(0, 1fr); }
+  .tre-soldes { justify-content: stretch; width: 100%; }
   .tre-entete__actions { width: 100%; }
   .tre-entete__actions .bouton { flex: 1 1 auto; }
-  .tre-solde { width: 100%; text-align: left; }
+  .tre-solde { flex: 1 1 100%; min-width: 0; text-align: left; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; padding: .6rem 1rem; }
+  .tre-solde__valeur { font-size: 1.375rem; text-align: right; overflow-wrap: anywhere; }
   .tre-moyens { gap: .35rem; }
   .tre-moyen span { flex-direction: column; gap: .2rem; padding: .4rem .25rem; font-size: .8125rem; border-radius: var(--rayon); }
   .tre-moyens--compact .tre-moyen span { flex-direction: row; min-height: var(--cible); font-size: .75rem; gap: .25rem; }
@@ -236,23 +268,25 @@
   /* Catégories : noms FR et EN côte à côte, ordre et bouton dessous */
   .tre-categorie-form { gap: .5rem .75rem; }
   .tre-categorie-form .bouton { justify-self: start; }
-  /* Journal d'un compte en cartes : date et libellé à gauche, montant et solde à droite */
+  /* Journal d'un compte en cartes : date (et devise) et libellé à gauche, montant et solde à droite */
   .tre-journal thead { display: none; }
   .tre-journal, .tre-journal tbody, .tre-journal tfoot { display: block; }
   .tre-journal tr {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "date montant" "libelle solde";
-    gap: .1rem .75rem; padding: .7rem 0; border-bottom: 1px solid var(--ligne);
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "date devise montant" "libelle libelle solde";
+    gap: .1rem .5rem; padding: .7rem 0; border-bottom: 1px solid var(--ligne);
   }
   .tre-journal td, .tre-journal th { padding: 0; border: 0 !important; min-width: 0 !important; text-align: left; }
-  .tre-journal td:nth-child(1), .tre-journal td.nombre:nth-child(1) { grid-area: date; font-size: .8125rem; text-align: left; }
-  .tre-journal td:nth-child(2) { grid-area: libelle; }
-  .tre-journal td:nth-child(3), .tre-journal td:nth-child(4) { grid-area: montant; text-align: right; font-weight: 700; }
-  .tre-journal tbody td:nth-child(3):not(:empty)::before { content: "+"; }
-  .tre-journal tbody td:nth-child(4):not(:empty)::before { content: "\2212"; }
-  .tre-journal td:nth-child(5) { grid-area: solde; text-align: right; font-size: .8125rem; color: var(--doux); }
+  .tre-journal .tre-journal__date { grid-area: date; font-size: .8125rem; text-align: left; }
+  .tre-journal .tre-journal__devise { grid-area: devise; font-size: .75rem; }
+  .tre-journal .tre-journal__libelle { grid-area: libelle; }
+  .tre-journal .tre-journal__entree, .tre-journal .tre-journal__sortie { grid-area: montant; text-align: right; font-weight: 700; }
+  .tre-journal tbody .tre-journal__entree:not(:empty)::before { content: "+"; }
+  .tre-journal tbody .tre-journal__sortie:not(:empty)::before { content: "\2212"; }
+  .tre-journal .tre-journal__solde { grid-area: solde; text-align: right; font-size: .8125rem; color: var(--doux); }
   .tre-journal td:empty { display: none; }
-  .tre-journal__report td:nth-child(5) { grid-area: montant; color: var(--doux); font-size: inherit; }
-  .tre-journal tfoot tr { grid-template-columns: minmax(0, 1fr); grid-template-areas: none; border-top: 2px solid var(--ligne-forte); }
+  .tre-journal td.aide { grid-column: 1 / -1; }
+  .tre-journal__report .tre-journal__solde { grid-area: montant; color: var(--doux); font-size: inherit; }
+  .tre-journal tfoot tr { grid-template-columns: minmax(0, 1fr); grid-template-areas: none; border-top: 1px solid var(--ligne-forte); }
   .tre-journal tfoot th, .tre-journal tfoot td { grid-area: auto !important; text-align: left; }
   .tre-journal tfoot td::before { content: attr(data-libelle) " "; color: var(--doux); font-weight: 400; }
   /* Transferts en cartes : une ligne du tableau par bloc */

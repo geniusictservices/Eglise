@@ -12,12 +12,14 @@ use App\Repositories\GestionTresorerieRepository;
 
 /**
  * Dépenses : liste filtrée avec les totaux par devise et l'équivalent en devise de référence,
- * saisie et modification. Chaque paiement choisit d'abord le moyen (espèces, mobile money, banque),
- * puis le compte (qui donne la devise) et le montant ; une dépense payée dans deux devises a deux paiements.
+ * saisie et modification. Chaque paiement choisit le compte (groupés par type : caisse, mobile money, banque),
+ * une des devises que ce compte tient, et le montant ; une dépense payée dans deux devises a deux paiements
+ * (depuis le même compte ou deux comptes). Découvert signalé par compte et par devise, sans bloquer.
  */
 final class DepenseController
 {
     private const MAX_PAIEMENTS = 6;
+    private const LIGNE_VIDE = ['compte_id' => null, 'devise_id' => null, 'montant' => ''];
 
     private GestionTresorerieRepository $tresorerie;
     private GestionDepenseRepository $depenses;
@@ -98,13 +100,13 @@ final class DepenseController
     {
         $utilisateur = Session::exigerConnexion();
         $comptes = $this->tresorerie->comptesActifs();
+        $locale = $this->tresorerie->deviseRepository()->locale();
         $compteId = TresorerieSaisie::id($_GET['compte'] ?? null);
         $compte = $compteId !== null ? ($comptes[$compteId] ?? null) : null;
         if ($compte === null) {
-            // Espèces dans la devise locale, sinon le premier compte actif
-            $locale = $this->tresorerie->deviseRepository()->locale();
+            // Une caisse qui tient la devise locale, sinon le premier compte actif
             foreach ($comptes as $candidat) {
-                if ($candidat['type'] === 'especes' && $locale && (int) $candidat['devise_id'] === (int) $locale['id']) {
+                if ($candidat['type'] === 'caisse' && $locale && GestionTresorerieRepository::tient($candidat, (int) $locale['id'])) {
                     $compte = $candidat;
                     break;
                 }
@@ -114,7 +116,19 @@ final class DepenseController
         $this->afficherFormulaire($utilisateur, null, [
             'date' => date('Y-m-d\TH:i'), 'categorie_id' => null, 'etablissement_id' => '',
             'libelle' => '', 'beneficiaire' => '', 'notes' => '',
-        ], [['moyen' => $compte['type'] ?? 'especes', 'compte_id' => $compte ? (int) $compte['id'] : null, 'montant' => '']]);
+        ], [['compte_id' => $compte ? (int) $compte['id'] : null, 'devise_id' => $compte ? $this->devisePreferee($compte, []) : null, 'montant' => '']]);
+    }
+
+    /** Devise proposée pour un paiement depuis ce compte : la locale si possible, et pas une déjà utilisée par la dépense. */
+    private function devisePreferee(array $compte, array $dejaPrises): ?int
+    {
+        $tenues = array_keys(array_filter($compte['devises'], static fn (array $d): bool => $d['tenue']));
+        foreach ($tenues as $deviseId) {
+            if (!in_array($deviseId, $dejaPrises, true)) {
+                return $deviseId;
+            }
+        }
+        return $tenues[0] ?? null;
     }
 
     public function creer(): void
@@ -129,14 +143,14 @@ final class DepenseController
         $utilisateur = Session::exigerConnexion();
         $depense = $this->depenseOu404($id);
         $lignes = array_map(static fn (array $p): array => [
-            'moyen' => $p['compte_type'], 'compte_id' => (int) $p['compte_id'], 'montant' => TresorerieAffichage::saisie($p['montant']),
+            'compte_id' => (int) $p['compte_id'], 'devise_id' => (int) $p['devise_id'], 'montant' => TresorerieAffichage::saisie($p['montant']),
         ], $depense['paiements']);
         $this->afficherFormulaire($utilisateur, $depense, [
             'date' => TresorerieAffichage::champDate($depense['date_depense']),
             'categorie_id' => (int) $depense['categorie_id'],
             'etablissement_id' => $depense['etablissement_id'] !== null ? (string) $depense['etablissement_id'] : '',
             'libelle' => $depense['libelle'], 'beneficiaire' => (string) $depense['beneficiaire'], 'notes' => (string) $depense['notes'],
-        ], $lignes ?: [['moyen' => 'especes', 'compte_id' => null, 'montant' => '']]);
+        ], $lignes ?: [self::LIGNE_VIDE]);
     }
 
     public function modifier(string $id): void
@@ -160,11 +174,13 @@ final class DepenseController
     {
         $devises = $this->tresorerie->devises();
         $tousComptes = array_column($this->tresorerie->comptes(), null, 'id');
-        // Comptes utilisables : les actifs, et ceux déjà utilisés par cette dépense
+        // Comptes utilisables : les actifs, et ceux déjà utilisés par cette dépense ; ce qu'elle sortait déjà
+        // de chaque (compte, devise) compte dans le solde disponible
         $dejaUtilises = $depense ? array_map(static fn (array $p): int => (int) $p['compte_id'], $depense['paiements']) : [];
         $anciennesSorties = [];
         foreach ($depense['paiements'] ?? [] as $paiement) {
-            $anciennesSorties[(int) $paiement['compte_id']] = (float) $paiement['montant'];
+            $cle = (int) $paiement['compte_id'] . '-' . (int) $paiement['devise_id'];
+            $anciennesSorties[$cle] = ($anciennesSorties[$cle] ?? 0) + (float) $paiement['montant'];
         }
 
         $valeurs = [
@@ -183,22 +199,30 @@ final class DepenseController
                 continue;
             }
             $compteId = TresorerieSaisie::id($ligne['compte_id'] ?? null);
-            $montant = TresorerieSaisie::texte($ligne['montant'] ?? null);
-            $moyen = TresorerieSaisie::texte($ligne['moyen'] ?? null);
-            if ($compteId !== null && isset($tousComptes[$compteId])) {
-                $moyen = $tousComptes[$compteId]['type'];
+            $deviseId = TresorerieSaisie::id($ligne['devise_id'] ?? null);
+            // Compte à une seule devise : elle est prise d'office
+            if ($deviseId === null && $compteId !== null && isset($tousComptes[$compteId])) {
+                $tenues = array_keys(array_filter($tousComptes[$compteId]['devises'], static fn (array $d): bool => $d['tenue']));
+                $deviseId = count($tenues) === 1 ? $tenues[0] : null;
             }
-            $lignes[] = [
-                'moyen' => in_array($moyen, GestionTresorerieRepository::TYPES, true) ? $moyen : 'especes',
-                'compte_id' => $compteId,
-                'montant' => $montant,
-            ];
+            $lignes[] = ['compte_id' => $compteId, 'devise_id' => $deviseId, 'montant' => TresorerieSaisie::texte($ligne['montant'] ?? null)];
         }
 
-        // Sans JavaScript : « Ajouter un paiement » renvoie le formulaire avec une ligne de plus
+        // Sans JavaScript : « Ajouter un paiement » renvoie le formulaire avec une ligne de plus :
+        // le même compte dans une autre devise s'il en tient une autre
         if (($_POST['action'] ?? '') === 'ajouter_ligne') {
             if (count($lignes) < self::MAX_PAIEMENTS) {
-                $lignes[] = ['moyen' => $lignes[0]['moyen'] ?? 'especes', 'compte_id' => null, 'montant' => ''];
+                $derniere = $lignes[count($lignes) - 1] ?? null;
+                $compte = $derniere && $derniere['compte_id'] !== null ? ($tousComptes[$derniere['compte_id']] ?? null) : null;
+                $prises = [];
+                foreach ($lignes as $l) {
+                    if ($compte !== null && $l['compte_id'] === (int) $compte['id'] && $l['devise_id'] !== null) {
+                        $prises[] = $l['devise_id'];
+                    }
+                }
+                $lignes[] = $compte
+                    ? ['compte_id' => (int) $compte['id'], 'devise_id' => $this->devisePreferee($compte, $prises), 'montant' => '']
+                    : self::LIGNE_VIDE;
             }
             $this->afficherFormulaire($utilisateur, $depense, $valeurs, $lignes);
             return;
@@ -240,22 +264,32 @@ final class DepenseController
             }
             $numero = ['n' => $i + 1];
             $compte = $ligne['compte_id'] !== null ? ($tousComptes[$ligne['compte_id']] ?? null) : null;
+            $devise = null;
             if ($compte === null) {
                 $erreurs['paiements-' . $i . '-compte'] = t('depenses.erreur_compte', $numero);
             } elseif (!$compte['active'] && !in_array((int) $compte['id'], $dejaUtilises, true)) {
                 $erreurs['paiements-' . $i . '-compte'] = t('depenses.erreur_compte_inactif', $numero + ['compte' => $compte['nom']]);
                 $compte = null;
-            } elseif (isset($vus[(int) $compte['id']])) {
-                $erreurs['paiements-' . $i . '-compte'] = t('depenses.erreur_compte_double', $numero + ['compte' => $compte['nom']]);
-                $compte = null;
+            } elseif ($ligne['devise_id'] === null || !GestionTresorerieRepository::tient($compte, $ligne['devise_id']) || !isset($devises[$ligne['devise_id']])) {
+                $tenues = array_keys(array_filter($compte['devises'], static fn (array $d): bool => $d['tenue']));
+                $erreurs['paiements-' . $i . '-devise'] = t('depenses.paiement_n', $numero) . ' : ' . t('tresorerie.erreur_devise_compte', [
+                    'compte' => $compte['nom'],
+                    'codes' => implode(', ', array_map(static fn (int $id): string => $devises[$id]['code'] ?? '?', $tenues)),
+                ]);
+            } else {
+                $devise = $devises[$ligne['devise_id']];
+                $cle = (int) $compte['id'] . '-' . (int) $devise['id'];
+                if (isset($vus[$cle])) {
+                    $erreurs['paiements-' . $i . '-compte'] = t('depenses.erreur_compte_double', $numero + ['compte' => $compte['nom'], 'code' => $devise['code']]);
+                    $devise = null;
+                }
             }
-            $devise = $compte ? ($devises[(int) $compte['devise_id']] ?? null) : null;
             if ($devise !== null) {
                 [$montant, $erreur] = TresorerieSaisie::montant($ligne['montant'], $devise);
                 if ($erreur !== null) {
                     $erreurs['paiements-' . $i . '-montant'] = t('depenses.paiement_n', $numero) . ' : ' . $erreur;
                 } else {
-                    $vus[(int) $compte['id']] = true;
+                    $vus[(int) $compte['id'] . '-' . (int) $devise['id']] = true;
                     $paiements[] = ['compte' => $compte, 'devise' => $devise, 'montant' => $montant];
                 }
             }
@@ -265,19 +299,21 @@ final class DepenseController
         }
 
         if ($erreurs !== []) {
-            $this->afficherFormulaire($utilisateur, $depense, $valeurs, $lignes ?: [['moyen' => 'especes', 'compte_id' => null, 'montant' => '']], $erreurs, [], 422);
+            $this->afficherFormulaire($utilisateur, $depense, $valeurs, $lignes ?: [self::LIGNE_VIDE], $erreurs, [], 422);
             return;
         }
 
-        // Découvert : prévenir sans bloquer (le comptage d'une caisse peut être faux)
+        // Découvert dans la devise payée : prévenir sans bloquer (le comptage d'une caisse peut être faux)
         $avertissements = [];
         foreach ($paiements as $paiement) {
             $compte = $paiement['compte'];
-            $solde = (float) $compte['solde'] + ($anciennesSorties[(int) $compte['id']] ?? 0);
+            $deviseId = (int) $paiement['devise']['id'];
+            $solde = GestionTresorerieRepository::solde($compte, $deviseId) + ($anciennesSorties[(int) $compte['id'] . '-' . $deviseId] ?? 0);
             $apres = $solde - $paiement['montant'];
             if ($apres < -0.0005) {
                 $avertissements[] = t('tresorerie.avertissement_decouvert', [
                     'compte' => $compte['nom'],
+                    'code' => $paiement['devise']['code'],
                     'solde' => TresorerieAffichage::montant($solde, $paiement['devise']),
                     'apres' => TresorerieAffichage::montant($apres, $paiement['devise']),
                 ]);

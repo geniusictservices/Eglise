@@ -10,9 +10,11 @@ use App\Repositories\GestionTresorerieRepository;
 
 /**
  * Transferts entre comptes de trésorerie : dépôt en banque, retrait mobile money, change de dollars en francs…
+ * Chaque côté choisit un compte ET une des devises qu'il tient. Le même compte dans deux devises est un change
+ * dans la caisse (100 $ → 285 000 FC dans « Caisse du Comptoir ») ; même compte et même devise est refusé.
  * Entre deux devises, le montant reçu est proposé au taux du jour (avec l'arrondi de la devise reçue)
  * et reste modifiable : le taux réellement appliqué est enregistré.
- * Découvert : on prévient (confirmation) sans bloquer, car le comptage d'une caisse peut être faux.
+ * Découvert (par compte et par devise) : on prévient (confirmation) sans bloquer, car le comptage d'une caisse peut être faux.
  */
 final class TransfertController
 {
@@ -31,7 +33,8 @@ final class TransfertController
         $utilisateur = Session::exigerConnexion();
         $source = TresorerieSaisie::id($_GET['source'] ?? null);
         $this->afficher($utilisateur, [
-            'compte_source_id' => $source, 'compte_destination_id' => null,
+            'compte_source_id' => $source, 'devise_source_id' => null,
+            'compte_destination_id' => null, 'devise_destination_id' => null,
             'montant_source' => '', 'montant_destination' => '', 'date' => '', 'motif' => '',
         ]);
     }
@@ -45,7 +48,9 @@ final class TransfertController
         $devises = $this->tresorerie->devises();
         $valeurs = [
             'compte_source_id' => TresorerieSaisie::id($_POST['compte_source_id'] ?? null),
+            'devise_source_id' => TresorerieSaisie::id($_POST['devise_source_id'] ?? null),
             'compte_destination_id' => TresorerieSaisie::id($_POST['compte_destination_id'] ?? null),
+            'devise_destination_id' => TresorerieSaisie::id($_POST['devise_destination_id'] ?? null),
             'montant_source' => TresorerieSaisie::post('montant_source'),
             'montant_destination' => TresorerieSaisie::post('montant_destination'),
             'date' => TresorerieSaisie::post('date'),
@@ -53,23 +58,12 @@ final class TransfertController
         ];
         $erreurs = [];
 
-        $source = $valeurs['compte_source_id'] !== null ? ($comptes[$valeurs['compte_source_id']] ?? null) : null;
-        $destination = $valeurs['compte_destination_id'] !== null ? ($comptes[$valeurs['compte_destination_id']] ?? null) : null;
-        if ($source === null) {
-            $erreurs['compte_source_id'] = $valeurs['compte_source_id'] !== null && $this->tresorerie->compte($valeurs['compte_source_id'])
-                ? t('tresorerie.erreur_compte_inactif')
-                : t('transferts.erreur_source');
+        [$source, $deviseSource] = $this->cote($comptes, $devises, $valeurs, 'source', $erreurs);
+        [$destination, $deviseDestination] = $this->cote($comptes, $devises, $valeurs, 'destination', $erreurs);
+        if ($source !== null && $destination !== null && (int) $source['id'] === (int) $destination['id']
+            && $deviseSource !== null && $deviseDestination !== null && (int) $deviseSource['id'] === (int) $deviseDestination['id']) {
+            $erreurs['devise_destination_id'] = t('transferts.erreur_meme_compte', ['compte' => $source['nom'], 'code' => $deviseSource['code']]);
         }
-        if ($destination === null) {
-            $erreurs['compte_destination_id'] = $valeurs['compte_destination_id'] !== null && $this->tresorerie->compte($valeurs['compte_destination_id'])
-                ? t('tresorerie.erreur_compte_inactif')
-                : t('transferts.erreur_destination');
-        } elseif ($source !== null && (int) $source['id'] === (int) $destination['id']) {
-            $erreurs['compte_destination_id'] = t('transferts.erreur_meme_compte');
-        }
-
-        $deviseSource = $source ? ($devises[(int) $source['devise_id']] ?? null) : null;
-        $deviseDestination = $destination ? ($devises[(int) $destination['devise_id']] ?? null) : null;
         $memeDevise = $deviseSource && $deviseDestination && (int) $deviseSource['id'] === (int) $deviseDestination['id'];
 
         $montantSource = null;
@@ -124,13 +118,15 @@ final class TransfertController
             return;
         }
 
-        // Avertissements : découvert, taux très éloigné du taux du jour
+        // Avertissements : découvert dans la devise qui sort, taux très éloigné du taux du jour
         $avertissements = [];
-        $soldeApres = (float) $source['solde'] - $montantSource;
+        $soldeSource = GestionTresorerieRepository::solde($source, (int) $deviseSource['id']);
+        $soldeApres = $soldeSource - $montantSource;
         if ($soldeApres < -0.0005) {
             $avertissements[] = t('tresorerie.avertissement_decouvert', [
                 'compte' => $source['nom'],
-                'solde' => TresorerieAffichage::montant($source['solde'], $deviseSource),
+                'code' => $deviseSource['code'],
+                'solde' => TresorerieAffichage::montant($soldeSource, $deviseSource),
                 'apres' => TresorerieAffichage::montant($soldeApres, $deviseSource),
             ]);
         }
@@ -145,14 +141,50 @@ final class TransfertController
             return;
         }
 
-        $this->tresorerie->creerTransfert($source, $destination, $montantSource, $montantDestination, $date,
-            $valeurs['motif'] !== '' ? $valeurs['motif'] : null, (int) $utilisateur['id']);
-        Session::flash(t('transferts.enregistre', [
-            'montant' => TresorerieAffichage::montant($montantSource, $deviseSource),
-            'source' => $source['nom'],
-            'destination' => $destination['nom'],
-        ]));
+        $this->tresorerie->creerTransfert($source, (int) $deviseSource['id'], $destination, (int) $deviseDestination['id'],
+            $montantSource, $montantDestination, $date, $valeurs['motif'] !== '' ? $valeurs['motif'] : null, (int) $utilisateur['id']);
+        Session::flash((int) $source['id'] === (int) $destination['id']
+            ? t('transferts.change_enregistre', [
+                'montant' => TresorerieAffichage::montant($montantSource, $deviseSource),
+                'recu' => TresorerieAffichage::montant($montantDestination, $deviseDestination),
+                'compte' => $source['nom'],
+            ])
+            : t('transferts.enregistre', [
+                'montant' => TresorerieAffichage::montant($montantSource, $deviseSource),
+                'source' => $source['nom'],
+                'destination' => $destination['nom'],
+            ]));
         rediriger('/gestion/tresorerie/transferts');
+    }
+
+    /**
+     * Lit un côté du transfert (source ou destination) : compte actif, puis une devise qu'il tient.
+     * Une seule devise tenue : elle est prise d'office.
+     * @return array{0: ?array, 1: ?array} compte et devise
+     */
+    private function cote(array $comptes, array $devises, array $valeurs, string $cote, array &$erreurs): array
+    {
+        $compteId = $valeurs['compte_' . $cote . '_id'];
+        $deviseId = $valeurs['devise_' . $cote . '_id'];
+        $compte = $compteId !== null ? ($comptes[$compteId] ?? null) : null;
+        if ($compte === null) {
+            $erreurs['compte_' . $cote . '_id'] = $compteId !== null && $this->tresorerie->compte($compteId)
+                ? t('tresorerie.erreur_compte_inactif')
+                : t('transferts.erreur_' . $cote);
+            return [null, null];
+        }
+        $tenues = array_keys(array_filter($compte['devises'], static fn (array $d): bool => $d['tenue']));
+        if ($deviseId === null && count($tenues) === 1) {
+            $deviseId = $tenues[0];
+        }
+        if ($deviseId === null || !in_array($deviseId, $tenues, true) || !isset($devises[$deviseId])) {
+            $erreurs['devise_' . $cote . '_id'] = t('tresorerie.erreur_devise_compte', [
+                'compte' => $compte['nom'],
+                'codes' => implode(', ', array_map(static fn (int $id): string => $devises[$id]['code'] ?? '?', $tenues)),
+            ]);
+            return [$compte, null];
+        }
+        return [$compte, $devises[$deviseId]];
     }
 
     /** Annulation d'un transfert : ses deux lignes du journal disparaissent avec lui. */

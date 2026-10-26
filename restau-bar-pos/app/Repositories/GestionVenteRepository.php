@@ -160,7 +160,7 @@ final class GestionVenteRepository
         ) as $l) {
             $encaisse[(int) $l['devise_id']][$l['moyen']] = (float) $l['montant'];
         }
-        // La monnaie rendue sort du compte qui l'a donnée (toujours des espèces à la caisse)
+        // La monnaie rendue sort du compte qui l'a donnée (toujours depuis une caisse)
         foreach (Database::tous(
             'SELECT v.rendu_devise_id AS devise_id, c.type AS moyen, SUM(v.rendu) AS montant
                FROM ventes v JOIN comptes_tresorerie c ON c.id = v.rendu_compte_id
@@ -284,7 +284,7 @@ final class GestionVenteRepository
                 $this->tresorerie->ajouterMouvement(
                     ['id' => (int) $m['compte_id'], 'devise_id' => (int) $m['devise_id']],
                     $m['sens'] === 'entree' ? 'sortie' : 'entree',
-                    (float) $m['montant'], 'vente', $id, $maintenant, $libelle, $utilisateurId
+                    (float) $m['montant'], 'vente', $id, $maintenant, $libelle, $utilisateurId, (int) $m['devise_id']
                 );
             }
             Journal::ecrire('vente_annulee', $vente['numero'], ['motif' => mb_substr($motif, 0, 255)], $utilisateurId);

@@ -3,10 +3,8 @@
  * Création ou modification d'un compte de trésorerie.
  * @var ?array $compte null pour un nouveau compte
  * @var array $valeurs
- * @var array<string, string> $erreurs par champ
- * @var array<int, array> $devises toutes les devises utiles (pour un compte dans une devise désactivée)
- * @var array<int, array> $devisesActives
- * @var bool $deviseVerrouillee le compte a des mouvements : sa devise ne change plus
+ * @var array<string, string> $erreurs par champ (devise-<id> pour une devise, devises pour la liste)
+ * @var array<int, array> $choixDevises devises proposées (actives, plus celles que le compte tient encore)
  * @var array $etablissements
  */
 
@@ -18,7 +16,6 @@ $invalide = static fn (string $champ): string => isset($erreurs[$champ]) ? ' ari
 $erreurChamp = static fn (string $champ): string => isset($erreurs[$champ])
     ? '<p class="champ__erreur" id="erreur-' . $champ . '">' . e($erreurs[$champ]) . '</p>'
     : '';
-$deviseChoisie = $devises[(int) $valeurs['devise_id']] ?? null;
 $operateurs = ['Vodacom M-Pesa', 'Airtel Money', 'Orange Money', 'Africell Money', 'Rawbank', 'Equity BCDC', 'TMB', 'Ecobank', 'Access Bank', 'FBNBank', 'Sofibanque', 'UBA'];
 ?>
 <link rel="stylesheet" href="/assets/css/gestion-tresorerie.css">
@@ -52,36 +49,12 @@ $operateurs = ['Vodacom M-Pesa', 'Airtel Money', 'Orange Money', 'Africell Money
             <?= $erreurChamp('type') ?>
         </fieldset>
 
-        <div class="tre-paire">
-            <div class="champ">
-                <label for="nom"><?= e(t('tresorerie.champ_nom')) ?></label>
-                <input id="nom" name="nom" required maxlength="128" autocomplete="off" value="<?= e($valeurs['nom']) ?>"
-                       placeholder="<?= e(t('tresorerie.champ_nom_exemple')) ?>"<?= $invalide('nom') ?>>
-                <p class="champ__aide"><?= e(t('tresorerie.champ_nom_aide')) ?></p>
-                <?= $erreurChamp('nom') ?>
-            </div>
-            <div class="champ">
-                <?php if ($deviseVerrouillee && $deviseChoisie): ?>
-                    <span class="champ__libelle"><?= e(t('tresorerie.champ_devise')) ?></span>
-                    <p class="tre-valeur-fixe"><strong><?= e($deviseChoisie['code']) ?></strong> · <?= e(champ($deviseChoisie, 'nom')) ?></p>
-                    <p class="champ__aide"><?= e(t('tresorerie.devise_verrouillee')) ?></p>
-                <?php else: ?>
-                    <label for="devise_id"><?= e(t('tresorerie.champ_devise')) ?></label>
-                    <select id="devise_id" name="devise_id" required data-devise-compte<?= $invalide('devise_id') ?>>
-                        <?php
-                        $choix = $devisesActives;
-                        if ($deviseChoisie && !isset($choix[(int) $deviseChoisie['id']])) {
-                            $choix[(int) $deviseChoisie['id']] = $deviseChoisie;
-                        }
-                        foreach ($choix as $devise): ?>
-                            <option value="<?= (int) $devise['id'] ?>" data-symbole="<?= e($devise['symbole']) ?>"
-                                <?= (int) $valeurs['devise_id'] === (int) $devise['id'] ? 'selected' : '' ?>><?= e($devise['code'] . ' · ' . champ($devise, 'nom')) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                    <p class="champ__aide"><?= e(t('tresorerie.champ_devise_aide')) ?></p>
-                    <?= $erreurChamp('devise_id') ?>
-                <?php endif; ?>
-            </div>
+        <div class="champ">
+            <label for="nom"><?= e(t('tresorerie.champ_nom')) ?></label>
+            <input id="nom" name="nom" required maxlength="128" autocomplete="off" value="<?= e($valeurs['nom']) ?>"
+                   placeholder="<?= e(t('tresorerie.champ_nom_exemple')) ?>"<?= $invalide('nom') ?>>
+            <p class="champ__aide"><?= e(t('tresorerie.champ_nom_aide')) ?></p>
+            <?= $erreurChamp('nom') ?>
         </div>
 
         <div class="tre-paire">
@@ -115,22 +88,52 @@ $operateurs = ['Vodacom M-Pesa', 'Airtel Money', 'Orange Money', 'Africell Money
             <?= $erreurChamp('etablissement_id') ?>
         </div>
 
-        <div class="tre-paire">
-            <div class="champ">
-                <label for="solde_initial"><?= e(t('tresorerie.champ_solde_initial')) ?></label>
-                <div class="tre-montant">
-                    <input id="solde_initial" name="solde_initial" inputmode="decimal" autocomplete="off"
-                           value="<?= e((string) $valeurs['solde_initial']) ?>" placeholder="0"<?= $invalide('solde_initial') ?>>
-                    <span class="tre-montant__devise" data-symbole-compte><?= e($deviseChoisie['symbole'] ?? '') ?></span>
-                </div>
-                <p class="champ__aide"><?= e(t('tresorerie.champ_solde_initial_aide')) ?></p>
-                <?= $erreurChamp('solde_initial') ?>
+        <fieldset class="tre-groupe-champs" id="devises"<?= isset($erreurs['devises']) ? ' aria-describedby="erreur-devises"' : '' ?>>
+            <legend><?= e(t('tresorerie.champ_devises')) ?></legend>
+            <p class="champ__aide tre-devises__aide"><?= e(t('tresorerie.champ_devises_aide')) ?></p>
+            <div class="tre-devises">
+                <?php foreach ($choixDevises as $deviseId => $devise):
+                    $saisie = $valeurs['devises'][$deviseId] ?? ['tenue' => false, 'solde_initial' => ''];
+                    $existante = $compte['devises'][$deviseId] ?? null;
+                    // Une devise qui a des mouvements (hors solde initial) ne peut plus être retirée
+                    $verrouillee = $existante !== null && $existante['tenue'] && $existante['nb_mouvements'] > 0;
+                    $cle = 'devise-' . $deviseId;
+                    $idSolde = 'devise-' . $deviseId . '-solde';
+                    ?>
+                    <div class="tre-devise<?= $saisie['tenue'] ? ' tre-devise--tenue' : '' ?>" data-devise-ligne>
+                        <label class="coche tre-devise__coche">
+                            <input type="checkbox" name="devises[<?= (int) $deviseId ?>][tenue]" value="1" data-devise-tenue
+                                <?= $saisie['tenue'] ? 'checked' : '' ?><?= $verrouillee ? ' disabled aria-describedby="' . $cle . '-verrou"' : '' ?>>
+                            <span><strong><?= e($devise['code']) ?></strong> · <?= e(champ($devise, 'nom')) ?></span>
+                        </label>
+                        <?php if ($verrouillee): ?>
+                            <input type="hidden" name="devises[<?= (int) $deviseId ?>][tenue]" value="1">
+                        <?php endif; ?>
+                        <div class="champ tre-devise__solde" data-devise-solde<?= $saisie['tenue'] ? '' : ' hidden' ?>>
+                            <label for="<?= $idSolde ?>"><?= e(t('tresorerie.solde_initial_en', ['code' => $devise['code']])) ?></label>
+                            <div class="tre-montant">
+                                <input id="<?= $idSolde ?>" name="devises[<?= (int) $deviseId ?>][solde_initial]" inputmode="decimal" autocomplete="off"
+                                       value="<?= e((string) $saisie['solde_initial']) ?>" placeholder="0"
+                                       <?= isset($erreurs[$cle]) ? 'aria-invalid="true" aria-describedby="erreur-' . $cle . '"' : '' ?>>
+                                <span class="tre-montant__devise"><?= e($devise['symbole']) ?></span>
+                            </div>
+                        </div>
+                        <?php if ($verrouillee): ?>
+                            <p class="champ__aide tre-devise__verrou" id="<?= $cle ?>-verrou"><?= e(t('tresorerie.devise_verrouillee')) ?></p>
+                        <?php endif; ?>
+                        <?= $erreurChamp($cle) ?>
+                    </div>
+                <?php endforeach; ?>
             </div>
-            <div class="champ">
-                <label for="solde_initial_le"><?= e(t('tresorerie.champ_solde_initial_le')) ?></label>
-                <input type="date" id="solde_initial_le" name="solde_initial_le" value="<?= e((string) $valeurs['solde_initial_le']) ?>"<?= $invalide('solde_initial_le') ?>>
-                <?= $erreurChamp('solde_initial_le') ?>
-            </div>
+            <?= $erreurChamp('devises') ?>
+        </fieldset>
+
+        <div class="champ tre-champ-moyen">
+            <label for="solde_initial_le"><?= e(t('tresorerie.champ_solde_initial_le')) ?></label>
+            <input type="date" id="solde_initial_le" name="solde_initial_le" value="<?= e((string) $valeurs['solde_initial_le']) ?>"
+                   aria-describedby="aide-solde-initial-le<?= isset($erreurs['solde_initial_le']) ? ' erreur-solde_initial_le" aria-invalid="true' : '' ?>">
+            <p class="champ__aide" id="aide-solde-initial-le"><?= e(t('tresorerie.champ_solde_initial_aide')) ?></p>
+            <?= $erreurChamp('solde_initial_le') ?>
         </div>
 
         <div class="champ tre-champ-court">

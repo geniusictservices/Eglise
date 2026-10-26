@@ -8,7 +8,8 @@ use App\Core\Database;
 
 /**
  * Dépenses et catégories de dépenses. Chaque paiement d'une dépense sort d'un compte de trésorerie
- * (qui donne le moyen et la devise) et écrit sa ligne dans le journal, dans la même transaction.
+ * (dont le type donne le moyen), dans une des devises que ce compte tient, et écrit sa ligne dans le journal,
+ * dans la même transaction. Une dépense payée en dollars et en francs depuis la même caisse a deux paiements.
  */
 final class GestionDepenseRepository
 {
@@ -128,7 +129,7 @@ final class GestionDepenseRepository
         return $depense === null ? null : $this->avecPaiements([$depense])[0];
     }
 
-    /** Ajoute à chaque dépense ses paiements (compte, type, devise, montant, contre-valeur du journal). */
+    /** Ajoute à chaque dépense ses paiements (compte, type, devise du paiement, montant, contre-valeur du journal). */
     private function avecPaiements(array $depenses): array
     {
         if ($depenses === []) {
@@ -137,12 +138,12 @@ final class GestionDepenseRepository
         $ids = array_map(static fn (array $d): int => (int) $d['id'], $depenses);
         $marques = implode(', ', array_fill(0, count($ids), '?'));
         $lignes = Database::tous(
-            'SELECT p.*, c.nom AS compte_nom, c.type AS compte_type, c.devise_id, c.active AS compte_actif,
+            'SELECT p.*, c.nom AS compte_nom, c.type AS compte_type, c.active AS compte_actif,
                     m.contre_valeur, m.reference_id
                FROM depense_paiements p
                JOIN comptes_tresorerie c ON c.id = p.compte_id
                LEFT JOIN mouvements_tresorerie m
-                      ON m.nature = \'depense\' AND m.source_id = p.depense_id AND m.compte_id = p.compte_id
+                      ON m.nature = \'depense\' AND m.source_id = p.depense_id AND m.compte_id = p.compte_id AND m.devise_id = p.devise_id
               WHERE p.depense_id IN (' . $marques . ')
               ORDER BY p.depense_id, p.position, p.id',
             $ids
@@ -159,7 +160,7 @@ final class GestionDepenseRepository
 
     /**
      * @param array{date_depense: string, categorie_id: int, etablissement_id: ?int, libelle: string, beneficiaire: ?string, notes: ?string} $v
-     * @param array<int, array{compte: array, montant: float}> $paiements
+     * @param array<int, array{compte: array, devise: array, montant: float}> $paiements
      */
     public function creer(array $v, array $paiements, int $utilisateurId): int
     {
@@ -194,11 +195,11 @@ final class GestionDepenseRepository
         Database::executer('DELETE FROM depense_paiements WHERE depense_id = ?', [$id]);
         foreach (array_values($paiements) as $position => $paiement) {
             Database::executer(
-                'INSERT INTO depense_paiements (depense_id, compte_id, montant, position) VALUES (?, ?, ?, ?)',
-                [$id, (int) $paiement['compte']['id'], GestionTresorerieRepository::decimal($paiement['montant']), $position]
+                'INSERT INTO depense_paiements (depense_id, compte_id, devise_id, montant, position) VALUES (?, ?, ?, ?, ?)',
+                [$id, (int) $paiement['compte']['id'], (int) $paiement['devise']['id'], GestionTresorerieRepository::decimal($paiement['montant']), $position]
             );
             $this->tresorerie->ajouterMouvement($paiement['compte'], 'sortie', $paiement['montant'], 'depense', $id,
-                $v['date_depense'], $v['libelle'], $utilisateurId);
+                $v['date_depense'], $v['libelle'], $utilisateurId, (int) $paiement['devise']['id']);
         }
     }
 

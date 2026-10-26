@@ -3,7 +3,7 @@
  * Saisie ou modification d'une dépense.
  * @var ?array $depense null pour une nouvelle dépense
  * @var array $valeurs date, categorie_id, etablissement_id, libelle, beneficiaire, notes
- * @var array $lignes paiements saisis : moyen, compte_id, montant
+ * @var array $lignes paiements saisis : compte_id, devise_id, montant
  * @var array<string, string> $erreurs
  * @var string[] $avertissements
  * @var array<int, array> $comptes
@@ -49,8 +49,7 @@ $ordreDevises = array_keys($devises);
       data-reference="<?= $reference ? (int) $reference['id'] : '' ?>"
       data-max="<?= (int) $maxPaiements ?>"
       data-texte-solde="<?= e(t('transferts.solde_js')) ?>"
-      data-texte-decouvert="<?= e(t('transferts.decouvert_js')) ?>"
-      data-texte-aucun-compte="<?= e(t('depenses.aucun_compte_moyen_js')) ?>">
+      data-texte-decouvert="<?= e(t('transferts.decouvert_js')) ?>">
     <input type="hidden" name="csrf" value="<?= $jeton ?>">
     <?php // Touche Entrée : enregistrer (le premier bouton d'envoi du formulaire), pas « Ajouter un paiement » ?>
     <button type="submit" class="visuellement-cache" tabindex="-1" aria-hidden="true"><?= e(t('depenses.enregistrer')) ?></button>
@@ -114,7 +113,7 @@ $ordreDevises = array_keys($devises);
         </div>
 
         <template id="modele-paiement">
-            <?= View::rendre('gestion/depenses/_paiement', ['i' => '__i__', 'ligne' => ['moyen' => 'especes', 'compte_id' => null, 'montant' => ''], 'comptes' => $comptes, 'devises' => $devises, 'erreurs' => []]) ?>
+            <?= View::rendre('gestion/depenses/_paiement', ['i' => '__i__', 'ligne' => ['compte_id' => null, 'devise_id' => null, 'montant' => ''], 'comptes' => $comptes, 'devises' => $devises, 'erreurs' => []]) ?>
         </template>
 
         <?php if (count($lignes) < $maxPaiements): ?>

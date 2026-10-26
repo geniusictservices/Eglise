@@ -10,8 +10,8 @@ use App\Repositories\GestionEtablissementRepository;
 use App\Repositories\GestionTresorerieRepository;
 
 /**
- * Trésorerie : vue d'ensemble des comptes et de leurs soldes, création et modification d'un compte,
- * fiche d'un compte avec ses mouvements sur une période.
+ * Trésorerie : vue d'ensemble des comptes (groupés par type, un solde par devise), création et modification
+ * d'un compte avec les devises qu'il tient, fiche d'un compte avec ses mouvements sur une période.
  */
 final class TresorerieController
 {
@@ -39,9 +39,10 @@ final class TresorerieController
                 continue;
             }
             $groupes[$compte['type']][] = $compte;
-            $deviseId = (int) $compte['devise_id'];
-            $totaux[$deviseId] = ($totaux[$deviseId] ?? 0) + (float) $compte['solde'];
-            $sousTotaux[$compte['type']][$deviseId] = ($sousTotaux[$compte['type']][$deviseId] ?? 0) + (float) $compte['solde'];
+            foreach ($compte['devises'] as $deviseId => $ligne) {
+                $totaux[$deviseId] = ($totaux[$deviseId] ?? 0) + $ligne['solde'];
+                $sousTotaux[$compte['type']][$deviseId] = ($sousTotaux[$compte['type']][$deviseId] ?? 0) + $ligne['solde'];
+            }
         }
         // Ordre des devises : locale, dollar, autres
         $ordre = array_flip(array_keys($devises));
@@ -88,11 +89,16 @@ final class TresorerieController
     public function nouveau(): void
     {
         $utilisateur = Session::exigerConnexion();
-        $type = in_array($_GET['type'] ?? null, GestionTresorerieRepository::TYPES, true) ? $_GET['type'] : 'especes';
+        $type = in_array($_GET['type'] ?? null, GestionTresorerieRepository::TYPES, true) ? $_GET['type'] : 'caisse';
+        // Devise locale cochée d'office ; les autres devises actives à cocher au besoin
         $locale = $this->tresorerie->deviseRepository()->locale() ?? $this->tresorerie->reference();
+        $devises = [];
+        foreach ($this->tresorerie->deviseRepository()->actives() as $id => $devise) {
+            $devises[$id] = ['tenue' => $locale !== null && (int) $locale['id'] === $id, 'solde_initial' => ''];
+        }
         $this->afficherFormulaire($utilisateur, null, [
-            'nom' => '', 'type' => $type, 'devise_id' => $locale ? (int) $locale['id'] : 0, 'operateur' => '', 'numero' => '',
-            'etablissement_id' => null, 'solde_initial' => '', 'solde_initial_le' => date('Y-m-d'),
+            'nom' => '', 'type' => $type, 'operateur' => '', 'numero' => '',
+            'etablissement_id' => null, 'solde_initial_le' => date('Y-m-d'), 'devises' => $devises,
             'position' => $this->tresorerie->positionSuivante($type),
         ]);
     }
@@ -111,7 +117,7 @@ final class TresorerieController
         rediriger('/gestion/tresorerie/comptes/' . $id);
     }
 
-    /** Fiche d'un compte : solde, mouvements de la période avec le solde après chaque ligne. */
+    /** Fiche d'un compte : solde de chaque devise, mouvements de la période avec le solde après chaque ligne. */
     public function fiche(string $id): void
     {
         $utilisateur = Session::exigerConnexion();
@@ -124,8 +130,13 @@ final class TresorerieController
         $utilisateur = Session::exigerConnexion();
         $compte = $this->compteOu404($id);
         $valeurs = $compte;
-        $valeurs['solde_initial'] = (float) $compte['solde_initial'] > 0 ? TresorerieAffichage::saisie($compte['solde_initial']) : '';
         $valeurs['solde_initial_le'] = substr((string) $compte['solde_initial_le'], 0, 10);
+        $valeurs['devises'] = [];
+        foreach ($this->choixDevises($compte) as $deviseId => $devise) {
+            $tenue = GestionTresorerieRepository::tient($compte, $deviseId);
+            $initial = $compte['devises'][$deviseId]['solde_initial'] ?? 0.0;
+            $valeurs['devises'][$deviseId] = ['tenue' => $tenue, 'solde_initial' => $tenue && $initial > 0 ? TresorerieAffichage::saisie($initial) : ''];
+        }
         $this->afficherFormulaire($utilisateur, $compte, $valeurs);
     }
 
@@ -144,13 +155,14 @@ final class TresorerieController
         rediriger('/gestion/tresorerie/comptes/' . (int) $compte['id']);
     }
 
-    /** Désactivation : confirmation si le compte a encore de l'argent. */
+    /** Désactivation : confirmation si le compte a encore de l'argent dans une de ses devises. */
     public function desactiver(string $id): void
     {
         $utilisateur = Session::exigerConnexion();
         Session::verifierCsrf();
         $compte = $this->compteOu404($id);
-        if (abs((float) $compte['solde']) >= 0.0005 && empty($_POST['confirme'])) {
+        $nonNul = array_filter($compte['devises'], static fn (array $d): bool => abs($d['solde']) >= 0.0005);
+        if ($nonNul !== [] && empty($_POST['confirme'])) {
             $this->afficherFiche($utilisateur, $compte, ['confirmerDesactivation' => true]);
             return;
         }
@@ -169,7 +181,7 @@ final class TresorerieController
         rediriger('/gestion/tresorerie/comptes/' . (int) $compte['id']);
     }
 
-    /** Suppression : seulement pour un compte sans mouvement (hors solde initial), sinon on le désactive. */
+    /** Suppression : seulement pour un compte sans mouvement (hors soldes initiaux), sinon on le désactive. */
     public function supprimer(string $id): void
     {
         $utilisateur = Session::exigerConnexion();
@@ -187,21 +199,36 @@ final class TresorerieController
     private function afficherFiche(array $utilisateur, array $compte, array $etat = [], int $code = 200): void
     {
         http_response_code($code);
+        $devises = $this->tresorerie->devises();
         $periode = TresorerieSaisie::periode('mois');
-        $mouvements = $this->tresorerie->mouvements((int) $compte['id'], $periode['debut'], $periode['fin']);
-        $soldeDebut = $periode['du'] !== null ? $this->tresorerie->soldeAvant((int) $compte['id'], $periode['debut']) : 0.0;
-        $solde = $soldeDebut;
-        $entrees = $sorties = 0.0;
+        // Filtre de devise : une des devises du compte (?devise=2), sinon toutes
+        $filtre = TresorerieSaisie::id($_GET['devise'] ?? null);
+        if ($filtre !== null && !isset($compte['devises'][$filtre])) {
+            $filtre = null;
+        }
+        $affichees = $filtre !== null ? [$filtre] : array_keys($compte['devises']);
+
+        $mouvements = $this->tresorerie->mouvements((int) $compte['id'], $periode['debut'], $periode['fin'], $filtre);
+        $avant = $periode['du'] !== null ? $this->tresorerie->soldesAvant((int) $compte['id'], $periode['debut']) : [];
+        $soldesDebut = $soldes = $entrees = $sorties = [];
+        foreach ($affichees as $deviseId) {
+            $soldesDebut[$deviseId] = $soldes[$deviseId] = $avant[$deviseId] ?? 0.0;
+            $entrees[$deviseId] = $sorties[$deviseId] = 0.0;
+        }
         foreach ($mouvements as &$mouvement) {
+            $deviseId = (int) $mouvement['devise_id'];
             $montant = (float) $mouvement['montant'];
+            $soldes[$deviseId] ??= 0.0;
+            $entrees[$deviseId] ??= 0.0;
+            $sorties[$deviseId] ??= 0.0;
             if ($mouvement['sens'] === 'entree') {
-                $solde += $montant;
-                $entrees += $montant;
+                $soldes[$deviseId] += $montant;
+                $entrees[$deviseId] += $montant;
             } else {
-                $solde -= $montant;
-                $sorties += $montant;
+                $soldes[$deviseId] -= $montant;
+                $sorties[$deviseId] += $montant;
             }
-            $mouvement['solde_apres'] = $solde;
+            $mouvement['solde_apres'] = $soldes[$deviseId];
         }
         unset($mouvement);
 
@@ -210,11 +237,12 @@ final class TresorerieController
             'utilisateur' => $utilisateur,
             'flash' => Session::lireFlash(),
             'compte' => $compte,
-            'devise' => $this->tresorerie->devises()[(int) $compte['devise_id']] ?? null,
+            'devises' => $devises,
+            'filtre' => $filtre,
             'periode' => $periode,
             'mouvements' => $mouvements,
-            'soldeDebut' => $soldeDebut,
-            'soldeFin' => $solde,
+            'soldesDebut' => $soldesDebut,
+            'soldesFin' => $soldes,
             'entrees' => $entrees,
             'sorties' => $sorties,
             'erreurs' => $etat['erreurs'] ?? [],
@@ -225,37 +253,49 @@ final class TresorerieController
     private function afficherFormulaire(array $utilisateur, ?array $compte, array $valeurs, array $erreurs = [], int $code = 200): void
     {
         http_response_code($code);
-        $devisesActives = $this->tresorerie->deviseRepository()->actives();
         View::afficher('gestion/tresorerie/compte-form', [
             'titre' => $compte ? t('tresorerie.modifier_compte', ['nom' => $compte['nom']]) : t('tresorerie.nouveau_compte'),
             'utilisateur' => $utilisateur,
             'compte' => $compte,
             'valeurs' => $valeurs,
             'erreurs' => $erreurs,
-            'devises' => $this->tresorerie->devises(),
-            'devisesActives' => $devisesActives,
-            'deviseVerrouillee' => $compte !== null && (int) $compte['nb_mouvements'] > 0,
+            'choixDevises' => $this->choixDevises($compte),
             'etablissements' => (new GestionEtablissementRepository())->liste(),
         ], 'gestion');
+    }
+
+    /**
+     * Devises proposées dans le formulaire : les actives (locale, dollar, autres), plus celles, désactivées
+     * depuis, que le compte tient encore.
+     * @return array<int, array>
+     */
+    private function choixDevises(?array $compte): array
+    {
+        $toutes = $this->tresorerie->devises();
+        $choix = $this->tresorerie->deviseRepository()->actives();
+        foreach ($compte['devises'] ?? [] as $deviseId => $ligne) {
+            if ($ligne['tenue'] && !isset($choix[$deviseId]) && isset($toutes[$deviseId])) {
+                $choix[$deviseId] = $toutes[$deviseId];
+            }
+        }
+        return $choix;
     }
 
     /** @return array{array, array<string, string>} valeurs lues et erreurs par champ */
     private function lire(?array $compte): array
     {
-        $devises = $this->tresorerie->devises();
         $actives = $this->tresorerie->deviseRepository()->actives();
         $etablissements = array_column((new GestionEtablissementRepository())->liste(), null, 'id');
 
         $valeurs = [
             'nom' => mb_substr(TresorerieSaisie::post('nom'), 0, 200),
             'type' => TresorerieSaisie::post('type'),
-            'devise_id' => TresorerieSaisie::id($_POST['devise_id'] ?? null) ?? 0,
             'operateur' => mb_substr(TresorerieSaisie::post('operateur'), 0, 200),
             'numero' => mb_substr(TresorerieSaisie::post('numero'), 0, 100),
             'etablissement_id' => TresorerieSaisie::id($_POST['etablissement_id'] ?? null),
-            'solde_initial' => TresorerieSaisie::post('solde_initial'),
             'solde_initial_le' => TresorerieSaisie::post('solde_initial_le'),
             'position' => TresorerieSaisie::post('position'),
+            'devises' => [],
         ];
         $erreurs = [];
 
@@ -268,16 +308,42 @@ final class TresorerieController
         }
         if (!in_array($valeurs['type'], GestionTresorerieRepository::TYPES, true)) {
             $erreurs['type'] = t('tresorerie.erreur_type');
-            $valeurs['type'] = 'especes';
+            $valeurs['type'] = 'caisse';
         }
 
-        // La devise d'un compte qui a déjà des mouvements ne change plus
-        if ($compte !== null && (int) $compte['nb_mouvements'] > 0) {
-            $valeurs['devise_id'] = (int) $compte['devise_id'];
-        } elseif (!isset($actives[$valeurs['devise_id']]) && !($compte && $valeurs['devise_id'] === (int) $compte['devise_id'])) {
-            $erreurs['devise_id'] = t('tresorerie.erreur_devise');
+        // Devises tenues : cochées, chacune avec son solde initial ; une devise qui a des mouvements reste
+        $saisies = is_array($_POST['devises'] ?? null) ? $_POST['devises'] : [];
+        $soldesInitiaux = [];
+        foreach ($this->choixDevises($compte) as $deviseId => $devise) {
+            $ligne = is_array($saisies[$deviseId] ?? null) ? $saisies[$deviseId] : [];
+            $tenue = !empty($ligne['tenue']);
+            $texte = TresorerieSaisie::texte($ligne['solde_initial'] ?? null);
+            $existante = $compte['devises'][$deviseId] ?? null;
+            $valeurs['devises'][$deviseId] = ['tenue' => $tenue, 'solde_initial' => $texte];
+            if (!$tenue) {
+                if ($existante !== null && $existante['tenue'] && $existante['nb_mouvements'] > 0) {
+                    $erreurs['devise-' . $deviseId] = t('tresorerie.erreur_retirer_devise', ['code' => $devise['code'], 'nom' => $compte['nom']]);
+                    $valeurs['devises'][$deviseId]['tenue'] = true;
+                }
+                continue;
+            }
+            if (!isset($actives[$deviseId]) && !($existante !== null && $existante['tenue'])) {
+                $erreurs['devise-' . $deviseId] = t('tresorerie.erreur_devise');
+                continue;
+            }
+            $soldesInitiaux[$deviseId] = 0.0;
+            if ($texte !== '') {
+                [$montant, $erreur] = TresorerieSaisie::montant($texte, $devise, true);
+                if ($erreur !== null) {
+                    $erreurs['devise-' . $deviseId] = t('tresorerie.solde_initial_en', ['code' => $devise['code']]) . ' : ' . $erreur;
+                } else {
+                    $soldesInitiaux[$deviseId] = $montant;
+                }
+            }
         }
-        $devise = $devises[$valeurs['devise_id']] ?? null;
+        if (!array_filter(array_column($valeurs['devises'], 'tenue'))) {
+            $erreurs['devises'] = t('tresorerie.erreur_devises');
+        }
 
         if (mb_strlen($valeurs['operateur']) > 128) {
             $erreurs['operateur'] = t('tresorerie.erreur_texte_long', ['n' => 128]);
@@ -290,15 +356,6 @@ final class TresorerieController
             $valeurs['etablissement_id'] = null;
         }
 
-        $soldeInitial = 0.0;
-        if ($valeurs['solde_initial'] !== '' && $devise !== null) {
-            [$montant, $erreur] = TresorerieSaisie::montant($valeurs['solde_initial'], $devise, true);
-            if ($erreur !== null) {
-                $erreurs['solde_initial'] = $erreur;
-            } else {
-                $soldeInitial = $montant;
-            }
-        }
         $dateSolde = $valeurs['solde_initial_le'] === '' ? date('Y-m-d') : $valeurs['solde_initial_le'];
         [$dateLue, $erreurDate] = TresorerieSaisie::dateOperation($dateSolde);
         if ($erreurDate !== null) {
@@ -318,13 +375,12 @@ final class TresorerieController
         return [[
             'nom' => $valeurs['nom'],
             'type' => $valeurs['type'],
-            'devise_id' => $valeurs['devise_id'],
             'operateur' => $valeurs['operateur'] !== '' ? $valeurs['operateur'] : null,
             'numero' => $valeurs['numero'] !== '' ? $valeurs['numero'] : null,
             'etablissement_id' => $valeurs['etablissement_id'],
-            'solde_initial' => $soldeInitial,
             'solde_initial_le' => substr((string) $dateLue, 0, 10) . ' 00:00:00',
             'position' => (int) $valeurs['position'],
+            'devises' => $soldesInitiaux,
         ], []];
     }
 

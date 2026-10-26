@@ -179,7 +179,7 @@
     document.getElementById('encaisser-total').textContent = vide ? '' : elTotal.textContent;
     var peutEncaisser = !vide && D.encaisser;
     document.getElementById('encaisser').disabled = !peutEncaisser;
-    document.querySelectorAll('.paiements [data-moyen]').forEach(function (b) { b.disabled = !peutEncaisser; });
+    document.querySelectorAll('.paiements [data-compte]').forEach(function (b) { b.disabled = !peutEncaisser; });
   }
 
   elVider.addEventListener('click', function () {
@@ -383,11 +383,12 @@
 
   // Quitter la caisse : une icône discrète, confirmée dans une fenêtre (aucun menu sur la caisse)
   // ---------- Encaissement ----------
-  // Payer en FC, en $ ou les deux ; pour chaque devise, le moyen (espèces, mobile money, banque) et le compte.
+  // Payer en FC, en $ ou les deux ; pour chaque devise, le compte qui reçoit l'argent (Caisse du bar, M-Pesa, Rawbank…),
+  // rangé sous son type. Un compte peut tenir plusieurs devises.
   // Même calcul que le serveur (app/Core/Reglement.php) : chaque paiement couvre une part du ticket dans sa devise.
   var fenetre = document.getElementById('paiement');
   var boutonEncaisser = document.getElementById('encaisser');
-  var paiement = null; // { cle, totaux, lignes: [{devise, moyen, compte, recu, saisi}], rendu }
+  var paiement = null; // { cle, totaux, lignes: [{devise, compte, recu, saisi}], rendu }
 
   function pasDe(code) {
     var d = devises[code];
@@ -412,22 +413,26 @@
     if (!(rendu[principale] > 0)) { Object.keys(rendu).forEach(function (c) { rendu[c] = 0; }); }
     return { part: part, regle: regle, reste: reste, rendu: rendu };
   }
-  function comptesPour(code, moyen) {
-    return (D.comptes || []).filter(function (c) { return c.devise === code && (!moyen || c.moyen === moyen); });
+  var TYPES = ['caisse', 'mobile_money', 'banque'];
+  // Comptes qui tiennent cette devise (déjà rangés par type, ceux de l'établissement d'abord)
+  function comptesPour(code, type) {
+    return (D.comptes || []).filter(function (c) { return c.devises.indexOf(code) !== -1 && (!type || c.type === type); });
   }
-  function moyensPour(code) {
-    return ['especes', 'mobile_money', 'banque'].filter(function (m) { return comptesPour(code, m).length > 0; });
+  function compteDe(id) {
+    return (D.comptes || []).filter(function (c) { return c.id === id; })[0] || null;
   }
   // Devises où tout le ticket a un prix (et au moins un compte pour encaisser)
   function devisesPayables() {
     return D.devises.map(function (d) { return d.code; }).filter(function (code) {
-      return totalEn(code) !== null && moyensPour(code).length > 0;
+      return totalEn(code) !== null && comptesPour(code).length > 0;
     });
   }
-  function nouvelleLigne(code, moyen) {
-    var moyens = moyensPour(code);
-    var m = moyen && moyens.indexOf(moyen) !== -1 ? moyen : moyens[0];
-    return { devise: code, moyen: m, compte: comptesPour(code, m)[0].id, recu: 0, saisi: false };
+  // Compte d'une nouvelle ligne : celui choisi s'il tient la devise, sinon un compte du même type, sinon le premier
+  function nouvelleLigne(code, compteId) {
+    var choisi = compteDe(compteId);
+    var compte = choisi && choisi.devises.indexOf(code) !== -1 ? choisi
+      : (choisi && comptesPour(code, choisi.type)[0]) || comptesPour(code)[0];
+    return { devise: code, compte: compte.id, recu: 0, saisi: false };
   }
   function cle() {
     if (window.crypto && crypto.randomUUID) { return crypto.randomUUID(); }
@@ -435,10 +440,10 @@
       var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16);
     });
   }
-  function choisirDevises(codes, moyen) {
+  function choisirDevises(codes) {
     var anciennes = paiement.lignes;
     paiement.lignes = codes.map(function (code) {
-      return anciennes.filter(function (l) { return l.devise === code; })[0] || nouvelleLigne(code, moyen);
+      return anciennes.filter(function (l) { return l.devise === code; })[0] || nouvelleLigne(code, anciennes[0] && anciennes[0].compte);
     });
     remplirAutomatiquement();
     dessinerPaiement();
@@ -477,7 +482,7 @@
     return choix;
   }
 
-  function ouvrirPaiement(moyen) {
+  function ouvrirPaiement(compteId) {
     if (!D.encaisser || ticket.length === 0) { return; }
     var payables = devisesPayables();
     if (payables.length === 0) { return; }
@@ -485,7 +490,12 @@
     payables.forEach(function (code) { totaux[code] = totalEn(code); });
     var depart = payables.indexOf(D.principale) !== -1 ? D.principale : payables[0];
     paiement = { cle: paiement && paiement.cleTicket === JSON.stringify(ticket) ? paiement.cle : cle(), cleTicket: JSON.stringify(ticket), totaux: totaux, lignes: [], rendu: D.principale, envoi: false };
-    paiement.lignes = [nouvelleLigne(depart, moyen)];
+    var choisi = compteDe(compteId);
+    // Un compte choisi sur le panneau qui ne tient pas la devise du ticket : commencer dans une devise qu'il tient
+    if (choisi && choisi.devises.indexOf(depart) === -1) {
+      depart = payables.filter(function (c) { return choisi.devises.indexOf(c) !== -1; })[0] || depart;
+    }
+    paiement.lignes = [nouvelleLigne(depart, compteId)];
     remplirAutomatiquement();
     document.getElementById('paiement-corps').hidden = false;
     document.getElementById('paiement-fin').hidden = true;
@@ -550,33 +560,30 @@
       tete.appendChild(el('span', 'paiement-ligne__libelle', T.recu));
       bloc.appendChild(tete);
 
-      var moyens = el('div', 'paiement-ligne__moyens');
-      moyensPour(ligne.devise).forEach(function (m) {
-        var b = el('button', 'puce', T.moyens[m]);
-        b.type = 'button';
-        b.setAttribute('aria-pressed', m === ligne.moyen ? 'true' : 'false');
-        b.addEventListener('click', function () {
-          ligne.moyen = m;
-          ligne.compte = comptesPour(ligne.devise, m)[0].id;
-          dessinerPaiement();
-        });
-        moyens.appendChild(b);
-      });
-      bloc.appendChild(moyens);
-
-      var comptes = comptesPour(ligne.devise, ligne.moyen);
-      if (comptes.length > 1) {
-        var choix = el('div', 'paiement-ligne__comptes');
-        comptes.forEach(function (c) {
-          var b = el('button', 'puce puce--accent', c.nom);
+      // Comptes qui tiennent cette devise, sous leur type : on touche directement le compte
+      var comptes = el('div', 'paiement-ligne__comptes');
+      comptes.setAttribute('role', 'group');
+      comptes.setAttribute('aria-label', T.compte + ' (' + ligne.devise + ')');
+      TYPES.forEach(function (type) {
+        var duType = comptesPour(ligne.devise, type);
+        if (duType.length === 0) { return; }
+        var groupe = el('div', 'paiement-type');
+        groupe.appendChild(el('span', 'paiement-type__nom', T.types[type]));
+        var puces = el('div', 'paiement-type__comptes');
+        duType.forEach(function (c) {
+          var b = el('button', 'puce', c.nom);
           b.type = 'button';
+          b.dataset.compte = c.id;
           b.setAttribute('aria-pressed', c.id === ligne.compte ? 'true' : 'false');
           b.addEventListener('click', function () { ligne.compte = c.id; dessinerPaiement(); });
-          choix.appendChild(b);
+          puces.appendChild(b);
         });
-        bloc.appendChild(choix);
-      }
-      if (ligne.moyen === 'especes') {
+        groupe.appendChild(puces);
+        comptes.appendChild(groupe);
+      });
+      bloc.appendChild(comptes);
+
+      if ((compteDe(ligne.compte) || {}).type === 'caisse') {
         var rapides = el('div', 'paiement-ligne__rapides');
         var du = paiement.lignes.length === 1 ? paiement.totaux[ligne.devise] : (function () {
           var r = ligne.recu; ligne.recu = 0; var reste = reglement().reste[ligne.devise]; ligne.recu = r; return reste;
@@ -618,9 +625,9 @@
         bilan.appendChild(el('strong', '', formater(r.rendu[code], code)));
       }
     }
-    // Monnaie : dans une devise où l'établissement a une caisse en espèces
+    // Monnaie : dans une devise que tient une caisse de l'établissement
     var zoneRendu = document.getElementById('paiement-rendu');
-    var possibles = codes.filter(function (c) { return r.rendu[c] > 0 && comptesPour(c, 'especes').length > 0; });
+    var possibles = codes.filter(function (c) { return r.rendu[c] > 0 && comptesPour(c, 'caisse').length > 0; });
     zoneRendu.hidden = !(r.regle && possibles.length > 1);
     var choix = document.getElementById('paiement-rendu-devises');
     choix.textContent = '';
@@ -653,7 +660,7 @@
       cle: paiement.cle, etab: D.etab, zone: D.zone,
       lignes: ticket.map(function (l) { return { id: l.id, qte: l.qte }; }),
       paiements: paiement.lignes.filter(function (l) { return l.recu > 0; }).map(function (l) {
-        return { devise: l.devise, moyen: l.moyen, compte: l.compte, recu: l.recu };
+        return { devise: l.devise, compte: l.compte, recu: l.recu };
       }),
       rendu: paiement.rendu
     }));
@@ -701,8 +708,8 @@
     var valider = document.getElementById('paiement-valider');
     valider.dataset.texte = valider.textContent;
     boutonEncaisser.addEventListener('click', function () { ouvrirPaiement(null); });
-    document.querySelectorAll('.paiements [data-moyen]').forEach(function (b) {
-      b.addEventListener('click', function () { ouvrirPaiement(b.dataset.moyen); });
+    document.querySelectorAll('.paiements [data-compte]').forEach(function (b) {
+      b.addEventListener('click', function () { ouvrirPaiement(+b.dataset.compte); });
     });
     valider.addEventListener('click', validerPaiement);
     document.querySelector('[data-fermer-paiement]').addEventListener('click', function () { fenetre.close(); });

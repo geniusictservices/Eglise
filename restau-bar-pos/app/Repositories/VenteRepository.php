@@ -151,11 +151,11 @@ final class VenteRepository
                         $p['taux'] ? self::decimal(round($p['recu'] / $p['taux'], 3)) : null,
                     ]
                 );
-                $this->tresorerie->ajouterMouvement($p['compte'], 'entree', $p['recu'], 'vente', $id, $maintenant, $libelle, $v['utilisateur_id']);
+                $this->tresorerie->ajouterMouvement($p['compte'], 'entree', $p['recu'], 'vente', $id, $maintenant, $libelle, $v['utilisateur_id'], (int) $p['devise']['id']);
             }
             if ($v['rendu'] !== null && $v['rendu']['montant'] > 0) {
                 $this->tresorerie->ajouterMouvement($v['rendu']['compte'], 'sortie', $v['rendu']['montant'], 'vente', $id, $maintenant,
-                    'Monnaie rendue ' . $numero, $v['utilisateur_id']);
+                    'Monnaie rendue ' . $numero, $v['utilisateur_id'], (int) $v['rendu']['devise']['id']);
             }
             $pdo->commit();
             return $id;

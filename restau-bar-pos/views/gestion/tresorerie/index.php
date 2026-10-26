@@ -1,6 +1,7 @@
 <?php
 /**
- * Vue d'ensemble de la trésorerie : comptes groupés par moyen, soldes, totaux par devise.
+ * Vue d'ensemble de la trésorerie : comptes groupés par type (caisse, mobile money, banque), le solde
+ * de chaque devise d'un compte, totaux par devise et total général au taux du jour.
  * @var ?string $flash
  * @var array<int, array> $devises
  * @var ?array $reference
@@ -19,19 +20,18 @@ use App\Controllers\Gestion\TresorerieAffichage as A;
 use App\Core\View;
 
 $ligneCompte = static function (array $compte) use ($devises): string {
-    $devise = $devises[(int) $compte['devise_id']] ?? null;
-    $details = array_filter([$compte['operateur'], $compte['numero'], $compte['etablissement_nom'] ?? null]);
-    $solde = (float) $compte['solde'];
+    $details = array_filter([$compte['operateur'], $compte['numero'], $compte['etablissement_nom'] ?? t('tresorerie.compte_commun')]);
     ob_start(); ?>
     <li>
         <a class="tre-compte" href="/gestion/tresorerie/comptes/<?= (int) $compte['id'] ?>">
-            <span class="tre-compte__nom">
-                <?= e($compte['nom']) ?>
-                <?php if ($devise): ?><span class="badge badge--neutre"><?= e($devise['code']) ?></span><?php endif; ?>
-            </span>
+            <span class="tre-compte__nom"><?= e($compte['nom']) ?></span>
             <?php if ($details): ?><span class="tre-compte__details"><?= e(implode(' · ', $details)) ?></span><?php endif; ?>
-            <span class="tre-compte__solde montant<?= $solde < -0.0005 ? ' tre-negatif' : '' ?>">
-                <?= $devise ? e(A::montant($solde, $devise)) : '' ?>
+            <span class="tre-compte__soldes">
+                <?php foreach ($compte['devises'] as $deviseId => $ligne): $devise = $devises[$deviseId] ?? null; if (!$devise) continue; ?>
+                    <span class="tre-compte__solde montant<?= $ligne['solde'] < -0.0005 ? ' tre-negatif' : '' ?>" data-devise="<?= e($devise['code']) ?>">
+                        <span class="visuellement-cache"><?= e($devise['code']) ?> :</span><?= e(A::montant($ligne['solde'], $devise)) ?>
+                    </span>
+                <?php endforeach; ?>
             </span>
         </a>
     </li>
@@ -100,7 +100,10 @@ $ligneCompte = static function (array $compte) use ($devises): string {
                 <h2 id="tre-groupe-<?= e($type) ?>"><?= View::rendre('gestion/tresorerie/_icone', ['type' => $type]) ?> <?= e(t('tresorerie.type_' . $type)) ?></h2>
                 <?php if (!empty($sousTotaux[$type])): ?>
                     <p class="tre-groupe__totaux montant">
-                        <?= e(implode(' · ', array_map(static fn ($id, $m) => A::montant($m, $devises[$id]), array_keys($sousTotaux[$type]), $sousTotaux[$type]))) ?>
+                        <?php $i = 0; foreach ($sousTotaux[$type] as $deviseId => $montant): if (!isset($devises[$deviseId])) continue; ?>
+                            <?= $i++ > 0 ? '<span aria-hidden="true">·</span>' : '' ?>
+                            <span<?= $montant < -0.0005 ? ' class="tre-negatif"' : '' ?>><?= e(A::montant($montant, $devises[$deviseId])) ?></span>
+                        <?php endforeach; ?>
                     </p>
                 <?php endif; ?>
             </div>
