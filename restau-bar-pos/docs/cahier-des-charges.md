@@ -193,6 +193,7 @@ Le **super admin** n'est pas un rôle de l'instance : il n'existe que dans la co
 - **Remboursements** partiels ou totaux, avec n'importe quel moyen de paiement. Les dettes les plus anciennes sont remboursées en premier.
 - **Relevé de compte** imprimable ou envoyé par SMS ou WhatsApp, et **relances** pour les échéances proches ou dépassées.
 - **Responsabilité** : en option, l'employé reste responsable de la dette qu'il a accordée.
+- **Personnes liées à chaque dette** : l'utilisateur qui a **servi** le client, celui qui a **accordé** le crédit et celui qui en est **responsable** (par défaut le serveur ou la serveuse ; le gérant peut le changer). N'importe quel utilisateur du système peut être lié : serveur, serveuse, barman, caissier, gérant…
 - **Comptes entreprise** avec une facture mensuelle.
 - **Dettes du personnel**, déductibles du salaire.
 - **Avances et soldes positifs** : le client dépose de l'argent à l'avance (lien avec le cashless).
@@ -423,7 +424,29 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 - Chiffre d'affaires, marge, dépenses et résultat, par jour, par service, par établissement.
 - Produits les plus rentables et les moins vendus.
 - Créances clients et dettes fournisseurs.
-- Performances et présence des employés.
+- Performances et présence des employés (détail en section 13.7).
+
+### 13.7 Rapports du personnel
+
+Chaque vente garde l'utilisateur qui a **pris la commande** et celui qui l'a **encaissée** ; chaque dette garde qui a servi, qui a accordé le crédit et qui en est responsable. Les rapports ci-dessous en découlent.
+
+**Serveur de la période** (serveur ou serveuse de la semaine, du mois, ou de toute période choisie)
+- Période au choix : aujourd'hui, cette semaine, ce mois, ou du … au … ; par établissement et par service (restaurant, lounge, club).
+- **Classement** de tous les utilisateurs qui ont vendu, avec pour chacun : chiffre d'affaires encaissé, nombre de tickets, panier moyen, nombre d'articles, tables servies, pourboires, ventes à crédit accordées, annulations et remises.
+- **Critère du classement** choisi par le gérant : chiffre d'affaires encaissé (par défaut), nombre de tickets ou panier moyen. Une vente à crédit ne compte qu'une fois remboursée si le gérant le choisit, pour ne pas récompenser des crédits jamais payés.
+- **Mise en avant** sur le tableau de bord : « Serveuse de la semaine », avec son résultat et l'écart avec la semaine précédente.
+- Comparaison avec la période précédente et évolution jour par jour.
+- Chaque utilisateur voit ses propres résultats ; le gérant et le propriétaire voient tout le classement.
+
+**Dettes des clients liées aux utilisateurs**
+- Pour chaque utilisateur (serveur, serveuse, barman, caissier, gérant…) : total des dettes en cours dont il est responsable, nombre de clients concernés, montant en retard, ancienneté (0–30, 31–60, plus de 60 jours), montant remboursé sur la période.
+- Détail par utilisateur : chaque client, chaque dette, sa date, son échéance, ce qui reste à payer, par devise.
+- Filtres : période, établissement, devise, « en retard seulement ».
+- Option de **responsabilité financière** : après un délai fixé par le gérant, une dette non remboursée peut être retenue sur le salaire de l'utilisateur responsable (lien avec la paie, section 13.4).
+- Les **dettes du personnel** lui-même (consommations d'un employé à crédit) sont présentées à part.
+- Alertes : un utilisateur qui dépasse un plafond de dettes en cours ne peut plus accorder de crédit sans validation du gérant.
+
+**Export** : chaque rapport s'imprime et s'exporte en PDF et en CSV (tableur).
 
 ## 14. Interfaces simples, adaptées au contexte
 
@@ -475,9 +498,9 @@ Chaque phase est utilisable seule.
 | Phase | Contenu |
 |---|---|
 | 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · **écran de caisse en grille** (sans enregistrement des ventes) · gestion des établissements, des devises et taux, du compte · design Volcan · français et anglais |
-| 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules) · utilisateurs, rôles et permissions · établissements, dépôts, comptoirs, points de vente |
-| 3 | Caisse : commandes, encaissement multi-devises, taux de change, sessions de caisse · stock simple et transferts |
-| 4 | Clients et dettes · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
+| 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules) · utilisateurs, rôles et permissions (chaque vente et chaque dette pourra être liée à un utilisateur) · établissements, dépôts, comptoirs, points de vente |
+| 3 | Caisse : commandes, encaissement multi-devises, taux de change, sessions de caisse · stock simple et transferts · **rapport des ventes par utilisateur et serveur de la période** |
+| 4 | Clients et dettes · **dettes des clients liées aux utilisateurs** (servi par, accordé par, responsable) · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
 | 5 | Modules lounge et nightclub (bouteilles, VIP, entrées, invités, vestiaire, cashless, mode comptoir rapide) · vente en gros au dépôt et consignes |
 | 6 | ERP : achats et fournisseurs, stock avancé, dépenses et trésorerie |
 | 7 | Ressources humaines : présence par code QR, plannings, paie, commissions · événements |
@@ -496,6 +519,7 @@ Chaque phase est utilisable seule.
 | Interfaces | Simples et adaptées au contexte (établissement, service, rôle, lieu, appareil) ; à la caisse, les produits sont en grille |
 | Design | Direction « Volcan », choisie parmi 4 propositions : thème nuit (nightclub, lounge) et thème jour (restaurant-bar), polices Unbounded et Sora (voir docs/design-system.md) |
 | Images | Illustrations SVG pour la démonstration ; les vraies photos s'ajoutent depuis la gestion du catalogue ; import de photos libres possible (docs/photos.md) |
+| Rapports du personnel | Serveur ou serveuse de la période (classement configurable) et dettes des clients liées à chaque utilisateur (section 13.7) |
 
 ## 18. Questions ouvertes
 
