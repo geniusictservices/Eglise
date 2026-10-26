@@ -3,27 +3,102 @@
 Système de caisse (POS) et ERP adaptable à trois contextes : **restaurant-bar**, **lounge bar** et **nightclub**.
 Principe : un **socle commun** toujours actif + des **modules** activés selon le type d'établissement et l'heure.
 
+> Les points marqués **⚠️ Hypothèse** n'ont pas encore été confirmés. Ils sont listés à la fin (section 16).
+
 ---
 
-## 1. Socle commun
+## 1. Architecture et déploiement
 
-- **Catalogue** : produits, catégories, prix, taxes, options (« sans glaçons », cuisson…).
-- **Commandes et encaissement** : espèces, carte, mobile money, paiements mixtes.
-- **Utilisateurs et rôles** : serveur, barman, caissier, gérant, avec un code PIN chacun.
-- **Postes de préparation** : bar, cuisine, chicha, chacun avec son imprimante ou son écran.
-- **Sessions de caisse** : ouverture, clôture, fond de caisse, écarts.
+### 1.1 Une instance par client, sur un sous-domaine
+
+Ce n'est pas un SaaS partagé : **chaque client a sa propre instance**, accessible par son **sous-domaine**.
+
+```
+admin.<domaine>            → Console super admin (clients, abonnements, instances)
+hekalu.<domaine>           → Instance du client « Hekalu »
+leclub.<domaine>           → Instance du client « Le Club »
+...
+```
+
+- Chaque instance a **sa propre base de données** : les données des clients sont totalement séparées.
+- **Sauvegardes, restauration et mises à jour par instance**.
+- Le même code tourne partout. Les mises à jour sont déployées sur toutes les instances depuis la console.
+- ⚠️ Hypothèse : toutes les instances sont hébergées sur vos serveurs. Une installation sur un serveur chez le client reste possible plus tard.
+
+### 1.2 Console super admin
+
+- **Clients** : créer un client, lui attribuer son sous-domaine, créer son compte propriétaire.
+- **Instances** : créer, mettre à jour, sauvegarder, suspendre ou réactiver une instance.
+- **Formules d'abonnement** : modules inclus (cuisine, nightclub, ERP, RH…), nombre d'établissements, de points de vente et d'utilisateurs, durée (mois, trimestre, année).
+- **Facturation** : factures d'abonnement, paiements (mobile money, virement, espèces), relances avant l'échéance, essai gratuit, remises.
+- **Retards de paiement** :
+  1. relances ;
+  2. délai de grâce ;
+  3. accès en lecture seule (on voit les données, on ne vend plus) ;
+  4. suspension.
+
+  On ne coupe **jamais** une caisse en plein service : le blocage s'applique à la prochaine ouverture de caisse. Les données ne sont jamais supprimées.
+- **Licence** : chaque instance vérifie régulièrement auprès de la console son abonnement et les modules autorisés. Ce qui n'est pas inclus est masqué.
+- **Statistiques** : nombre de clients, revenus des abonnements, clients en retard, utilisation des instances.
+- **Assistance** : accès à l'instance d'un client **uniquement avec son accord**, avec un historique.
+- **Confidentialité** : le super admin ne voit pas les données commerciales des clients (ventes, clients, dettes), seulement ce qui concerne l'abonnement.
+
+## 2. Organisation des lieux
+
+```
+CLIENT (instance)
+  └── ÉTABLISSEMENT (restau-bar, lounge, club)
+        ├── DÉPÔTS       (réserve, économat, chambre froide)
+        ├── COMPTOIRS    (bar principal, bar VIP, cuisine, chicha…)
+        └── POINTS DE VENTE (caisses, tablettes, téléphones)
+```
+
+Circuit de la marchandise :
+
+```
+Fournisseur ──► DÉPÔT ──(transfert)──► COMPTOIR ──► POINT DE VENTE ──► Client
+```
+
+### 2.1 Dépôt
+- Lieu de **stockage** en grandes quantités (casiers, cartons, fûts, sacs).
+- **Reçoit les livraisons** et **approvisionne les comptoirs** par des transferts.
+- Possibilité d'un **dépôt central** qui approvisionne plusieurs établissements.
+- Responsable : le **magasinier**.
+- ⚠️ Hypothèse : un dépôt peut aussi **vendre en gros** (au casier) grâce à un point de vente rattaché, avec des prix de gros, des clients revendeurs et des emballages consignés. Option activable.
+
+### 2.2 Comptoir
+- Lieu de **préparation et de service**, avec **son propre stock**.
+- **Chaque vente fait baisser le stock du comptoir**.
+- **Inventaire à chaque service** : stock du début + transferts reçus − ventes = stock attendu. Le responsable justifie les écarts.
+- Un transfert se valide **des deux côtés** : le magasinier confirme la sortie, le responsable du comptoir confirme la réception.
+
+### 2.3 Point de vente
+- **Appareil** où l'on enregistre et encaisse. Il n'a **pas de stock**.
+- **Rattaché à un ou plusieurs comptoirs**, ce qui détermine :
+  - quel stock faire baisser ;
+  - où envoyer les commandes (boissons au bar, plats en cuisine) ;
+  - quelle grille de prix appliquer (normal, VIP, nuit, gros).
+- Exemples : tablette d'un serveur en salle, caisse du carré VIP, caisse de l'entrée du club (sans stock).
+
+## 3. Socle commun
+
+- **Catalogue** : produits, catégories, conditionnements (section 9), prix par grille, taxes, options (« sans glaçons », cuisson…).
+- **Commandes et encaissement** : espèces, carte, mobile money, paiements en plusieurs devises (section 10).
+- **Utilisateurs, rôles et permissions** (section 6).
+- **Sessions de caisse** : ouverture, clôture, fond de caisse et écarts par devise.
+- **Stock** par dépôt et par comptoir.
+- **Clients et dettes** (section 7).
 - **Rapports** : ventes, produits les plus vendus, ventes par employé, par période.
-- **Stock** de base.
-- **Clients et dettes** (voir section 4).
+- **Langues** français et anglais (section 11).
 
-## 2. Modules selon le contexte
+## 4. Modules selon le contexte
 
 | Module | Restau-bar | Lounge | Nightclub |
 |---|:-:|:-:|:-:|
 | Plan de salle et tables | ✅ | ✅ | ✅ (zones VIP) |
 | Notes ouvertes (on paie à la fin) | ✅ | ✅ | ✅ |
 | Partage de l'addition | ✅ | ✅ | ➖ |
-| Envoi des plats en cuisine en plusieurs temps | ✅ | ➖ | ❌ |
+| Cuisine complète (section 8) | ✅ | ➖ | ❌ |
 | Réservations | ✅ | ✅ | ✅ |
 | Bouteilles avec softs, formules | ➖ | ✅ | ✅ |
 | Minimum de consommation (VIP) | ❌ | ➖ | ✅ |
@@ -34,10 +109,13 @@ Principe : un **socle commun** toujours actif + des **modules** activés selon l
 | Cashless (bracelet, carte prépayée, QR) | ❌ | ➖ | ✅ |
 | Mode comptoir rapide (gros boutons, un seul clic pour vendre) | ➖ | ➖ | ✅ |
 | Fidélité (points, remises) | ➖ | ✅ | ➖ |
+| Vente en gros au dépôt | ➖ | ➖ | ➖ |
 
 ✅ = activé par défaut · ➖ = optionnel · ❌ = désactivé par défaut
 
-## 3. Services horaires
+Les modules disponibles dépendent aussi de la formule d'abonnement (section 1.2).
+
+## 5. Services horaires
 
 Un même lieu peut changer de mode dans la journée. Exemple :
 
@@ -47,105 +125,298 @@ Un même lieu peut changer de mode dans la journée. Exemple :
 | Lounge | 18h – 23h | bouteilles, happy hour |
 | Club | 23h – 5h | entrées, mode comptoir rapide, cashless, carte de prix « nuit » |
 
-Chaque service a ses propres prix, modules et postes. Tout reste dans **une seule base de données**, avec des rapports consolidés.
+- Chaque service a ses propres prix, modules et postes. Quand la cuisine ferme, ses plats disparaissent des points de vente.
+- **Journée d'exploitation** : un service qui passe minuit compte pour la journée où il a commencé. L'heure de fin de journée se règle (par exemple 7h).
+- Tout reste dans **une seule base de données par client**, avec des rapports consolidés.
 
-## 4. Gestion des clients et des dettes
+## 6. Rôles et permissions
 
-### 4.1 Fiche client
+### 6.1 Principe
+Un rôle donne :
+- des **permissions** : ce que la personne a le droit de faire ;
+- une **portée** : où elle a ce droit (établissement, dépôt, comptoir, point de vente).
 
-- Nom, téléphone (identifiant principal), e-mail, date d'anniversaire.
-- Type : particulier, habitué, VIP, entreprise, membre du personnel.
+Les rôles ci-dessous sont des modèles. Le propriétaire peut les modifier ou en créer d'autres.
+
+| Rôle | Ce qu'il peut faire | Portée habituelle |
+|---|---|---|
+| **Propriétaire / Direction** | Tout, y compris les rapports financiers et la configuration | Tous les établissements |
+| **Gérant** | Valider les annulations, remises et crédits, clôturer les caisses, fixer les taux de change, gérer le personnel | Son établissement |
+| **Superviseur / chef de service** | Surveiller un service, accorder de petites remises dans une limite | Un service, des comptoirs |
+| **Caissier** | Ouvrir et fermer la session de caisse, encaisser, recevoir les remboursements de dettes | Un point de vente |
+| **Serveur** | Prendre les commandes sur ses tables, éventuellement encaisser | Ses tables, ses points de vente |
+| **Barman** | Vendre au comptoir, préparer, recevoir les transferts, faire l'inventaire du comptoir | Un comptoir |
+| **Chef de cuisine** | Fiches techniques, ruptures, commandes, inventaires, pertes, coûts matière | La cuisine |
+| **Cuisinier** | Voir les commandes de son poste, indiquer qu'un plat est prêt | Un poste de cuisine |
+| **Acheteur / économe** | Achats au marché, réceptions, caisse de dépenses de la cuisine | La cuisine, l'économat |
+| **Magasinier** | Recevoir les livraisons, faire les transferts, faire l'inventaire du dépôt | Un dépôt |
+| **Comptable** | Dépenses, trésorerie, rapports, aucun accès à la caisse | Un ou plusieurs établissements |
+| **RH** | Employés, plannings, présence, salaires, avances | Un ou plusieurs établissements |
+| **Agent d'entrée** (club) | Billetterie, liste d'invités | L'entrée |
+| **Vestiaire** (club) | Tickets de vestiaire | Le vestiaire |
+| **Promoteur** | Voir ses invités et ses commissions | Ses soirées |
+
+Le **super admin** n'est pas un rôle de l'instance : il n'existe que dans la console (section 1.2).
+
+### 6.2 Règles
+- **Permissions fines** : « annuler un article déjà envoyé », « remise de plus de 10 % », « accorder un crédit », « voir les marges », « modifier les prix », « modifier les taux »…
+- **Limites chiffrées** : remise maximale en %, crédit maximal qu'un employé peut accorder.
+- **Validation par un supérieur** : le gérant tape son PIN sur l'appareil de l'employé. L'historique garde le nom des deux personnes.
+- **Plusieurs rôles par personne**.
+- **Séparation des tâches** : la personne qui reçoit la marchandise n'est pas la seule à valider l'inventaire.
+- **Changement rapide d'utilisateur** sur une tablette partagée, avec le PIN.
+- **Historique complet** : qui a fait quoi, quand, sur quel appareil.
+
+## 7. Clients et dettes
+
+### 7.1 Fiche client
+- Nom, téléphone (identifiant principal), e-mail, date d'anniversaire, langue préférée.
+- Type : particulier, habitué, VIP, entreprise, revendeur (vente en gros), membre du personnel.
 - Préférences et notes (boisson favorite, table préférée, allergies).
-- Historique : visites, commandes, montant total dépensé, panier moyen.
-- Recherche rapide à la caisse par nom ou téléphone.
-- Création rapide pendant une commande (nom + téléphone suffisent).
+- Historique : visites, commandes, montant dépensé, panier moyen.
+- Recherche rapide à la caisse par nom ou téléphone, et création rapide pendant une commande.
 
-### 4.2 Dettes (crédit, « ardoise »)
+### 7.2 Dettes (crédit, « ardoise »)
+- **Mettre une note à crédit**, en entier ou en partie, au compte d'un client identifié.
+- **Autorisation** par un employé autorisé, avec validation par PIN. On garde toujours qui a accordé le crédit.
+- **Plafond de crédit** par client. Blocage automatique en cas de dépassement ou de retard (le gérant peut forcer).
+- **Échéance** par dette.
+- **Devise** : chaque dette est enregistrée dans une devise. Un remboursement dans une autre devise est converti au taux du jour du remboursement.
+- **Remboursements** partiels ou totaux, avec n'importe quel moyen de paiement. Les dettes les plus anciennes sont remboursées en premier.
+- **Relevé de compte** imprimable ou envoyé par SMS ou WhatsApp, et **relances** pour les échéances proches ou dépassées.
+- **Responsabilité** : en option, l'employé reste responsable de la dette qu'il a accordée.
+- **Comptes entreprise** avec une facture mensuelle.
+- **Dettes du personnel**, déductibles du salaire.
+- **Avances et soldes positifs** : le client dépose de l'argent à l'avance (lien avec le cashless).
+- **Annulation ou remise de dette** réservée au gérant, avec un motif obligatoire.
 
-- **Mettre une note à crédit** : une note ou une partie d'une note est imputée au compte d'un client identifié.
-- **Autorisation** : selon le rôle, seul un gérant ou un employé autorisé peut accorder un crédit, avec validation par PIN.
-- **Plafond de crédit** par client, et blocage automatique s'il est dépassé ou en cas de retard (le gérant peut forcer).
-- **Échéance** : date limite de remboursement par dette.
-- **Remboursements** : partiels ou totaux, avec n'importe quel moyen de paiement. Un remboursement est réparti sur les dettes les plus anciennes en premier.
-- **Relevé de compte** : solde, liste des dettes et des remboursements, imprimable ou envoyé par SMS ou WhatsApp.
-- **Relances** : alertes pour les échéances proches ou dépassées, et messages de rappel au client.
-- **Responsabilité** : on enregistre toujours qui a accordé le crédit. En option, l'employé reste responsable de la dette qu'il a accordée.
-- **Comptes entreprise** : consommations cumulées et facture mensuelle.
-- **Consommations du personnel** : dettes des employés, déductibles du salaire.
-- **Avances et soldes positifs** : un client peut déposer de l'argent à l'avance (lien avec le module cashless).
-- **Annulation ou remise de dette** : réservée au gérant, avec un motif obligatoire et un historique.
+### 7.3 Rapports
+- Total des créances en cours, et ancienneté : 0–30 jours, 31–60 jours, plus de 60 jours.
+- Dettes par client, par employé qui a accordé le crédit, par établissement, par devise.
+- Distinction entre **chiffre d'affaires** et **encaissements** : une vente à crédit compte dans le chiffre d'affaires, mais pas dans la caisse du jour.
+- Remboursements encaissés par session de caisse.
 
-### 4.3 Rapports
+## 8. Cuisine
 
-- Total des créances en cours.
-- Ancienneté des dettes : 0–30 jours, 31–60 jours, plus de 60 jours.
-- Dettes par client, par employé qui a accordé le crédit, par établissement.
-- Distinction claire entre **chiffre d'affaires** (ventes) et **encaissements** (argent réellement reçu) : une vente à crédit compte dans le chiffre d'affaires, mais pas dans la caisse du jour.
-- Remboursements encaissés pendant une session de caisse.
+La cuisine est un **comptoir** qui **transforme des ingrédients en plats**.
 
-## 5. ERP (gestion de l'établissement)
+```
+Fournisseurs / marché
+        │
+        ▼
+DÉPÔT CUISINE (économat, chambre froide, congélateur)
+        │  transfert (ou livraison directe en cuisine pour le frais)
+        ▼
+COMPTOIR CUISINE ──► postes : grill, froid, pizza, pâtisserie…
+        ▲
+        │ commandes
+POINTS DE VENTE
+```
 
-La caisse n'est que la partie visible. L'ERP gère tout ce qui se passe en coulisses. Caisse et ERP partagent **la même base de données** : chaque vente fait baisser le stock, chaque crédit alimente les créances et chaque dépense arrive dans la trésorerie, sans ressaisie.
+### 8.1 Stock de la cuisine
+- Ingrédients en kg, litres ou pièces, avec conversions (section 9).
+- **Fiche technique de chaque plat** : chaque vente fait baisser les ingrédients utilisés.
+- **Rendement** : 1 kg de poisson acheté ne donne que 600 g utilisables.
+- **Préparations intermédiaires** (sauces, marinades, bouillons) : préparées à l'avance, stockées, utilisées dans plusieurs plats.
+- **Dates de péremption**, règle « premier entré, premier sorti », alertes.
+- **Pertes** : plats ratés, renvoyés, périmés, repas du personnel, avec un motif.
+- **Inventaires** : chaque jour pour les produits chers, chaque semaine pour le reste.
 
-### 5.1 Achats et fournisseurs
+### 8.2 Circuit d'une commande
+1. Le serveur saisit la commande avec les précisions : cuisson, « sans piment », **allergies**.
+2. La commande arrive au bon poste, sur un **écran** et/ou un **bon imprimé**.
+3. **Envoi en plusieurs temps** : les entrées partent tout de suite, les plats attendent que le serveur les lance.
+4. **Statuts** : reçu → en préparation → prêt → servi. Le serveur est prévenu quand c'est prêt.
+5. **Temps de préparation** mesuré, avec une alerte en cas de retard.
+6. **Rupture** : le chef bloque un plat, qui disparaît immédiatement des points de vente.
+7. **Annulation** d'un plat déjà lancé : avec validation, et le plat compte comme perte.
 
+### 8.3 Achats au marché
+- **Caisse de dépenses** de la cuisine (fonds remis au chef ou à l'acheteur).
+- Achats **sans facture**, avec la quantité et le prix réellement payé.
+- **Justificatif** : photo du ticket ou de la marchandise, signature.
+- **Mise à jour automatique du coût de revient** à partir des prix réels.
+
+### 8.4 Suivi des coûts
+- **Coût matière** de chaque plat et son **pourcentage du prix de vente**.
+- **Écart** entre la consommation attendue (selon les ventes) et réelle (selon l'inventaire).
+- **Rentabilité par plat**.
+
+## 9. Conditionnement
+
+### 9.1 Principe
+Chaque produit a une **unité de base** (bouteille, cl, gramme, pièce) et **plusieurs conditionnements**. Les conversions sont propres **à chaque produit**.
+
+| Produit | Unité de base | Conditionnements |
+|---|---|---|
+| Bière 72 cl | bouteille | casier = 12 bouteilles · palette = 70 casiers |
+| Coca 33 cl | canette | pack = 6 · carton = 24 |
+| Whisky 70 cl | cl | bouteille = 70 cl · dose = 4 cl · double = 8 cl |
+| Bière pression | litre | fût = 30 L · verre = 25 cl · pinte = 50 cl |
+| Riz | kg | sac = 25 kg · portion = 150 g |
+
+### 9.2 Règles
+- **Achat, stock et vente dans des unités différentes** : on achète au casier, on stocke à la bouteille, on vend à la bouteille ou au casier.
+- **Affichage lisible du stock** : « 9 casiers + 7 bouteilles ».
+- **Un prix par conditionnement vendu**, qui peut varier selon la grille de prix.
+- **Rendement réel** : une bouteille de 70 cl donne 16 doses de 4 cl en pratique, au lieu de 17 en théorie.
+- **Bouteilles entamées** saisies à l'inventaire (fraction ou cl), et **perte normale** pour la pression.
+- **Code-barres par conditionnement**.
+
+### 9.3 Emballages consignés
+- Casiers vides et bouteilles vides gérés comme **articles de stock**, avec une **valeur de consigne**.
+- Échange des vides avec les fournisseurs, ou paiement de la consigne.
+- En vente en gros, suivi de **ce que chaque client et chaque fournisseur doit en emballages**.
+
+## 10. Devises et paiements
+
+### 10.1 Principe
+- **Une devise de référence** pour la comptabilité et les rapports.
+- **Plusieurs devises acceptées**, à choisir par établissement, par point de vente et par moyen de paiement.
+- ⚠️ Hypothèse : devise de référence le dollar américain (USD), devises acceptées USD et franc congolais (CDF). D'autres devises (EUR, RWF…) peuvent être ajoutées.
+
+### 10.2 Taux de change
+- Chaque devise a **un taux** par rapport à la devise de référence. Les conversions entre deux autres devises sont calculées automatiquement, ou fixées par un **taux direct**.
+- ⚠️ Hypothèse : le gérant fixe les taux **chaque jour** ou **par session de caisse**. Chaque modification est enregistrée.
+- Chaque opération garde **le taux appliqué au moment où elle est faite**.
+- **Note ouverte quand le taux change** : on applique le taux du moment du paiement (par défaut) ou le taux figé à l'ouverture de la note, selon le paramétrage.
+
+### 10.3 Prix
+Au choix, par produit ou par carte :
+1. **Prix dans une seule devise**, les autres sont calculées avec le taux ;
+2. **Prix fixe dans chaque devise**, pour garder des montants ronds.
+
+**Règles d'arrondi par devise** (par exemple à 100 ou 500 CDF). L'écart d'arrondi est enregistré.
+
+### 10.4 Encaissement
+- **Total affiché dans toutes les devises acceptées**, à l'écran et sur le ticket.
+- **Paiement en plusieurs devises** pour une même note, et **reste à payer** recalculé dans chaque devise après chaque paiement.
+- **Monnaie rendue dans la devise choisie**.
+- Chaque ligne de paiement enregistre : devise, montant, moyen de paiement, taux appliqué, contre-valeur dans la devise de référence.
+
+Exemple : note de **50 $**. Taux : 1 € = 1,08 $ · 1 $ = 1 300 RWF · 1 $ = 2 800 CDF.
+
+| Paiement | Valeur en dollars | Reste à payer |
+|---|---|---|
+| 20 € | 21,60 $ | 28,40 $ |
+| 26 000 RWF | 20,00 $ | 8,40 $ (= 23 520 CDF) |
+| 23 500 CDF (arrondi) | 8,39 $ | **0, note réglée** |
+
+L'écart de 20 CDF est enregistré comme écart d'arrondi.
+
+### 10.5 Caisse, trésorerie et rapports
+- **Fond de caisse, clôture et écarts par devise** : les écarts de deux devises ne se compensent pas.
+- **Trésorerie par devise** : caisse USD, caisse CDF, banque, mobile money.
+- **Encaissements par devise**, et totaux convertis dans la devise de référence.
+- **Gains et pertes de change** calculés automatiquement.
+- Achats fournisseurs dans n'importe quelle devise, avec conversion du coût de revient.
+
+## 11. Langues
+
+- **Français et anglais**.
+- **Langue choisie par utilisateur**, et **langue par établissement** pour les tickets, factures et relevés.
+- **Carte des produits traduite** : chaque produit a un nom dans chaque langue.
+- **Formats** de dates, nombres et monnaies selon la langue.
+- Traductions dans des fichiers à part, pour pouvoir ajouter une langue plus tard sans toucher au code.
+
+## 12. ERP (gestion de l'établissement)
+
+Caisse et ERP partagent **la même base de données** : chaque vente fait baisser le stock, chaque crédit alimente les créances et chaque dépense arrive dans la trésorerie, sans ressaisie.
+
+### 12.1 Achats et fournisseurs
 - Fiche fournisseur : brasseries, distributeurs, grossistes, marché.
-- Bons de commande, réception des marchandises (quantités commandées ou reçues, écarts).
-- Factures fournisseurs, paiements, **dettes envers les fournisseurs** et leurs échéances.
+- Bons de commande, réception (quantités commandées ou reçues, écarts).
+- Factures fournisseurs, paiements, **dettes envers les fournisseurs** et échéances.
 - Historique des prix d'achat par produit et par fournisseur.
 
-### 5.2 Stock avancé
-
-- **Plusieurs dépôts** : réserve, bar, cuisine, et un stock par site. Transferts entre dépôts (réserve → bar).
-- **Fiches techniques (recettes)** : un cocktail consomme par exemple 4 cl de rhum, 2 cl de sirop et 1 citron. Une bouteille servie au verre se compte en doses.
-- **Coût de revient et marge** par produit, calculés à partir des recettes et des prix d'achat.
-- **Inventaires** : comptage physique et écarts avec le stock théorique, par employé et par service.
+### 12.2 Stock avancé
+- **Transferts** entre dépôts et comptoirs (section 2).
+- **Fiches techniques** pour les cocktails et les plats.
+- **Coût de revient et marge** par produit.
+- **Inventaires** : comptage physique et écarts, par employé et par service.
 - **Pertes** : casse, offerts, consommations du personnel, périmés, avec un motif.
-- **Emballages consignés** : bouteilles et casiers vides, consignes payées et récupérées auprès des fournisseurs.
+- **Emballages consignés** (section 9.3).
 - **Alertes** de stock bas et suggestions de commande.
 
-### 5.3 Dépenses et trésorerie
-
-- Saisie des dépenses par catégorie : loyer, électricité, carburant du groupe électrogène, entretien, sécurité, artistes…
-- Comptes de trésorerie : caisse, banque, mobile money, avec les transferts entre eux.
+### 12.3 Dépenses et trésorerie
+- Dépenses par catégorie : loyer, électricité, carburant du groupe électrogène, entretien, sécurité, artistes…
+- Comptes de trésorerie par devise (section 10.5), avec les transferts entre eux.
 - Vue de la trésorerie : entrées (ventes, remboursements de dettes) et sorties (fournisseurs, dépenses, salaires).
-- TVA et taxes, et export vers un logiciel comptable ou vers un comptable.
+- TVA et taxes, export vers un logiciel comptable ou un comptable.
 
-### 5.4 Ressources humaines
+### 12.4 Ressources humaines et présence
 
-- Fiche employé, contrat, poste, site.
-- Plannings par service et pointage (arrivées et départs à la caisse avec le PIN).
+**Pointage par code QR**
+- Un **code QR** est affiché à l'entrée de l'établissement. L'employé le scanne avec son téléphone pour pointer à l'arrivée et au départ.
+- Le code QR **change régulièrement**, pour qu'on ne puisse pas pointer avec une photo du code prise la veille.
+- **Position GPS** vérifiée au moment du scan : l'employé doit être sur place.
+- ⚠️ Hypothèse : pour un employé sans smartphone, un pointage de secours se fait sur la caisse avec le PIN, validé par le gérant.
+
+**Plannings et suivi**
+- Plannings par service (restaurant, lounge, club) et par poste (bar, cuisine, salle, sécurité).
+- Services de nuit rattachés à la journée d'exploitation (section 5).
+- **Retards, absences, départs anticipés**, comparés au planning. Pauses, heures supplémentaires, jours fériés.
+- **Demandes de congé** et **justification des absences**, validées par le gérant.
+- **Extras et journaliers** (sécurité, hôtesses) : pointage et paiement par soirée.
+
+**Lien avec la caisse et la paie**
+- Un employé **non pointé ne peut pas ouvrir de caisse**. Pour dépointer, il doit d'abord **clôturer sa caisse**.
+- Heures travaillées, retards et absences vont au **calcul des salaires**.
+- Fiche employé, contrat, poste, établissement.
 - Salaires, **avances sur salaire**, retenues (dettes du personnel, manquants de caisse).
-- Commissions des serveurs et des promoteurs, et répartition des pourboires.
+- Commissions des serveurs et des promoteurs, répartition des pourboires.
 
-### 5.5 Événements (lounge et nightclub)
-
+### 12.5 Événements (lounge et nightclub)
 - Soirées : date, thème, DJ ou artistes, budget.
 - Coûts (cachets, publicité, location de matériel) comparés aux recettes (entrées, bar, bouteilles VIP).
 - **Rentabilité par soirée**.
 
-### 5.6 Tableaux de bord de la direction
-
-- Chiffre d'affaires, marge, dépenses et résultat, par jour, par service, par site.
+### 12.6 Tableaux de bord de la direction
+- Chiffre d'affaires, marge, dépenses et résultat, par jour, par service, par établissement.
 - Produits les plus rentables et les moins vendus.
 - Créances clients et dettes fournisseurs.
-- Performances des employés.
+- Performances et présence des employés.
 
-## 6. Exigences transverses
+## 13. Exigences transverses
 
 - **Mode hors ligne** : la caisse fonctionne sans réseau et se synchronise quand il revient.
 - **Rapidité** : un barman doit encaisser en 2 ou 3 secondes.
-- **Multi-établissements** possible à terme.
-- **Sécurité** : annulations, remises et crédits validés par un gérant, avec historique complet.
+- **Plusieurs établissements** par client.
+- **Sécurité** : annulations, remises, crédits et changements de taux validés par un gérant, avec historique complet.
+- **Isolation des clients** : une base de données par instance (section 1.1).
 
-## 7. Découpage en phases
+## 14. Découpage en phases
 
-Le périmètre est large : on le construit par étapes, chaque phase étant utilisable seule.
+Chaque phase est utilisable seule.
 
 | Phase | Contenu |
 |---|---|
-| 1 | Socle de la caisse (catalogue, commandes, encaissement, rôles, sessions de caisse), stock simple, clients et dettes |
-| 2 | Plan de salle, postes de préparation, services horaires, modules lounge et nightclub |
-| 3 | ERP : achats et fournisseurs, stock avancé (recettes, inventaires, consignes), dépenses et trésorerie |
-| 4 | ERP : ressources humaines (plannings, pointage, salaires, commissions), événements |
-| 5 | Tableaux de bord avancés, multi-établissements, export comptable |
+| 1 | Console super admin minimale (clients, sous-domaines, instances, abonnements, activation des modules) · socle de la caisse (catalogue, conditionnements, commandes, encaissement multi-devises, rôles, sessions de caisse) · établissements, dépôts, comptoirs, points de vente · stock simple et transferts · français et anglais |
+| 2 | Clients et dettes · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
+| 3 | Modules lounge et nightclub (bouteilles, VIP, entrées, invités, vestiaire, cashless, mode comptoir rapide) · vente en gros au dépôt et consignes |
+| 4 | ERP : achats et fournisseurs, stock avancé, dépenses et trésorerie |
+| 5 | Ressources humaines : présence par code QR, plannings, paie, commissions · événements |
+| 6 | Tableaux de bord avancés · facturation automatique des abonnements · export comptable |
+
+## 15. Décisions prises
+
+| Sujet | Décision |
+|---|---|
+| Déploiement | Une instance par client, sur un sous-domaine, gérée depuis une console super admin. Pas de SaaS partagé. |
+| Langues | Français et anglais |
+| Pointage | Par code QR |
+
+## 16. Questions ouvertes
+
+1. Le dépôt **vend-il en gros** à d'autres clients, ou approvisionne-t-il seulement les comptoirs ?
+2. Un **dépôt central** pour plusieurs établissements, ou un dépôt par établissement ?
+3. Les **serveurs encaissent-ils eux-mêmes**, ou tout passe-t-il par un caissier ?
+4. Le barman est-il **responsable des écarts** de stock de son comptoir ?
+5. La cuisine achète-t-elle surtout **au marché en espèces** ou chez des **fournisseurs avec facture** ?
+6. Commandes en cuisine sur **écran**, sur **bon imprimé**, ou les deux ?
+7. Repas du personnel **gratuits** (pertes) ou **déduits du salaire** ?
+8. **Quelles devises** accepter, et les prix sont-ils fixés dans **une seule devise** ou **dans chaque devise** ?
+9. **Qui fixe les taux de change**, et à quelle fréquence ?
+10. **Contenu des casiers** de vos principaux produits.
+11. **Hébergement** des instances : sur vos serveurs, ou parfois chez le client ?
+12. **Paiement des abonnements** par vos clients : mobile money, virement, autre ?
