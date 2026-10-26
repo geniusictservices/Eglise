@@ -25,6 +25,19 @@ final class RapportAffichage
         return implode(' · ', $parties);
     }
 
+    /** Montant arrondi au pas de la devise (100 FC) puis formaté : pour les moyennes et les équivalents « ≈ ». */
+    public static function arrondi(float $montant, ?array $devise): string
+    {
+        if ($devise === null) {
+            return '';
+        }
+        $pas = (float) ($devise['arrondi'] ?? 0);
+        if ($pas > 0) {
+            $montant = round($montant / $pas) * $pas;
+        }
+        return TresorerieAffichage::montant($montant, $devise);
+    }
+
     /** Écart relatif entre deux valeurs (null si la valeur précédente est nulle). */
     public static function ecart(float $actuel, float $precedent): ?float
     {
@@ -41,7 +54,7 @@ final class RapportAffichage
         $avant = !empty($devise['symbole_avant']);
         $abs = abs($montant);
         if ($abs >= 1e6) {
-            $texte = self::nombre($montant / 1e6, $abs >= 1e7 ? 0 : 1) . "\u{00A0}M";
+            $texte = self::nombre($montant / 1e6, $abs >= 1e8 ? 0 : 1) . "\u{00A0}M";
         } elseif ($abs >= 1e3) {
             $texte = self::nombre($montant / 1e3, $abs >= 1e4 ? 0 : 1) . "\u{00A0}k";
         } else {

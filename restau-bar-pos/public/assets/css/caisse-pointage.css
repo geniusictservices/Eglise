@@ -1,0 +1,6 @@
+/* Caisse : rappel du pointage et pointage de secours (module Personnel et paie). Jetons de volcan.css seulement. */
+.pointage-note { margin: .5rem 0 0; padding: .6rem .8rem; border-radius: var(--rayon); border: 1px solid var(--ligne); background: var(--surface-2); font-weight: 600; }
+.pointage-note--requis, .pointage-note--erreur { border-color: color-mix(in srgb, var(--erreur) 45%, var(--ligne)); background: var(--teinte-erreur); color: var(--encre); }
+.pointage-note--ok { border-color: color-mix(in srgb, var(--succes) 45%, var(--ligne)); background: var(--teinte-succes); color: var(--encre); }
+.pointage-secours select, .pointage-secours input { min-height: var(--cible); }
+.pointage-secours__message--ok { color: var(--succes); }

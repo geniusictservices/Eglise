@@ -27,7 +27,7 @@ $retard = count(array_filter($stats['retard'], static fn ($c) => in_array($c['st
         <span class="chiffre__libelle"><?= e(t('console.tableau.mrr')) ?></span>
     </div>
     <div class="chiffre">
-        <span class="chiffre__valeur montant" data-chiffre="encaisse">
+        <span class="chiffre__valeur montant con-valeur-multi" data-chiffre="encaisse">
             <?php if ($stats['encaisse'] === []): ?>—<?php else: ?>
                 <?= implode('<br>', array_map(static fn ($l) => e(A::montant($l['total'], $l['devise'])), $stats['encaisse'])) ?>
             <?php endif; ?>
@@ -61,7 +61,7 @@ $retard = count(array_filter($stats['retard'], static fn ($c) => in_array($c['st
                 <tbody>
                 <?php foreach (array_merge($stats['retard'], $stats['essais']) as $c): ?>
                     <tr>
-                        <td><a class="lien" href="/clients/<?= (int) $c['id'] ?>"><?= e($c['nom']) ?></a><br><span class="aide con-petit"><?= e($c['contact_telephone'] ?? $c['contact_email'] ?? '') ?></span></td>
+                        <td><a class="lien" href="/clients/<?= (int) $c['id'] ?>"><?= e($c['nom']) ?></a><br><span class="aide con-petit"><?= e($c['contact_telephone'] ? afficherTelephone($c['contact_telephone']) : ($c['contact_email'] ?? '')) ?></span></td>
                         <td><?= A::badge($c) ?></td>
                         <td class="montant"><?= e(A::date($c['echeance'])) ?><br><span class="aide con-petit"><?= e(A::relatif($c['statut']['jours'])) ?></span></td>
                         <td><?= e($c['formule_nom'] ?? '—') ?></td>

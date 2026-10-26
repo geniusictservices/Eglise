@@ -51,6 +51,12 @@ final class Plateforme
         return BaseConsole::configuree();
     }
 
+    /** L'instance est-elle un client de la console (abonnement, limites, assistance) ? */
+    public static function geree(): bool
+    {
+        return !empty(self::licence()['gere']);
+    }
+
     private static function cle(): string
     {
         return Instance::courante()->sousDomaine;
@@ -385,10 +391,14 @@ final class Plateforme
     public static function entrerAssistance(string $jeton): bool
     {
         $enregistre = (string) Parametres::get(self::CLE_ASSISTANCE_JETON, '');
-        Database::executer('DELETE FROM parametres WHERE cle = ?', [self::CLE_ASSISTANCE_JETON]);   // une seule fois, même en cas d'échec
-        Parametres::oublier();
         [$empreinte, $expire, $admin] = array_pad(explode('|', $enregistre, 3), 3, '');
-        if ($empreinte === '' || (int) $expire < time() || !hash_equals($empreinte, hash('sha256', $jeton)) || self::assistanceJusqua() === null) {
+        $valable = $empreinte !== '' && (int) $expire >= time() && hash_equals($empreinte, hash('sha256', $jeton)) && self::assistanceJusqua() !== null;
+        // Jeton utilisé ou expiré : effacé (une seule entrée) ; un jeton faux n'efface pas celui qui attend
+        if ($valable || ($empreinte !== '' && (int) $expire < time())) {
+            Database::executer('DELETE FROM parametres WHERE cle = ?', [self::CLE_ASSISTANCE_JETON]);
+            Parametres::oublier();
+        }
+        if (!$valable) {
             Journal::ecrire('assistance_refusee', null, [], null);
             return false;
         }

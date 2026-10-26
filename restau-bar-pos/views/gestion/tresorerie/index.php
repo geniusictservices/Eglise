@@ -50,6 +50,7 @@ $ligneCompte = static function (array $compte) use ($devises): string {
             <a class="bouton" href="/gestion/depenses/nouvelle">+ <?= e(t('depenses.nouvelle')) ?></a>
             <a class="bouton bouton--secondaire" href="/gestion/tresorerie/transferts#nouveau-transfert"><?= e(t('tresorerie.action_transfert')) ?></a>
         </div>
+        <?= View::rendre('gestion/rapports/_exporter', ['titre' => t('tresorerie.titre'), 'periode' => A::jour(date('Y-m-d'))]) ?>
     <?php endif; ?>
 </div>
 

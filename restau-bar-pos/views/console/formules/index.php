@@ -32,7 +32,7 @@ use App\Console\Affichage as A;
                 'etablissements' => $f['max_etablissements'] ?? '∞', 'utilisateurs' => $f['max_utilisateurs'] ?? '∞', 'sms' => $f['sms_inclus'],
             ])) ?></p>
             <ul class="con-modules" aria-label="<?= e(t('console.formule.modules')) ?>">
-                <?php foreach ($f['modules'] as $m): ?><li class="badge badge--glace"><?= e(t('module.' . $m . '.nom')) ?></li><?php endforeach; ?>
+                <?php foreach ($f['modules'] as $m): ?><li class="badge badge--glace"><?= e(\App\Console\Affichage::module($m)) ?></li><?php endforeach; ?>
             </ul>
             <p class="aide con-petit"><?= e(t('console.formule.clients', ['n' => (int) $f['clients']])) ?></p>
         </li>

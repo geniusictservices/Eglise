@@ -9,6 +9,7 @@ use App\Core\View;
 use App\Repositories\GestionDepenseRepository;
 use App\Repositories\GestionEtablissementRepository;
 use App\Repositories\GestionTresorerieRepository;
+use App\Repositories\EvenementRepository;
 
 /**
  * Dépenses : liste filtrée avec les totaux par devise et l'équivalent en devise de référence,
@@ -79,6 +80,10 @@ final class DepenseController
         uksort($totaux, static fn ($a, $b) => ($ordre[$a] ?? 999) <=> ($ordre[$b] ?? 999));
         uasort($parCategorie, static fn ($a, $b) => $b['montant'] <=> $a['montant']);
 
+        if (\App\Core\Csv::demande()) {
+            ExportCsv::depenses($liste, $devises, $reference, $periode);
+        }
+
         View::afficher('gestion/depenses/index', [
             'titre' => t('depenses.titre'),
             'utilisateur' => $utilisateur,
@@ -113,9 +118,16 @@ final class DepenseController
             }
             $compte ??= $comptes ? reset($comptes) : null;
         }
+        // Coût d'une soirée (?evenement=12, depuis sa fiche) : la soirée et son établissement sont proposés
+        $evenement = null;
+        foreach (EvenementRepository::choixPourDepense((int) $utilisateur['id']) as $choix) {
+            if ((int) $choix['id'] === TresorerieSaisie::id($_GET['evenement'] ?? null)) {
+                $evenement = $choix;
+            }
+        }
         $this->afficherFormulaire($utilisateur, null, [
-            'date' => date('Y-m-d\TH:i'), 'categorie_id' => null, 'etablissement_id' => '',
-            'libelle' => '', 'beneficiaire' => '', 'notes' => '',
+            'date' => date('Y-m-d\TH:i'), 'categorie_id' => null, 'etablissement_id' => $evenement ? (string) $evenement['etablissement_id'] : '',
+            'libelle' => '', 'beneficiaire' => '', 'notes' => '', 'evenement_id' => $evenement ? (string) $evenement['id'] : '',
         ], [['compte_id' => $compte ? (int) $compte['id'] : null, 'devise_id' => $compte ? $this->devisePreferee($compte, []) : null, 'montant' => '']]);
     }
 
@@ -150,6 +162,7 @@ final class DepenseController
             'categorie_id' => (int) $depense['categorie_id'],
             'etablissement_id' => $depense['etablissement_id'] !== null ? (string) $depense['etablissement_id'] : '',
             'libelle' => $depense['libelle'], 'beneficiaire' => (string) $depense['beneficiaire'], 'notes' => (string) $depense['notes'],
+            'evenement_id' => (string) (EvenementRepository::deLaDepense((int) $depense['id']) ?? ''),
         ], $lignes ?: [self::LIGNE_VIDE]);
     }
 
@@ -190,6 +203,7 @@ final class DepenseController
             'libelle' => mb_substr(TresorerieSaisie::post('libelle'), 0, 300),
             'beneficiaire' => mb_substr(TresorerieSaisie::post('beneficiaire'), 0, 200),
             'notes' => mb_substr(TresorerieSaisie::post('notes', true), 0, 5000),
+            'evenement_id' => TresorerieSaisie::post('evenement_id'),
         ];
 
         // Lignes de paiement saisies (les lignes entièrement vides sont ignorées)
@@ -245,6 +259,18 @@ final class DepenseController
                 $erreurs['etablissement_id'] = t('tresorerie.erreur_etablissement');
                 $valeurs['etablissement_id'] = '';
                 $etablissementId = null;
+            }
+        }
+        // Soirée (module Événements) : une de celles proposées dans le formulaire
+        $evenementId = null;
+        if ($valeurs['evenement_id'] !== '') {
+            $evenementId = TresorerieSaisie::id($valeurs['evenement_id']);
+            $deja = $depense ? EvenementRepository::deLaDepense((int) $depense['id']) : null;
+            $permises = array_map(static fn (array $e): int => (int) $e['id'], EvenementRepository::choixPourDepense((int) $utilisateur['id'], $deja));
+            if ($evenementId === null || !in_array($evenementId, $permises, true)) {
+                $erreurs['evenement_id'] = t('evenements.erreur_champ_depense');
+                $valeurs['evenement_id'] = '';
+                $evenementId = null;
             }
         }
         if ($valeurs['libelle'] === '') {
@@ -334,13 +360,15 @@ final class DepenseController
         ];
         $resume = implode(' + ', array_map(static fn (array $p): string => TresorerieAffichage::montant($p['montant'], $p['devise']), $paiements));
         if ($depense === null) {
-            $this->depenses->creer($enregistrement, $paiements, (int) $utilisateur['id']);
+            $nouvelle = $this->depenses->creer($enregistrement, $paiements, (int) $utilisateur['id']);
+            EvenementRepository::rattacherDepense($nouvelle, $evenementId);
             Session::flash(t('depenses.enregistree', ['libelle' => $valeurs['libelle'], 'montant' => $resume]));
         } else {
             $this->depenses->modifier((int) $depense['id'], $enregistrement, $paiements, (int) $utilisateur['id']);
+            EvenementRepository::rattacherDepense((int) $depense['id'], $evenementId);
             Session::flash(t('depenses.modifiee', ['libelle' => $valeurs['libelle'], 'montant' => $resume]));
         }
-        rediriger('/gestion/depenses');
+        rediriger($evenementId !== null ? '/gestion/evenements/' . $evenementId . '#couts' : '/gestion/depenses');
     }
 
     /** Équivalent d'un paiement en devise de référence : la contre-valeur du journal, sinon au taux du jour. */
@@ -384,6 +412,9 @@ final class DepenseController
             'categories' => $categories,
             'etablissements' => (new GestionEtablissementRepository())->liste(),
             'maxPaiements' => self::MAX_PAIEMENTS,
+            // Soirées auxquelles rattacher la dépense (module Événements), vide sans ce module
+            'evenements' => EvenementRepository::choixPourDepense((int) $utilisateur['id'],
+                $depense ? EvenementRepository::deLaDepense((int) $depense['id']) : null),
         ], 'gestion');
     }
 

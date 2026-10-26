@@ -673,3 +673,240 @@ button { cursor: pointer; }
 .recu__session-caisse caption { text-align: left; font-weight: 700; padding-top: 6px; }
 .recu__ecart--manquant td { font-weight: 700; }
 @media (max-width: 420px) { .session-caisses { grid-template-columns: 1fr; } }
+
+/* ---------- Salle et cuisine : notes ouvertes, plan de salle, précisions, partage ----------
+   Contours fins et égaux sur tous les côtés ; l'état passe par le fond teinté, une pastille ou le texte. */
+
+/* Panneau du ticket : lignes envoyées puis nouvelles lignes, dans une seule zone qui défile */
+.ticket__corps { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; margin-top: 10px; }
+.ticket__corps .lignes { flex: none; overflow: visible; margin-top: 4px; }
+.ticket__corps .ticket__vide { margin-top: 8px; }
+.ticket__intertitre { margin: 12px 0 0; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--doux); }
+
+/* Bouton « Salle » de la barre du haut, pastille des plats prêts ; service en cours */
+.haut__salle {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; height: 46px; padding: 0 14px;
+  border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie); font-weight: 700; white-space: nowrap;
+}
+.haut__salle-prets {
+  min-width: 22px; height: 22px; padding: 0 6px; border-radius: var(--rayon-rond); display: inline-grid; place-items: center;
+  background: var(--succes); color: var(--fond); font-size: .75rem; font-weight: 800;
+}
+.haut__service { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .8125rem; font-weight: 600; color: var(--doux); }
+.haut__service > span { display: inline-flex; align-items: center; min-height: 30px; padding: 0 10px; border-radius: var(--rayon-rond); border: 1px solid var(--ligne); background: var(--saisie); }
+.haut__service .haut__happy { background: var(--teinte-braise); color: var(--encre); border-color: color-mix(in srgb, var(--braise) 45%, var(--ligne)); }
+@media (max-width: 760px) {
+  .haut__salle-texte { display: none; }
+  .haut__salle { padding: 0 12px; }
+  .haut__service { flex: 1 1 100%; order: 3; }
+}
+
+/* Note choisie : table ou nom, serveur, durée, transférer, fusionner, revenir au comptoir */
+.destination {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding: 6px 6px 6px 12px;
+  border-radius: 14px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--ligne)); background: var(--teinte-accent);
+}
+.destination[hidden] { display: none; }
+.destination__texte { display: grid; min-width: 0; }
+.destination__nom { font: 700 1.0625rem/1.2 var(--police-titre); overflow-wrap: anywhere; }
+.destination__info { font-size: .8125rem; color: var(--doux); }
+.destination__quitter { width: 44px; height: 44px; font-size: 1.4rem; line-height: 1; background: var(--surface); }
+
+/* Lignes déjà envoyées : qui a commandé, statut en cuisine, précisions, annuler */
+.note-lignes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.note-lignes[hidden] { display: none; }
+.note-ligne {
+  display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 8px;
+  padding: 6px 6px 6px 10px; border-radius: 12px; border: 1px solid var(--ligne); background: var(--surface);
+}
+.note-ligne__qte { font-weight: 800; font-variant-numeric: tabular-nums; min-width: 2.4em; }
+.note-ligne__texte { display: grid; min-width: 0; }
+.note-ligne__nom { font-weight: 600; overflow-wrap: anywhere; line-height: 1.25; }
+.note-ligne__detail { font-size: .75rem; color: var(--doux); }
+.note-ligne__droite { display: grid; justify-items: end; gap: 2px; }
+.note-ligne__montant { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.note-ligne__annuler { width: 44px; height: 44px; border: 1px solid var(--ligne); border-radius: 10px; background: transparent; color: var(--doux); font-size: 1.3rem; line-height: 1; }
+.note-ligne__annuler:hover { color: var(--erreur); border-color: var(--erreur); }
+.note-ligne__servi {
+  min-width: 44px; height: 44px; padding: 0 10px; border: 1px solid var(--succes); border-radius: 10px;
+  background: var(--teinte-succes); color: var(--encre); font-size: .8125rem; font-weight: 800;
+}
+.note-ligne--annulee { opacity: .6; }
+.note-ligne--annulee .note-ligne__nom { text-decoration: line-through; }
+.note-ligne--payee { opacity: .7; }
+.note-statut { white-space: nowrap; }
+.note-statut--attente { background: var(--surface-2); color: var(--doux); }
+.note-statut--recu { background: var(--teinte-glace); color: var(--glace-texte); }
+.note-statut--preparation { background: var(--teinte-braise); color: var(--encre); }
+.note-statut--pret { background: var(--teinte-succes); color: var(--succes); }
+.note-statut--servi { background: var(--surface-2); color: var(--doux); }
+.badge.note-statut--pret { color: var(--encre); box-shadow: inset 0 0 0 1px var(--succes); }
+
+/* Précisions des nouvelles lignes : toucher le nom les ouvre */
+.ligne__texte--options {
+  min-height: var(--cible); width: 100%; padding: 2px 0; border: 0; background: transparent; text-align: left; color: inherit; border-radius: 8px;
+}
+.ligne__texte--options:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.ligne__precision { font-size: .8rem; color: var(--doux); font-style: italic; }
+.ligne__allergie {
+  justify-self: start; margin-top: 2px; padding: 1px 8px; border-radius: var(--rayon-badge); background: var(--teinte-erreur);
+  color: var(--encre); box-shadow: inset 0 0 0 1px var(--erreur); font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em;
+}
+.ligne__temps { justify-self: start; margin-top: 2px; padding: 1px 8px; border-radius: var(--rayon-badge); background: var(--teinte-glace); color: var(--glace-texte); font-size: .75rem; font-weight: 700; }
+
+/* Boutons de la note : Envoyer, Addition, Partager, Lancer la suite */
+.actions-note { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.actions-note[hidden] { display: none; }
+.actions-note .bouton { min-height: var(--cible); padding: 0 8px; justify-content: center; font-size: .875rem; line-height: 1.15; }
+.actions-note .actions-note__large { grid-column: 1 / -1; }
+.actions-note .actions-note__envoyer { min-height: 52px; font-size: 1rem; font-weight: 800; }
+.actions-note .lien { min-height: var(--cible); }
+@media (min-width: 1200px) { .actions-note { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ---------- Plan de salle ---------- */
+.salle-fenetre {
+  width: min(1240px, calc(100% - 24px)); height: min(900px, calc(100dvh - 24px)); max-width: none; max-height: none; padding: 0;
+  border: 1px solid var(--ligne); border-radius: 22px; background: var(--surface); color: var(--encre); box-shadow: var(--ombre);
+}
+.salle-fenetre[open] { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; }
+.salle-fenetre::backdrop { background: var(--voile); }
+.salle-fenetre__tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 16px 20px 8px; }
+.salle-fenetre__tete h2 { margin: 0; font: 600 1.25rem/1.2 var(--police-titre); }
+.salle-fenetre__aide { margin: 4px 0 0; padding: 6px 12px; border-radius: 10px; background: var(--teinte-accent); color: var(--encre); font-weight: 600; }
+.salle-zones { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 8px; }
+.salle-zones[hidden] { display: none; }
+.salle-fenetre__corps { min-height: 0; overflow-y: auto; padding: 4px 20px 12px; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; align-items: start; }
+.salle-fenetre__pied { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 20px calc(14px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--ligne); }
+.salle-vide { color: var(--doux); }
+
+.plan {
+  --colonnes: 24; --rangees: 16;
+  position: relative; width: 100%; aspect-ratio: var(--colonnes) / var(--rangees); min-height: 320px;
+  border-radius: 16px; border: 1px solid var(--ligne);
+  background-color: var(--fond);
+  background-image: linear-gradient(var(--ligne) 1px, transparent 1px), linear-gradient(90deg, var(--ligne) 1px, transparent 1px);
+  background-size: calc(100% / var(--colonnes)) calc(100% / var(--rangees));
+  background-position: -1px -1px;
+}
+.plan[hidden] { display: none; }
+.table-plan {
+  position: absolute;
+  left: calc(var(--x) / var(--colonnes) * 100% + 3px); top: calc(var(--y) / var(--rangees) * 100% + 3px);
+  width: calc(var(--l) / var(--colonnes) * 100% - 6px); height: calc(var(--h) / var(--rangees) * 100% - 6px);
+  min-width: 44px; min-height: 44px; padding: 4px 6px; overflow: hidden;
+  display: grid; align-content: center; justify-items: center; gap: 1px; text-align: center;
+  border-radius: 12px; border: 1.5px solid var(--ligne-forte); background: var(--surface); color: var(--encre); line-height: 1.15;
+}
+.table-plan--ronde { border-radius: 50%; }
+.table-plan--banquette { border-radius: 22px; }
+.table-plan__nom { font: 800 1rem/1.1 var(--police-titre); }
+.table-plan__statut { font-size: .6875rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.table-plan__montant { font-weight: 700; font-variant-numeric: tabular-nums; font-size: .8125rem; }
+.table-plan__duree { font-size: .75rem; color: var(--doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.table-plan__pret { margin-top: 2px; padding: 0 6px; border-radius: var(--rayon-badge); background: var(--succes); color: var(--fond); font-size: .6875rem; font-weight: 800; text-transform: uppercase; }
+.table-plan--occupee { background: var(--teinte-accent); border-color: var(--accent); }
+.table-plan--addition { background: var(--teinte-braise); border-color: var(--braise); }
+.table-plan--reservee { background: var(--teinte-glace); border-color: var(--glace); }
+.table-plan[aria-current="true"] { box-shadow: 0 0 0 3px var(--focus); }
+.table-plan:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.salle-notes h3 { margin: 0 0 8px; font: 700 .9375rem/1.2 var(--police-titre); }
+.salle-notes__liste { display: grid; gap: 6px; margin-bottom: 10px; }
+.salle-notes__vide { margin: 0; color: var(--doux); font-size: .875rem; }
+.salle-note { display: grid; justify-items: start; gap: 2px; min-height: 52px; padding: 8px 12px; text-align: left; border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie); }
+.salle-note--addition { background: var(--teinte-braise); }
+.salle-note__nom { overflow-wrap: anywhere; }
+.salle-note__info { font-size: .8125rem; color: var(--doux); font-variant-numeric: tabular-nums; }
+.salle-note:disabled { opacity: .5; }
+.salle-nouvelle { display: grid; gap: 8px; }
+.salle-nouvelle[hidden] { display: none; }
+.salle-nouvelle input { min-height: var(--cible); padding: 0 12px; border: 1px solid var(--ligne-forte); border-radius: var(--rayon); background: var(--saisie); color: var(--encre); user-select: text; }
+.salle-legende { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0; font-size: .8125rem; color: var(--doux); }
+.salle-legende__item::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border-radius: 4px; border: 1.5px solid var(--ligne-forte); background: var(--surface); }
+.salle-legende__item--occupee::before { background: var(--teinte-accent); border-color: var(--accent); }
+.salle-legende__item--addition::before { background: var(--teinte-braise); border-color: var(--braise); }
+.salle-legende__item--reservee::before { background: var(--teinte-glace); border-color: var(--glace); }
+
+@media (max-width: 899px) {
+  .salle-fenetre__corps { grid-template-columns: minmax(0, 1fr); }
+}
+/* Téléphone : plein écran, tables en grille de 3 (cibles faciles à toucher) plutôt que le plan à l'échelle */
+@media (max-width: 700px) {
+  .salle-fenetre { width: 100%; height: 100dvh; margin: 0; border: 0; border-radius: 0; }
+  .salle-fenetre__tete { padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 8px; }
+  .salle-zones, .salle-fenetre__corps { padding-inline: 16px; }
+  .salle-fenetre__pied { padding-inline: 16px; }
+  .plan { aspect-ratio: auto; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; border: 0; background: none; }
+  .table-plan { position: static; width: auto; height: auto; min-height: 92px; }
+  .table-plan--ronde { border-radius: 22px; }
+  .salle-legende { display: none; }
+  .salle-fenetre__pied .bouton { flex: 1; }
+}
+
+/* Plats prêts (bandeau en haut) et petits messages (en bas) */
+.prets-bandeau {
+  position: fixed; z-index: 55; left: 50%; top: calc(12px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  width: min(620px, calc(100% - 24px)); display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px;
+  border-radius: 16px; border: 1px solid var(--succes); background: var(--surface); box-shadow: var(--ombre);
+}
+.prets-bandeau[hidden] { display: none; }
+.prets-bandeau__texte { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.prets-bandeau .bouton { flex: none; }
+.prets-bandeau__fermer { width: 44px; height: 44px; font-size: 1.4rem; }
+.salle-toast {
+  position: fixed; z-index: 70; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+  max-width: calc(100% - 24px); display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: 14px;
+  background: var(--encre); color: var(--fond); font-weight: 700; box-shadow: var(--ombre);
+}
+.salle-toast[hidden] { display: none; }
+.salle-toast__action { color: inherit; text-decoration: underline; min-height: var(--cible); }
+@media (min-width: 900px) { .salle-toast { bottom: 24px; } }
+
+/* Précisions d'une ligne, annulation avec le PIN d'un supérieur */
+.ligne-form { display: grid; gap: 12px; margin: 0; }
+.ligne-form h2 { margin: 0; }
+.ligne-remarques { display: flex; flex-wrap: wrap; gap: 6px; }
+.ligne-remarques .puce { min-height: var(--cible); }
+.ligne-allergie input { border-color: color-mix(in srgb, var(--erreur) 55%, var(--ligne-forte)); }
+.ligne-temps { align-items: flex-start; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--ligne); }
+.ligne-temps small { color: var(--doux); }
+.annuler-validation { display: grid; gap: 8px; padding: 12px; border-radius: 14px; border: 1px solid color-mix(in srgb, var(--erreur) 40%, var(--ligne)); background: var(--teinte-erreur); }
+.annuler-validation[hidden] { display: none; }
+.annuler-validation__titre { margin: 0; }
+.annuler-validation__titre span { font-size: .875rem; color: var(--doux); }
+.annuler-valideurs { display: flex; flex-wrap: wrap; gap: 6px; }
+.annuler-pin {
+  min-height: 52px; padding: 0 14px; border: 1px solid var(--ligne-forte); border-radius: 12px; background: var(--saisie); color: var(--encre);
+  font: 700 1.5rem/1 var(--police-texte); letter-spacing: .4em; text-align: center; user-select: text;
+}
+
+/* Partage de l'addition */
+.partage-lignes { display: grid; gap: 8px; }
+.partage-lignes[hidden], .partage-egal[hidden] { display: none; }
+.partage-ligne { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--ligne); border-radius: 14px; background: var(--saisie); }
+.partage-ligne__texte { display: grid; min-width: 0; }
+.partage-ligne__nom { font-weight: 600; overflow-wrap: anywhere; }
+.partage-ligne__prix { font-size: .8125rem; color: var(--doux); font-variant-numeric: tabular-nums; }
+.partage-egal { display: grid; gap: 8px; }
+.partage-egal__part { margin: 0; color: var(--doux); }
+.pas__bouton:disabled { opacity: .4; }
+
+/* Addition (pré-note) et bon de cuisine à imprimer */
+.recu--addition .recu__titre { font-size: 1rem; }
+.bon { max-width: 340px; margin: 0 auto 12px; padding: 12px; border: 1px dashed var(--ligne-forte); border-radius: 12px; background: var(--saisie); }
+.bon__poste { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: .8125rem; }
+.bon__titre { margin: 2px 0; font: 800 1.5rem/1.1 var(--police-titre); }
+.bon__info { margin: 0 0 8px; font-size: .8125rem; color: var(--doux); }
+.bon__lignes { list-style: none; margin: 0; padding: 8px 0 0; border-top: 1px dashed var(--ligne-forte); display: grid; gap: 6px; }
+.bon__ligne { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); gap: 6px; font-size: 1.125rem; font-weight: 700; }
+.bon__ligne--annulee { text-decoration: line-through; }
+.bon__qte { font-variant-numeric: tabular-nums; }
+.bon__plat { display: grid; }
+.bon__remarque { font-size: .9375rem; font-weight: 600; font-style: italic; }
+.bon__allergie { font-size: .9375rem; font-weight: 800; text-transform: uppercase; border: 2px solid currentColor; padding: 0 4px; justify-self: start; }
+.bon__suite { margin: 10px 0 0; font-weight: 800; text-transform: uppercase; font-size: .8125rem; }
+.bon__lignes--suite .bon__ligne { font-size: .9375rem; font-weight: 600; }
+@media print {
+  #zone-impression .bon { max-width: none; border: 0; padding: 0; background: #fff; color: #000; page-break-after: always; }
+  #zone-impression .bon * { color: #000 !important; }
+}

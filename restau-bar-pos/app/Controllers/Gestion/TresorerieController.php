@@ -66,6 +66,10 @@ final class TresorerieController
         }
         $locale = $this->tresorerie->deviseRepository()->locale();
 
+        if (\App\Core\Csv::demande()) {
+            ExportCsv::tresorerie($groupes, $inactifs, $totaux, $devises, $reference, $reference ? round($totalReference, (int) $reference['decimales']) : null);
+        }
+
         View::afficher('gestion/tresorerie/index', [
             'titre' => t('tresorerie.titre'),
             'utilisateur' => $utilisateur,
@@ -231,6 +235,10 @@ final class TresorerieController
             $mouvement['solde_apres'] = $soldes[$deviseId];
         }
         unset($mouvement);
+
+        if (\App\Core\Csv::demande()) {
+            ExportCsv::mouvements($compte, $mouvements, $devises, $periode);
+        }
 
         View::afficher('gestion/tresorerie/compte', [
             'titre' => $compte['nom'],

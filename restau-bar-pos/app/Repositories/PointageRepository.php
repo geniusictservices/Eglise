@@ -303,7 +303,7 @@ final class PointageRepository
 
     /**
      * Journée d'exploitation d'une arrivée : celle du créneau planifié qui l'entoure (4 h avant son début
-     * jusqu'à sa fin), sinon la veille avant l'heure de fin de journée (7 h par défaut), sinon le jour même.
+     * jusqu'à sa fin), sinon celle de l'heure (Journee : la veille avant l'heure de fin de journée de l'établissement).
      */
     public static function journee(int $employeId, int $etablissementId, string $arrivee): string
     {
@@ -315,9 +315,7 @@ final class PointageRepository
         if ($creneau !== null) {
             return $creneau['journee'];
         }
-        $fin = (int) Parametres::get('journee.fin_heure', '7');
-        $t = strtotime($arrivee);
-        return (int) date('G', $t) < $fin ? date('Y-m-d', $t - 86400) : date('Y-m-d', $t);
+        return \App\Core\Journee::du($arrivee, Database::un('SELECT * FROM etablissements WHERE id = ?', [$etablissementId]));
     }
 
     /**

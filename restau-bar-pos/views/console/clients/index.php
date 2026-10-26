@@ -52,7 +52,7 @@ use App\Console\SessionConsole;
                         <td><?= A::badge($c) ?></td>
                         <td><?= e($c['formule_nom'] ?? '—') ?><br><span class="aide con-petit"><?= e(A::montant(Abonnement::prix($c, $c['periode']))) ?> / <?= e(t('console.periode.' . $c['periode'])) ?></span></td>
                         <td class="montant"><?= e(A::date($c['echeance'])) ?><br><span class="aide con-petit"><?= e(A::relatif($c['statut']['jours'])) ?></span></td>
-                        <td><?= e($c['contact_nom'] ?? '') ?><br><span class="aide con-petit"><?= e($c['contact_telephone'] ?? $c['contact_email'] ?? '') ?></span></td>
+                        <td><?= e($c['contact_nom'] ?? '') ?><br><span class="aide con-petit"><?= e($c['contact_telephone'] ? afficherTelephone($c['contact_telephone']) : ($c['contact_email'] ?? '')) ?></span></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

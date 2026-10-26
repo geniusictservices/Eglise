@@ -10,12 +10,14 @@ Chaque client dispose de sa propre instance sur un sous-domaine, gérée depuis 
 - [Présentation du projet (PDF)](docs/restau-bar-pos-presentation.pdf)
 - [Système de design « Volcan »](docs/design-system.md)
 - [Photos des produits](docs/photos.md)
+- [Console super admin](docs/console.md) : clients, instances, formules, abonnements, API de messagerie ; guides [Africa's Talking](docs/plateformes/africastalking.md) et [WhatsApp Business](docs/plateformes/whatsapp-business.md)
 
 ## État d'avancement
 
 Phase 1 en cours. Déjà disponible :
 
 - résolution de l'instance par sous-domaine (`monbar.<domaine>` → `config/instances/monbar.php`) ;
+- **console super admin** (`admin.<domaine>`, [guide](docs/console.md)) : sa propre base (`config/console.php`, installation par le navigateur ou `bin/console-admin.php`) ; clients et création guidée de leur instance sur cPanel (test de la connexion, tables, compte propriétaire avec mot de passe temporaire), rattachement d'une instance existante ; formules (modules inclus, limites, prix par période, SMS compris) ; paiements notés à la main qui prolongent l'échéance ; statuts calculés (essai, à relancer, grâce, lecture seule, suspendu) ou décidés à la main, appliqués dans chaque bar à la prochaine ouverture de la caisse, jamais en plein service ; relances d'abonnement par SMS et e-mail (`bin/console-relances.php`) ; API de messagerie communes (Africa's Talking, WhatsApp Cloud API), sender ID par client et SMS du mois ; mises à jour (migrations), sauvegardes SQL, assistance avec l'accord du propriétaire (Paramètres > Assistance) ; tableau de bord (revenu mensuel récurrent, encaissé, retards, essais) ;
 - **vitrine publique** de chaque établissement : présentation, horaires, état d'ouverture, menu avec les prix dans la devise choisie, prix de la zone (VIP…), photos des produits avec leur crédit, recherche, français et anglais, thème jour ou nuit selon le type d'établissement ;
 - **codes QR** : `/q/<code>` compte le scan puis ouvre le menu (avec la zone) ; création, téléchargement (SVG) et chevalet de table à imprimer depuis l'espace de gestion ;
 - **écran des modules** après la connexion (Caisse, Ventes, Achats, Stock, Personnel et paie, Finance, Rapports, Carte et vitrine, Paramètres), filtré selon les rôles ; dans un module, barre latérale sur ordinateur et barre du bas sur téléphone ;
@@ -54,14 +56,21 @@ app/
   bootstrap.php          chargement des classes et de la configuration
   helpers.php            fonctions d'affichage (e(), t(), champ()…) et couleurs (contraste, texte lisible)
   Core/                  noyau : Config, Instance, Database, Router, View, I18n, Session,
-                         Migrations, Images (contrôle et ré-encodage des images envoyées)
-  Controllers/           VitrineController (pages publiques), CaisseController, Gestion/ (espace de gestion)
+                         Migrations, Images (contrôle et ré-encodage des images envoyées),
+                         Plateforme (abonnement, modules, limites et messagerie décidés par la console),
+                         BaseConsole, Installation (installation d'une instance)
+  console.php            point d'entrée de la console super admin (admin.<domaine>)
+  Console/               console : abonnements, clients, formules, instances, relances, sauvegardes
+  Controllers/           VitrineController (pages publiques), CaisseController, Gestion/ (espace de gestion),
+                         Console/ (écrans de la console ; routes dans routes/console/)
   Repositories/          accès aux données : devises et prix, établissements, catalogue,
                          Gestion*Repository pour les écrans de gestion
   routes/                routes d'un module : un fichier par module (catalogue, etablissements,
                          devises, tresorerie, compte, design), chargé par public/index.php
 bin/
-  creer-instance.php     création d'une instance client (base, schéma, migrations, démo, compte admin)
+  creer-instance.php     création d'une instance client (base, schéma, migrations, démo, compte admin ; App\Core\Installation)
+  console-admin.php      console super admin : installer | migrer | admin --email=… | desactiver --email=…
+  console-relances.php   relances d'abonnement au propriétaire de chaque bar (cron, chaque heure)
   migrer.php             applique les migrations en attente : php bin/migrer.php demo | --toutes
   demo-ventes.php        trois semaines de ventes de démonstration : php bin/demo-ventes.php demo [--reset]
   importer-photos.php    photos libres de droits de la démo depuis Wikimedia Commons (voir docs/photos.md)
@@ -69,10 +78,12 @@ config/
   app.php                configuration commune (domaine de base, langues…)
   app.local.php          surcharge propre au serveur (non versionnée)
   instances/             une configuration par client (non versionnée)
+  console.php            base de la console super admin (non versionné ; modèle console.php.dist)
 database/
   schema.sql             tables d'une instance (version de départ)
   migrations/            évolutions du schéma : NNN_nom.sql, appliquées une seule fois et dans l'ordre
                          (table schema_migrations)
+  console/               base de la console super admin : schema.sql et migrations/
   demo.sql               données de démonstration ; demo-illustrations.sql : illustrations SVG ;
                          demo-tresorerie.sql : comptes, transferts et dépenses de démonstration
   photos-demo.json       requêtes de recherche des photos de démonstration
@@ -144,6 +155,7 @@ Pour essayer la caisse partagée : se connecter comme Patrick, ouvrir la caisse,
 - Pointer `*.<domaine>` (enregistrement DNS générique) vers le serveur, avec un certificat HTTPS générique.
 - Racine web : le dossier `public/`. Avec Apache, `public/.htaccess` envoie les requêtes vers `index.php`. Avec Nginx : `try_files $uri /index.php?$query_string;`.
 - Renseigner `domaine_base` dans `config/app.local.php` et mettre `instance_par_defaut` à `null`.
-- Créer chaque client avec `bin/creer-instance.php`.
-- À chaque mise à jour du code : `php bin/migrer.php --toutes`.
+- Console super admin sur `admin.<domaine>` (même racine `public/`) : voir [docs/console.md](docs/console.md). Créer chaque client depuis la console (création guidée pour cPanel), ou avec `bin/creer-instance.php` puis « Rattacher ».
+- À chaque mise à jour du code : « Mettre à jour toutes les instances » dans la console, ou `php bin/migrer.php --toutes`.
+- Tâches cron (chaque heure) : `bin/relances.php --toutes` et `bin/console-relances.php` (voir docs/console.md, section 13).
 - Photos envoyées depuis la gestion : jusqu'à 8 Mo si PHP le permet (`upload_max_filesize = 8M`, `post_max_size = 10M`) ; sinon la limite de PHP s'applique et elle est affichée dans les formulaires. Le dossier `public/uploads/` doit être accessible en écriture par PHP.

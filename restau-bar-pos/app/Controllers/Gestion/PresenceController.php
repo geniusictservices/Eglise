@@ -33,7 +33,7 @@ final class PresenceController
         $uid = (int) $utilisateur['id'];
         $etablissements = PersonnelAcces::etablissements($uid, 'personnel.voir');
         $etab = PersonnelAcces::etablissementChoisi($etablissements, $_GET['etablissement'] ?? null);
-        $jour = self::date($_GET['jour'] ?? null) ?? PointageRepository::journee(0, 0, date('Y-m-d H:i:s'));
+        $jour = self::date($_GET['jour'] ?? null) ?? ($etab ? PointageRepository::journee(0, (int) $etab['id'], date('Y-m-d H:i:s')) : date('Y-m-d'));
         $employes = $etab ? (new PersonnelRepository())->deLEtablissement((int) $etab['id'], false) : [];
         $bilan = $etab ? (new PlanningRepository())->bilan(array_map(static fn ($e) => (int) $e['id'], $employes), $jour, $jour, (int) $etab['id']) : [];
         $lignes = [];
@@ -316,7 +316,7 @@ final class PresenceController
         $globaux = PersonnelAcces::portee($uid, 'personnel.gerer') === null;
         $regles = [];
         if ($globaux) {
-            foreach (['tolerance_retard' => [0, 60, 'personnel.tolerance_retard'], 'fin_heure' => [0, 12, 'journee.fin_heure']] as $champ => [$min, $max, $cle]) {
+            foreach (['tolerance_retard' => [0, 60, 'personnel.tolerance_retard']] as $champ => [$min, $max, $cle]) {
                 $valeur = TresorerieSaisie::post($champ);
                 if (!ctype_digit($valeur) || (int) $valeur < $min || (int) $valeur > $max) {
                     $erreurs[$champ] = t('pers.erreur_entier', ['min' => $min, 'max' => $max]);
@@ -365,7 +365,7 @@ final class PresenceController
             'peutGerer' => $etab && Acces::a($uid, 'personnel.gerer', (int) $etab['id']),
             'globaux' => PersonnelAcces::portee($uid, 'personnel.gerer') === null,
             'regles' => [
-                'tolerance_retard' => Parametres::get('personnel.tolerance_retard', '5'), 'fin_heure' => Parametres::get('journee.fin_heure', '7'),
+                'tolerance_retard' => Parametres::get('personnel.tolerance_retard', '5'),
                 'majoration_heures_sup' => Parametres::get('personnel.majoration_heures_sup', '1.3'), 'majoration_ferie' => Parametres::get('personnel.majoration_ferie', '2'),
             ],
         ], 'gestion');

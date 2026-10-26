@@ -1,0 +1,176 @@
+/* Personnel et paie : employés, présence, plannings, congés, paie, avances, rapport de présence.
+   Complète gestion.css, gestion-tresorerie.css et gestion-dettes.css ; n'utilise que les jetons de volcan.css.
+   Contours fins et égaux sur tous les côtés : la couleur passe par le fond teinté, une pastille ou le texte. */
+
+.per-onglets { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0 0 1.25rem; }
+.per-badges { display: inline-flex; flex-wrap: wrap; gap: .3rem; align-items: center; }
+.per-badges .badge { white-space: nowrap; }
+.per-boutons { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.per-boutons .lien, .per-retirer, .det-lignes form .lien { min-height: var(--cible); }
+
+/* ---------- Filtres ---------- */
+
+.per-filtres { display: grid; gap: .75rem; }
+.per-filtres__formulaire { display: flex; flex-wrap: wrap; gap: .75rem 1rem; align-items: end; }
+.per-filtres__formulaire .champ { min-width: min(100%, 12rem); flex: 1 1 12rem; }
+.per-etabs { margin: 0; }
+.per-jours { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+.per-jours__choix { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.per-jours__choix input { min-height: var(--cible); border: 1.5px solid var(--ligne-forte); border-radius: var(--rayon); padding: 0 .6rem; background: var(--saisie); color: var(--encre); font: inherit; }
+.per-jours__titre { font: 600 1rem/1.2 var(--police-titre); padding: 0 .25rem; }
+
+.per-chiffres { margin: 0 0 1.25rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); }
+.per-chiffres .chiffre__valeur { font-size: clamp(1.25rem, 3vw, 1.75rem); overflow-wrap: anywhere; }
+.per-chiffre-montant { font-size: clamp(1rem, 2.2vw, 1.25rem) !important; }
+
+/* ---------- Employés ---------- */
+
+.per-cartes { list-style: none; margin: .75rem 0 0; padding: 0; display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); }
+.per-carte { border: 1px solid var(--ligne); border-radius: var(--rayon-carte); background: var(--surface); }
+.per-carte:hover { border-color: var(--ligne-forte); }
+.per-carte--inactif { opacity: .7; }
+.per-carte__lien { display: flex; gap: .85rem; padding: 1rem; color: inherit; text-decoration: none; min-height: var(--cible); }
+.per-carte__texte { display: grid; gap: .3rem; min-width: 0; }
+.per-carte__nom { font: 600 1rem/1.2 var(--police-titre); overflow-wrap: anywhere; }
+.per-carte__poste { color: var(--doux); font-size: var(--taille-s); overflow-wrap: anywhere; }
+.per-carte__salaire { font-weight: 700; white-space: normal; }
+.per-entete__identite { display: flex; gap: 1rem; align-items: center; min-width: 0; }
+.per-entete__identite h1 { margin: 0 0 .35rem; overflow-wrap: anywhere; }
+.per-entete .tre-entete__actions form { margin: 0; }
+.per-notes { margin: .75rem 0 0; color: var(--doux); }
+.per-formulaire .per-cases, .per-cases { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0 1.25rem; }
+.per-cases legend { margin-bottom: .25rem; }
+.per-salaires { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+.per-ligne-formulaire { display: flex; flex-wrap: wrap; gap: .75rem 1rem; align-items: end; margin-top: .75rem; }
+.per-ligne-formulaire .champ { flex: 1 1 12rem; min-width: min(100%, 12rem); }
+.per-document-formulaire { display: grid; gap: .75rem; margin-top: 1rem; }
+.per-document-formulaire input[type="file"] { min-height: var(--cible); padding: .5rem 0; border: 0; }
+
+.per-tableau th[scope="row"] { text-transform: none; letter-spacing: 0; font-size: .9375rem; color: var(--encre); font-weight: 600; }
+.per-tableau .tre-sous-texte, .per-bulletin .tre-sous-texte { white-space: normal; }
+.per-corrections .tre-sous-texte { overflow-wrap: anywhere; }
+
+/* ---------- Présence du jour ---------- */
+
+.per-presences { list-style: none; margin: .5rem 0 0; padding: 0; }
+.per-presence {
+  display: grid; grid-template-columns: minmax(10rem, 1.3fr) minmax(8rem, 1fr) minmax(9rem, 1.2fr) minmax(8rem, 1fr);
+  gap: .5rem 1rem; align-items: center; padding: .75rem 0; border-top: 1px solid var(--ligne);
+}
+.per-presence:first-child { border-top: 0; }
+.per-presence__qui { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+.per-presence__qui > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.per-presence__prevu, .per-presence__reel { display: grid; gap: .15rem; }
+.per-creneau, .per-pointage { font-variant-numeric: tabular-nums; }
+.per-pointage .lien { min-height: 0; font-weight: 600; }
+.per-reglage-manquant ul { margin: .4rem 0 0; }
+
+/* ---------- Plannings ---------- */
+
+.per-semaine { min-width: 56rem; table-layout: fixed; }
+.per-semaine th:first-child { width: 11rem; }
+.per-semaine th[scope="col"] { white-space: nowrap; }
+.per-semaine th .badge { margin-left: .3rem; }
+.per-semaine__case { vertical-align: top !important; }
+.per-semaine__aujourdhui { background: var(--teinte-accent); }
+.per-creneau-carte {
+  position: relative; display: grid; gap: .1rem; padding: .4rem 2.6rem .4rem .55rem; margin-bottom: .35rem;
+  border: 1px solid var(--ligne); border-radius: var(--rayon); background: var(--surface-2); font-size: .8125rem;
+}
+.per-creneau-carte__heures { font-weight: 700; font-variant-numeric: tabular-nums; }
+.per-creneau-carte__retirer { position: absolute; top: 0; right: 0; margin: 0; }
+.per-creneau-carte__retirer .bouton-icone { border-color: transparent; background: transparent; }
+.per-semaine__case .per-badges .badge { font-size: 10px; }
+.per-jours-coches { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 0 1rem; }
+
+/* ---------- Congés ---------- */
+
+.per-colonnes-larges { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.per-demandes { list-style: none; margin: .5rem 0 0; padding: 0; display: grid; gap: .75rem; }
+.per-demande { padding: .85rem 1rem; border: 1px solid var(--ligne); border-radius: var(--rayon); display: grid; gap: .35rem; }
+.per-demande p { margin: 0; }
+.per-demande__tete { display: flex; flex-wrap: wrap; gap: .35rem .5rem; align-items: center; }
+
+/* ---------- Bulletin ---------- */
+
+.per-bulletin td, .per-bulletin th { vertical-align: middle; }
+.per-bulletin__qte { width: 7.5rem; }
+.per-bulletin__montant { width: 16rem; }
+.per-saisie-courte {
+  width: 7rem; min-height: var(--cible); border: 1.5px solid var(--ligne-forte); border-radius: var(--rayon);
+  padding: 0 .6rem; background: var(--saisie); color: var(--encre); font: inherit; text-align: right;
+}
+.per-saisie-courte:focus { outline: 2px solid var(--accent); border-color: var(--accent); }
+.per-saisie-courte[aria-invalid="true"] { border-color: var(--erreur); }
+.per-retenue { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: .35rem; }
+.per-retenue select { min-height: var(--cible); border: 1.5px solid var(--ligne-forte); border-radius: var(--rayon); background: var(--saisie); color: var(--encre); font: inherit; padding: 0 .4rem; }
+.per-retenue .tre-sous-texte { flex-basis: 100%; text-align: right; }
+.per-retirer { justify-content: flex-end; font-size: var(--taille-s); }
+.per-net { background: var(--teinte-accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--ligne)); }
+.per-net h2 { margin-top: 0; }
+.per-net__devises { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 1rem 2.5rem; }
+.per-net__devises li { display: grid; gap: .15rem; }
+.per-net__montant { font: 800 clamp(1.5rem, 4vw, 2rem)/1.1 var(--police-titre); }
+.per-nouvelle-ligne { display: grid; gap: .75rem 1rem; grid-template-columns: minmax(8rem, 1fr) minmax(10rem, 2fr) minmax(6rem, .8fr) minmax(8rem, 1fr); align-items: end; }
+.per-annuler-paiement summary { display: inline-flex; align-items: center; min-height: var(--cible); }
+
+/* ---------- Impression du bulletin (A4, fond blanc) ---------- */
+
+.per-impression { background: #E9E7E3; color: #111315; color-scheme: light; font-family: var(--police-texte); margin: 0; }
+.per-impression__aide { text-align: center; margin: 1rem 0; }
+.per-feuille {
+  box-sizing: border-box; width: 210mm; max-width: 100%; min-height: 297mm; margin: 0 auto 2rem; padding: 16mm 15mm;
+  background: #FFFFFF; color: #111315; font-size: 10.5pt; line-height: 1.4;
+}
+.per-feuille h1, .per-feuille h2 { font-family: var(--police-titre); margin: 0; }
+.per-feuille h1 { font-size: 16pt; }
+.per-feuille h2 { font-size: 11pt; margin-bottom: 3mm; }
+.per-feuille p { margin: 0; }
+.per-feuille__tete { display: flex; justify-content: space-between; gap: 10mm; padding-bottom: 5mm; border-bottom: 1px solid #C4C1BB; }
+.per-feuille__employeur { font: 800 13pt/1.2 var(--police-titre); }
+.per-feuille__titre { text-align: right; }
+.per-feuille__statut { color: #5B6168; font-size: 9pt; }
+.per-feuille__infos { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin: 6mm 0; }
+.per-feuille__infos dl { margin: 0; display: grid; gap: 1.5mm; }
+.per-feuille__infos dl div { display: grid; grid-template-columns: 38mm 1fr; gap: 3mm; }
+.per-feuille__infos dt { color: #5B6168; }
+.per-feuille__infos dd { margin: 0; font-weight: 600; }
+.per-feuille__lignes { width: 100%; border-collapse: collapse; }
+.per-feuille__lignes th, .per-feuille__lignes td { padding: 2mm 2.5mm; border: 1px solid #DEDCD8; text-align: left; }
+.per-feuille__lignes thead th { background: #F4F3F1; font-size: 9pt; text-transform: uppercase; letter-spacing: .06em; }
+.per-feuille__lignes .nombre { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.per-feuille__lignes tfoot th, .per-feuille__lignes tfoot td { font-weight: 700; background: #F4F3F1; }
+.per-feuille__net { margin: 6mm 0; padding: 4mm 5mm; border: 1.5px solid #111315; border-radius: 3mm; display: flex; justify-content: space-between; align-items: center; gap: 6mm; }
+.per-feuille__net h2 { margin: 0; }
+.per-feuille__net-montant { font: 800 15pt/1.2 var(--police-titre); text-align: right; }
+.per-feuille__paiements ul { margin: 0; padding-left: 5mm; }
+.per-feuille__note { margin-top: 4mm !important; color: #5B6168; white-space: pre-line; }
+.per-feuille__signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 15mm; margin-top: 14mm; }
+.per-feuille__signatures div { min-height: 25mm; border: 1px solid #C4C1BB; border-radius: 2mm; padding: 3mm; color: #5B6168; font-size: 9pt; }
+
+@media print {
+  @page { size: A4; margin: 0; }
+  .per-impression { background: #FFFFFF; }
+  .per-impression__aide { display: none; }
+  .per-feuille { margin: 0; width: auto; min-height: 0; }
+  body:not(.per-impression) .tre-entete__actions, body:not(.per-impression) .tre-filtres, body:not(.per-impression) .haut,
+  body:not(.per-impression) .lateral, body:not(.per-impression) .barre-bas { display: none !important; }
+}
+
+/* ---------- Téléphone ---------- */
+
+@media (max-width: 760px) {
+  .per-presence { grid-template-columns: 1fr 1fr; }
+  .per-presence__qui { grid-column: 1 / -1; }
+  .per-colonnes-larges { grid-template-columns: minmax(0, 1fr); }
+  .per-nouvelle-ligne { grid-template-columns: 1fr 1fr; }
+  .per-bulletin__montant { width: auto; }
+  .per-feuille { padding: 8mm 6mm; }
+  .per-feuille__infos { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .per-nouvelle-ligne { grid-template-columns: 1fr; }
+  .per-saisie-courte { width: 5.5rem; }
+  .per-feuille__tete { flex-direction: column; }
+  .per-feuille__titre { text-align: left; }
+}

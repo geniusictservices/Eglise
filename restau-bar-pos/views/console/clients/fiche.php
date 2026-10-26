@@ -192,40 +192,44 @@ $jalons = $client['echeance'] ? [
             <div class="champ"><label for="pai-note"><?= e(t('console.paiement.note')) ?></label><input id="pai-note" name="note" value="<?= e((string) ($pai['note'] ?? '')) ?>"></div>
             <div class="con-actions"><button class="bouton" type="submit"><?= e(t('console.paiement.enregistrer')) ?></button></div>
         </form>
-        <?php if ($paiements !== []): ?>
-            <div class="defile">
-                <table class="tableau con-paiements">
-                    <thead><tr><th><?= e(t('console.paiement.date')) ?></th><th class="nombre"><?= e(t('console.paiement.montant')) ?></th><th><?= e(t('console.paiement.moyen')) ?></th><th><?= e(t('console.client.echeance')) ?></th><th></th></tr></thead>
-                    <tbody>
-                    <?php foreach ($paiements as $p): ?>
-                        <tr<?= $p['annule_le'] ? ' class="con-annule"' : '' ?> data-paiement="<?= (int) $p['id'] ?>">
-                            <td class="montant"><?= e(A::date($p['paye_le'])) ?></td>
-                            <td class="nombre montant"><?= e(A::montant($p['montant'], $p['devise'])) ?></td>
-                            <td><?= e(t('console.moyen.' . $p['moyen'])) ?><?= $p['reference'] ? '<br><span class="aide con-petit">' . e($p['reference']) . '</span>' : '' ?></td>
-                            <td class="montant"><?= e(A::date($p['echeance_avant'])) ?> → <?= e(A::date($p['echeance_apres'])) ?><br><span class="aide con-petit"><?= (int) $p['periodes'] ?> × <?= e(t('console.periode.' . $p['periode'])) ?> · <?= e($p['saisi_par_nom'] ?? '') ?></span></td>
-                            <td>
-                                <?php if ($p['annule_le']): ?>
-                                    <span class="badge badge--neutre" title="<?= e((string) $p['annule_motif']) ?>"><?= e(t('console.paiement.annule')) ?></span>
-                                <?php elseif ((int) $p['id'] === $dernierValable): ?>
-                                    <details class="con-details"><summary class="lien"><?= e(t('console.paiement.annuler')) ?></summary>
-                                        <form method="post" action="/clients/<?= $id ?>/paiements/<?= (int) $p['id'] ?>/annuler" class="con-form">
-                                            <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
-                                            <div class="champ"><label for="motif-<?= (int) $p['id'] ?>"><?= e(t('console.motif')) ?></label><input id="motif-<?= (int) $p['id'] ?>" name="motif" required></div>
-                                            <button class="bouton bouton--danger bouton--petit" type="submit"><?= e(t('console.paiement.confirmer_annulation')) ?></button>
-                                        </form>
-                                    </details>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php else: ?>
-            <p class="aide"><?= e(t('console.paiement.aucun')) ?></p>
-        <?php endif; ?>
     </section>
 </div>
+
+<section class="bloc" id="historique-paiements" aria-labelledby="con-hist-titre">
+    <h2 id="con-hist-titre"><?= e(t('console.paiement.historique')) ?></h2>
+    <?php if ($paiements !== []): ?>
+        <div class="defile">
+            <table class="tableau con-paiements">
+                <thead><tr><th><?= e(t('console.paiement.date')) ?></th><th class="nombre"><?= e(t('console.paiement.montant')) ?></th><th><?= e(t('console.paiement.moyen')) ?></th><th><?= e(t('console.client.echeance')) ?></th><th></th></tr></thead>
+                <tbody>
+                <?php foreach ($paiements as $p): ?>
+                    <tr<?= $p['annule_le'] ? ' class="con-annule"' : '' ?> data-paiement="<?= (int) $p['id'] ?>">
+                        <td class="montant"><?= e(A::date($p['paye_le'])) ?></td>
+                        <td class="nombre montant"><?= e(A::montant($p['montant'], $p['devise'])) ?></td>
+                        <td><?= e(t('console.moyen.' . $p['moyen'])) ?><?= $p['reference'] ? '<br><span class="aide con-petit">' . e($p['reference']) . '</span>' : '' ?></td>
+                        <td class="montant"><?= e(A::date($p['echeance_avant'])) ?> → <?= e(A::date($p['echeance_apres'])) ?><br><span class="aide con-petit"><?= (int) $p['periodes'] ?> × <?= e(t('console.periode.' . $p['periode'])) ?> · <?= e($p['saisi_par_nom'] ?? '') ?></span></td>
+                        <td>
+                            <?php if ($p['annule_le']): ?>
+                                <span class="badge badge--neutre" title="<?= e((string) $p['annule_motif']) ?>"><?= e(t('console.paiement.annule')) ?></span>
+                            <?php elseif ((int) $p['id'] === $dernierValable): ?>
+                                <details class="con-details"><summary class="lien"><?= e(t('console.paiement.annuler')) ?></summary>
+                                    <form method="post" action="/clients/<?= $id ?>/paiements/<?= (int) $p['id'] ?>/annuler" class="con-form">
+                                        <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
+                                        <div class="champ"><label for="motif-<?= (int) $p['id'] ?>"><?= e(t('console.motif')) ?></label><input id="motif-<?= (int) $p['id'] ?>" name="motif" required></div>
+                                        <button class="bouton bouton--danger bouton--petit" type="submit"><?= e(t('console.paiement.confirmer_annulation')) ?></button>
+                                    </form>
+                                </details>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php else: ?>
+        <p class="aide"><?= e(t('console.paiement.aucun')) ?></p>
+    <?php endif; ?>
+</section>
 
 <?php if ($installe): ?>
 <div class="con-colonnes">

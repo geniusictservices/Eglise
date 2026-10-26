@@ -7,7 +7,7 @@
  * @var bool $jetonPossible
  * @var array $erreurs
  * @var array $saisie
- * @var ?string $contenu
+ * @var ?string $contenuConfig
  * @var string $racine
  */
 
@@ -16,7 +16,7 @@ use App\Console\SessionConsole;
 $csrf = SessionConsole::jetonCsrf();
 $erreur = static fn (string $cle): string => isset($erreurs[$cle]) && is_string($erreurs[$cle]) ? '<p class="champ__erreur" id="err-' . e($cle) . '">' . e($erreurs[$cle]) . '</p>' : '';
 $erreurAdmin = static fn (string $cle): string => isset($erreurs['admin'][$cle]) ? '<p class="champ__erreur" id="err-admin-' . e($cle) . '">' . e($erreurs['admin'][$cle]) . '</p>' : '';
-$fichierPreuve = 'storage/installation-' . $code . '.txt';
+$fichierPreuve = 'installation-' . $code . '.txt';
 ?>
 <section class="con-installation">
     <p class="surtitre"><?= e(t('console.nom')) ?></p>
@@ -74,10 +74,10 @@ $fichierPreuve = 'storage/installation-' . $code . '.txt';
                 </div>
                 <?= $erreur('base') ?>
             </fieldset>
-            <?php if ($contenu !== null): ?>
+            <?php if ($contenuConfig !== null): ?>
                 <div class="alerte alerte--erreur" role="alert">
                     <p><?= e(t('console.installation.coller', ['fichier' => 'config/console.php'])) ?></p>
-                    <pre class="con-code" data-config><?= e($contenu) ?></pre>
+                    <pre class="con-code" data-config><?= e($contenuConfig) ?></pre>
                 </div>
             <?php endif; ?>
             <button class="bouton" type="submit"><?= e(t('console.installation.tester_ecrire')) ?></button>

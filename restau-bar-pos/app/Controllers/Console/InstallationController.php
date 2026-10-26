@@ -184,7 +184,7 @@ final class InstallationController
             'jetonPossible' => strlen((string) (BaseConsole::config()['jeton_installation'] ?? '')) >= 20,
             'erreurs' => $erreurs,
             'saisie' => $erreurs['saisie'] ?? [],
-            'contenu' => $erreurs['contenu'] ?? null,
+            'contenuConfig' => $erreurs['contenu'] ?? null,
             'flash' => SessionConsole::lireFlash(),
             'racine' => RACINE,
             'admin' => null,

@@ -41,6 +41,7 @@ uksort($parDevise, static fn ($a, $b) => ($ordre[$a] ?? 999) <=> ($ordre[$b] ?? 
         <h1><?= e(t('gventes.titre')) ?></h1>
         <p class="aide"><?= e(t('gventes.aide')) ?></p>
     </div>
+    <?= View::rendre('gestion/rapports/_exporter', ['titre' => t('gventes.titre'), 'periode' => $periode['du'] !== null ? App\Controllers\Gestion\RapportAffichage::periode($periode['du'], $periode['au']) : null]) ?>
 </div>
 
 <?php if ($flash): ?>

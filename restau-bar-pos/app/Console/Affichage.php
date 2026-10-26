@@ -60,6 +60,13 @@ final class Affichage
         return $html;
     }
 
+    /** Nom d'un module (lang « module.<code>.nom »), ou son code si sa traduction n'existe pas encore. */
+    public static function module(string $code): string
+    {
+        $nom = t('module.' . $code . '.nom');
+        return $nom === 'module.' . $code . '.nom' ? ucfirst(str_replace('_', ' ', $code)) : $nom;
+    }
+
     /** Numéro au format international (+243…), indicatif de la RDC par défaut ; null s'il n'est pas valable. */
     public static function telephone(?string $saisie, string $indicatif = '243'): ?string
     {

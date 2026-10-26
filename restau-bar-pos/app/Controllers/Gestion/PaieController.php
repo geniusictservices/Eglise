@@ -222,7 +222,7 @@ final class PaieController
                 $this->afficherFiche($utilisateur, $this->paie->bulletin((int) $bulletin['id']), ['validation' => t('pers.erreur_' . $e->getMessage())], [], null, null, 409);
                 return;
             }
-            Session::flash(t('pers.bulletin_valide', ['nom' => $bulletin['employe_nom']]));
+            Session::flash(t('pers.flash_bulletin_valide', ['nom' => $bulletin['employe_nom']]));
         } else {
             Session::flash(t('pers.bulletin_enregistre'));
         }
@@ -311,7 +311,7 @@ final class PaieController
             $this->afficherFiche($utilisateur, $bulletin, ['annulation' => t('pers.erreur_' . $e->getMessage())], [], null, null, 409);
             return;
         }
-        Session::flash(t($bulletin['statut'] === 'brouillon' ? 'pers.brouillon_supprime' : 'pers.bulletin_annule', ['nom' => $bulletin['employe_nom']]));
+        Session::flash(t($bulletin['statut'] === 'brouillon' ? 'pers.brouillon_supprime' : 'pers.flash_bulletin_annule', ['nom' => $bulletin['employe_nom']]));
         rediriger($bulletin['statut'] === 'brouillon'
             ? '/gestion/personnel/paie?etablissement=' . (int) $bulletin['etablissement_id'] . ($bulletin['periode'] === 'semaine' ? '&type=semaine&semaine=' . $bulletin['debut'] : '&mois=' . substr($bulletin['debut'], 0, 7))
             : '/gestion/personnel/paie/' . (int) $bulletin['id']);

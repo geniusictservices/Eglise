@@ -31,7 +31,7 @@ $qte = static function (float $q): string {
         <p class="recu__titre"><?= e(t('note.addition_titre')) ?></p>
     </header>
     <dl class="recu__meta">
-        <div><dt><?= e(t('note.table')) ?></dt><dd><?= e(App\Repositories\CuisineRepository::titreNote($note)) ?></dd></div>
+        <div><dt><?= e(t('note.table_libelle')) ?></dt><dd><?= e(App\Repositories\CuisineRepository::titreNote($note)) ?></dd></div>
         <div><dt><?= e(t('recu.date')) ?></dt><dd><?= e(date('d/m/Y H:i')) ?></dd></div>
         <?php if (!empty($note['serveur_nom'])): ?><div><dt><?= e(t('recu.vendeur')) ?></dt><dd><?= e($note['serveur_nom']) ?></dd></div><?php endif; ?>
         <?php if (!empty($note['couverts'])): ?><div><dt><?= e(t('note.couverts')) ?></dt><dd><?= (int) $note['couverts'] ?></dd></div><?php endif; ?>

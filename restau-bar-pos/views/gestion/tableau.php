@@ -48,7 +48,7 @@ use App\Controllers\Gestion\RapportAffichage as R;
 use App\Controllers\Gestion\TresorerieAffichage as A;
 use App\Core\View;
 
-$enLocale = static fn (float $m): string => $locale ? A::montant($m, $locale) : '';
+$enLocale = static fn (float $m): string => R::arrondi($m, $locale);
 $enRef = static fn (float $m): string => $reference ? A::montant($m, $reference) : '';
 $double = static fn (float $l, float $r, bool $approx = false): string => R::double($l, $r, $locale, $reference, $approx);
 $depuisRef = static fn (float $r): string => R::double($r * $taux, $r, $locale, $reference, true);

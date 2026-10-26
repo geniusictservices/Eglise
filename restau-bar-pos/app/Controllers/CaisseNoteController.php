@@ -101,7 +101,7 @@ final class CaisseNoteController
     {
         $cles = ['salle', 'fermer', 'comptoir', 'vente_comptoir', 'nouvelle_note', 'nom_note', 'nom_exemple', 'ouvrir', 'libre', 'occupee', 'addition_demandee',
             'reservee', 'pret', 'prets', 'a_lancer', 'minutes', 'heures', 'envoyer', 'envoyer_table', 'envoye', 'envoye_verrou', 'addition', 'encaisser_note',
-            'partager', 'transferer', 'fusionner', 'lancer', 'servi', 'deja_envoye', 'nouveau', 'par', 'annuler_ligne', 'annulee', 'choisir_table',
+            'partager', 'transferer', 'fusionner', 'lancer', 'servi', 'partager_court', 'deja_envoye', 'nouveau', 'par', 'annuler_ligne', 'annulee', 'choisir_table',
             'choisir_transfert', 'choisir_fusion', 'occupee_fusionner', 'options', 'remarque', 'remarque_libre', 'allergie', 'allergie_aide', 'temps_2',
             'temps_2_aide', 'valider', 'pin_titre', 'pin_aide', 'pin_qui', 'motif', 'quantite_annuler', 'confirmer_annulation', 'statut_sans', 'statut_attente',
             'statut_recu', 'statut_preparation', 'statut_pret', 'statut_servi', 'par_articles', 'parts_egales', 'nb_parts', 'part_de', 'payer_part',

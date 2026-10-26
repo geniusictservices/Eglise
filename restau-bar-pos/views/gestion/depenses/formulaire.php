@@ -12,6 +12,7 @@
  * @var array $categories
  * @var array $etablissements
  * @var int $maxPaiements
+ * @var array $evenements soirées proposées (module Événements)
  */
 
 use App\Controllers\Gestion\TresorerieAffichage as A;
@@ -99,6 +100,19 @@ $ordreDevises = array_keys($devises);
                 <?= $erreurChamp('beneficiaire') ?>
             </div>
         </div>
+        <?php if (!empty($evenements)): // Module Événements : coût d'une soirée ?>
+            <div class="champ">
+                <label for="evenement_id"><?= e(t('evenements.champ_depense')) ?> <span class="tre-facultatif"><?= e(t('tresorerie.facultatif')) ?></span></label>
+                <select id="evenement_id" name="evenement_id" aria-describedby="aide-evenement<?= isset($erreurs['evenement_id']) ? ' erreur-evenement_id' : '' ?>"<?= isset($erreurs['evenement_id']) ? ' aria-invalid="true"' : '' ?>>
+                    <option value=""><?= e(t('evenements.champ_depense_aucune')) ?></option>
+                    <?php foreach ($evenements as $ev): ?>
+                        <option value="<?= (int) $ev['id'] ?>" <?= (string) ($valeurs['evenement_id'] ?? '') === (string) $ev['id'] ? 'selected' : '' ?>><?= e(A::jour($ev['debut']) . ' · ' . $ev['titre'] . ' · ' . $ev['etablissement_nom']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="champ__aide" id="aide-evenement"><?= e(t('evenements.champ_depense_aide')) ?></p>
+                <?= $erreurChamp('evenement_id') ?>
+            </div>
+        <?php endif; ?>
     </section>
 
     <section class="bloc" id="paiements" aria-labelledby="tre-paiements-titre">

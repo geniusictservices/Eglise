@@ -60,6 +60,11 @@ final class VenteController
             $liste = $this->ventes->liste($filtres, $id, $page);
         }
 
+        // Export CSV : tous les tickets des filtres (Rapports, cahier des charges 13.7)
+        if (\App\Core\Csv::demande()) {
+            ExportCsv::ventes($this->ventes, $filtres, $id, $periode, self::devises());
+        }
+
         View::afficher('gestion/ventes/index', [
             'titre' => t('gventes.titre'),
             'utilisateur' => $utilisateur,

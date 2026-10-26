@@ -111,7 +111,7 @@ foreach ($lieux as $l) {
     <?php else: ?>
         <?php if ($peutSeuils): ?><form method="post" action="/gestion/stock/seuils" id="form-seuils"><input type="hidden" name="csrf" value="<?= $jeton ?>"><input type="hidden" name="lieu_id" value="<?= (int) $lieu['id'] ?>"><?php endif; ?>
         <div class="tre-defile">
-            <table class="tableau stk-table">
+            <table class="tableau stk-table stk-table--cartes">
                 <thead>
                     <tr>
                         <th scope="col"><?= e(t('stock.col_article')) ?></th>
@@ -131,20 +131,20 @@ foreach ($lieux as $l) {
                                 <span class="stk-article"><?= e(champ($a, 'nom')) ?></span>
                                 <span class="tre-sous-texte"><?= e($a['categorie']) ?><?= $a['emballage'] ? ' · ' . e(t('stock.emballage')) : '' ?></span>
                             </td>
-                            <td class="nombre">
+                            <td class="nombre" data-libelle="<?= e(t('stock.col_stock')) ?>">
                                 <strong class="stk-quantite<?= $n['quantite'] < -0.0005 ? ' tre-negatif' : '' ?>" data-quantite="<?= e((string) $n['quantite']) ?>"><?= e(S::quantite($n['quantite'], $a)) ?></strong>
                                 <?= $badge($ligne['etat']) ?>
                                 <span class="tre-sous-texte"><?= e(S::base($n['quantite'], $a)) ?></span>
                             </td>
                             <?php if ($lieu === null): ?>
-                                <td class="stk-par-lieu">
+                                <td class="stk-par-lieu" data-libelle="<?= e(t('stock.col_par_lieu')) ?>">
                                     <?php foreach ($ligne['par_lieu'] as $pl): ?>
                                         <span class="stk-lieu-qte<?= $pl['etat'] !== 'ok' ? ' stk-lieu-qte--' . e($pl['etat']) : '' ?>"><?= e($pl['lieu']['nom']) ?> <strong><?= e(S::quantite($pl['quantite'], $a)) ?></strong></span>
                                     <?php endforeach; ?>
                                 </td>
                             <?php else: ?>
                                 <?php foreach (['seuil' => 'seuil_alerte', 'cible' => 'stock_cible'] as $champ => $cle): ?>
-                                    <td class="nombre">
+                                    <td class="nombre" data-libelle="<?= e(t('stock.col_' . $champ)) ?>">
                                         <?php if ($peutSeuils): ?>
                                             <label class="visuellement-cache" for="<?= $champ ?>-<?= $pid ?>"><?= e(t('stock.col_' . $champ) . ' · ' . champ($a, 'nom')) ?></label>
                                             <input class="saisie stk-saisie-courte" id="<?= $champ ?>-<?= $pid ?>" name="seuils[<?= $pid ?>][<?= $champ ?>]" inputmode="decimal" value="<?= e(S::saisie($n[$cle])) ?>" placeholder="—">
@@ -155,7 +155,7 @@ foreach ($lieux as $l) {
                                 <?php endforeach; ?>
                             <?php endif; ?>
                             <?php if ($voirValeur): ?>
-                                <td class="nombre"><?= $ligne['valeur'] !== null && $reference ? e(A::montant($ligne['valeur'], $reference)) : '<span class="tre-sous-texte">' . e(t('stock.sans_cout')) . '</span>' ?></td>
+                                <td class="nombre" data-libelle="<?= e(t('stock.col_valeur')) ?>"><?= $ligne['valeur'] !== null && $reference ? e(A::montant($ligne['valeur'], $reference)) : '<span class="tre-sous-texte">' . e($a['emballage'] ? '—' : t('stock.sans_cout')) . '</span>' ?></td>
                             <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>

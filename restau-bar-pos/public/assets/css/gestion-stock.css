@@ -189,4 +189,15 @@
   .stk-titre-liste { display: grid; }
   .stk-saisie-courte { width: 6rem; }
   .stk-par-lieu { min-width: 11rem; }
+  /* État du stock : une carte par article plutôt qu'un tableau trop large */
+  .stk-table--cartes, .stk-table--cartes tbody, .stk-table--cartes tr, .stk-table--cartes td { display: block; width: 100%; }
+  .stk-table--cartes thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .stk-table--cartes tr { padding: .75rem .5rem; border-bottom: 1px solid var(--ligne); }
+  .stk-table--cartes td { border: 0; padding: .2rem 0; text-align: left; white-space: normal; min-width: 0; }
+  .stk-table--cartes td[data-libelle] { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem .75rem; }
+  .stk-table--cartes td[data-libelle]::before { content: attr(data-libelle); color: var(--doux); font-size: .8125rem; font-weight: 600; }
+  .stk-table--cartes td.stk-par-lieu { display: block; }
+  .stk-table--cartes td.stk-par-lieu::before { display: block; margin-bottom: .2rem; }
+  .stk-table--cartes .tre-sous-texte { flex-basis: 100%; text-align: right; }
+  .stk-table--cartes td:first-child .tre-sous-texte { text-align: left; }
 }

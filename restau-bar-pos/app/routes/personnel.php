@@ -16,6 +16,7 @@ use App\Controllers\Gestion\EmployeController;
 use App\Controllers\Gestion\PaieController;
 use App\Controllers\Gestion\PlanningController;
 use App\Controllers\Gestion\PresenceController;
+use App\Controllers\Gestion\RapportPersonnelController;
 use App\Controllers\Gestion\RapportPresenceController;
 use App\Controllers\PointageController;
 
@@ -90,5 +91,8 @@ $routeur->get('/gestion/personnel/avances', [AvanceController::class, 'index']);
 $routeur->post('/gestion/personnel/avances', [AvanceController::class, 'creer']);
 $routeur->post('/gestion/personnel/avances/{id}/annuler', [AvanceController::class, 'annuler']);
 
-// Rapport de présence et masse salariale (module Rapports)
+// Rapports > Personnel : classement des vendeurs et dettes (RapportServeursController, via RapportPersonnelController),
+// avec la présence de la période (partiel views/gestion/rapports/_personnel-presence.php) ;
+// Rapports > Présence : détail de la présence, export CSV et masse salariale
+$routeur->get('/gestion/rapports/personnel', [RapportPersonnelController::class, 'index']);
 $routeur->get('/gestion/rapports/presence', [RapportPresenceController::class, 'index']);

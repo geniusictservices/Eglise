@@ -171,7 +171,7 @@ final class RapportServeursController
     /** Une ligne par dette ouverte : responsable, client, établissement, dates, reste dans sa devise et en référence. */
     private function csvDettes(array $dettes, array $personnes, array $devises, ?array $reference, array $periode): never
     {
-        $entetes = [t('rpersonnel.csv_groupe'), t('rpersonnel.col_responsable'), t('gdettes.client'), t('gestion.etablissement'), t('rpersonnel.csv_ticket'),
+        $entetes = [t('rpersonnel.csv_groupe'), t('rpersonnel.col_responsable'), t('gdettes.col_client'), t('gestion.etablissement'), t('rpersonnel.csv_ticket'),
             t('rpersonnel.csv_date'), t('rpersonnel.csv_echeance'), t('rpersonnel.csv_montant'), t('rpersonnel.csv_reste'), t('rapports.csv_devise'),
             t('rpersonnel.csv_reste_ref', ['code' => $reference['code'] ?? '']), t('rpersonnel.csv_anciennete'), t('rtableau.en_retard')];
         $lignes = [];

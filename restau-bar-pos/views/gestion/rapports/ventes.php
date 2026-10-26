@@ -32,6 +32,7 @@ $pourcent = static fn (float $part): string => (string) round($part * 100) . "\u
         <h1><?= e(t('rventes.titre')) ?></h1>
         <p class="aide"><?= e(t('rventes.aide')) ?></p>
     </div>
+    <?= View::rendre('gestion/rapports/_exporter', ['titre' => t('rventes.titre'), 'periode' => $periode['du'] !== null ? App\Controllers\Gestion\RapportAffichage::periode($periode['du'], $periode['au']) : null]) ?>
 </div>
 
 <section class="bloc tre-filtres" aria-label="<?= e(t('gventes.filtres')) ?>">

@@ -48,7 +48,7 @@ final class AssistanceController
     /** Lien ouvert depuis la console : jeton à usage unique, valable deux minutes. */
     public function entrer(string $jeton): void
     {
-        if (!Plateforme::active() || !Plateforme::entrerAssistance($jeton)) {
+        if (!Plateforme::geree() || !Plateforme::entrerAssistance($jeton)) {
             http_response_code(403);
             View::afficher('gestion/interdit', ['titre' => t('acces.interdit_titre'), 'utilisateur' => null], 'gestion');
             return;

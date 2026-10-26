@@ -20,6 +20,8 @@ final class CaisseSessionController
     public function ouvrir(): void
     {
         ['etab' => $etab, 'personne' => $personne, 'appareil' => $appareil] = $this->contexte();
+        // Un employé non pointé n'ouvre pas sa caisse si l'établissement l'exige (module Personnel et paie)
+        CaissePointageController::exigerPointage($etab, $personne);
         $sessions = new SessionCaisseRepository();
         $caisses = $sessions->caissesACompter((int) $etab['id'], CaisseController::devisesCaisse($etab)['acceptees']);
         $id = $sessions->ouvrir((int) $etab['id'], $personne['id'], $appareil ? (int) $appareil['id'] : null, $caisses, $this->montants('fonds'));

@@ -404,10 +404,10 @@ CREATE TABLE paiement_personnel_lignes (
 
 -- ---------- Réglages et droits ----------
 
--- Secret de signature des codes QR de pointage (propre à l'instance), journée d'exploitation et règles de paie
+-- Secret de signature des codes QR de pointage (propre à l'instance) et règles de paie
+-- (la journée d'exploitation suit etablissements.fin_journee, App\Core\Journee)
 INSERT IGNORE INTO parametres (cle, valeur) VALUES
     ('pointage.secret', SHA2(CONCAT(UUID(), RAND(), NOW(6)), 256)),
-    ('journee.fin_heure', '7'),                  -- avant 7 h, on est encore dans la journée de la veille
     ('personnel.tolerance_retard', '5'),         -- minutes de retard tolérées
     ('personnel.majoration_heures_sup', '1.3'),  -- heures supplémentaires payées 130 %
     ('personnel.majoration_ferie', '2');         -- heures un jour férié payées 200 %

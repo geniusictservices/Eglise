@@ -89,6 +89,7 @@ $codes = implode(' · ', array_map(static fn (array $d): string => $d['code'], $
         <?php endif; ?>
     </div>
 </div>
+<?= View::rendre('gestion/rapports/_exporter', ['titre' => $compte['nom'], 'periode' => $periode['du'] !== null ? App\Controllers\Gestion\RapportAffichage::periode($periode['du'], $periode['au']) : null]) ?>
 
 <?php if ($flash): ?>
     <p class="alerte" role="status"><?= e($flash) ?></p>

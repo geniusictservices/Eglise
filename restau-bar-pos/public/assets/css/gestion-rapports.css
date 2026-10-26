@@ -158,8 +158,11 @@
 
 /* ---------- Événements ---------- */
 
-.evt-mois { margin-top: 1.75rem; }
-.evt-mois > h2 { margin: 0 0 .75rem; font-size: 1.0625rem; text-transform: capitalize; }
+.evt-section { margin: 2rem 0 0; }
+.evt-mois { margin-top: 1rem; }
+.evt-mois__titre { margin: 0 0 .6rem; font-size: .9375rem; color: var(--doux); text-transform: capitalize; }
+.evt-carte__titre .badge { margin-left: .4rem; vertical-align: .15em; font-family: var(--police-texte); }
+.evt-carte__titre, .evt-carte__details { display: block; }
 .evt-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .75rem; }
 .evt-carte {
   display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto; gap: .9rem; align-items: center;
@@ -203,3 +206,10 @@ a.evt-carte:hover { border-color: var(--accent); }
   .rap-graphique__axe { height: 10rem; }
   .rap-graphique svg { height: 8.4rem; }
 }
+
+/* Tableaux des rapports : en-têtes de ligne en texte normal, colonnes serrées pour tenir sur un écran de 1366 px */
+.rap-tableau tbody th { text-transform: none; letter-spacing: normal; font-size: inherit; color: var(--encre); }
+.rap-tableau th, .rap-tableau td { padding-inline: .45rem; }
+.rap-tableau thead th { white-space: normal; line-height: 1.25; vertical-align: bottom; }
+.rap-tableau .rap-mini { width: 5rem; }
+.rap-tableau .rap-personne .avatar { flex: none; }

@@ -63,7 +63,7 @@ use App\Core\Session;
                 <tbody>
                 <?php foreach ($journal as $ligne): ?>
                     <tr>
-                        <td class="nombre"><?= e(Plateforme::dateHeure($ligne['cree_le'])) ?></td>
+                        <td class="montant"><?= e(Plateforme::dateHeure($ligne['cree_le'])) ?></td>
                         <td><?= e(t('journal.action_' . $ligne['action'])) ?></td>
                         <td><?= e($ligne['nom'] ?? '—') ?><?= $ligne['action'] === 'assistance_ouverte' && $ligne['cible'] ? ' · ' . e($ligne['cible']) : '' ?></td>
                     </tr>

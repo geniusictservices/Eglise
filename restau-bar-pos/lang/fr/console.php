@@ -280,6 +280,7 @@ return [
     'console.usage.depassement' => '{n} SMS au-delà de la formule, à refacturer',
 
     // Paiements
+    'console.paiement.historique' => 'Historique des paiements',
     'console.paiement.titre' => 'Paiements',
     'console.paiement.montant' => 'Montant',
     'console.paiement.devise' => 'Devise',

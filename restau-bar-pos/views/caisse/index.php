@@ -195,6 +195,7 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
             <?php if (!$donnees['encaisser']): ?>
                 <p class="note" id="note-encaisser"><?= e(t('paiement.pas_le_droit')) ?></p>
             <?php endif; ?>
+            <?= App\Core\View::rendre('caisse/_pointage-note', ['etab' => $etab, 'personne' => $utilisateur]) ?>
         </aside>
     </div>
 
@@ -245,6 +246,7 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
                     </div>
                 </details>
             <?php endif; ?>
+            <?= App\Core\View::rendre('caisse/_pointage', ['etab' => $etab, 'personne' => $utilisateur]) ?>
             <form method="dialog"><button class="bouton bouton--secondaire" value="rester"><?= e(t('caisse.quitter_non')) ?></button></form>
         </div>
     </dialog>

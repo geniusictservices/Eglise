@@ -30,7 +30,11 @@ final class CaissePointageController
      */
     public static function etat(array $etab, int $utilisateurId): array
     {
+        static $cache = [];
         $etabId = (int) $etab['id'];
+        if (isset($cache[$etabId . '-' . $utilisateurId])) {
+            return $cache[$etabId . '-' . $utilisateurId];
+        }
         $pointages = new PointageRepository();
         $employe = (new PersonnelRepository())->parUtilisateur($utilisateurId);
         if ($employe !== null && !$employe['actif']) {
@@ -51,7 +55,7 @@ final class CaissePointageController
                 $valideurs[] = ['id' => (int) $u['id'], 'nom' => $u['nom']];
             }
         }
-        return [
+        return $cache[$etabId . '-' . $utilisateurId] = [
             'obligatoire' => $obligatoire, 'employe' => $employe, 'present' => $present,
             'requis' => $obligatoire && $employe !== null && $present === null,
             'employes' => $employes, 'valideurs' => $valideurs,

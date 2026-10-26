@@ -29,6 +29,7 @@ $commun = ['devises' => $devises, 'reference' => $reference, 'total' => $total['
         <h1><?= e(t('rcreances.titre')) ?></h1>
         <p class="aide"><?= e(t('rcreances.aide', ['date' => A::jour(date('Y-m-d'))])) ?></p>
     </div>
+    <?= View::rendre('gestion/rapports/_exporter', ['titre' => t('rcreances.titre'), 'periode' => A::jour(date('Y-m-d'))]) ?>
 </div>
 
 <?php if (count($etablissements) > 1): ?>

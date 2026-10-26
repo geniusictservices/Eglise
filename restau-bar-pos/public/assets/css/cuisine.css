@@ -1,0 +1,123 @@
+/* Écran de cuisine : plein écran, grandes cartes (un bon par envoi), lisibles de loin et avec les mains occupées.
+   S'appuie sur volcan.css (jetons, boutons, puces, badges). Contours fins et égaux ; l'état passe par le fond teinté
+   et le texte (« Reçu », « En préparation », « Prêt », « En retard »), jamais par une bande de couleur. */
+
+html, body { min-height: 100%; margin: 0; background: var(--fond); color: var(--encre); }
+body { font-size: 16px; line-height: 1.35; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+
+.cuisine { min-height: 100vh; display: flex; flex-direction: column; }
+.cuisine__haut {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 12px max(16px, env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid var(--ligne); background: var(--surface);
+}
+.cuisine__lieu { display: grid; min-width: 0; }
+.cuisine__etab { margin: 0; font: 800 1.125rem/1.2 var(--police-titre); }
+.cuisine__ecran { margin: 0; font-size: .8125rem; color: var(--doux); }
+.cuisine__etab-form select { min-height: var(--cible); padding: 0 12px; border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie); font-weight: 700; }
+.cuisine__postes { display: flex; flex-wrap: wrap; gap: 8px; flex: 1 1 auto; }
+.cuisine__postes .puce, .cuisine__reglages .puce { min-height: var(--cible); text-decoration: none; }
+.cuisine__reglages { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cuisine__heure { font: 800 1.5rem/1 var(--police-titre); font-variant-numeric: tabular-nums; margin-right: 4px; }
+.cuisine__alerte { margin: 12px 16px 0; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--ligne); background: var(--surface-2); }
+.cuisine__alerte--erreur { background: var(--teinte-erreur); border-color: color-mix(in srgb, var(--erreur) 45%, var(--ligne)); }
+.cuisine__autoriser { margin: 12px 16px 0; }
+.cuisine__autoriser > summary { display: inline-flex; min-height: var(--cible); align-items: center; cursor: pointer; }
+.cuisine__autoriser-form { display: grid; gap: 10px; max-width: 30rem; padding: 14px; border: 1px solid var(--ligne); border-radius: 16px; background: var(--surface); }
+.cuisine__autoriser-form p { margin: 0; color: var(--doux); }
+.cuisine__vide { margin: 48px 16px; text-align: center; font-size: 1.25rem; color: var(--doux); }
+
+/* Cartes : 4 colonnes sur un grand écran, 1 sur téléphone */
+.cuisine__bons {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; align-content: start;
+  padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.bon-carte {
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto auto; gap: 10px; padding: 14px;
+  border-radius: var(--rayon-carte); border: 1.5px solid var(--ligne-forte); background: var(--surface);
+}
+.bon-carte--preparation { background: var(--teinte-braise); border-color: color-mix(in srgb, var(--braise) 60%, var(--ligne)); }
+.bon-carte--pret { background: var(--teinte-succes); border-color: var(--succes); }
+.bon-carte--servi { opacity: .55; }
+.bon-carte--retard { background: var(--teinte-erreur); border-color: var(--erreur); }
+.bon-carte__tete { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.bon-carte__titres { min-width: 0; }
+.bon-carte__titre { margin: 0; font: 800 1.5rem/1.1 var(--police-titre); overflow-wrap: anywhere; }
+.bon-carte__info { margin: 2px 0 0; font-size: .875rem; color: var(--doux); }
+.bon-carte__temps { display: grid; justify-items: end; gap: 4px; }
+.bon-carte__minutes { font: 800 1.375rem/1 var(--police-titre); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bon-carte__statut { background: var(--surface-2); color: var(--encre); }
+.bon-carte__lignes { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.bon-ligne__bouton {
+  width: 100%; min-height: 52px; display: grid; grid-template-columns: 2.2em minmax(0, 1fr) auto; align-items: center; gap: 8px;
+  padding: 6px 10px; text-align: left; border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie);
+}
+.bon-ligne__qte { font: 800 1.5rem/1 var(--police-titre); font-variant-numeric: tabular-nums; }
+.bon-ligne__texte { display: grid; gap: 2px; min-width: 0; }
+.bon-ligne__nom { font-size: 1.1875rem; font-weight: 700; line-height: 1.2; overflow-wrap: anywhere; }
+.bon-ligne__remarque { font-size: 1rem; font-style: italic; font-weight: 600; }
+.bon-ligne__allergie {
+  justify-self: start; margin-top: 2px; padding: 2px 8px; border-radius: var(--rayon-badge); background: var(--erreur); color: var(--fond);
+  font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: .875rem;
+}
+.bon-ligne__statut { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--doux); }
+.bon-ligne--pret .bon-ligne__bouton { background: var(--teinte-succes); border-color: var(--succes); }
+.bon-ligne--pret .bon-ligne__nom { text-decoration: line-through; text-decoration-thickness: 2px; }
+.bon-ligne--servi .bon-ligne__bouton { opacity: .6; }
+.bon-carte__suite { padding: 8px 10px; border-radius: 12px; border: 1px dashed var(--ligne-forte); }
+.bon-carte__suite-titre { margin: 0 0 4px; font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--doux); }
+.bon-carte__suite ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; }
+.bon-carte__pied { display: flex; gap: 8px; }
+.bon-carte__avancer { flex: 1 1 auto; min-height: 60px; font-size: 1.1875rem; font-weight: 800; border-radius: var(--rayon-carte); justify-content: center; }
+.bon-carte__retour, .bon-carte__imprimer { flex: 0 0 auto; min-height: 60px; padding-inline: 14px; }
+.bon-carte--servi .bon-carte__retour { flex: 1 1 auto; }
+
+/* Ruptures */
+.cuisine-ruptures {
+  width: min(560px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 18px 20px;
+  border: 1px solid var(--ligne); border-radius: 22px; background: var(--surface); color: var(--encre); box-shadow: var(--ombre);
+}
+.cuisine-ruptures::backdrop { background: var(--voile); }
+.cuisine-ruptures__tete { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.cuisine-ruptures__tete h2 { margin: 0; font: 700 1.25rem/1.2 var(--police-titre); }
+.cuisine-ruptures__tete form { margin: 0; }
+.cuisine-ruptures__groupe { margin: 14px 0 6px; font-size: .8125rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--doux); }
+.cuisine-ruptures__produits { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.cuisine-rupture { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 6px 6px 12px; border: 1px solid var(--ligne); border-radius: 12px; }
+.cuisine-rupture--hors { background: var(--teinte-erreur); }
+.cuisine-rupture__nom { font-weight: 700; }
+.cuisine-rupture__bouton { min-height: var(--cible); min-width: 9rem; justify-content: center; }
+.cuisine-rupture__bouton[aria-pressed="true"] { background: var(--erreur); color: var(--fond); border-color: var(--erreur); }
+
+@media (max-width: 600px) {
+  .cuisine__heure { display: none; }
+  .bon-carte__titre { font-size: 1.25rem; }
+  .bon-carte__pied { flex-wrap: wrap; }
+  .bon-carte__avancer { flex-basis: 100%; }
+  .bon-carte__retour, .bon-carte__imprimer { flex: 1 1 0; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Impression : seulement le bon, au format des imprimantes de tickets (80 mm) */
+#zone-impression { display: none; }
+.bon { max-width: 340px; padding: 12px; }
+.bon__poste { margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; font-size: .8125rem; }
+.bon__titre { margin: 2px 0; font: 800 1.5rem/1.1 var(--police-titre); }
+.bon__info { margin: 0 0 8px; font-size: .8125rem; }
+.bon__lignes { list-style: none; margin: 0; padding: 8px 0 0; border-top: 1px dashed #000; display: grid; gap: 6px; }
+.bon__ligne { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); gap: 6px; font-size: 1.125rem; font-weight: 700; }
+.bon__ligne--annulee { text-decoration: line-through; }
+.bon__plat { display: grid; }
+.bon__remarque { font-size: .9375rem; font-weight: 600; font-style: italic; }
+.bon__allergie { font-size: .9375rem; font-weight: 800; text-transform: uppercase; border: 2px solid currentColor; padding: 0 4px; justify-self: start; }
+.bon__suite { margin: 10px 0 0; font-weight: 800; text-transform: uppercase; font-size: .8125rem; }
+.bon__lignes--suite .bon__ligne { font-size: .9375rem; font-weight: 600; }
+@media print {
+  @page { size: 80mm auto; margin: 4mm; }
+  body > *:not(.cuisine), .cuisine > *:not(#zone-impression) { display: none !important; }
+  #zone-impression { display: block !important; }
+  #zone-impression .bon { max-width: none; padding: 0; background: #fff; color: #000; page-break-after: always; }
+  #zone-impression .bon * { color: #000 !important; }
+}

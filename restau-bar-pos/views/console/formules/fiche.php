@@ -34,7 +34,7 @@ $action = $formule ? '/formules/' . (int) $formule['id'] : '/formules/nouvelle';
         <p class="aide"><?= e(t('console.formule.modules_aide')) ?></p>
         <ul class="con-coches">
             <?php foreach ($offre as $code): ?>
-                <li><label class="coche"><input type="checkbox" name="modules[]" value="<?= e($code) ?>"<?= in_array($code, $saisie['modules'], true) ? ' checked' : '' ?>> <?= e(t('module.' . $code . '.nom')) ?><?= in_array($code, $aVenir, true) ? ' <span class="badge badge--neutre">' . e(t('modules.bientot')) . '</span>' : '' ?></label></li>
+                <li><label class="coche"><input type="checkbox" name="modules[]" value="<?= e($code) ?>"<?= in_array($code, $saisie['modules'], true) ? ' checked' : '' ?>> <?= e(\App\Console\Affichage::module($code)) ?><?= in_array($code, $aVenir, true) ? ' <span class="badge badge--neutre">' . e(t('modules.bientot')) . '</span>' : '' ?></label></li>
             <?php endforeach; ?>
         </ul>
     </section>

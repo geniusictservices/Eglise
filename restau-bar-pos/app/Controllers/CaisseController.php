@@ -322,6 +322,8 @@ final class CaisseController
         }
         $ventes = new VenteRepository();
         $session = self::sessionExigee($etab, $personne);
+        // Pointage obligatoire pour ouvrir la caisse (réglage de l'établissement, module Personnel et paie) : refus 409
+        CaissePointageController::exigerPointage($etab, $personne);
         if (($deja = $ventes->parCle($cle)) !== null) {
             // Double envoi : la même vente, sans rien refaire
             $this->repondreVente((int) $deja['id'], $etab, $appareil);

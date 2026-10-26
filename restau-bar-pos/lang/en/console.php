@@ -272,6 +272,7 @@ return [
     'console.usage.derniere_connexion' => 'Last sign-in: {date}',
     'console.usage.depassement' => '{n} SMS above the plan, to invoice',
 
+    'console.paiement.historique' => 'Payment history',
     'console.paiement.titre' => 'Payments',
     'console.paiement.montant' => 'Amount',
     'console.paiement.devise' => 'Currency',

@@ -31,6 +31,7 @@ $filtre = $filtres['categorie'] || $filtres['etablissement'] !== '' || $filtres[
         <a class="bouton" href="/gestion/depenses/nouvelle">+ <?= e(t('depenses.nouvelle')) ?></a>
         <a class="bouton bouton--secondaire" href="/gestion/depenses/categories"><?= e(t('depenses.gerer_categories')) ?></a>
     </div>
+    <?= View::rendre('gestion/rapports/_exporter', ['titre' => t('depenses.titre'), 'periode' => $periode['du'] !== null ? App\Controllers\Gestion\RapportAffichage::periode($periode['du'], $periode['au']) : null]) ?>
 </div>
 
 

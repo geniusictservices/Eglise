@@ -230,11 +230,13 @@ final class AchatRepository
         }
         $lignes = Database::tous(
             'SELECT r.*, f.nom AS fournisseur, l.nom AS lieu_nom, e.nom AS etablissement_nom, u.nom AS auteur, c.numero AS commande_numero,
+                    dv.arrondi AS devise_arrondi, dv.decimales AS devise_decimales,
                     COALESCE((SELECT SUM(pl.contre_valeur) FROM paiements_fournisseurs pf JOIN paiement_fournisseur_lignes pl ON pl.paiement_id = pf.id
                                WHERE pf.reception_id = r.id), 0) AS paye
                FROM receptions r
                JOIN fournisseurs f ON f.id = r.fournisseur_id
                JOIN lieux_stock l ON l.id = r.lieu_id
+               JOIN devises dv ON dv.id = r.devise_id
           LEFT JOIN etablissements e ON e.id = r.etablissement_id
           LEFT JOIN utilisateurs u ON u.id = r.utilisateur_id
           LEFT JOIN commandes_achat c ON c.id = r.commande_id
@@ -243,8 +245,8 @@ final class AchatRepository
             $params
         );
         foreach ($lignes as &$r) {
-            $r['reste'] = max(0.0, round((float) $r['total'] - (float) $r['paye'], 3));
-            $r['etat_paiement'] = self::etatPaiement((float) $r['total'], (float) $r['paye']);
+            $r['etat_paiement'] = self::etatPaiement((float) $r['total'], (float) $r['paye'], self::tolerance($r));
+            $r['reste'] = $r['etat_paiement'] === 'payee' ? 0.0 : max(0.0, round((float) $r['total'] - (float) $r['paye'], 3));
         }
         unset($r);
         if ($filtres['paiement']) {
@@ -253,20 +255,31 @@ final class AchatRepository
         return $lignes;
     }
 
-    public static function etatPaiement(float $total, float $paye): string
+    /**
+     * Payée quand le reste est inférieur à un demi-pas d'arrondi de la devise de la facture (un paiement en
+     * dollars d'une facture en francs laisse quelques francs d'écart d'arrondi).
+     */
+    public static function etatPaiement(float $total, float $paye, float $tolerance = 0.005): string
     {
-        if ($total <= 0.0005 || $paye >= $total - 0.005) {
+        if ($total <= 0.0005 || $paye >= $total - $tolerance) {
             return 'payee';
         }
         return $paye > 0.0005 ? 'partielle' : 'non_payee';
+    }
+
+    /** Demi-pas d'arrondi de la devise d'une réception (au moins un demi-centime). */
+    private static function tolerance(array $r): float
+    {
+        return max(0.005, max((float) ($r['devise_arrondi'] ?? 0), 10 ** -(int) ($r['devise_decimales'] ?? 2)) / 2);
     }
 
     public function reception(int $id): ?array
     {
         $r = Database::un(
             'SELECT r.*, f.nom AS fournisseur, f.type AS fournisseur_type, l.nom AS lieu_nom, l.type AS lieu_type, e.nom AS etablissement_nom,
-                    u.nom AS auteur, c.numero AS commande_numero
+                    u.nom AS auteur, c.numero AS commande_numero, dv.arrondi AS devise_arrondi, dv.decimales AS devise_decimales
                FROM receptions r
+               JOIN devises dv ON dv.id = r.devise_id
                JOIN fournisseurs f ON f.id = r.fournisseur_id
                JOIN lieux_stock l ON l.id = r.lieu_id
           LEFT JOIN etablissements e ON e.id = r.etablissement_id
@@ -292,8 +305,8 @@ final class AchatRepository
         );
         $r['paiements'] = $this->paiements($id);
         $r['paye'] = array_sum(array_map(static fn (array $p): float => (float) $p['contre_valeur'], $r['paiements']));
-        $r['reste'] = max(0.0, round((float) $r['total'] - $r['paye'], 3));
-        $r['etat_paiement'] = self::etatPaiement((float) $r['total'], $r['paye']);
+        $r['etat_paiement'] = self::etatPaiement((float) $r['total'], $r['paye'], self::tolerance($r));
+        $r['reste'] = $r['etat_paiement'] === 'payee' ? 0.0 : max(0.0, round((float) $r['total'] - $r['paye'], 3));
         return $r;
     }
 

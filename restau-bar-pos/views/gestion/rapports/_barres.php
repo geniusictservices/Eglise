@@ -32,7 +32,8 @@ if ($max > 0) {
         }
     }
 }
-$pas = max(1, (int) ceil($n / 8));
+// Au plus 6 étiquettes : lisibles sur un téléphone
+$pas = max(1, (int) ceil($n / 6));
 $largeur = $n * 10;
 $etiquettesLongues ??= $etiquettes;
 ?>

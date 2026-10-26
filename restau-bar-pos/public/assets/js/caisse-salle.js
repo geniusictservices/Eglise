@@ -132,22 +132,11 @@
       }
       texte.appendChild(el('span', 'destination__info', infos.join(' · ')));
       elDestination.appendChild(texte);
-      var boutons = el('div', 'destination__boutons');
-      if (note) {
-        var transfert = bouton('puce', T.transferer);
-        transfert.id = 'note-transferer';
-        transfert.addEventListener('click', function () { ouvrirSalle('transfert'); });
-        var fusion = bouton('puce', T.fusionner);
-        fusion.id = 'note-fusionner';
-        fusion.addEventListener('click', function () { ouvrirSalle('fusion'); });
-        boutons.append(transfert, fusion);
-      }
       var quitter = bouton('icone destination__quitter', '×', T.vente_comptoir);
       quitter.id = 'note-quitter';
       quitter.title = T.vente_comptoir;
       quitter.addEventListener('click', function () { choisir(null); });
-      boutons.appendChild(quitter);
-      elDestination.appendChild(boutons);
+      elDestination.appendChild(quitter);
     }
 
     // Lignes déjà envoyées
@@ -162,32 +151,44 @@
     var envoyables = locales.length > 0 && S.modules.tables;
     elActions.hidden = !(courante || envoyables);
     if (elActions.hidden) { return; }
-    var envoyer = bouton('bouton actions-note__envoyer', courante ? T.envoyer : T.envoyer_table);
-    envoyer.id = 'envoyer';
-    envoyer.disabled = locales.length === 0 || envoiEnCours;
-    envoyer.addEventListener('click', function () { if (courante) { envoyerLignes(); } else { ouvrirSalle('envoyer'); } });
-    elActions.appendChild(envoyer);
+    // Envoyer : seulement s'il y a de nouvelles lignes (vers la note choisie, ou choisir une table)
+    if (locales.length) {
+      var envoyer = bouton('bouton actions-note__envoyer actions-note__large', courante ? T.envoyer : T.envoyer_table);
+      envoyer.id = 'envoyer';
+      envoyer.disabled = envoiEnCours;
+      envoyer.addEventListener('click', function () { if (courante) { envoyerLignes(); } else { ouvrirSalle('envoyer'); } });
+      elActions.appendChild(envoyer);
+    }
     if (note && resteNote()) {
       var addition = bouton('bouton bouton--secondaire', T.addition);
       addition.id = 'addition';
       addition.addEventListener('click', demanderAddition);
       elActions.appendChild(addition);
       if (D.encaisser && S.modules.partage) {
-        var partager = bouton('bouton bouton--secondaire', T.partager);
+        var partager = bouton('bouton bouton--secondaire', T.partager_court);
         partager.id = 'partager';
         partager.addEventListener('click', function () { ouvrirPartage(); });
         elActions.appendChild(partager);
       }
     }
+    if (note) {
+      var transfert = bouton('bouton bouton--secondaire', T.transferer);
+      transfert.id = 'note-transferer';
+      transfert.addEventListener('click', function () { ouvrirSalle('transfert'); });
+      var fusion = bouton('bouton bouton--secondaire', T.fusionner);
+      fusion.id = 'note-fusionner';
+      fusion.addEventListener('click', function () { ouvrirSalle('fusion'); });
+      elActions.append(transfert, fusion);
+    }
     var attente = note ? note.lignes.filter(function (l) { return !l.annulee && l.statut === 'attente'; }).length : 0;
     if (attente) {
-      var lancer = bouton('bouton bouton--secondaire actions-note__lancer', T.lancer.replace('{n}', String(attente)));
+      var lancer = bouton('bouton bouton--secondaire actions-note__lancer actions-note__large', T.lancer.replace('{n}', String(attente)));
       lancer.id = 'lancer';
       lancer.addEventListener('click', lancerSuite);
       elActions.appendChild(lancer);
     }
     if (note && !note.lignes.some(function (l) { return !l.annulee; }) && !locales.length) {
-      var fermer = bouton('lien', T.fermer_vide);
+      var fermer = bouton('lien actions-note__large', T.fermer_vide);
       fermer.id = 'note-fermer-vide';
       fermer.addEventListener('click', fermerVide);
       elActions.appendChild(fermer);
@@ -215,16 +216,16 @@
     var pu = l.prix[D.principale];
     if (!l.annulee) { droite.appendChild(el('span', 'note-ligne__montant', typeof pu === 'number' ? formater(pu * (l.reste > 0.0005 ? l.reste : l.qte), D.principale) : '—')); }
     li.appendChild(droite);
-    if (!l.annulee && l.payee <= 0.0005) {
+    // Plat prêt : « Servi » à la place d'« annuler » (on peut annuler une fois servi)
+    if (!l.annulee && l.statut === 'pret') {
+      var servi = bouton('note-ligne__servi', T.servi, T.servi + ' : ' + l.libelle);
+      servi.addEventListener('click', function () { marquerServi(note.id, [l.id]); });
+      li.appendChild(servi);
+    } else if (!l.annulee && l.payee <= 0.0005) {
       var annuler = bouton('note-ligne__annuler', '×', T.annuler_ligne + ' : ' + l.libelle);
       annuler.title = T.annuler_ligne;
       annuler.addEventListener('click', function () { ouvrirAnnulation(l); });
       li.appendChild(annuler);
-    }
-    if (!l.annulee && l.statut === 'pret') {
-      var servi = bouton('puce note-ligne__servi', T.servi);
-      servi.addEventListener('click', function () { marquerServi(note.id, [l.id]); });
-      li.appendChild(servi);
     }
     return li;
   }

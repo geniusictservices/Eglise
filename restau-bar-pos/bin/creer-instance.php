@@ -113,6 +113,23 @@ if ($demo && is_file(RACINE . '/bin/demo-ventes.php')) {
     }
 }
 
+// Soirées de démonstration du Volcano Club (module Événements), après les autres démonstrations : leurs recettes
+// sont les ventes de démonstration de ces nuits, leurs coûts des dépenses rattachées
+if ($demo && is_file(RACINE . '/bin/demo-evenements.php')) {
+    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(RACINE . '/bin/demo-evenements.php') . ' ' . escapeshellarg($sousDomaine), $code);
+    if ($code !== 0) {
+        fwrite(STDERR, "Soirées de démonstration non créées (php bin/demo-evenements.php $sousDomaine pour réessayer).\n");
+    }
+}
+
+// Salle et cuisine de démonstration (plan de salle, postes, services, notes ouvertes, réservations), en dernier
+if ($demo && is_file(RACINE . '/bin/demo-salle.php')) {
+    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(RACINE . '/bin/demo-salle.php') . ' ' . escapeshellarg($sousDomaine), $code);
+    if ($code !== 0) {
+        fwrite(STDERR, "Salle et cuisine de démonstration non créées (php bin/demo-salle.php $sousDomaine pour réessayer).\n");
+    }
+}
+
 $domaine = Config::get('domaine_base');
 echo <<<TXT
 Instance « $sousDomaine » créée.

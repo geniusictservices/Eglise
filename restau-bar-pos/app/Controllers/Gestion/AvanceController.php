@@ -124,7 +124,7 @@ final class AvanceController
         } else {
             try {
                 $this->paie->annulerPaiement((int) $avance['paiement_id'], $motif, $uid);
-                Session::flash(t('pers.avance_annulee', ['nom' => $avance['employe_nom']]));
+                Session::flash(t('pers.flash_avance_annulee', ['nom' => $avance['employe_nom']]));
             } catch (\DomainException $e) {
                 Session::flash(t('pers.erreur_' . $e->getMessage()));
             }

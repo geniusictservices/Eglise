@@ -488,7 +488,7 @@ final class PaieRepository
                 throw new \DomainException('pas_brouillon');
             }
             if ($this->chevauchement((int) $b['employe_id'], $b['debut'], $b['fin'], $bulletinId) !== null) {
-                throw new \DomainException('chevauchement');
+                throw new \DomainException('chevauchement_bulletin');
             }
             // Les retenues proposées à zéro disparaissent du bulletin validé
             Database::executer("DELETE FROM bulletin_lignes WHERE bulletin_id = ? AND type IN ('dette', 'manquant') AND montant <= 0", [$bulletinId]);

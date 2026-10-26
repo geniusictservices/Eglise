@@ -1,0 +1,91 @@
+/* Salle et cuisine (gestion) : plan de salle au glisser-déposer, notes, réservations, services horaires, postes.
+   Jetons de volcan.css seulement ; contours fins et égaux, l'état passe par le fond teinté et le texte. */
+
+.sal-entete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.sal-entete h1 { margin-bottom: 4px; }
+.sal-puces { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.sal-puces .puce { text-decoration: none; }
+.sal-jour { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; margin: 12px 0; }
+.sal-jours { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+.sal-jours .sal-jour { margin: 0; }
+.sal-liste-simple { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sal-annulee td { color: var(--doux); }
+.sal-sous { color: var(--doux); }
+.sal-etat { min-height: 1.4em; margin: 6px 0 0; color: var(--doux); font-size: .875rem; }
+
+/* Plan : grille de cases (24 × 16), tables posées en cases */
+.sal-plan {
+  position: relative; width: 100%; aspect-ratio: var(--colonnes) / var(--rangees); min-height: 300px; touch-action: none;
+  border-radius: 16px; border: 1px solid var(--ligne); background-color: var(--fond);
+  background-image: linear-gradient(var(--ligne) 1px, transparent 1px), linear-gradient(90deg, var(--ligne) 1px, transparent 1px);
+  background-size: calc(100% / var(--colonnes)) calc(100% / var(--rangees)); background-position: -1px -1px;
+}
+.sal-table {
+  position: absolute;
+  left: calc(var(--x) / var(--colonnes) * 100% + 3px); top: calc(var(--y) / var(--rangees) * 100% + 3px);
+  width: calc(var(--l) / var(--colonnes) * 100% - 6px); height: calc(var(--h) / var(--rangees) * 100% - 6px);
+  min-width: 44px; min-height: 44px; padding: 4px; overflow: hidden;
+  display: grid; align-content: center; justify-items: center; gap: 1px; text-align: center; line-height: 1.15;
+  border-radius: 12px; border: 1.5px solid var(--ligne-forte); background: var(--surface); color: var(--encre);
+  cursor: grab; user-select: none; touch-action: none;
+}
+.sal-plan[data-modifier="0"] .sal-table { cursor: default; }
+.sal-table--ronde { border-radius: 50%; }
+.sal-table--banquette { border-radius: 22px; }
+.sal-table__nom { font: 800 1rem/1.1 var(--police-titre); }
+.sal-table__places, .sal-table__statut { font-size: .75rem; color: var(--doux); }
+.sal-table--occupee { background: var(--teinte-accent); border-color: var(--accent); }
+.sal-table--addition { background: var(--teinte-braise); border-color: var(--braise); }
+.sal-table--reservee { background: var(--teinte-glace); border-color: var(--glace); }
+.sal-table--deplace { cursor: grabbing; box-shadow: var(--ombre); z-index: 2; }
+.sal-table:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.sal-table__poignee {
+  position: absolute; right: 3px; bottom: 3px; width: 18px; height: 18px; border-radius: 6px; cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 45%, var(--ligne-forte) 45%, var(--ligne-forte) 55%, transparent 55%, transparent 70%, var(--ligne-forte) 70%, var(--ligne-forte) 80%, transparent 80%);
+}
+
+/* Formulaires en ligne (une table, un poste, un happy hour) */
+.sal-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; margin: 0; }
+.sal-form + .sal-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--ligne); }
+.sal-form .champ { flex: 1 1 11rem; min-width: 0; margin: 0; }
+.sal-form .champ--large { flex-basis: 100%; }
+.sal-form .sal-champ--court { flex: 0 1 9rem; }
+.sal-form__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.sal-tables { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.sal-ligne { padding: 12px; border: 1px solid var(--ligne); border-radius: 14px; background: var(--surface); scroll-margin-top: 80px; }
+.sal-ligne:target { box-shadow: 0 0 0 3px var(--focus); }
+.sal-details__resume { min-height: var(--cible); display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.sal-details[open] .sal-details__resume { margin-bottom: 10px; }
+.sal-happy__titre { flex-basis: 100%; margin: 0; font-size: 1rem; }
+
+/* Services : modules et catégories en cases à cocher */
+.sal-service { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--ligne); border-radius: 16px; background: var(--surface); }
+.sal-service + .sal-service { margin-top: 12px; }
+.sal-service__tete h3 { margin: 0; }
+.sal-service__tete .aide { margin: 2px 0 0; }
+.sal-cases { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0; padding: 0; border: 0; }
+.sal-cases legend { width: 100%; padding: 0; margin-bottom: 6px; font-weight: 700; }
+.sal-cases .aide { flex-basis: 100%; margin: 0 0 4px; }
+.sal-cases .coche { min-height: var(--cible); }
+.sal-cases--jours { flex-basis: 100%; }
+.sal-maintenant p { margin: 0 0 6px; }
+
+/* Réservations */
+.sal-resas { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.sal-resa { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--ligne); border-radius: 14px; background: var(--surface); }
+.sal-resa--annulee, .sal-resa--absente { opacity: .65; }
+.sal-resa--arrivee { background: var(--teinte-succes); }
+.sal-resa__heure { font: 800 1.25rem/1 var(--police-titre); font-variant-numeric: tabular-nums; }
+.sal-resa__texte { min-width: 0; overflow-wrap: anywhere; }
+.sal-resa__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.sal-resa__actions form { margin: 0; }
+.sal-ecran { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 12px; border: 1px solid var(--ligne); border-radius: 12px; }
+.sal-ecran form { margin: 0; }
+
+@media (max-width: 600px) {
+  .sal-plan { min-height: 0; }
+  .sal-table__places, .sal-table__statut { display: none; }
+  .sal-resa { grid-template-columns: auto minmax(0, 1fr); }
+  .sal-resa__actions { grid-column: 1 / -1; justify-content: flex-start; }
+  .sal-form .champ, .sal-form .sal-champ--court { flex: 1 1 100%; }
+}

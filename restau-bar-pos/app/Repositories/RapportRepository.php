@@ -189,7 +189,7 @@ final class RapportRepository
     }
 
     /**
-     * @param array{du: string, au: string, etablissement?: ?int, vendeur?: ?int, attribution?: string} $f
+     * @param array{du?: string, au?: string, entre?: array{0: string, 1: string}, etablissement?: ?int, vendeur?: ?int, attribution?: string} $f
      *        attribution : « serveur » (qui a servi, si la salle le sait) ou « caisse » (qui a encaissé)
      * @param bool $toutePortee false : seulement les ventes de $f['vendeur'], où qu'elles soient (ses propres résultats)
      * @return list<array{id: int, numero: string, etablissement_id: int, vendeur_id: ?int, caissier_id: ?int, journee: string,
@@ -206,7 +206,10 @@ final class RapportRepository
         } else {
             [$portee, $params] = ['1 = 1', []];
         }
-        [$periode, $paramsPeriode] = self::conditionJournees('v.cree_le', $f['du'], $f['au']);
+        // « entre » : une fenêtre exacte (la soirée d'un événement, de l'ouverture des portes à la fermeture)
+        [$periode, $paramsPeriode] = isset($f['entre'])
+            ? ['v.cree_le >= ? AND v.cree_le < ?', [$f['entre'][0], $f['entre'][1]]]
+            : self::conditionJournees('v.cree_le', $f['du'], $f['au']);
         $where = $portee . ' AND ' . $periode;
         $params = array_merge($params, $paramsPeriode);
         if (!empty($f['etablissement'])) {

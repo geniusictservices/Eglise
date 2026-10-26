@@ -270,6 +270,36 @@ final class StockRepository
         }
     }
 
+    /**
+     * Refait les sorties de stock de toutes les ventes, dans l'ordre (ventes enregistrées avant le module,
+     * démonstration) : les mouvements de vente existants sont remplacés, puis le stock est recalculé.
+     * @return int nombre de ventes rejouées
+     */
+    public function rejouerVentes(): int
+    {
+        $pdo = Database::pdo();
+        $pdo->beginTransaction();
+        try {
+            Database::executer(
+                'DELETE FROM stock_mouvements WHERE type IN (\'vente\', \'recette\', \'annulation_vente\')
+                    OR (type = \'vide_recupere\' AND source_id IS NOT NULL AND EXISTS (SELECT 1 FROM ventes v WHERE v.id = stock_mouvements.source_id))'
+            );
+            $ventes = Database::tous('SELECT id, statut FROM ventes ORDER BY cree_le, id');
+            foreach ($ventes as $v) {
+                $this->sortieVente((int) $v['id']);
+                if ($v['statut'] === 'annulee') {
+                    $this->annulationVente((int) $v['id']);
+                }
+            }
+            $this->recalculer();
+            $pdo->commit();
+            return count($ventes);
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+
     // ---------- Ventes ----------
 
     /**

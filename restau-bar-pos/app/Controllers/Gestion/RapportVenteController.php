@@ -42,6 +42,10 @@ final class RapportVenteController
             }
         }
 
+        if (\App\Core\Csv::demande()) {
+            ExportCsv::vendeurs($vendeurs, $total, $locale, $reference, $periode);
+        }
+
         View::afficher('gestion/rapports/ventes', [
             'titre' => t('rventes.titre'),
             'utilisateur' => $utilisateur,

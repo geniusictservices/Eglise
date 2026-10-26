@@ -114,7 +114,7 @@ final class CongeController
             $this->afficher($utilisateur, ['decision-' . $absence['id'] => t('pers.erreur_deja_decidee')], null, null, 409);
             return;
         }
-        Session::flash(t($accepte ? 'pers.absence_acceptee' : 'pers.absence_refusee', ['nom' => $employe['nom']]));
+        Session::flash(t($accepte ? 'pers.flash_absence_acceptee' : 'pers.flash_absence_refusee', ['nom' => $employe['nom']]));
         rediriger('/gestion/personnel/conges');
     }
 }

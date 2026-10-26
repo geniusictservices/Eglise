@@ -115,7 +115,7 @@ final class Modules
                 ['cle' => 'etablissements', 'icone' => 'etablissements', 'lien' => '/gestion/etablissements', 'voir' => 'parametres.etablissements'],
                 ['cle' => 'utilisateurs', 'icone' => 'personnel', 'lien' => '/gestion/utilisateurs', 'voir' => 'parametres.utilisateurs'],
                 ['cle' => 'messagerie', 'icone' => 'messagerie', 'lien' => '/gestion/messagerie', 'voir' => 'parametres.messagerie'],
-                // Accord d'assistance donné à la plateforme (montré seulement quand la console existe)
+                // Accord d'assistance donné à la plateforme (montré seulement pour une instance gérée par la console)
                 ['cle' => 'assistance', 'icone' => 'aide', 'lien' => '/gestion/assistance', 'voir' => 'parametres.utilisateurs'],
                 ['cle' => 'compte', 'icone' => 'compte', 'lien' => '/gestion/compte', 'voir' => null],
                 ['cle' => 'aide', 'icone' => 'aide', 'lien' => '/gestion/aide', 'voir' => null],
@@ -185,7 +185,7 @@ final class Modules
                 continue;
             }
             $ecrans = array_values(array_filter($module['ecrans'], static fn (array $e) => Acces::a($utilisateurId, $e['voir'])
-                && ($e['cle'] !== 'assistance' || Plateforme::active())));
+                && ($e['cle'] !== 'assistance' || Plateforme::geree())));
             // Un module fait seulement d'écrans ouverts à tous (Mon compte, Aide) n'est montré qu'à qui a la gestion
             // Un écran « chacun » (ses propres résultats) compte comme un écran propre pour qui a la gestion
             $propres = array_filter($ecrans, static fn (array $e) => $e['voir'] !== null || (!empty($e['chacun']) && Acces::aLaGestion($utilisateurId)));

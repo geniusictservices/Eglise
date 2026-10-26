@@ -28,6 +28,9 @@ final class RapportCreanceController
         if ($etablissement !== null && !in_array($etablissement, array_map('intval', array_column($etablissements, 'id')), true)) {
             $etablissement = null;
         }
+        if (\App\Core\Csv::demande()) {
+            ExportCsv::creances($uid, $etablissement, VenteController::devises(), (new DeviseRepository())->reference());
+        }
         View::afficher('gestion/rapports/creances', [
             'titre' => t('rcreances.titre'),
             'utilisateur' => $utilisateur,
