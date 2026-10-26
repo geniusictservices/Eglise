@@ -473,6 +473,18 @@ final class StockRepository
                   WHERE l.vente_id = ? ORDER BY l.id',
                 [$venteId]
             );
+            if ($gros !== null) {
+                // Vides rapportés par le client revendeur avec cette commande : ils rentrent au dépôt
+                $retours = self::$retoursPrevus[$vente['cle'] ?? ''] ?? array_map('floatval', array_column(Database::tous(
+                    'SELECT produit_id, -SUM(quantite) AS q FROM emballage_mouvements WHERE vente_id = ? AND quantite < 0 GROUP BY produit_id',
+                    [$venteId]
+                ), 'q', 'produit_id'));
+                foreach ($retours as $emballageId => $q) {
+                    if ($q > self::EPSILON) {
+                        $this->mouvement($gros, (int) $emballageId, $q, 'vide_recupere', $venteId, $date, $motif, $uid);
+                    }
+                }
+            }
             foreach ($lignes as $l) {
                 if ($l['produit_id'] === null) {
                     continue;
@@ -520,6 +532,15 @@ final class StockRepository
                 'SELECT * FROM stock_mouvements WHERE type IN (\'vente\', \'recette\', \'vide_recupere\') AND source_id = ? ORDER BY id',
                 [$venteId]
             );
+            // Vente en gros : les emballages prêtés, consignes facturées et vides rapportés sont annulés aussi
+            if (self::suite()) {
+                Database::executer(
+                    'INSERT INTO emballage_mouvements (client_id, produit_id, type, quantite, vente_id, valeur, devise_id, date_mouvement, notes, utilisateur_id)
+                     SELECT client_id, produit_id, type, -quantite, NULL, IF(valeur IS NULL, NULL, -valeur), devise_id, ?, ?, ?
+                       FROM emballage_mouvements WHERE vente_id = ?',
+                    [$date, 'Annulation vente ' . $vente['numero'], $uid, $venteId]
+                );
+            }
             foreach ($mouvements as $m) {
                 $this->mouvement((int) $m['lieu_id'], (int) $m['produit_id'], -(float) $m['quantite'], 'annulation_vente', $venteId,
                     $date, 'Annulation vente ' . $vente['numero'], $uid,
@@ -532,11 +553,18 @@ final class StockRepository
 
     /** @var array<string, int> ventes en gros en cours d'enregistrement : clé de la vente => dépôt */
     private static array $grosPrevus = [];
+    /** @var array<string, array<int, float>> vides rapportés avec ces ventes en gros : clé => emballage => quantité */
+    private static array $retoursPrevus = [];
 
-    /** Annonce qu'une vente (par sa clé) est une vente en gros sortant de ce dépôt, avant VenteRepository::enregistrer(). */
-    public static function prevoirVenteGros(string $cle, int $lieuId): void
+    /**
+     * Annonce qu'une vente (par sa clé) est une vente en gros sortant de ce dépôt, avant VenteRepository::enregistrer() :
+     * tout sort du dépôt tel quel, et les vides que le client rapporte ($retours) y rentrent.
+     * @param array<int, float> $retours emballage => quantité
+     */
+    public static function prevoirVenteGros(string $cle, int $lieuId, array $retours = []): void
     {
         self::$grosPrevus[$cle] = $lieuId;
+        self::$retoursPrevus[$cle] = $retours;
     }
 
     /**

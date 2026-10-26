@@ -111,7 +111,7 @@ final class EmballageRepository
         foreach (Database::tous(
             'SELECT m.' . $colonne . ' AS tiers_id, t.nom, m.produit_id, SUM(m.quantite) AS quantite
                FROM emballage_mouvements m JOIN ' . $table . ' t ON t.id = m.' . $colonne . '
-              WHERE m.' . $colonne . ' IS NOT NULL
+              WHERE m.' . $colonne . ' IS NOT NULL' . (StockRepository::suite() ? ' AND m.type <> \'consigne_facturee\'' : '') . '
            GROUP BY m.' . $colonne . ', t.nom, m.produit_id
              HAVING ABS(SUM(m.quantite)) > 0.0005
            ORDER BY t.nom'
@@ -123,6 +123,24 @@ final class EmballageRepository
                 $e = $emballages[(int) $l['produit_id']];
                 $resultat[$id]['valeur'][(int) $e['devise_id']] = ($resultat[$id]['valeur'][(int) $e['devise_id']] ?? 0) + (float) $l['quantite'] * (float) $e['valeur_consigne'];
             }
+        }
+        return $resultat;
+    }
+
+    /**
+     * Emballages d'un client revendeur : prêtés (il doit les rapporter) et consignés (consigne facturée, remboursée
+     * quand il les rapporte), par emballage.
+     * @return array{pretes: array<int, float>, consignes: array<int, float>}
+     */
+    public function soldesClient(int $clientId): array
+    {
+        $resultat = ['pretes' => [], 'consignes' => []];
+        foreach (Database::tous(
+            'SELECT produit_id, type = \'consigne_facturee\' AS consigne, SUM(quantite) AS q FROM emballage_mouvements
+              WHERE client_id = ? GROUP BY produit_id, type = \'consigne_facturee\' HAVING ABS(SUM(quantite)) > 0.0005',
+            [$clientId]
+        ) as $l) {
+            $resultat[$l['consigne'] ? 'consignes' : 'pretes'][(int) $l['produit_id']] = (float) $l['q'];
         }
         return $resultat;
     }
