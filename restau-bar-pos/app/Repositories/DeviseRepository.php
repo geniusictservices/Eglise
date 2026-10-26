@@ -52,6 +52,23 @@ final class DeviseRepository
         return null;
     }
 
+    /**
+     * Devises actives parmi celles acceptées par un établissement.
+     * Si aucune n'est configurée, seule la devise de référence est proposée.
+     *
+     * @param int[] $ids
+     * @return array<int, array>
+     */
+    public function accepteesParmi(array $ids): array
+    {
+        $acceptees = array_intersect_key($this->actives(), array_flip($ids));
+        if ($acceptees === []) {
+            $reference = $this->reference();
+            $acceptees = $reference ? [(int) $reference['id'] => $reference] : [];
+        }
+        return $acceptees;
+    }
+
     /** Convertit un montant en devise de référence vers une devise, avec la règle d'arrondi de celle-ci. */
     public function convertirDepuisReference(float $montant, array $devise): ?float
     {

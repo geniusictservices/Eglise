@@ -21,15 +21,16 @@ final class CatalogueRepository
      *   2. prix de la grille en devise de référence, converti ;
      *   3. et 4. idem avec la grille par défaut de l'établissement.
      */
-    public function menu(int $etablissementId, int $grilleId, int $grilleDefautId, array $devise): array
+    public function menu(int $etablissementId, int $grilleId, int $grilleDefautId, array $devise, bool $seulementPublic = true): array
     {
+        $filtrePublic = $seulementPublic ? 'AND p.visible_public = 1 AND c.visible_public = 1' : '';
         $produits = Database::tous(
-            'SELECT p.*, c.nom_fr AS categorie_fr, c.nom_en AS categorie_en, c.position AS categorie_position
+            "SELECT p.*, c.nom_fr AS categorie_fr, c.nom_en AS categorie_en, c.position AS categorie_position
                FROM produits p
                JOIN produit_etablissements pe ON pe.produit_id = p.id AND pe.etablissement_id = ?
                JOIN categories c ON c.id = p.categorie_id
-              WHERE p.actif = 1 AND p.visible_public = 1 AND c.visible_public = 1
-              ORDER BY c.position, c.id, p.position, p.id',
+              WHERE p.actif = 1 $filtrePublic
+              ORDER BY c.position, c.id, p.position, p.id",
             [$etablissementId]
         );
         if ($produits === []) {

@@ -22,9 +22,14 @@ final class View
 
     public static function rendre(string $nom, array $donnees = []): string
     {
-        extract($donnees, EXTR_SKIP);
+        // Portée isolée : seules les données transmises sont visibles dans la vue,
+        // et aucune variable interne ne peut masquer une donnée (« nom », « donnees »…).
+        $inclure = static function (string $__fichier, array $__variables): void {
+            extract($__variables, EXTR_SKIP);
+            require $__fichier;
+        };
         ob_start();
-        require RACINE . '/views/' . $nom . '.php';
+        $inclure(RACINE . '/views/' . $nom . '.php', $donnees);
         return (string) ob_get_clean();
     }
 }

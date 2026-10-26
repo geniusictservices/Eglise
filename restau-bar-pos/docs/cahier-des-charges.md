@@ -3,7 +3,7 @@
 Système de caisse (POS) et ERP adaptable à trois contextes : **restaurant-bar**, **lounge bar** et **nightclub**.
 Principe : un **socle commun** toujours actif + des **modules** activés selon le type d'établissement et l'heure.
 
-> Les points marqués **⚠️ Hypothèse** n'ont pas encore été confirmés. Ils sont listés à la fin (section 17).
+> Les points marqués **⚠️ Hypothèse** n'ont pas encore été confirmés. Ils sont listés à la fin (section 18).
 
 ---
 
@@ -425,7 +425,41 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 - Créances clients et dettes fournisseurs.
 - Performances et présence des employés.
 
-## 14. Exigences transverses
+## 14. Interfaces simples, adaptées au contexte
+
+Principe : chaque personne ne voit que ce dont elle a besoin, au bon moment, sur son appareil. Moins de texte, de grands boutons, des couleurs qui aident à se repérer.
+
+### 14.1 Ce qui adapte l'interface
+
+| Contexte | Ce qui change |
+|---|---|
+| **Type d'établissement** | Restaurant-bar : tables, envoi en cuisine. Lounge : bouteilles, notes ouvertes. Nightclub : mode comptoir rapide, grandes tuiles, thème sombre. |
+| **Service en cours** | La carte, les prix et les modules du service actif (la cuisine fermée disparaît de la caisse, prix de nuit après 23h). |
+| **Rôle** | Chaque rôle arrive directement sur son écran : le barman sur la caisse de son comptoir, le chef sur l'écran de cuisine, le magasinier sur le stock. Les menus des écrans non autorisés ne s'affichent pas. |
+| **Lieu** | Un point de vente ne montre que les produits de ses comptoirs, avec la grille de prix de sa zone (carré VIP…). |
+| **Appareil** | Caisse fixe ou tablette : grille et ticket côte à côte. Téléphone de serveur : grille en plein écran et ticket dans un panneau, utilisable d'une main. |
+| **Langue et devise** | Celles de l'utilisateur et de l'établissement. |
+
+### 14.2 Règles communes
+- **Cibles tactiles d'au moins 44 px**, utilisables avec des doigts mouillés ou dans la pénombre.
+- **Couleur par catégorie** reprise partout (onglets, tuiles, lignes du ticket) pour se repérer sans lire.
+- **Retour immédiat** à chaque action, et **annulation facile** (bouton −, vider le ticket).
+- **Thème clair ou sombre**, choisi par défaut selon le type d'établissement et modifiable sur chaque appareil.
+- **Peu de saisie** : on touche plutôt qu'on tape. La recherche est là pour aller plus vite, pas obligatoire.
+- **Réglages mémorisés par appareil** (taille des tuiles, thème).
+
+### 14.3 Caisse : produits en grille
+- **Grille de tuiles** : nom, prix dans la devise principale, photo si elle existe, bandeau de la couleur de la catégorie.
+- **Onglets de catégories** en haut, avec « Tout » en premier.
+- **Un toucher = un article.** Si le produit a plusieurs formats (dose, bouteille…), une fenêtre propose les formats avec leur prix.
+- **Quantité affichée sur la tuile** : on voit tout de suite ce qui est déjà dans le ticket.
+- **Produit en rupture** grisé et impossible à toucher.
+- **Trois tailles de tuiles** (petite, moyenne, grande). Le nightclub démarre en grandes tuiles.
+- **Ticket** : lignes avec boutons − et +, total dans la devise principale, et total dans chaque autre devise acceptée.
+- **Recherche** : la touche « / » place le curseur dans la recherche, Entrée ajoute le produit s'il est seul (prépare le lecteur de codes-barres).
+- Plus tard : produits favoris et les plus vendus en premier, selon le service et le comptoir.
+
+## 15. Exigences transverses
 
 - **Mode hors ligne** : la caisse fonctionne sans réseau et se synchronise quand il revient.
 - **Rapidité** : un barman doit encaisser en 2 ou 3 secondes.
@@ -433,13 +467,13 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 - **Sécurité** : annulations, remises, crédits et changements de taux validés par un gérant, avec historique complet.
 - **Isolation des clients** : une base de données par instance (section 1.1).
 
-## 15. Découpage en phases
+## 16. Découpage en phases
 
 Chaque phase est utilisable seule.
 
 | Phase | Contenu |
 |---|---|
-| 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · français et anglais |
+| 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · **écran de caisse en grille** (sans enregistrement des ventes) · français et anglais |
 | 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules) · utilisateurs, rôles et permissions · établissements, dépôts, comptoirs, points de vente |
 | 3 | Caisse : commandes, encaissement multi-devises, taux de change, sessions de caisse · stock simple et transferts |
 | 4 | Clients et dettes · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
@@ -448,7 +482,7 @@ Chaque phase est utilisable seule.
 | 7 | Ressources humaines : présence par code QR, plannings, paie, commissions · événements |
 | 8 | Tableaux de bord avancés · facturation automatique des abonnements · export comptable |
 
-## 16. Décisions prises
+## 17. Décisions prises
 
 | Sujet | Décision |
 |---|---|
@@ -458,8 +492,9 @@ Chaque phase est utilisable seule.
 | Devises | Entièrement configurables par le propriétaire |
 | Technologie | PHP natif, sans framework (section 1.3) |
 | Vitrine | Page publique par établissement avec le menu et les prix, accessible par code QR |
+| Interfaces | Simples et adaptées au contexte (établissement, service, rôle, lieu, appareil) ; à la caisse, les produits sont en grille |
 
-## 17. Questions ouvertes
+## 18. Questions ouvertes
 
 1. Le dépôt **vend-il en gros** à d'autres clients, ou approvisionne-t-il seulement les comptoirs ?
 2. Un **dépôt central** pour plusieurs établissements, ou un dépôt par établissement ?

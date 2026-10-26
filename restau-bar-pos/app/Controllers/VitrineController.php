@@ -60,11 +60,7 @@ final class VitrineController
         $grille = $zone && $zone['grille_prix_id'] ? (int) $zone['grille_prix_id'] : $grilleDefaut;
 
         // Devises acceptées par l'établissement, parmi les devises actives
-        $acceptees = array_intersect_key($this->devises->actives(), array_flip($this->etablissements->deviseIds($id)));
-        if ($acceptees === []) {
-            $reference = $this->devises->reference();
-            $acceptees = $reference ? [(int) $reference['id'] => $reference] : [];
-        }
+        $acceptees = $this->devises->accepteesParmi($this->etablissements->deviseIds($id));
         $devise = $this->choisirDevise($acceptees, $etab);
 
         $horaires = $this->etablissements->horaires($id);

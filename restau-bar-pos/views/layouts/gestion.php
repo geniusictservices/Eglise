@@ -19,6 +19,7 @@ $chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
         <?php if (!empty($utilisateur)): ?>
             <nav class="haut__nav">
                 <a href="/gestion" <?= $chemin === '/gestion' ? 'aria-current="page"' : '' ?>><?= e(t('gestion.tableau')) ?></a>
+                <a href="/caisse"><?= e(t('gestion.caisse')) ?></a>
                 <a href="/gestion/qr" <?= str_starts_with((string) $chemin, '/gestion/qr') ? 'aria-current="page"' : '' ?>><?= e(t('gestion.qr')) ?></a>
                 <a href="/" target="_blank" rel="noopener"><?= e(t('gestion.voir_vitrine')) ?></a>
             </nav>

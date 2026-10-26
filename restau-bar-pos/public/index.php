@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Controllers\CaisseController;
 use App\Controllers\Gestion\ConnexionController;
 use App\Controllers\Gestion\QrController;
 use App\Controllers\Gestion\TableauController;
@@ -45,6 +46,9 @@ $routeur = new Router();
 $routeur->get('/', [VitrineController::class, 'accueil']);
 $routeur->get('/e/{slug}', [VitrineController::class, 'etablissement']);
 $routeur->get('/q/{code}', [VitrineController::class, 'scanQr']);
+
+// Caisse
+$routeur->get('/caisse', [CaisseController::class, 'index']);
 
 // Espace de gestion
 $routeur->get('/gestion', [TableauController::class, 'index']);

@@ -16,6 +16,7 @@ Phase 1 en cours. Déjà disponible :
 - catalogue : catégories, produits, conditionnements, grilles de prix, devises configurables et taux ;
 - **vitrine publique** de chaque établissement : présentation, horaires, état d'ouverture, menu avec les prix dans la devise choisie, prix de la zone (VIP…), recherche, français et anglais ;
 - **codes QR** : `/q/<code>` compte le scan puis ouvre le menu ; création, téléchargement (SVG) et chevalet de table à imprimer depuis l'espace de gestion ;
+- **écran de caisse** (`/caisse`) : produits en grille par catégorie, choix du format, ticket avec totaux dans chaque devise acceptée, adapté au type d'établissement (grandes tuiles et thème sombre pour un nightclub), utilisable sur tablette et téléphone. L'enregistrement des ventes arrive en phase 3 ;
 - espace de gestion : connexion et tableau de bord.
 
 ## Technologie
