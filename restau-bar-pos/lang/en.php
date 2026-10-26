@@ -116,4 +116,10 @@ return [
     'caisse.encaisser' => 'Charge',
     'caisse.note_phase3' => 'Payment and sales recording come in phase 3.',
     'caisse.annuler' => 'Cancel',
+
+    // Menu de gestion
+    'gestion.menu_catalogue' => 'Catalogue',
+    'gestion.menu_etablissements' => 'Venues',
+    'gestion.menu_devises' => 'Currencies & rates',
+    'gestion.menu_compte' => 'My account',
 ];

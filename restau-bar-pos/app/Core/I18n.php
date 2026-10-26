@@ -31,7 +31,11 @@ final class I18n
             self::$langue = self::depuisNavigateur($langues) ?? $langueDefaut ?? Config::get('langue_defaut', 'fr');
         }
 
+        // Textes communs, puis un fichier par module : lang/<code>/<module>.php
         self::$textes = require RACINE . '/lang/' . self::$langue . '.php';
+        foreach (glob(RACINE . '/lang/' . self::$langue . '/*.php') ?: [] as $fichier) {
+            self::$textes = array_merge(self::$textes, require $fichier);
+        }
     }
 
     public static function langue(): string

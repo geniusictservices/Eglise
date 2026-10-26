@@ -6,3 +6,7 @@
 # Journaux
 /storage/logs/*
 !/storage/logs/.gitkeep
+
+# Fichiers envoyés (photos des produits…)
+/public/uploads/*
+!/public/uploads/.gitkeep

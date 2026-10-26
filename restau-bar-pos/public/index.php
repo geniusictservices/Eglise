@@ -59,4 +59,9 @@ $routeur->get('/gestion/qr', [QrController::class, 'index']);
 $routeur->post('/gestion/qr', [QrController::class, 'creer']);
 $routeur->get('/gestion/qr/{code}/imprimer', [QrController::class, 'imprimer']);
 
+// Autres modules : un fichier par module, qui reçoit $routeur
+foreach (glob(RACINE . '/app/routes/*.php') ?: [] as $fichierRoutes) {
+    require $fichierRoutes;
+}
+
 $routeur->traiter($_SERVER['REQUEST_METHOD'] ?? 'GET', parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');

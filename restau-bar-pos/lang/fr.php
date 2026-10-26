@@ -116,4 +116,10 @@ return [
     'caisse.encaisser' => 'Encaisser',
     'caisse.note_phase3' => 'L\'encaissement et l\'enregistrement des ventes arrivent en phase 3.',
     'caisse.annuler' => 'Annuler',
+
+    // Menu de gestion
+    'gestion.menu_catalogue' => 'Catalogue',
+    'gestion.menu_etablissements' => 'Établissements',
+    'gestion.menu_devises' => 'Devises et taux',
+    'gestion.menu_compte' => 'Mon compte',
 ];

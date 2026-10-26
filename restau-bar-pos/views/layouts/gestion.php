@@ -20,7 +20,15 @@ $chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
             <nav class="haut__nav">
                 <a href="/gestion" <?= $chemin === '/gestion' ? 'aria-current="page"' : '' ?>><?= e(t('gestion.tableau')) ?></a>
                 <a href="/caisse"><?= e(t('gestion.caisse')) ?></a>
-                <a href="/gestion/qr" <?= str_starts_with((string) $chemin, '/gestion/qr') ? 'aria-current="page"' : '' ?>><?= e(t('gestion.qr')) ?></a>
+                <?php foreach ([
+                    '/gestion/catalogue' => 'gestion.menu_catalogue',
+                    '/gestion/etablissements' => 'gestion.menu_etablissements',
+                    '/gestion/devises' => 'gestion.menu_devises',
+                    '/gestion/qr' => 'gestion.qr',
+                    '/gestion/compte' => 'gestion.menu_compte',
+                ] as $lien => $cleTexte): ?>
+                    <a href="<?= $lien ?>" <?= str_starts_with((string) $chemin, $lien) ? 'aria-current="page"' : '' ?>><?= e(t($cleTexte)) ?></a>
+                <?php endforeach; ?>
                 <a href="/" target="_blank" rel="noopener"><?= e(t('gestion.voir_vitrine')) ?></a>
             </nav>
         <?php endif; ?>

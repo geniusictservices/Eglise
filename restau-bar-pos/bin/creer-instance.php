@@ -15,6 +15,7 @@ declare(strict_types=1);
 
 use App\Core\Config;
 use App\Core\Database;
+use App\Core\Migrations;
 
 if (PHP_SAPI !== 'cli') {
     exit("À lancer en ligne de commande.\n");
@@ -93,20 +94,10 @@ foreach (['localhost', '127.0.0.1'] as $origine) {
 $configDb = ['hote' => $hote, 'port' => $port, 'nom' => $nomBase, 'utilisateur' => $utilisateurBase, 'mot_de_passe' => $motDePasseBase];
 $pdo = Database::connecter($configDb);
 
-/** Exécute un fichier SQL instruction par instruction. */
-$executerFichier = static function (PDO $pdo, string $fichier): void {
-    $sql = (string) file_get_contents($fichier);
-    $sql = preg_replace('/^\s*--.*$/m', '', $sql);
-    foreach (preg_split('/;\s*$/m', $sql) as $instruction) {
-        if (trim($instruction) !== '') {
-            $pdo->exec($instruction);
-        }
-    }
-};
-
-$executerFichier($pdo, RACINE . '/database/schema.sql');
+Migrations::executerFichier($pdo, RACINE . '/database/schema.sql');
+Migrations::appliquer($pdo);
 if (isset($options['demo'])) {
-    $executerFichier($pdo, RACINE . '/database/demo.sql');
+    Migrations::executerFichier($pdo, RACINE . '/database/demo.sql');
 } else {
     $pdo->prepare('INSERT INTO parametres (cle, valeur) VALUES (?, ?), (?, ?), (?, ?)')->execute([
         'nom_client', $options['nom'] ?? $sousDomaine,
