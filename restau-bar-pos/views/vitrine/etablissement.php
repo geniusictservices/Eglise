@@ -84,48 +84,23 @@ $couverture = urlImageSure($etab['couverture']);
         <?php foreach ($menu as $categorie): ?>
             <section class="categorie" id="cat-<?= (int) $categorie['id'] ?>" data-categorie>
                 <h2 class="categorie__titre"><?= e(champ($categorie, 'nom')) ?></h2>
-                <ul class="produits">
-                    <?php foreach ($categorie['produits'] as $produit): ?>
-                        <li class="produit<?= $produit['disponible'] ? '' : ' produit--epuise' ?>" data-produit
-                            data-recherche="<?= e(mb_strtolower($produit['nom_fr'] . ' ' . $produit['nom_en'] . ' ' . champ($produit, 'description'))) ?>">
-                            <?php if ($produit['photo']): ?>
-                                <img class="produit__photo" src="<?= e($produit['photo']) ?>" alt="" loading="lazy" width="80" height="80">
-                            <?php endif; ?>
-                            <div class="produit__texte">
-                                <h3 class="produit__nom">
-                                    <?= e(champ($produit, 'nom')) ?>
-                                    <?php foreach ($produit['badges'] as $badge): ?>
-                                        <span class="badge badge--<?= e($badge) ?>"><?= e(t('badge.' . $badge)) ?></span>
-                                    <?php endforeach; ?>
-                                    <?php if (!$produit['disponible']): ?>
-                                        <span class="badge badge--epuise"><?= e(t('badge.epuise')) ?></span>
-                                    <?php endif; ?>
-                                </h3>
-                                <?php if (champ($produit, 'description') !== ''): ?>
-                                    <p class="produit__description"><?= e(champ($produit, 'description')) ?></p>
-                                <?php endif; ?>
-                                <?php if (champ($produit, 'allergenes') !== ''): ?>
-                                    <p class="produit__allergenes"><?= e(t('vitrine.allergenes', ['liste' => champ($produit, 'allergenes')])) ?></p>
-                                <?php endif; ?>
-                            </div>
-                            <dl class="produit__prix">
-                                <?php
-                                // Un produit vendu seulement à l'unité n'a pas besoin d'afficher « Bouteille » ou « Assiette »
-                                $uniteSeule = count($produit['conditionnements']) === 1 && (float) $produit['conditionnements'][0]['quantite_base'] === 1.0;
-                                ?>
-                                <?php foreach ($produit['conditionnements'] as $cond): ?>
-                                    <div class="prix">
-                                        <dt class="prix__format<?= $uniteSeule ? ' visuellement-cache' : '' ?>"><?= e(champ($cond, 'nom')) ?></dt>
-                                        <dd class="prix__montant"><?= e($cond['montant_formate']) ?></dd>
-                                    </div>
-                                <?php endforeach; ?>
-                            </dl>
-                            <?php if ($produit['photo'] && !empty($produit['photo_credit'])): ?>
-                                <p class="produit__credit"><?= e(creditPhoto($produit['photo_credit'])) ?></p>
-                            <?php endif; ?>
-                        </li>
-                    <?php endforeach; ?>
-                </ul>
+                <?php if ($categorie['produits'] !== []): ?>
+                    <ul class="produits">
+                        <?php foreach ($categorie['produits'] as $produit): ?>
+                            <?= App\Core\View::rendre('vitrine/_produit', ['produit' => $produit, 'balise' => 'h3']) ?>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+                <?php foreach ($categorie['sous_categories'] as $sous): ?>
+                    <div class="sous-categorie" id="cat-<?= (int) $sous['id'] ?>" data-sous-categorie>
+                        <h3 class="sous-categorie__titre"><?= e(champ($sous, 'nom')) ?></h3>
+                        <ul class="produits">
+                            <?php foreach ($sous['produits'] as $produit): ?>
+                                <?= App\Core\View::rendre('vitrine/_produit', ['produit' => $produit, 'balise' => 'h4']) ?>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endforeach; ?>
             </section>
         <?php endforeach; ?>
 

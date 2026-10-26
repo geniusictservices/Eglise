@@ -10,7 +10,10 @@ use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
 use App\Repositories\GestionCatalogueRepository;
 
-/** Liste des produits du catalogue, disponibilité en un toucher et ordre dans la catégorie. */
+/**
+ * Liste des produits du catalogue, disponibilité en un toucher et ordre dans la catégorie.
+ * Les tailles d'un produit (Primus Petite, Grande) sont listées sous lui, chacune avec son « disponible / épuisé ».
+ */
 final class CatalogueController
 {
     private GestionCatalogueRepository $catalogue;
@@ -34,24 +37,29 @@ final class CatalogueController
         ];
         $produits = $this->catalogue->produits($filtres, $this->catalogue->grilleParDefaut(), $reference ? (int) $reference['id'] : null);
 
-        // Regroupement par catégorie. Sans filtre, les catégories vides sont aussi affichées.
+        // Regroupement par catégorie, dans l'ordre de l'arbre (catégorie, puis ses sous-catégories).
+        // Sans filtre, les catégories vides sont aussi affichées.
         $categories = $this->catalogue->categories();
         $groupes = [];
         $filtre = $filtres['categorie'] || $filtres['etablissement'] || $filtres['recherche'] !== '' || $filtres['desactives'];
-        if (!$filtre) {
-            foreach ($categories as $categorie) {
-                $groupes[$categorie['id']] = ['categorie' => $categorie, 'produits' => []];
-            }
+        foreach ($categories as $categorie) {
+            $groupes[$categorie['id']] = ['categorie' => $categorie, 'produits' => []];
         }
         foreach ($produits as $produit) {
+            // Catégorie archivée (liste des produits désactivés) : ajoutée à la fin
             $groupes[$produit['categorie_id']] ??= ['categorie' => [
                 'id' => $produit['categorie_id'],
                 'nom_fr' => $produit['categorie_fr'],
                 'nom_en' => $produit['categorie_en'],
                 'visible_public' => $produit['categorie_visible'],
                 'actif' => $produit['categorie_active'],
+                'niveau' => 0,
+                'nb_sous' => 0,
             ], 'produits' => []];
             $groupes[$produit['categorie_id']]['produits'][] = $produit;
+        }
+        if ($filtre) {
+            $groupes = array_filter($groupes, static fn (array $g) => $g['produits'] !== []);
         }
 
         View::afficher('gestion/catalogue/index', [

@@ -1,5 +1,7 @@
 // Écran de caisse : grille de produits, ticket en cours, totaux dans chaque devise.
 // Les ventes ne sont pas encore enregistrées (phase 3) : le ticket est gardé dans l'onglet du navigateur.
+// Un produit à tailles (Primus Petite 33 cl, Grande 72 cl) est une seule tuile : ses formats sont ceux de
+// toutes ses tailles, chacun avec le libellé de sa taille ; la ligne du ticket affiche « Primus Grande 72 cl ».
 (function () {
   'use strict';
 
@@ -12,8 +14,9 @@
   // ---------- Données ----------
 
   var formats = {};       // id du format → { format, produit }
-  var couleurs = {};      // id de catégorie → couleur
-  D.categories.forEach(function (c, i) { couleurs[c.id] = PALETTE[i % PALETTE.length]; });
+  var couleurs = {};      // id de catégorie principale → couleur (reprise par ses sous-catégories)
+  var categoriesParId = {};
+  D.categories.forEach(function (c, i) { couleurs[c.id] = PALETTE[i % PALETTE.length]; categoriesParId[c.id] = c; });
   D.produits.forEach(function (p) {
     p.rechercheNormalisee = normaliser(p.recherche + ' ' + p.nom);
     p.formats.forEach(function (f) { formats[f.id] = { format: f, produit: p }; });
@@ -70,11 +73,23 @@
   var cleTicket = 'caisse.ticket.' + D.cle;
   var ticket = [];   // [{ id: id du format, qte: n }]
   try {
-    ticket = (JSON.parse(sessionStorage.getItem(cleTicket)) || []).filter(function (l) { return formats[l.id]; });
+    // Ticket gardé par un chargement précédent : on ne garde que les lignes dont le format est encore vendu
+    // (un format passé à une taille garde son id) ; un contenu illisible vide le ticket.
+    var garde = JSON.parse(sessionStorage.getItem(cleTicket));
+    ticket = (Array.isArray(garde) ? garde : []).filter(function (l) {
+      return l && formats[l.id] && typeof l.qte === 'number' && l.qte > 0 && Math.floor(l.qte) === l.qte;
+    });
   } catch (e) { ticket = []; }
+  if (ticket.length === 0) {
+    try { sessionStorage.removeItem(cleTicket); } catch (e) { /* stockage indisponible */ }
+  }
 
   function sauver() {
     try { sessionStorage.setItem(cleTicket, JSON.stringify(ticket)); } catch (e) { /* stockage indisponible */ }
+  }
+  // « Primus Grande 72 cl » pour un format d'une taille, sinon le nom du produit
+  function nomLigne(f) {
+    return f.format.taille ? f.produit.nom + ' ' + f.format.taille : f.produit.nom;
   }
   function quantiteProduit(produit) {
     return ticket.reduce(function (n, l) { return formats[l.id].produit === produit ? n + l.qte : n; }, 0);
@@ -123,14 +138,15 @@
       var li = el('li', 'ligne');
       li.style.setProperty('--cat', couleurs[f.produit.categorie]);
       var texte = el('div', 'ligne__texte');
-      texte.appendChild(el('span', 'ligne__nom', f.produit.nom));
-      if (!f.format.unite || f.produit.formats.length > 1) { texte.appendChild(el('span', 'ligne__format', f.format.nom)); }
+      var nom = nomLigne(f);
+      texte.appendChild(el('span', 'ligne__nom', nom));
+      if (!f.format.unite || f.format.freres > 1) { texte.appendChild(el('span', 'ligne__format', f.format.nom)); }
       li.appendChild(texte);
 
       var pas = el('div', 'pas');
-      var moins = bouton('pas__bouton', '−', T.retirer + ' : ' + f.produit.nom);
+      var moins = bouton('pas__bouton', '−', T.retirer + ' : ' + nom);
       moins.addEventListener('click', function () { modifier(l.id, -1); });
-      var plus = bouton('pas__bouton', '+', T.ajouter + ' : ' + f.produit.nom);
+      var plus = bouton('pas__bouton', '+', T.ajouter + ' : ' + nom);
       plus.addEventListener('click', function () { modifier(l.id, 1); });
       var qte = el('span', 'pas__qte', String(l.qte));
       qte.setAttribute('aria-label', T.quantite + ' ' + l.qte);
@@ -176,9 +192,11 @@
 
   var elGrille = document.getElementById('grille');
   var elOnglets = document.getElementById('onglets');
+  var elSous = document.getElementById('sous-onglets');
   var elAucun = document.getElementById('aucun');
   var elRecherche = document.getElementById('recherche');
   var categorieActive = 0;  // 0 = tout
+  var sousActive = 0;       // 0 = toutes les sous-catégories de la catégorie choisie
   var tuiles = {};          // id produit → élément
 
   function dessinerOnglets() {
@@ -189,17 +207,41 @@
       b.setAttribute('aria-pressed', String(c.id === categorieActive));
       b.addEventListener('click', function () {
         categorieActive = c.id;
+        sousActive = 0;
         elOnglets.querySelectorAll('.onglet').forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
         b.setAttribute('aria-pressed', 'true');
+        dessinerSousOnglets();
         filtrer();
       });
       elOnglets.appendChild(b);
     });
   }
 
+  // Seconde rangée : sous-catégories de la catégorie choisie (« Toutes », « Locales », « Importées »)
+  function dessinerSousOnglets() {
+    elSous.textContent = '';
+    var categorie = categoriesParId[categorieActive];
+    if (!categorie || !categorie.sous || !categorie.sous.length) { elSous.hidden = true; return; }
+    elSous.setAttribute('aria-label', categorie.nom);
+    [{ id: 0, nom: T.toutes }].concat(categorie.sous).forEach(function (s) {
+      var b = bouton('sous-onglet', s.nom);
+      b.style.setProperty('--cat', couleurs[categorie.id]);
+      b.setAttribute('aria-pressed', String(s.id === sousActive));
+      b.addEventListener('click', function () {
+        sousActive = s.id;
+        elSous.querySelectorAll('.sous-onglet').forEach(function (o) { o.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+        filtrer();
+      });
+      elSous.appendChild(b);
+    });
+    elSous.hidden = false;
+  }
+
   function texteFormat(p) {
+    if (p.tailles > 1) { return p.tailles + ' ' + T.tailles; }
     if (p.formats.length > 1) { return p.formats.length + ' ' + T.formats; }
-    return p.formats[0].unite ? '' : p.formats[0].nom;
+    return p.formats[0].unite ? (p.formats[0].taille || '') : p.formats[0].nom;
   }
   function textePrix(p) {
     var montants = p.formats.map(function (f) { return prix(f, D.principale); }).filter(function (m) { return m !== null; });
@@ -247,6 +289,7 @@
     var visibles = 0;
     D.produits.forEach(function (p) {
       var ok = (categorieActive === 0 || p.categorie === categorieActive) &&
+        (sousActive === 0 || p.sous === sousActive) &&
         termes.every(function (m) { return p.rechercheNormalisee.indexOf(m) !== -1; });
       tuiles[p.id].hidden = !ok;
       if (ok) { visibles++; }
@@ -255,13 +298,13 @@
     return visibles;
   }
 
-  // ---------- Choix du format ----------
+  // ---------- Choix du format (et de la taille) ----------
 
   var dialogue = document.getElementById('formats');
   function choisir(p) {
     var vendables = p.formats.filter(function (f) { return prix(f, D.principale) !== null; });
     if (!vendables.length) { return; }
-    if (vendables.length === 1) {
+    if (vendables.length === 1 && vendables[0].disponible) {
       ajouter(vendables[0].id);
       pulser(tuiles[p.id]);
       return;
@@ -272,7 +315,10 @@
     vendables.forEach(function (f) {
       var b = bouton('format');
       b.style.setProperty('--cat', couleurs[p.categorie]);
-      b.append(el('span', 'format__nom', f.nom), el('span', 'format__prix', formater(prix(f, D.principale), D.principale)));
+      // « Petite 33 cl · Bouteille » : une ligne par taille et par format vendu
+      var nom = f.taille ? f.taille + ' · ' + f.nom : f.nom;
+      b.append(el('span', 'format__nom', nom), el('span', 'format__prix', f.disponible ? formater(prix(f, D.principale), D.principale) : T.epuise));
+      if (!f.disponible) { b.disabled = true; b.classList.add('format--epuise'); }
       b.addEventListener('click', function (ev) {
         ev.preventDefault();
         ajouter(f.id);

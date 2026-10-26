@@ -33,6 +33,10 @@ $routeur->post('/gestion/catalogue/produits/{id}/formats/{format}', [CataloguePr
 $routeur->post('/gestion/catalogue/produits/{id}/formats/{format}/supprimer', [CatalogueProduitController::class, 'supprimerFormat']);
 $routeur->post('/gestion/catalogue/produits/{id}/prix', [CatalogueProduitController::class, 'enregistrerPrix']);
 $routeur->post('/gestion/catalogue/produits/{id}/vente', [CatalogueProduitController::class, 'enregistrerVente']);
+// Tailles d'un produit principal (Petite 33 cl, Grande 72 cl) : chacune est un produit avec ses formats et prix
+$routeur->post('/gestion/catalogue/produits/{id}/tailles', [CatalogueProduitController::class, 'ajouterTaille']);
+$routeur->post('/gestion/catalogue/produits/{id}/tailles/{taille}/monter', [CatalogueProduitController::class, 'monterTaille']);
+$routeur->post('/gestion/catalogue/produits/{id}/tailles/{taille}/descendre', [CatalogueProduitController::class, 'descendreTaille']);
 $routeur->post('/gestion/catalogue/produits/{id}/desactiver', [CatalogueProduitController::class, 'desactiver']);
 $routeur->post('/gestion/catalogue/produits/{id}/reactiver', [CatalogueProduitController::class, 'reactiver']);
 

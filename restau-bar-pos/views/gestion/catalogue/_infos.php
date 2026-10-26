@@ -11,7 +11,7 @@ $badges = array_filter(explode(',', (string) ($infos['badges'] ?? '')));
     <select id="categorie_id" name="categorie_id" required>
         <option value=""><?= e(t('catalogue.choisir')) ?></option>
         <?php foreach ($categories as $categorie): ?>
-            <option value="<?= (int) $categorie['id'] ?>" <?= (int) ($infos['categorie_id'] ?? 0) === (int) $categorie['id'] ? 'selected' : '' ?>><?= e(champ($categorie, 'nom')) ?></option>
+            <option value="<?= (int) $categorie['id'] ?>" <?= (int) ($infos['categorie_id'] ?? 0) === (int) $categorie['id'] ? 'selected' : '' ?>><?= e(($categorie['niveau'] ? '— ' : '') . champ($categorie, 'nom')) ?></option>
         <?php endforeach; ?>
     </select>
 </div>

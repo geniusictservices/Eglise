@@ -58,6 +58,10 @@ final class CaisseController
     /**
      * Catalogue de la caisse, avec le prix de chaque format dans chaque devise acceptée.
      * Les prix sont calculés côté serveur pour respecter les prix fixes et les arrondis de chaque devise.
+     *
+     * Onglets : catégories principales, chacune avec ses sous-catégories (« sous »).
+     * Un produit à tailles est une seule tuile : ses formats sont ceux de toutes ses tailles,
+     * chacun avec le libellé de sa taille (« Grande 72 cl ») et sa disponibilité.
      */
     private function donnees(int $etablissementId, int $grille, int $grilleDefaut, array $acceptees, array $principale, string $type): array
     {
@@ -67,25 +71,15 @@ final class CaisseController
 
         foreach ($acceptees as $devise) {
             foreach ($catalogue->menu($etablissementId, $grille, $grilleDefaut, $devise, false) as $categorie) {
-                $categories[$categorie['id']] ??= ['id' => $categorie['id'], 'nom' => champ($categorie, 'nom')];
-                foreach ($categorie['produits'] as $produit) {
-                    $produits[$produit['id']] ??= [
-                        'id' => (int) $produit['id'],
-                        'categorie' => (int) $produit['categorie_id'],
-                        'nom' => champ($produit, 'nom'),
-                        'recherche' => mb_strtolower($produit['nom_fr'] . ' ' . $produit['nom_en']),
-                        'disponible' => (bool) $produit['disponible'],
-                        'photo' => urlImageSure($produit['photo']),
-                        'formats' => [],
-                    ];
-                    foreach ($produit['conditionnements'] as $cond) {
-                        $produits[$produit['id']]['formats'][$cond['id']] ??= [
-                            'id' => (int) $cond['id'],
-                            'nom' => champ($cond, 'nom'),
-                            'unite' => (float) $cond['quantite_base'] === 1.0,
-                            'prix' => [],
-                        ];
-                        $produits[$produit['id']]['formats'][$cond['id']]['prix'][$devise['code']] = $cond['montant'];
+                $categories[$categorie['id']] ??= ['id' => $categorie['id'], 'nom' => champ($categorie, 'nom'), 'sous' => []];
+                $groupes = [[$categorie, 0]];
+                foreach ($categorie['sous_categories'] as $sous) {
+                    $categories[$categorie['id']]['sous'][$sous['id']] ??= ['id' => $sous['id'], 'nom' => champ($sous, 'nom')];
+                    $groupes[] = [$sous, (int) $sous['id']];
+                }
+                foreach ($groupes as [$groupe, $sousId]) {
+                    foreach ($groupe['produits'] as $produit) {
+                        $this->ajouterProduit($produits, $produit, (int) $categorie['id'], $sousId, $devise);
                     }
                 }
             }
@@ -94,6 +88,11 @@ final class CaisseController
         foreach ($produits as &$produit) {
             $produit['formats'] = array_values($produit['formats']);
         }
+        unset($produit);
+        foreach ($categories as &$categorie) {
+            $categorie['sous'] = array_values($categorie['sous']);
+        }
+        unset($categorie);
 
         return [
             'mode' => $type === 'nightclub' ? 'rapide' : 'standard',
@@ -108,5 +107,46 @@ final class CaisseController
             'categories' => array_values($categories),
             'produits' => array_values($produits),
         ];
+    }
+
+    /** Ajoute un produit (et ses tailles) au catalogue de la caisse, avec ses prix dans une devise. */
+    private function ajouterProduit(array &$produits, array $produit, int $categorieId, int $sousId, array $devise): void
+    {
+        $id = (int) $produit['id'];
+        $recherche = $produit['nom_fr'] . ' ' . $produit['nom_en'];
+        foreach ($produit['tailles'] as $taille) {
+            $recherche .= ' ' . $taille['taille_fr'] . ' ' . $taille['taille_en'] . ' ' . $taille['contenance'];
+        }
+        $produits[$id] ??= [
+            'id' => $id,
+            'categorie' => $categorieId,
+            'sous' => $sousId,
+            'nom' => champ($produit, 'nom'),
+            'recherche' => mb_strtolower($recherche),
+            'disponible' => (bool) $produit['disponible'],
+            'photo' => urlImageSure($produit['photo']),
+            'tailles' => count($produit['tailles']),
+            'formats' => [],
+        ];
+        // Formats du produit lui-même, puis ceux de chaque taille
+        $sources = [[$produit, '', (bool) $produit['disponible']]];
+        foreach ($produit['tailles'] as $taille) {
+            $sources[] = [$taille, $taille['libelle_taille'], (bool) $taille['disponible']];
+        }
+        foreach ($sources as [$source, $libelleTaille, $disponible]) {
+            foreach ($source['conditionnements'] as $cond) {
+                $produits[$id]['formats'][$cond['id']] ??= [
+                    'id' => (int) $cond['id'],
+                    'nom' => champ($cond, 'nom'),
+                    'unite' => (float) $cond['quantite_base'] === 1.0,
+                    'taille' => $libelleTaille,
+                    'tailleId' => (int) $source['id'],
+                    'freres' => count($source['conditionnements']),
+                    'disponible' => $disponible,
+                    'prix' => [],
+                ];
+                $produits[$id]['formats'][$cond['id']]['prix'][$devise['code']] = $cond['montant'];
+            }
+        }
     }
 }

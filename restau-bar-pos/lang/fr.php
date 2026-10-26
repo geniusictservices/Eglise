@@ -93,6 +93,8 @@ return [
     'caisse.produits' => 'Produits',
     'caisse.tout' => 'Tout',
     'caisse.formats' => 'formats',
+    'caisse.tailles' => 'tailles',
+    'caisse.toutes_sous_categories' => 'Toutes',
     'caisse.article' => 'article',
     'caisse.articles' => 'articles',
     'caisse.voir_ticket' => 'voir le ticket',

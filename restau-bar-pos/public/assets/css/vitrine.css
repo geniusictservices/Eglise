@@ -188,6 +188,23 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
   color: var(--accent-texte);
 }
 
+/* Sous-catégorie : intertitre dans sa catégorie (Bières > Locales, Importées) */
+.sous-categorie { margin-top: 1.1rem; scroll-margin-top: 8rem; }
+.categorie__titre + .sous-categorie { margin-top: .5rem; }
+.sous-categorie__titre {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin: 0;
+  padding: .55rem 0 .15rem;
+  font-size: var(--taille-xs, .75rem);
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--doux);
+}
+.sous-categorie__titre::after { content: ""; flex: 1; height: 1px; background: var(--ligne); }
+
 .produits { list-style: none; margin: 0; padding: 0; }
 .produit {
   display: grid;
@@ -215,6 +232,10 @@ a { color: var(--accent-texte); text-underline-offset: 3px; }
 .produit__credit { grid-column: 1 / -1; margin: 0; font-size: .6875rem; color: var(--doux); }
 .produit--epuise .produit__nom, .produit--epuise .produit__prix, .produit--epuise .produit__photo { opacity: .55; }
 .produit--epuise .prix__montant { text-decoration: line-through; }
+/* Une taille épuisée : sa ligne de prix seulement */
+.prix--epuise .prix__format, .prix--epuise .prix__valeur { opacity: .55; }
+.prix--epuise .prix__valeur { text-decoration: line-through; }
+.prix__montant .badge { margin-right: .35rem; vertical-align: 1px; }
 
 .produit__prix { margin: 0; display: grid; gap: .2rem; align-content: start; text-align: right; }
 .prix { display: flex; justify-content: flex-end; align-items: baseline; gap: .6rem; }

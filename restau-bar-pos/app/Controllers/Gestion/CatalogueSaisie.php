@@ -55,6 +55,31 @@ final class CatalogueSaisie
         return [$valeurs, $erreurs];
     }
 
+    /**
+     * Taille d'un produit (« Petite », « Grande », « 33 cl ») et sa contenance (« 33 cl »).
+     * @return array{array, string[]}
+     */
+    public function taille(array $post): array
+    {
+        $erreurs = [];
+        $valeurs = [
+            'taille_fr' => self::texte($post, 'taille_fr'),
+            'taille_en' => self::texte($post, 'taille_en'),
+            'contenance' => self::texte($post, 'contenance'),
+        ];
+        if ($valeurs['taille_fr'] === '') {
+            $erreurs[] = t('tailles.erreur_nom');
+        }
+        if (mb_strlen($valeurs['taille_fr']) > 64 || mb_strlen($valeurs['taille_en']) > 64) {
+            $erreurs[] = t('catalogue.erreur_trop_long', ['champ' => t('tailles.nom'), 'max' => 64]);
+        }
+        if (mb_strlen($valeurs['contenance']) > 32) {
+            $erreurs[] = t('catalogue.erreur_trop_long', ['champ' => t('tailles.contenance'), 'max' => 32]);
+        }
+        $valeurs['contenance'] = $valeurs['contenance'] === '' ? null : $valeurs['contenance'];
+        return [$valeurs, $erreurs];
+    }
+
     /** Section « Où il est vendu ». */
     public function vente(array $post, array $etablissements): array
     {

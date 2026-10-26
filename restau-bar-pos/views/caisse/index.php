@@ -10,6 +10,8 @@
 $textes = [
     'tout' => t('caisse.tout'),
     'formats' => t('caisse.formats'),
+    'tailles' => t('caisse.tailles'),
+    'toutes' => t('caisse.toutes_sous_categories'),
     'epuise' => t('badge.epuise'),
     'article' => t('caisse.article'),
     'articles' => t('caisse.articles'),
@@ -63,7 +65,10 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
 
     <div class="corps">
         <section class="catalogue" aria-label="<?= e(t('caisse.produits')) ?>">
-            <nav class="onglets" id="onglets" aria-label="<?= e(t('vitrine.categories')) ?>"></nav>
+            <div class="catalogue__tete">
+                <nav class="onglets" id="onglets" aria-label="<?= e(t('vitrine.categories')) ?>"></nav>
+                <nav class="sous-onglets" id="sous-onglets" hidden></nav>
+            </div>
             <div class="grille" id="grille" aria-live="off"></div>
             <p class="vide" id="aucun" hidden><?= e(t('caisse.aucun_resultat')) ?></p>
         </section>

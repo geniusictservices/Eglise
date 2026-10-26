@@ -76,11 +76,18 @@ INSERT INTO categories (id, nom_fr, nom_en, position) VALUES
  (6, 'Plats',             'Mains',              6),
  (7, 'À grignoter',       'Bites',              7);
 
+-- Sous-catégories (deux niveaux au plus) : position dans leur catégorie parente
+INSERT INTO categories (id, parent_id, nom_fr, nom_en, position) VALUES
+ (8,  1, 'Locales',   'Local',    1),
+ (9,  1, 'Importées', 'Imported', 2),
+ (10, 5, 'Whisky',    'Whisky',   1),
+ (11, 5, 'Cognac',    'Cognac',   2);
+
 INSERT INTO produits (id, categorie_id, nom_fr, nom_en, description_fr, description_en, unite_base, badges, allergenes_fr, allergenes_en, disponible, position) VALUES
- (1,  1, 'Primus',        'Primus',        'Blonde locale, 72 cl',                 'Local lager, 72 cl',            'bouteille', 'populaire', NULL, NULL, 1, 1),
- (2,  1, 'Mützig',        'Mützig',        'Blonde premium, 65 cl',                'Premium lager, 65 cl',          'bouteille', NULL,        NULL, NULL, 1, 2),
- (3,  1, 'Heineken',      'Heineken',      'Blonde, 33 cl',                         'Lager, 33 cl',                  'bouteille', NULL,        NULL, NULL, 1, 3),
- (4,  1, 'Guinness',      'Guinness',      'Stout, 33 cl',                          'Stout, 33 cl',                  'bouteille', NULL,        NULL, NULL, 0, 4),
+ (1,  8, 'Primus',        'Primus',        'Blonde locale',                         'Local lager',                   'bouteille', 'populaire', NULL, NULL, 1, 1),
+ (2,  8, 'Mützig',        'Mützig',        'Blonde premium',                        'Premium lager',                 'bouteille', NULL,        NULL, NULL, 1, 2),
+ (3,  9, 'Heineken',      'Heineken',      'Blonde, 33 cl',                         'Lager, 33 cl',                  'bouteille', NULL,        NULL, NULL, 1, 1),
+ (4,  9, 'Guinness',      'Guinness',      'Stout, 33 cl',                          'Stout, 33 cl',                  'bouteille', NULL,        NULL, NULL, 0, 2),
  (5,  2, 'Coca-Cola',     'Coca-Cola',     '33 cl',                                 '33 cl',                         'canette',   NULL,        NULL, NULL, 1, 1),
  (6,  2, 'Eau minérale',  'Mineral water', 'Plate ou gazeuse',                      'Still or sparkling',            'bouteille', NULL,        NULL, NULL, 1, 2),
  (7,  2, 'Jus de maracuja','Passion fruit juice','Pressé maison',                  'Freshly squeezed',              'verre',     'nouveau',   NULL, NULL, 1, 3),
@@ -88,24 +95,36 @@ INSERT INTO produits (id, categorie_id, nom_fr, nom_en, description_fr, descript
  (9,  3, 'Mojito',        'Mojito',        'Rhum blanc, menthe fraîche, citron vert','White rum, fresh mint, lime', 'verre',     NULL,        NULL, NULL, 1, 2),
  (10, 4, 'Vin rouge de la maison','House red wine','Afrique du Sud',               'South Africa',                  'cl',        NULL,        'Sulfites', 'Sulphites', 1, 1),
  (11, 4, 'Moët & Chandon Brut','Moët & Chandon Brut','75 cl',                      '75 cl',                         'bouteille', NULL,        'Sulfites', 'Sulphites', 1, 2),
- (12, 5, 'Johnnie Walker Black Label','Johnnie Walker Black Label','Blended Scotch, 70 cl','Blended Scotch, 70 cl', 'cl',        NULL,        NULL, NULL, 1, 1),
- (13, 5, 'Hennessy VS',   'Hennessy VS',   'Cognac, 70 cl',                         'Cognac, 70 cl',                 'cl',        'populaire', NULL, NULL, 1, 2),
+ (12, 10, 'Johnnie Walker Black Label','Johnnie Walker Black Label','Blended Scotch, 70 cl','Blended Scotch, 70 cl', 'cl',      NULL,        NULL, NULL, 1, 1),
+ (13, 11, 'Hennessy VS',   'Hennessy VS',   'Cognac, 70 cl',                         'Cognac, 70 cl',                 'cl',        'populaire', NULL, NULL, 1, 1),
  (14, 6, 'Tilapia grillé du lac','Grilled lake tilapia','Entier, bananes plantains et pili-pili','Whole fish, plantains and chilli','piece','populaire,epice','Poisson','Fish', 1, 1),
  (15, 6, 'Poulet braisé', 'Braised chicken','Demi-poulet, frites ou chikwangue',   'Half chicken, fries or cassava bread','piece', NULL,      NULL, NULL, 1, 2),
  (16, 6, 'Brochettes de chèvre','Goat skewers','Trois brochettes, oignons grillés', 'Three skewers, grilled onions', 'piece',     'epice',     NULL, NULL, 1, 3),
  (17, 7, 'Frites',        'Fries',         'Portion',                               'Portion',                       'piece',     NULL,        NULL, NULL, 1, 1),
  (18, 7, 'Ailes de poulet','Chicken wings','Six ailes, sauce piquante',             'Six wings, hot sauce',          'piece',     'epice',     NULL, NULL, 1, 2);
 
+-- Tailles : bouteilles différentes de la Primus et de la Mützig, chacune avec son stock, ses formats et ses prix.
+-- Une taille est un produit rattaché à son produit principal (parent_id), dans la même catégorie ;
+-- son nom est celui du produit principal suivi de la taille. Le produit principal n'a pas de format à lui.
+INSERT INTO produits (id, categorie_id, parent_id, nom_fr, nom_en, taille_fr, taille_en, contenance, unite_base, badges, disponible, position) VALUES
+ (19, 8, 1, 'Primus Petite', 'Primus Small', 'Petite', 'Small', '33 cl', 'bouteille', 'populaire', 1, 1),
+ (20, 8, 1, 'Primus Grande', 'Primus Large', 'Grande', 'Large', '72 cl', 'bouteille', 'populaire', 1, 2),
+ (21, 8, 2, 'Mützig Petite', 'Mützig Small', 'Petite', 'Small', '33 cl', 'bouteille', NULL,        1, 1),
+ (22, 8, 2, 'Mützig Grande', 'Mützig Large', 'Grande', 'Large', '65 cl', 'bouteille', NULL,        1, 2);
+
 -- Le restaurant-bar propose tout sauf le champagne ; le club ne fait pas de plats
 INSERT INTO produit_etablissements (produit_id, etablissement_id) VALUES
  (1,1),(2,1),(3,1),(4,1),(5,1),(6,1),(7,1),(8,1),(9,1),(10,1),(12,1),(13,1),(14,1),(15,1),(16,1),(17,1),
- (1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(8,2),(9,2),(11,2),(12,2),(13,2),(17,2),(18,2);
+ (1,2),(2,2),(3,2),(4,2),(5,2),(6,2),(8,2),(9,2),(11,2),(12,2),(13,2),(17,2),(18,2),
+ (19,1),(20,1),(21,1),(22,1),(19,2),(20,2),(21,2),(22,2);
 
+-- Formats en cl (vin, whisky, cognac) : servis depuis la même bouteille, ce sont des formats du même produit.
+-- Primus et Mützig : les formats sont portés par chaque taille (Casier = 24 petites ou 12 grandes).
 INSERT INTO conditionnements (id, produit_id, nom_fr, nom_en, quantite_base, vendable, achetable, position) VALUES
- (1,  1,  'Bouteille', 'Bottle', 1,  1, 0, 1),
- (2,  1,  'Casier',    'Crate',  12, 0, 1, 2),
- (3,  2,  'Bouteille', 'Bottle', 1,  1, 0, 1),
- (4,  2,  'Casier',    'Crate',  12, 0, 1, 2),
+ (1,  20, 'Bouteille', 'Bottle', 1,  1, 0, 1),
+ (2,  20, 'Casier',    'Crate',  12, 0, 1, 2),
+ (3,  22, 'Bouteille', 'Bottle', 1,  1, 0, 1),
+ (4,  22, 'Casier',    'Crate',  12, 0, 1, 2),
  (5,  3,  'Bouteille', 'Bottle', 1,  1, 0, 1),
  (6,  3,  'Carton',    'Case',   24, 0, 1, 2),
  (7,  4,  'Bouteille', 'Bottle', 1,  1, 0, 1),
@@ -116,20 +135,27 @@ INSERT INTO conditionnements (id, produit_id, nom_fr, nom_en, quantite_base, ven
  (12, 8,  'Verre',     'Glass',  1,  1, 0, 1),
  (13, 9,  'Verre',     'Glass',  1,  1, 0, 1),
  (14, 10, 'Verre 15 cl','Glass 15 cl', 15, 1, 0, 1),
- (15, 10, 'Bouteille 75 cl','Bottle 75 cl', 75, 1, 1, 2),
+ (15, 10, 'Bouteille 75 cl','Bottle 75 cl', 75, 1, 1, 3),
  (16, 11, 'Bouteille', 'Bottle', 1,  1, 1, 1),
  (17, 12, 'Dose 4 cl', 'Shot 4 cl', 4,  1, 0, 1),
- (18, 12, 'Bouteille 70 cl','Bottle 70 cl', 70, 1, 1, 2),
+ (18, 12, 'Bouteille 70 cl','Bottle 70 cl', 70, 1, 1, 3),
  (19, 13, 'Dose 4 cl', 'Shot 4 cl', 4,  1, 0, 1),
- (20, 13, 'Bouteille 70 cl','Bottle 70 cl', 70, 1, 1, 2),
+ (20, 13, 'Bouteille 70 cl','Bottle 70 cl', 70, 1, 1, 3),
  (21, 14, 'Assiette',  'Plate',  1,  1, 0, 1),
  (22, 15, 'Assiette',  'Plate',  1,  1, 0, 1),
  (23, 16, 'Assiette',  'Plate',  1,  1, 0, 1),
  (24, 17, 'Portion',   'Portion',1,  1, 0, 1),
- (25, 18, 'Portion',   'Portion',1,  1, 0, 1);
+ (25, 18, 'Portion',   'Portion',1,  1, 0, 1),
+ (26, 19, 'Bouteille', 'Bottle', 1,  1, 0, 1),
+ (27, 19, 'Casier',    'Crate',  24, 0, 1, 2),
+ (28, 21, 'Bouteille', 'Bottle', 1,  1, 0, 1),
+ (29, 21, 'Casier',    'Crate',  24, 0, 1, 2),
+ (30, 10, 'Carafe 30 cl','Carafe 30 cl', 30, 1, 0, 2),
+ (31, 12, 'Double 8 cl', 'Double 8 cl', 8,  1, 0, 2),
+ (32, 13, 'Double 8 cl', 'Double 8 cl', 8,  1, 0, 2);
 
 -- Prix en USD (grille normale). Les autres devises sont calculées avec le taux,
--- sauf la Primus et la Mützig, qui ont un prix fixe en francs congolais.
+-- sauf la grande Primus et la grande Mützig, qui ont un prix fixe en francs congolais.
 INSERT INTO prix (conditionnement_id, grille_prix_id, devise_id, montant) VALUES
  (1, 1, 1, 2.00),  (1, 1, 2, 5500),
  (3, 1, 1, 2.50),  (3, 1, 2, 7000),
@@ -148,7 +174,12 @@ INSERT INTO prix (conditionnement_id, grille_prix_id, devise_id, montant) VALUES
  (22, 1, 1, 12.00),
  (23, 1, 1, 8.00),
  (24, 1, 1, 4.00),
- (25, 1, 1, 7.00);
+ (25, 1, 1, 7.00),
+ (26, 1, 1, 1.50),
+ (28, 1, 1, 1.80),
+ (30, 1, 1, 9.00),
+ (31, 1, 1, 9.00),
+ (32, 1, 1, 11.00);
 
 -- Prix VIP (carré VIP du club) : seulement là où ils diffèrent du prix normal
 INSERT INTO prix (conditionnement_id, grille_prix_id, devise_id, montant) VALUES

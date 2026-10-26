@@ -22,11 +22,15 @@ UPDATE produits SET photo = '/assets/img/demo/produits/15-poulet-braise.svg', ph
 UPDATE produits SET photo = '/assets/img/demo/produits/16-brochettes.svg', photo_credit = NULL WHERE id = 16;
 UPDATE produits SET photo = '/assets/img/demo/produits/17-frites.svg', photo_credit = NULL WHERE id = 17;
 UPDATE produits SET photo = '/assets/img/demo/produits/18-ailes-poulet.svg', photo_credit = NULL WHERE id = 18;
+-- Tailles de la Primus et de la Mützig : même illustration que leur produit principal
+UPDATE produits SET photo = '/assets/img/demo/produits/1-primus.svg', photo_credit = NULL WHERE id IN (19, 20);
+UPDATE produits SET photo = '/assets/img/demo/produits/2-mutzig.svg', photo_credit = NULL WHERE id IN (21, 22);
 
 UPDATE etablissements SET couverture = '/assets/img/demo/etablissements/comptoir-du-lac.svg', couverture_credit = NULL WHERE id = 1;
 UPDATE etablissements SET couverture = '/assets/img/demo/etablissements/volcano-club.svg', couverture_credit = NULL WHERE id = 2;
 
 -- Médiathèque (migration 006) : les 20 illustrations y sont enregistrées pour être réutilisables.
+-- (La médiathèque compte les utilisations : l'illustration de la Primus sert trois fois, produit principal et tailles.)
 -- Une ligne déjà présente (même chemin) garde son nom, ses textes et son crédit ; seuls le type,
 -- les dimensions et le poids sont complétés.
 INSERT INTO medias (chemin, nom, type_mime, largeur, hauteur, octets) VALUES

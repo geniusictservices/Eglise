@@ -1,4 +1,4 @@
-// Menu public : recherche instantanée et catégorie active dans la barre de navigation.
+// Menu public : recherche instantanée (noms des tailles compris) et catégorie active dans la barre de navigation.
 (function () {
   'use strict';
 
@@ -27,6 +27,10 @@
           var correspond = termes.every(function (terme) { return texte.indexOf(terme) !== -1; });
           produit.hidden = !correspond;
           if (correspond) { visibles++; }
+        });
+        // Intertitre d'une sous-catégorie caché quand aucun de ses produits ne correspond
+        section.querySelectorAll('[data-sous-categorie]').forEach(function (sous) {
+          sous.hidden = !sous.querySelector('[data-produit]:not([hidden])');
         });
         section.hidden = visibles === 0;
         total += visibles;
