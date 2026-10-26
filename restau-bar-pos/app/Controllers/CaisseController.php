@@ -9,11 +9,14 @@ use App\Core\Avatars;
 use App\Core\CaissePartagee;
 use App\Core\Database;
 use App\Core\Journal;
+use App\Core\Reglement;
 use App\Core\Session;
 use App\Core\View;
 use App\Repositories\CatalogueRepository;
 use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
+use App\Repositories\GestionTresorerieRepository;
+use App\Repositories\VenteRepository;
 
 /**
  * Écran de caisse : produits en grille et ticket en cours.
@@ -70,23 +73,15 @@ final class CaisseController
             $personne = ['id' => (int) $utilisateur['id'], 'nom' => $utilisateur['nom']];
         }
         $id = (int) $etab['id'];
-        $devises = new DeviseRepository();
-
         $zones = $etablissements->zones($id);
-        $zone = null;
-        if (isset($_GET['zone']) && is_string($_GET['zone'])) {
-            $zone = $etablissements->zoneParCode($id, $_GET['zone']);
-        }
-        $grilleDefaut = (int) $etab['grille_prix_id'];
-        $grille = $zone && $zone['grille_prix_id'] ? (int) $zone['grille_prix_id'] : $grilleDefaut;
-
-        $acceptees = $devises->accepteesParmi($etablissements->deviseIds($id));
-        // Tickets en devise locale, le dollar en deuxième position (ordre de DeviseRepository::actives())
-        $locale = $devises->locale();
-        $principale = ($locale ? ($acceptees[(int) $locale['id']] ?? null) : null)
-            ?? $acceptees[(int) $etab['devise_affichage_id']] ?? $devises->reference() ?? reset($acceptees);
-
-        $donnees = $this->donnees($id, $grille, $grilleDefaut, $acceptees, $principale, $etab['type']);
+        $contexte = $this->contexte($etab, is_string($_GET['zone'] ?? null) ? $_GET['zone'] : null);
+        $zone = $contexte['zone'];
+        $donnees = $contexte['donnees'];
+        // Comptes de trésorerie où peuvent entrer les paiements de cet établissement, par moyen et devise
+        $donnees['comptes'] = $this->comptesCaisse($id, $contexte['acceptees']);
+        $donnees['encaisser'] = Acces::a($personne['id'], 'caisse.encaisser', $id);
+        $donnees['etab'] = $etab['slug'];
+        $donnees['zone'] = $zone['code'] ?? '';
         $personne['avatar'] = Database::un('SELECT avatar FROM utilisateurs WHERE id = ?', [$personne['id']])['avatar'] ?? null;
         Session::demarrer();
         $messagePhoto = $_SESSION['caisse_photo'] ?? null;
@@ -114,6 +109,233 @@ final class CaisseController
                 'apresEncaissement' => $appareil !== null && (bool) $etab['verrou_apres_encaissement'],
             ]],
         ], 'caisse');
+    }
+
+    /**
+     * Zone, grille de prix, devises acceptées, devise du ticket et catalogue de la caisse pour un établissement.
+     * @return array{zone: ?array, grille: int, grilleDefaut: int, acceptees: array<int, array>, principale: array, donnees: array}
+     */
+    private function contexte(array $etab, ?string $codeZone): array
+    {
+        $etablissements = new EtablissementRepository();
+        $devises = new DeviseRepository();
+        $id = (int) $etab['id'];
+        $zone = $codeZone !== null && $codeZone !== '' ? $etablissements->zoneParCode($id, $codeZone) : null;
+        $grilleDefaut = (int) $etab['grille_prix_id'];
+        $grille = $zone && $zone['grille_prix_id'] ? (int) $zone['grille_prix_id'] : $grilleDefaut;
+        $acceptees = $devises->accepteesParmi($etablissements->deviseIds($id));
+        // Tickets en devise locale, le dollar en deuxième position (ordre de DeviseRepository::actives())
+        $locale = $devises->locale();
+        $principale = ($locale ? ($acceptees[(int) $locale['id']] ?? null) : null)
+            ?? $acceptees[(int) $etab['devise_affichage_id']] ?? $devises->reference() ?? reset($acceptees);
+        return [
+            'zone' => $zone, 'grille' => $grille, 'grilleDefaut' => $grilleDefaut, 'acceptees' => $acceptees, 'principale' => $principale,
+            'donnees' => $this->donnees($id, $grille, $grilleDefaut, $acceptees, $principale, $etab['type']),
+        ];
+    }
+
+    /** @return list<array{id: int, nom: string, moyen: string, devise: string}> comptes actifs de l'établissement (ou de tous) dans une devise acceptée */
+    private function comptesCaisse(int $etablissementId, array $acceptees): array
+    {
+        $codes = array_column($acceptees, 'code', 'id');
+        $comptes = [];
+        foreach ((new GestionTresorerieRepository())->comptesActifs() as $compte) {
+            $portee = $compte['etablissement_id'] === null ? null : (int) $compte['etablissement_id'];
+            if (($portee === null || $portee === $etablissementId) && isset($codes[(int) $compte['devise_id']])) {
+                $comptes[] = ['id' => (int) $compte['id'], 'nom' => $compte['nom'], 'moyen' => $compte['type'], 'devise' => $codes[(int) $compte['devise_id']]];
+            }
+        }
+        return $comptes;
+    }
+
+    /**
+     * Personne qui vend sur ce navigateur et son établissement : la personne connectée par PIN
+     * (caisse partagée), ou le compte de gestion (appareil personnel, établissement « e »).
+     * @return array{personne: array, etab: array, appareil: ?array}|null
+     */
+    private function vendeur(?string $slug): ?array
+    {
+        $etablissements = new EtablissementRepository();
+        $appareil = CaissePartagee::appareil();
+        if ($appareil !== null) {
+            $caissier = CaissePartagee::caissier();
+            $etab = $etablissements->parSlug($appareil['slug']);
+            return $caissier && $etab ? ['personne' => $caissier, 'etab' => $etab, 'appareil' => $appareil] : null;
+        }
+        $utilisateur = Session::utilisateur();
+        $etab = $slug !== null ? $etablissements->parSlug($slug) : null;
+        return $utilisateur && $etab ? ['personne' => ['id' => (int) $utilisateur['id'], 'nom' => $utilisateur['nom']], 'etab' => $etab, 'appareil' => null] : null;
+    }
+
+    /**
+     * Encaisser le ticket : la caisse envoie les lignes (format, quantité) et les paiements (devise, moyen, compte, montant reçu).
+     * Le serveur recalcule les prix, les totaux et le règlement ; il refuse tout ce qui ne colle pas.
+     * Réponse JSON : numéro, reçu (HTML), et si la caisse est verrouillée (réglage de l'établissement).
+     */
+    public function encaisser(): void
+    {
+        header('Content-Type: application/json; charset=utf-8');
+        Session::demarrer();
+        $jeton = $_POST['csrf'] ?? '';
+        if (!is_string($jeton) || empty($_SESSION['csrf']) || !hash_equals($_SESSION['csrf'], $jeton)) {
+            $this->repondre(419, ['erreur' => t('encaisser.expire')]);
+        }
+        $demande = json_decode(is_string($_POST['vente'] ?? null) ? $_POST['vente'] : '', true);
+        if (!is_array($demande)) {
+            $this->repondre(422, ['erreur' => t('encaisser.illisible')]);
+        }
+        $vendeur = $this->vendeur(is_string($demande['etab'] ?? null) ? $demande['etab'] : null);
+        if ($vendeur === null) {
+            $this->repondre(401, ['erreur' => t('encaisser.connexion')]);
+        }
+        ['personne' => $personne, 'etab' => $etab, 'appareil' => $appareil] = $vendeur;
+        $etabId = (int) $etab['id'];
+        if (!Acces::a($personne['id'], 'caisse.encaisser', $etabId)) {
+            $this->repondre(403, ['erreur' => t('encaisser.droit')]);
+        }
+        $cle = is_string($demande['cle'] ?? null) ? $demande['cle'] : '';
+        if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $cle)) {
+            $this->repondre(422, ['erreur' => t('encaisser.illisible')]);
+        }
+        $ventes = new VenteRepository();
+        if (($deja = $ventes->parCle($cle)) !== null) {
+            // Double envoi : la même vente, sans rien refaire
+            $this->repondreVente((int) $deja['id'], $etab, $appareil);
+        }
+
+        $contexte = $this->contexte($etab, is_string($demande['zone'] ?? null) ? $demande['zone'] : null);
+        $acceptees = array_column($contexte['acceptees'], null, 'code');
+        $principale = $contexte['principale'];
+        $formats = [];
+        foreach ($contexte['donnees']['produits'] as $produit) {
+            foreach ($produit['formats'] as $format) {
+                $formats[$format['id']] = ['format' => $format, 'produit' => $produit];
+            }
+        }
+
+        // Lignes : formats existants, disponibles, avec un prix dans la devise du ticket
+        $lignes = [];
+        $totaux = array_fill_keys(array_keys($acceptees), 0.0);
+        foreach (is_array($demande['lignes'] ?? null) ? $demande['lignes'] : [] as $ligne) {
+            $formatId = (int) ($ligne['id'] ?? 0);
+            $quantite = (int) ($ligne['qte'] ?? 0);
+            $f = $formats[$formatId] ?? null;
+            if ($f === null || $quantite < 1 || $quantite > 999 || !$f['format']['disponible'] || ($f['format']['prix'][$principale['code']] ?? null) === null) {
+                $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
+            }
+            foreach (array_keys($totaux) as $code) {
+                $prix = $f['format']['prix'][$code] ?? null;
+                // Une devise où un article n'a pas de prix ne peut pas servir à payer ce ticket
+                $totaux[$code] = $prix === null || $totaux[$code] === null ? null : $totaux[$code] + (float) $prix * $quantite;
+            }
+            $nom = $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'];
+            $reference = $this->devisesRepo()->reference();
+            $lignes[] = [
+                'produit_id' => (int) $f['format']['tailleId'], 'conditionnement_id' => $formatId,
+                'libelle' => $nom, 'format' => (!$f['format']['unite'] || $f['format']['freres'] > 1) ? $f['format']['nom'] : null,
+                'quantite' => $quantite, 'prix' => (float) $f['format']['prix'][$principale['code']],
+                'prix_reference' => $reference && isset($f['format']['prix'][$reference['code']]) ? (float) $f['format']['prix'][$reference['code']] : null,
+            ];
+        }
+        if ($lignes === []) {
+            $this->repondre(422, ['erreur' => t('encaisser.vide')]);
+        }
+        $totaux = array_filter($totaux, static fn ($t) => $t !== null);
+
+        // Paiements : devise du ticket, moyen et compte de cet établissement, montant positif
+        $comptes = array_column($this->comptesCaisse($etabId, $contexte['acceptees']), null, 'id');
+        $tresorerie = new GestionTresorerieRepository();
+        $tous = $tresorerie->comptesActifs();
+        $paiements = [];
+        foreach (is_array($demande['paiements'] ?? null) ? $demande['paiements'] : [] as $p) {
+            $code = is_string($p['devise'] ?? null) ? $p['devise'] : '';
+            $moyen = is_string($p['moyen'] ?? null) ? $p['moyen'] : '';
+            $compte = $comptes[(int) ($p['compte'] ?? 0)] ?? null;
+            $recu = is_numeric($p['recu'] ?? null) ? round((float) $p['recu'], (int) ($acceptees[$code]['decimales'] ?? 2)) : 0.0;
+            if (!isset($totaux[$code]) || $compte === null || $compte['moyen'] !== $moyen || $compte['devise'] !== $code || $recu <= 0 || $recu > 1e12) {
+                $this->repondre(422, ['erreur' => t('encaisser.paiement_invalide')]);
+            }
+            $paiements[] = ['moyen' => $moyen, 'compte' => $tous[$compte['id']], 'devise' => $acceptees[$code], 'recu' => $recu, 'taux' => $this->taux($acceptees[$code])];
+        }
+        if ($paiements === []) {
+            $this->repondre(422, ['erreur' => t('encaisser.sans_paiement')]);
+        }
+        $reglement = Reglement::calculer(
+            $totaux, $acceptees,
+            array_map(static fn (array $p) => ['devise' => $p['devise']['code'], 'recu' => $p['recu']], $paiements),
+            $principale['code']
+        );
+        if (!$reglement['regle']) {
+            $this->repondre(422, ['erreur' => t('encaisser.reste', ['reste' => $this->devisesRepo()->formater($reglement['reste'][$principale['code']], $principale)])]);
+        }
+
+        // Monnaie rendue en espèces, dans la devise choisie, depuis la caisse de cette devise
+        $rendu = null;
+        if (array_sum($reglement['rendu']) > 0) {
+            $codeRendu = is_string($demande['rendu'] ?? null) && isset($reglement['rendu'][$demande['rendu']]) ? $demande['rendu'] : $principale['code'];
+            $caisseRendu = null;
+            foreach ($comptes as $compte) {
+                if ($compte['moyen'] === 'especes' && $compte['devise'] === $codeRendu) {
+                    $caisseRendu = $tous[$compte['id']];
+                    break;
+                }
+            }
+            if ($caisseRendu === null) {
+                $this->repondre(422, ['erreur' => t('encaisser.rendu_impossible', ['devise' => $codeRendu])]);
+            }
+            if ($reglement['rendu'][$codeRendu] > 0) {
+                $rendu = ['montant' => $reglement['rendu'][$codeRendu], 'devise' => $acceptees[$codeRendu], 'compte' => $caisseRendu, 'taux' => $this->taux($acceptees[$codeRendu])];
+            }
+        }
+
+        $reference = $this->devisesRepo()->reference();
+        $id = $ventes->enregistrer([
+            'etablissement' => $etab, 'cle' => $cle, 'zone_id' => $contexte['zone'] ? (int) $contexte['zone']['id'] : null,
+            'grille_id' => $contexte['grille'], 'utilisateur_id' => $personne['id'], 'appareil_id' => $appareil ? (int) $appareil['id'] : null,
+            'devise' => $principale, 'total' => $totaux[$principale['code']],
+            'reference' => $reference, 'total_reference' => $reference ? ($totaux[$reference['code']] ?? null) : null,
+            'totaux' => array_map(fn (string $code) => ['devise' => $acceptees[$code], 'total' => $totaux[$code], 'taux' => $this->taux($acceptees[$code])], array_keys($totaux)),
+            'lignes' => $lignes, 'paiements' => $paiements, 'rendu' => $rendu,
+        ]);
+        $this->repondreVente($id, $etab, $appareil);
+    }
+
+    /** Réponse d'une vente enregistrée ; la caisse partagée se verrouille si l'établissement l'exige. */
+    private function repondreVente(int $id, array $etab, ?array $appareil): never
+    {
+        $verrouille = false;
+        if ($appareil !== null && $etab['verrou_apres_encaissement']) {
+            CaissePartagee::verrouiller();
+            $verrouille = true;
+        }
+        $recu = (new VenteRepository())->recu($id);
+        $this->repondre(200, [
+            'numero' => $recu['vente']['numero'],
+            'recu' => View::rendre('caisse/_recu', $recu),
+            'verrouille' => $verrouille,
+            'csrf' => Session::jetonCsrf(),
+        ]);
+    }
+
+    private function repondre(int $code, array $donnees): never
+    {
+        http_response_code($code);
+        echo json_encode($donnees, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+        exit;
+    }
+
+    private ?DeviseRepository $devisesRepo = null;
+
+    private function devisesRepo(): DeviseRepository
+    {
+        return $this->devisesRepo ??= new DeviseRepository();
+    }
+
+    /** Taux en vigueur (unités de la devise pour 1 unité de référence), gardé avec chaque paiement. */
+    private function taux(array $devise): ?float
+    {
+        $taux = $this->devisesRepo()->actives()[(int) $devise['id']]['taux'] ?? null;
+        return $taux !== null && (float) $taux > 0 ? (float) $taux : null;
     }
 
     /** Connexion par PIN sur une caisse partagée. */
@@ -297,6 +519,7 @@ final class CaisseController
                 'symbole' => $d['symbole'],
                 'decimales' => (int) $d['decimales'],
                 'symboleAvant' => (bool) $d['symbole_avant'],
+                'arrondi' => (float) $d['arrondi'],
             ], $acceptees)),
             'categories' => array_values($categories),
             'produits' => array_values($produits),

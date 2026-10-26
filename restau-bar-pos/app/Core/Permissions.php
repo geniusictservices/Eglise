@@ -16,7 +16,7 @@ final class Permissions
     {
         return [
             'caisse' => ['caisse.vendre', 'caisse.encaisser', 'caisse.credit', 'caisse.remise', 'caisse.annuler', 'caisse.appareils'],
-            'ventes' => ['ventes.voir'],
+            'ventes' => ['ventes.voir', 'ventes.annuler'],
             'achats' => ['achats.voir'],
             'stock' => ['stock.voir'],
             'personnel' => ['personnel.voir', 'personnel.paie'],
