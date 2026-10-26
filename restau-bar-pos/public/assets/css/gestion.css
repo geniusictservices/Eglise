@@ -1,0 +1,119 @@
+/* Espace de gestion */
+
+:root {
+  --accent: #1F6F78;
+  --fond: #F3F5F4;
+  --surface: #FFFFFF;
+  --encre: #17201E;
+  --doux: #5A6764;
+  --ligne: #DCE2DF;
+  --erreur: #A23B2A;
+  --police-texte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #0E1413;
+    --surface: #161F1D;
+    --encre: #ECF1EF;
+    --doux: #9AA8A4;
+    --ligne: #27322F;
+    --erreur: #F08A74;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--fond); color: var(--encre); font: .9375rem/1.5 var(--police-texte); }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+h1 { font-size: 1.5rem; margin: 0 0 .5rem; }
+h2 { font-size: 1.0625rem; margin: 0 0 .75rem; }
+
+.haut { background: var(--surface); border-bottom: 1px solid var(--ligne); }
+.haut__ligne {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.5rem;
+  max-width: 72rem; margin-inline: auto; padding: .75rem max(16px, env(safe-area-inset-left, 0px));
+}
+.haut__marque { font-weight: 700; text-decoration: none; }
+.haut__nav { display: flex; gap: 1rem; flex-wrap: wrap; }
+.haut__nav a { text-decoration: none; color: var(--doux); }
+.haut__nav a[aria-current] { color: var(--encre); font-weight: 600; }
+.haut__droite { margin-left: auto; display: flex; align-items: center; gap: 1rem; }
+.haut__droite form { margin: 0; }
+
+.page { max-width: 72rem; margin-inline: auto; padding: 1.5rem max(16px, env(safe-area-inset-left, 0px)) 3rem; }
+
+.bloc { margin-top: 2rem; padding: 1.25rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: 10px; overflow-x: auto; }
+.aide { color: var(--doux); margin: .25rem 0 0; }
+
+.chiffres { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.chiffre { display: grid; padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: 10px; }
+.chiffre__valeur { font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.chiffre__libelle { color: var(--doux); }
+
+.tableau { width: 100%; border-collapse: collapse; }
+.tableau th, .tableau td { text-align: left; padding: .55rem .5rem; border-bottom: 1px solid var(--ligne); }
+.tableau th { font-size: .8125rem; color: var(--doux); font-weight: 600; }
+.nombre { font-variant-numeric: tabular-nums; }
+
+.pastille { display: inline-block; margin-left: .4rem; padding: 0 .4rem; border-radius: 4px; font-size: .75rem; background: color-mix(in srgb, var(--accent) 15%, transparent); }
+.pastille--alerte { background: color-mix(in srgb, var(--erreur) 18%, transparent); color: var(--erreur); }
+
+.alerte { padding: .75rem 1rem; border-radius: 8px; background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.alerte--erreur { background: color-mix(in srgb, var(--erreur) 12%, var(--surface)); color: var(--erreur); }
+
+.formulaire { display: grid; gap: .4rem; }
+.formulaire input, .formulaire select {
+  width: 100%; padding: .6rem .75rem; border: 1px solid var(--ligne); border-radius: 8px;
+  background: var(--fond); color: var(--encre); font: inherit;
+}
+.formulaire label { font-size: .875rem; font-weight: 600; margin-top: .5rem; }
+.formulaire--ligne { grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); align-items: end; gap: 1rem; }
+.formulaire--ligne label { margin-top: 0; }
+.champ { display: grid; gap: .35rem; }
+.champ--large { grid-column: span 2; }
+@media (max-width: 30rem) { .champ--large { grid-column: auto; } }
+
+.bouton {
+  display: inline-block; padding: .6rem 1rem; border: 0; border-radius: 8px;
+  background: var(--accent); color: #fff; font: inherit; font-weight: 600; text-decoration: none; cursor: pointer;
+}
+.bouton--secondaire { background: transparent; color: var(--encre); border: 1px solid var(--ligne); padding: .45rem .8rem; font-size: .875rem; }
+.lien { background: none; border: 0; padding: 0; font: inherit; color: var(--doux); text-decoration: underline; cursor: pointer; }
+
+.connexion { max-width: 24rem; margin: 3rem auto; padding: 1.5rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: 12px; }
+.connexion .bouton { margin-top: 1rem; }
+
+.grille-qr { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 22rem), 1fr)); gap: 1rem; margin-top: 1.25rem; }
+.carte-qr { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 1rem; padding: 1rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: 10px; }
+.carte-qr__image { background: #fff; border-radius: 6px; padding: .25rem; align-self: start; }
+.carte-qr__image svg { display: block; width: 100%; height: auto; }
+.carte-qr h2 { margin: 0; }
+.carte-qr p { margin: .15rem 0 0; }
+.carte-qr__url { font-size: .8125rem; color: var(--doux); overflow-wrap: anywhere; }
+.carte-qr__scans { font-size: .8125rem; font-variant-numeric: tabular-nums; }
+.carte-qr__actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+
+/* Chevalet de table à imprimer */
+.impression { background: #E9ECEA; color: #17201E; color-scheme: light; }
+.impression__aide { text-align: center; margin: 1.5rem 0; }
+.chevalet {
+  width: 10.5cm; margin: 0 auto 2rem; padding: 1cm .8cm; background: #fff; text-align: center;
+  border-top: 10mm solid var(--accent); border-radius: 4px;
+}
+.chevalet p { margin: 0; }
+.chevalet__nom { font: 800 2.25rem/1 "Big Shoulders Display", "Arial Narrow", sans-serif; text-transform: uppercase; }
+.chevalet__zone { margin-top: .3rem !important; font-size: .8125rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.chevalet__qr { width: 7cm; margin: .6cm auto .4cm; }
+.chevalet__qr svg { display: block; width: 100%; height: auto; }
+.chevalet__appel { font-size: 1.125rem; font-weight: 700; }
+.chevalet__appel--en { font-weight: 400; color: #5A6764; font-size: 1rem; }
+.chevalet__url { margin-top: .4cm !important; font-size: .75rem; color: #5A6764; }
+
+@media print {
+  .impression { background: #fff; }
+  .impression__aide { display: none; }
+  .chevalet { margin: 0 auto; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}

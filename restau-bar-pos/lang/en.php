@@ -1,0 +1,89 @@
+<?php
+
+return [
+    // Venue types
+    'type.restaurant_bar' => 'Restaurant & bar',
+    'type.lounge' => 'Lounge bar',
+    'type.nightclub' => 'Nightclub',
+
+    // Days
+    'jour.1' => 'Mon', 'jour.2' => 'Tue', 'jour.3' => 'Wed', 'jour.4' => 'Thu',
+    'jour.5' => 'Fri', 'jour.6' => 'Sat', 'jour.7' => 'Sun',
+    'jour_long.1' => 'Monday', 'jour_long.2' => 'Tuesday', 'jour_long.3' => 'Wednesday', 'jour_long.4' => 'Thursday',
+    'jour_long.5' => 'Friday', 'jour_long.6' => 'Saturday', 'jour_long.7' => 'Sunday',
+    'jours.tous' => 'Every day',
+
+    // Opening
+    'etat.ouvert' => '{service} open · until {heure}',
+    'etat.ouvert_court' => 'Open now',
+    'etat.ferme' => 'Closed',
+    'etat.ferme_ouvre_aujourdhui' => 'Closed · opens at {heure}',
+    'etat.ferme_ouvre_jour' => 'Closed · opens {jour} at {heure}',
+
+    // Badges
+    'badge.nouveau' => 'New',
+    'badge.populaire' => 'Popular',
+    'badge.epice' => 'Spicy',
+    'badge.epuise' => 'Sold out',
+
+    // Public pages
+    'vitrine.nos_etablissements' => 'Our venues',
+    'vitrine.voir_menu' => 'See the menu',
+    'vitrine.tous_les_etablissements' => '← All our venues',
+    'vitrine.devise' => 'Price currency',
+    'vitrine.categories' => 'Menu categories',
+    'vitrine.menu_vide' => 'The menu will be available soon.',
+    'vitrine.rechercher' => 'Search the menu',
+    'vitrine.rechercher_exemple' => 'Beer, cocktail, fish…',
+    'vitrine.aucun_resultat' => 'No item matches your search.',
+    'vitrine.allergenes' => 'Allergens: {liste}',
+    'vitrine.note_taux' => 'Prices in {devise}. Some prices are converted at the venue\'s rate of the day.',
+    'vitrine.horaires' => 'Opening hours',
+    'vitrine.nous_trouver' => 'Find us',
+    'vitrine.voir_carte' => 'View on the map',
+
+    // Errors
+    'erreur.introuvable_titre' => 'Page not found',
+    'erreur.introuvable_texte' => 'This page does not exist or is no longer available.',
+    'erreur.retour_accueil' => 'Back to the home page',
+
+    // Back office
+    'gestion.nom' => 'Back office',
+    'gestion.connexion' => 'Sign in',
+    'gestion.email' => 'Email address',
+    'gestion.mot_de_passe' => 'Password',
+    'gestion.se_connecter' => 'Sign in',
+    'gestion.deconnexion' => 'Sign out',
+    'gestion.identifiants_invalides' => 'Incorrect email or password.',
+    'gestion.trop_essais' => 'Too many attempts. Try again in 5 minutes.',
+    'gestion.tableau' => 'Dashboard',
+    'gestion.qr' => 'QR codes',
+    'gestion.voir_vitrine' => 'View public page',
+    'gestion.bonjour' => 'Hello {nom}',
+    'gestion.etablissements' => 'Venues',
+    'gestion.produits' => 'Products',
+    'gestion.scans_7j' => 'QR scans over 7 days',
+    'gestion.nom_colonne' => 'Name',
+    'gestion.type' => 'Type',
+    'gestion.page_publique' => 'Public page',
+    'gestion.devises' => 'Active currencies',
+    'gestion.devise' => 'Currency',
+    'gestion.taux' => 'Current rate',
+    'gestion.reference' => 'Reference',
+    'gestion.taux_manquant' => 'Rate missing',
+    'gestion.devises_aide' => 'The currency and exchange rate screen comes with phase 3 (point of sale).',
+    'gestion.qr_aide' => 'Each QR code opens the venue\'s menu. A code linked to an area shows that area\'s prices.',
+    'gestion.qr_image' => 'QR code: {libelle}',
+    'gestion.scans' => 'Scans: {total} in total · {semaine} over 7 days',
+    'gestion.imprimer' => 'Print',
+    'gestion.telecharger_svg' => 'Download (SVG)',
+    'gestion.qr_nouveau' => 'New QR code',
+    'gestion.etablissement' => 'Venue',
+    'gestion.zone' => 'Area',
+    'gestion.zone_aucune' => 'None (standard prices)',
+    'gestion.libelle' => 'Label',
+    'gestion.libelle_exemple' => 'Table 12, bar counter, entrance…',
+    'gestion.creer' => 'Create QR code',
+    'gestion.qr_cree' => 'QR code created.',
+    'gestion.qr_invalide' => 'Choose a venue and give the QR code a label.',
+];

@@ -1,0 +1,14 @@
+<?php
+
+// Exemple de configuration d'instance. En pratique, ce fichier est créé par bin/creer-instance.php.
+// Nom du fichier : config/instances/<sous-domaine>.php
+return [
+    'actif' => true,
+    'db' => [
+        'hote' => '127.0.0.1',
+        'port' => 3306,
+        'nom' => 'rbp_monbar',
+        'utilisateur' => 'rbp_monbar',
+        'mot_de_passe' => 'changez-moi',
+    ],
+];

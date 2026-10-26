@@ -1,0 +1,6 @@
+# Apache : toutes les requêtes passent par index.php, sauf les fichiers existants
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]
+
+Options -Indexes

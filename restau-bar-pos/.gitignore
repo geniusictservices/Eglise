@@ -1,0 +1,8 @@
+# Configuration propre à chaque serveur et à chaque instance (contient des mots de passe)
+/config/app.local.php
+/config/instances/*.php
+!/config/instances/exemple.php.dist
+
+# Journaux
+/storage/logs/*
+!/storage/logs/.gitkeep

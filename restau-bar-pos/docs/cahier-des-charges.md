@@ -3,7 +3,7 @@
 Système de caisse (POS) et ERP adaptable à trois contextes : **restaurant-bar**, **lounge bar** et **nightclub**.
 Principe : un **socle commun** toujours actif + des **modules** activés selon le type d'établissement et l'heure.
 
-> Les points marqués **⚠️ Hypothèse** n'ont pas encore été confirmés. Ils sont listés à la fin (section 16).
+> Les points marqués **⚠️ Hypothèse** n'ont pas encore été confirmés. Ils sont listés à la fin (section 17).
 
 ---
 
@@ -15,7 +15,7 @@ Ce n'est pas un SaaS partagé : **chaque client a sa propre instance**, accessib
 
 ```
 admin.<domaine>            → Console super admin (clients, abonnements, instances)
-hekalu.<domaine>           → Instance du client « Hekalu »
+monbar.<domaine>           → Instance du client « Mon Bar »
 leclub.<domaine>           → Instance du client « Le Club »
 ...
 ```
@@ -42,6 +42,14 @@ leclub.<domaine>           → Instance du client « Le Club »
 - **Statistiques** : nombre de clients, revenus des abonnements, clients en retard, utilisation des instances.
 - **Assistance** : accès à l'instance d'un client **uniquement avec son accord**, avec un historique.
 - **Confidentialité** : le super admin ne voit pas les données commerciales des clients (ventes, clients, dettes), seulement ce qui concerne l'abonnement.
+
+### 1.3 Technologie
+
+- **PHP 8.3 natif**, sans framework : un petit noyau maison (routeur, accès base de données, vues, traductions).
+- **MySQL ou MariaDB**, une base par instance, accès par PDO avec requêtes préparées.
+- **HTML, CSS et JavaScript natifs** pour l'interface, sans outil de compilation.
+- Pas de dépendance externe obligatoire : le code se dépose sur un hébergement PHP classique.
+- Caisse hors ligne (plus tard) : application web installable (PWA) avec stockage local et synchronisation.
 
 ## 2. Organisation des lieux
 
@@ -271,9 +279,10 @@ Chaque produit a une **unité de base** (bouteille, cl, gramme, pièce) et **plu
 ## 10. Devises et paiements
 
 ### 10.1 Principe
-- **Une devise de référence** pour la comptabilité et les rapports.
-- **Plusieurs devises acceptées**, à choisir par établissement, par point de vente et par moyen de paiement.
-- ⚠️ Hypothèse : devise de référence le dollar américain (USD), devises acceptées USD et franc congolais (CDF). D'autres devises (EUR, RWF…) peuvent être ajoutées.
+- **Devises entièrement configurables** : le propriétaire ajoute ou retire les devises qu'il accepte. Pour chacune, il définit le code (USD, CDF, EUR…), le symbole, le nombre de décimales et la règle d'arrondi.
+- **Une devise de référence**, choisie par le propriétaire, pour la comptabilité et les rapports.
+- **Devises acceptées à choisir** par établissement, par point de vente et par moyen de paiement.
+- Valeurs proposées à l'installation : USD comme devise de référence, USD et CDF acceptés. Tout se modifie ensuite.
 
 ### 10.2 Taux de change
 - Chaque devise a **un taux** par rapport à la devise de référence. Les conversions entre deux autres devises sont calculées automatiquement, ou fixées par un **taux direct**.
@@ -319,17 +328,56 @@ L'écart de 20 CDF est enregistré comme écart d'arrondi.
 - **Formats** de dates, nombres et monnaies selon la langue.
 - Traductions dans des fichiers à part, pour pouvoir ajouter une langue plus tard sans toucher au code.
 
-## 12. ERP (gestion de l'établissement)
+## 12. Page publique et menu par code QR
+
+Chaque établissement a une **page publique** : la vitrine du bar, avec tous ses produits et leurs prix. Les clients y accèdent en scannant un **code QR** posé sur les tables, au comptoir ou à l'entrée.
+
+### 12.1 Adresses
+
+```
+monbar.<domaine>/                    → présentation du client et de ses établissements
+monbar.<domaine>/e/<etablissement>   → page d'un établissement avec son menu
+monbar.<domaine>/e/<etablissement>?zone=vip → menu avec les prix de la zone VIP
+```
+
+### 12.2 Présentation de l'établissement
+- Nom, logo, photo de couverture, description.
+- Type (restaurant-bar, lounge, nightclub), adresse, lien vers la carte, téléphone, WhatsApp, réseaux sociaux.
+- **Horaires par service** (restaurant, lounge, club) et indication « ouvert » ou « fermé » en ce moment.
+
+### 12.3 Menu
+- **Catégories** et **produits** avec photo, description et badges (nouveau, populaire, épicé…).
+- **Prix de chaque conditionnement vendu** : verre, bouteille, dose, casier…
+- **Prix dans les devises acceptées**, avec un sélecteur de devise.
+- **Grille de prix selon le code QR** : un code QR posé dans le carré VIP affiche les prix VIP.
+- **Carte du service en cours** : après 23h, la carte et les prix de nuit. La cuisine fermée fait disparaître les plats.
+- **Disponibilité en temps réel** : un produit en rupture est affiché « épuisé » ou masqué.
+- Allergènes pour les plats.
+- Recherche et filtres par catégorie.
+- **Français et anglais**, au choix du visiteur.
+- Chaque produit a une case « visible sur le menu public ».
+
+### 12.4 Codes QR
+- Générés depuis l'espace de gestion : un par établissement, par zone ou par table.
+- Téléchargeables et imprimables (avec le logo et le nom de l'établissement).
+- **Statistiques de scans** : nombre de visites par code QR et par jour.
+
+### 12.5 Exigences
+- Pensée **d'abord pour le téléphone**, légère et rapide même avec une connexion faible.
+- Bien référencée sur les moteurs de recherche.
+- Plus tard : commande depuis la table, appel du serveur, avis des clients.
+
+## 13. ERP (gestion de l'établissement)
 
 Caisse et ERP partagent **la même base de données** : chaque vente fait baisser le stock, chaque crédit alimente les créances et chaque dépense arrive dans la trésorerie, sans ressaisie.
 
-### 12.1 Achats et fournisseurs
+### 13.1 Achats et fournisseurs
 - Fiche fournisseur : brasseries, distributeurs, grossistes, marché.
 - Bons de commande, réception (quantités commandées ou reçues, écarts).
 - Factures fournisseurs, paiements, **dettes envers les fournisseurs** et échéances.
 - Historique des prix d'achat par produit et par fournisseur.
 
-### 12.2 Stock avancé
+### 13.2 Stock avancé
 - **Transferts** entre dépôts et comptoirs (section 2).
 - **Fiches techniques** pour les cocktails et les plats.
 - **Coût de revient et marge** par produit.
@@ -338,13 +386,13 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 - **Emballages consignés** (section 9.3).
 - **Alertes** de stock bas et suggestions de commande.
 
-### 12.3 Dépenses et trésorerie
+### 13.3 Dépenses et trésorerie
 - Dépenses par catégorie : loyer, électricité, carburant du groupe électrogène, entretien, sécurité, artistes…
 - Comptes de trésorerie par devise (section 10.5), avec les transferts entre eux.
 - Vue de la trésorerie : entrées (ventes, remboursements de dettes) et sorties (fournisseurs, dépenses, salaires).
 - TVA et taxes, export vers un logiciel comptable ou un comptable.
 
-### 12.4 Ressources humaines et présence
+### 13.4 Ressources humaines et présence
 
 **Pointage par code QR**
 - Un **code QR** est affiché à l'entrée de l'établissement. L'employé le scanne avec son téléphone pour pointer à l'arrivée et au départ.
@@ -366,18 +414,18 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 - Salaires, **avances sur salaire**, retenues (dettes du personnel, manquants de caisse).
 - Commissions des serveurs et des promoteurs, répartition des pourboires.
 
-### 12.5 Événements (lounge et nightclub)
+### 13.5 Événements (lounge et nightclub)
 - Soirées : date, thème, DJ ou artistes, budget.
 - Coûts (cachets, publicité, location de matériel) comparés aux recettes (entrées, bar, bouteilles VIP).
 - **Rentabilité par soirée**.
 
-### 12.6 Tableaux de bord de la direction
+### 13.6 Tableaux de bord de la direction
 - Chiffre d'affaires, marge, dépenses et résultat, par jour, par service, par établissement.
 - Produits les plus rentables et les moins vendus.
 - Créances clients et dettes fournisseurs.
 - Performances et présence des employés.
 
-## 13. Exigences transverses
+## 14. Exigences transverses
 
 - **Mode hors ligne** : la caisse fonctionne sans réseau et se synchronise quand il revient.
 - **Rapidité** : un barman doit encaisser en 2 ou 3 secondes.
@@ -385,28 +433,33 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 - **Sécurité** : annulations, remises, crédits et changements de taux validés par un gérant, avec historique complet.
 - **Isolation des clients** : une base de données par instance (section 1.1).
 
-## 14. Découpage en phases
+## 15. Découpage en phases
 
 Chaque phase est utilisable seule.
 
 | Phase | Contenu |
 |---|---|
-| 1 | Console super admin minimale (clients, sous-domaines, instances, abonnements, activation des modules) · socle de la caisse (catalogue, conditionnements, commandes, encaissement multi-devises, rôles, sessions de caisse) · établissements, dépôts, comptoirs, points de vente · stock simple et transferts · français et anglais |
-| 2 | Clients et dettes · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
-| 3 | Modules lounge et nightclub (bouteilles, VIP, entrées, invités, vestiaire, cashless, mode comptoir rapide) · vente en gros au dépôt et consignes |
-| 4 | ERP : achats et fournisseurs, stock avancé, dépenses et trésorerie |
-| 5 | Ressources humaines : présence par code QR, plannings, paie, commissions · événements |
-| 6 | Tableaux de bord avancés · facturation automatique des abonnements · export comptable |
+| 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · français et anglais |
+| 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules) · utilisateurs, rôles et permissions · établissements, dépôts, comptoirs, points de vente |
+| 3 | Caisse : commandes, encaissement multi-devises, taux de change, sessions de caisse · stock simple et transferts |
+| 4 | Clients et dettes · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
+| 5 | Modules lounge et nightclub (bouteilles, VIP, entrées, invités, vestiaire, cashless, mode comptoir rapide) · vente en gros au dépôt et consignes |
+| 6 | ERP : achats et fournisseurs, stock avancé, dépenses et trésorerie |
+| 7 | Ressources humaines : présence par code QR, plannings, paie, commissions · événements |
+| 8 | Tableaux de bord avancés · facturation automatique des abonnements · export comptable |
 
-## 15. Décisions prises
+## 16. Décisions prises
 
 | Sujet | Décision |
 |---|---|
 | Déploiement | Une instance par client, sur un sous-domaine, gérée depuis une console super admin. Pas de SaaS partagé. |
 | Langues | Français et anglais |
 | Pointage | Par code QR |
+| Devises | Entièrement configurables par le propriétaire |
+| Technologie | PHP natif, sans framework (section 1.3) |
+| Vitrine | Page publique par établissement avec le menu et les prix, accessible par code QR |
 
-## 16. Questions ouvertes
+## 17. Questions ouvertes
 
 1. Le dépôt **vend-il en gros** à d'autres clients, ou approvisionne-t-il seulement les comptoirs ?
 2. Un **dépôt central** pour plusieurs établissements, ou un dépôt par établissement ?
@@ -415,7 +468,7 @@ Chaque phase est utilisable seule.
 5. La cuisine achète-t-elle surtout **au marché en espèces** ou chez des **fournisseurs avec facture** ?
 6. Commandes en cuisine sur **écran**, sur **bon imprimé**, ou les deux ?
 7. Repas du personnel **gratuits** (pertes) ou **déduits du salaire** ?
-8. **Quelles devises** accepter, et les prix sont-ils fixés dans **une seule devise** ou **dans chaque devise** ?
+8. Les prix sont-ils fixés dans **une seule devise** (convertie) ou **dans chaque devise** ?
 9. **Qui fixe les taux de change**, et à quelle fréquence ?
 10. **Contenu des casiers** de vos principaux produits.
 11. **Hébergement** des instances : sur vos serveurs, ou parfois chez le client ?

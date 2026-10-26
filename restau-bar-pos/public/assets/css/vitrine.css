@@ -1,0 +1,319 @@
+/* Vitrine publique : présentation et menu d'un établissement.
+   Mobile d'abord. La couleur --accent vient de l'établissement. */
+
+:root {
+  --accent: #1F6F78;
+  --fond: #F5F6F4;
+  --surface: #FFFFFF;
+  --encre: #17201E;
+  --doux: #5A6764;
+  --ligne: #DCE2DF;
+  --ouvert: #1E7A46;
+  --ferme: #A23B2A;
+  --accent-texte: color-mix(in oklab, var(--accent) 85%, black);
+  --police-titre: "Big Shoulders Display", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --police-texte: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fond: #0E1413;
+    --surface: #161F1D;
+    --encre: #ECF1EF;
+    --doux: #9AA8A4;
+    --ligne: #27322F;
+    --ouvert: #5CC98A;
+    --ferme: #F08A74;
+    --accent-texte: color-mix(in oklab, var(--accent) 55%, white);
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 7.5rem; }
+
+body {
+  margin: 0;
+  background: var(--fond);
+  color: var(--encre);
+  font: 1rem/1.5 var(--police-texte);
+}
+
+img { max-width: 100%; display: block; }
+a { color: var(--accent-texte); }
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--accent-texte); outline-offset: 2px; }
+
+.visuellement-cache {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.enveloppe {
+  width: 100%;
+  max-width: 46rem;
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---------- En-tête ---------- */
+
+.entete {
+  background: var(--accent);
+  color: #fff;
+  background-size: cover;
+  background-position: center;
+}
+.entete--photo { box-shadow: inset 0 -12rem 8rem -4rem rgb(0 0 0 / .65); }
+.entete__contenu {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  padding-block: calc(2rem + env(safe-area-inset-top, 0px)) 1.75rem;
+}
+.entete a { color: inherit; }
+.entete__retour { font-size: .875rem; opacity: .85; margin-bottom: .75rem; }
+.entete__type {
+  margin: 0;
+  font-size: .75rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .9;
+}
+.entete__nom {
+  margin: 0;
+  font: 800 clamp(2.75rem, 12vw, 4.5rem)/.92 var(--police-titre);
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  text-wrap: balance;
+}
+.entete__slogan { margin: .25rem 0 0; max-width: 34rem; opacity: .95; }
+
+.etat {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  align-self: flex-start;
+  margin: .75rem 0 0;
+  padding: .3rem .75rem;
+  border-radius: 999px;
+  font-size: .875rem;
+  font-weight: 600;
+  background: rgb(255 255 255 / .16);
+}
+.etat__point { width: .55rem; height: .55rem; border-radius: 50%; background: currentColor; }
+.entete .etat--ouvert .etat__point { background: #7CF0A8; }
+.entete .etat--ferme .etat__point { background: #FFB4A3; }
+
+/* ---------- Barre collante : zone, devise, langue, catégories ---------- */
+
+.barre {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: color-mix(in srgb, var(--fond) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--ligne);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.barre__ligne {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem 1rem;
+  padding-block: .6rem;
+}
+.zone {
+  font-size: .75rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent-texte);
+  border: 1.5px solid currentColor;
+  border-radius: 4px;
+  padding: .15rem .45rem;
+}
+.choix { display: flex; border: 1px solid var(--ligne); border-radius: 999px; overflow: hidden; }
+.choix__option {
+  padding: .3rem .7rem;
+  font-size: .8125rem;
+  font-weight: 600;
+  color: var(--doux);
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+}
+.choix__option--actif { background: var(--encre); color: var(--fond); }
+.langue { margin-left: auto; font-size: .875rem; }
+.langue--entete { align-self: flex-end; margin: 0 0 1rem; }
+
+.categories {
+  position: relative;
+  display: flex;
+  gap: .25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: .55rem;
+}
+.categories::-webkit-scrollbar { display: none; }
+.categories__lien {
+  flex: none;
+  padding: .35rem .8rem;
+  border-radius: 999px;
+  font-size: .875rem;
+  color: var(--encre);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.categories__lien--actif { background: var(--accent); color: #fff; }
+
+/* ---------- Menu ---------- */
+
+.menu { padding-block: 1.25rem 2.5rem; }
+
+.recherche { display: grid; gap: .35rem; margin-bottom: 1.5rem; }
+.recherche__label { font-size: .8125rem; color: var(--doux); }
+.recherche__champ {
+  width: 100%;
+  padding: .7rem .9rem;
+  border: 1px solid var(--ligne);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--encre);
+  font: inherit;
+}
+.recherche__aucun, .vide { color: var(--doux); }
+
+.categorie + .categorie { margin-top: 2rem; }
+.categorie__titre {
+  margin: 0 0 .25rem;
+  font: 700 1.75rem/1.1 var(--police-titre);
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  color: var(--accent-texte);
+}
+
+.produits { list-style: none; margin: 0; padding: 0; }
+.produit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .25rem 1rem;
+  padding-block: .9rem;
+  border-bottom: 1px solid var(--ligne);
+}
+.produit:has(.produit__photo) { grid-template-columns: 72px minmax(0, 1fr) auto; }
+.produit__photo { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; }
+.produit__texte { min-width: 0; }
+.produit__nom {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.produit__description, .produit__allergenes {
+  margin: .15rem 0 0;
+  font-size: .875rem;
+  color: var(--doux);
+}
+.produit__allergenes { font-size: .8125rem; font-style: italic; }
+.produit--epuise .produit__nom, .produit--epuise .produit__prix { opacity: .5; }
+.produit--epuise .prix__montant { text-decoration: line-through; }
+
+.badge {
+  display: inline-block;
+  margin-left: .35rem;
+  padding: .05rem .4rem;
+  border-radius: 4px;
+  font-size: .6875rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  vertical-align: .15em;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent-texte);
+}
+.badge--epice { background: color-mix(in srgb, var(--ferme) 15%, transparent); color: var(--ferme); }
+.badge--epuise { background: var(--encre); color: var(--fond); }
+
+.produit__prix { margin: 0; display: grid; gap: .15rem; align-content: start; text-align: right; }
+.prix { display: flex; justify-content: flex-end; align-items: baseline; gap: .6rem; }
+.prix__format { font-size: .8125rem; color: var(--doux); }
+.prix__montant {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.note-taux { margin-top: 2rem; font-size: .8125rem; color: var(--doux); }
+
+/* ---------- Infos pratiques ---------- */
+
+.infos { background: var(--surface); border-top: 1px solid var(--ligne); }
+.infos__grille {
+  display: grid;
+  gap: 2rem;
+  padding-block: 2rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 40rem) { .infos__grille { grid-template-columns: 1fr 1fr; } }
+.infos__titre {
+  margin: 0 0 .75rem;
+  font: 700 1.375rem/1.1 var(--police-titre);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.infos__description { margin: 0 0 .75rem; color: var(--doux); }
+
+.horaires { margin: 0; display: grid; gap: .9rem; }
+.horaires dt { font-weight: 650; }
+.horaires dd {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--doux);
+  font-size: .9375rem;
+}
+.horaires__heures { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--encre); }
+
+.contacts { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+
+/* ---------- Accueil : liste des établissements ---------- */
+
+.entete--accueil .entete__contenu { padding-block: calc(1.25rem + env(safe-area-inset-top, 0px)) 2.25rem; }
+.liste-etablissements { display: grid; gap: 1rem; padding-block: 1.5rem 3rem; }
+@media (min-width: 40rem) { .liste-etablissements { grid-template-columns: 1fr 1fr; } }
+.carte-etab {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--ligne);
+  border-top: 6px solid var(--accent-etab);
+  color: var(--encre);
+  text-decoration: none;
+}
+.carte-etab:hover { border-color: var(--accent-etab); }
+.carte-etab__type { font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--doux); }
+.carte-etab__nom { font: 800 2rem/1 var(--police-titre); text-transform: uppercase; }
+.carte-etab__slogan { color: var(--doux); }
+.carte-etab .etat { background: transparent; padding: 0; margin: .25rem 0; }
+.carte-etab .etat--ouvert { color: var(--ouvert); }
+.carte-etab .etat--ferme { color: var(--ferme); }
+.carte-etab__action { margin-top: auto; font-weight: 650; }
+
+/* ---------- Erreurs ---------- */
+
+.erreur { padding-block: 4rem; }
+.erreur__code { margin: 0; font: 800 5rem/1 var(--police-titre); color: var(--accent-texte); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}
