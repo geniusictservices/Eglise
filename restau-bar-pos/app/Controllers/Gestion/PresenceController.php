@@ -296,8 +296,10 @@ final class PresenceController
         $lng = TresorerieSaisie::post('longitude');
         $latitude = $longitude = null;
         if ($lat !== '' || $lng !== '') {
-            $la = DeviseAffichage::lireNombre($lat);
-            $lo = DeviseAffichage::lireNombre($lng);
+            // Coordonnées : signe moins et virgule ou point décimal (« -1,6912 » ou « -1.6912 »)
+            $coordonnee = static fn (string $v): ?string => preg_match('/^-?\d{1,3}([.,]\d{1,8})?$/', $v) ? str_replace(',', '.', $v) : null;
+            $la = $coordonnee($lat);
+            $lo = $coordonnee($lng);
             if ($la === null || (float) $la < -90 || (float) $la > 90) {
                 $erreurs['latitude'] = t('pers.erreur_latitude');
             }

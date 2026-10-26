@@ -913,3 +913,11 @@ button { cursor: pointer; }
   #zone-impression .bon { max-width: none; border: 0; padding: 0; background: #fff; color: #000; page-break-after: always; }
   #zone-impression .bon * { color: #000 !important; }
 }
+
+/* Téléphone et petite tablette : tout le panneau du ticket défile (lignes envoyées, nouvelles, boutons) ;
+   « Encaisser » reste collé en bas, à portée du pouce */
+@media (max-width: 899px) {
+  .ticket { overflow-y: auto; overscroll-behavior: contain; }
+  .ticket__corps { flex: none; overflow: visible; min-height: 6rem; }
+  .ticket .encaisser { position: sticky; bottom: 0; z-index: 1; box-shadow: 0 -8px 16px var(--surface); }
+}
