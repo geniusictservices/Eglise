@@ -23,7 +23,7 @@
 /* Filtres de la liste */
 .cat-filtres { margin-top: 1.25rem; padding: 1rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: 10px; }
 .cat-filtres__boutons { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
-.cat-filtres__boutons .bouton { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.cat-filtres__boutons .bouton, .cat-filtres__boutons .lien { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
 .cat-compte { margin-top: 1rem; }
 .cat-pied { margin-top: 1.5rem; }
 .cat-pied .lien { display: inline-flex; align-items: center; min-height: 44px; }

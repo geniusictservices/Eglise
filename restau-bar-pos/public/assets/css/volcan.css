@@ -156,11 +156,11 @@
   --prix: var(--braise);
   --info: var(--glace-texte);
   --focus: var(--accent-texte);
-  --teinte-accent: color-mix(in srgb, var(--accent) 14%, var(--surface));
-  --teinte-braise: color-mix(in srgb, var(--braise) 14%, var(--surface));
-  --teinte-glace: color-mix(in srgb, var(--glace) 14%, var(--surface));
-  --teinte-erreur: color-mix(in srgb, var(--erreur) 13%, var(--surface));
-  --teinte-succes: color-mix(in srgb, var(--succes) 14%, var(--surface));
+  --teinte-accent: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  --teinte-braise: color-mix(in srgb, var(--braise) 10%, var(--surface));
+  --teinte-glace: color-mix(in srgb, var(--glace) 10%, var(--surface));
+  --teinte-erreur: color-mix(in srgb, var(--erreur) 10%, var(--surface));
+  --teinte-succes: color-mix(in srgb, var(--succes) 10%, var(--surface));
 }
 
 /* ---------- Base ---------- */
@@ -180,6 +180,7 @@ img { max-width: 100%; }
 .visuellement-cache {
   position: absolute !important;
   width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
@@ -234,6 +235,7 @@ img { max-width: 100%; }
 
 /* Bouton carré avec une icône (thème, fermer…) : libellé dans un .visuellement-cache */
 .bouton-icone {
+  position: relative;
   display: inline-grid;
   place-items: center;
   flex: none;
@@ -418,7 +420,7 @@ img { max-width: 100%; }
   border-color: transparent;
   outline: 2px solid var(--cat);
   outline-offset: -2px;
-  background: color-mix(in srgb, var(--cat) 14%, var(--tuile-fond));
+  background: color-mix(in srgb, var(--cat) 11%, var(--tuile-fond));
 }
 .tuile--epuise { opacity: .45; cursor: not-allowed; }
 

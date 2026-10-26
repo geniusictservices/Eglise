@@ -19,6 +19,7 @@ button { cursor: pointer; }
   height: 100%;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   background: var(--fond);
   color: var(--encre);
   -webkit-tap-highlight-color: transparent;
@@ -36,7 +37,7 @@ button { cursor: pointer; }
   background: var(--surface);
   border-bottom: 1px solid var(--ligne);
 }
-.haut__lieu { display: flex; gap: 8px; margin: 0; }
+.haut__lieu { display: flex; gap: 8px; margin: 0; min-width: 0; }
 .haut select, .haut input {
   height: var(--cible);
   padding: 0 12px;
@@ -64,6 +65,8 @@ button { cursor: pointer; }
 .segments button { width: 40px; height: 40px; border: 0; border-radius: 8px; background: transparent; font-weight: 700; color: var(--doux); }
 .segments button[aria-pressed="true"] { background: var(--encre); color: var(--fond); }
 .icone {
+  position: relative;
+  flex: none;
   width: var(--cible);
   height: var(--cible);
   display: grid;

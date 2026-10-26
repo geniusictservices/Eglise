@@ -66,7 +66,7 @@ $ordreModifiable = !$filtres['etablissement'] && $filtres['recherche'] === '' &&
         <div class="cat-filtres__boutons">
             <button class="bouton" type="submit"><?= e(t('catalogue.filtrer')) ?></button>
             <?php if ($filtres['categorie'] || $filtres['etablissement'] || $filtres['recherche'] !== ''): ?>
-                <a class="bouton bouton--secondaire" href="/gestion/catalogue<?= $filtres['desactives'] ? '?desactives=1' : '' ?>"><?= e(t('catalogue.effacer')) ?></a>
+                <a class="lien" href="/gestion/catalogue<?= $filtres['desactives'] ? '?desactives=1' : '' ?>"><?= e(t('catalogue.effacer')) ?></a>
             <?php endif; ?>
         </div>
     </form>
