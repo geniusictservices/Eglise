@@ -72,7 +72,12 @@ final class GestionDeviseRepository
                 (int) $premiere, (int) ($premiere || $valeurs['active']), $valeurs['position'],
             ]
         );
-        return Database::dernierId();
+        $id = Database::dernierId();
+        // Sans devise locale, la première devise active autre que le dollar le devient (modifiable ensuite)
+        if ($valeurs['active'] && $valeurs['code'] !== 'USD' && Database::un('SELECT id FROM devises WHERE est_locale = 1') === null) {
+            Database::executer('UPDATE devises SET est_locale = 1 WHERE id = ?', [$id]);
+        }
+        return $id;
     }
 
     public function modifier(int $id, array $valeurs): void

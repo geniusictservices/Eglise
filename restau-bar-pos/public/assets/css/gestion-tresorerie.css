@@ -1,0 +1,269 @@
+/* Trésorerie (comptes, transferts) et dépenses.
+   Complète gestion.css ; n'utilise que les jetons de volcan.css (thèmes jour et nuit). */
+
+.tre-retour { margin: 0 0 .75rem; }
+.tre-retour .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+.tre-facultatif { font-weight: 400; font-size: .8125rem; color: var(--doux); }
+.tre-sous-texte { display: block; margin-top: .1rem; font-size: .8125rem; color: var(--doux); font-weight: 400; }
+.tre-negatif { color: var(--erreur); }
+.tre-entree { color: var(--succes); }
+.tre-alerte-texte { color: var(--erreur); font-weight: 600; }
+.tre-icone { width: 1.25em; height: 1.25em; flex: none; vertical-align: -.25em; }
+
+/* ---------- En-tête et onglets ---------- */
+
+.tre-entete { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: .75rem 1.25rem; }
+.tre-entete h1 { margin: 0; }
+.tre-entete .surtitre { display: flex; align-items: center; gap: .4rem; margin-bottom: .25rem; }
+.tre-entete__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+.tre-onglets { display: flex; gap: .5rem; margin-top: 1.25rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.tre-onglets::-webkit-scrollbar { display: none; }
+
+.tre-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: 1rem; }
+.tre-actions form { margin: 0; }
+.tre-pied { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.25rem; margin-top: 1.5rem; }
+.tre-pied .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+
+.tre-erreurs ul, .tre-avertissement ul { margin: .4rem 0 0; padding-left: 1.2rem; }
+.tre-note { border-left-color: var(--glace); background: var(--teinte-glace); }
+
+/* Avertissement avant d'enregistrer (découvert, taux inhabituel) */
+.tre-avertissement {
+  margin: 1rem 0; padding: 1rem 1.25rem; border-radius: var(--rayon);
+  border: 2px solid var(--braise); background: var(--teinte-braise); color: var(--encre);
+}
+.tre-avertissement__titre { margin: 0; font-weight: 700; }
+.tre-avertissement .tre-actions { margin-top: .75rem; }
+
+/* ---------- Totaux ---------- */
+
+.tre-totaux .chiffres { margin-top: 1.25rem; }
+.tre-totaux .chiffre__valeur { font-size: clamp(1.25rem, 4.2vw, 1.75rem); overflow-wrap: anywhere; }
+.tre-total-general {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin: 1rem 0 0;
+  padding: .85rem 1.25rem; border-radius: var(--rayon-carte); background: var(--surface); border: 1px solid var(--ligne);
+}
+.tre-total-general strong { font: 800 1.375rem/1.2 var(--police-titre); }
+.tre-total-general__equivalent { color: var(--doux); }
+
+/* ---------- Comptes groupés par moyen ---------- */
+
+.tre-groupe { overflow: visible; }
+.tre-groupe__titre { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .25rem 1rem; }
+.tre-groupe__titre h2 { display: flex; align-items: center; gap: .5rem; margin: 0; }
+.tre-groupe__titre h2 .tre-icone { color: var(--accent-texte); }
+.tre-groupe__totaux { margin: 0; font-weight: 700; color: var(--doux); }
+.tre-groupe__ajouter { margin: .5rem 0 0; }
+.tre-groupe__ajouter .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+
+.tre-comptes { list-style: none; margin: .75rem 0 0; padding: 0; }
+.tre-comptes li + li { border-top: 1px solid var(--ligne); }
+.tre-compte {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "nom solde" "details solde";
+  align-items: center; gap: .1rem 1rem; min-height: 56px; padding: .6rem .5rem; margin-inline: -.5rem;
+  border-radius: var(--rayon); text-decoration: none; color: inherit;
+}
+.tre-compte:hover { background: var(--surface-2); }
+.tre-compte__nom { grid-area: nom; font-weight: 700; display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.tre-compte__details { grid-area: details; font-size: .8125rem; color: var(--doux); overflow-wrap: anywhere; }
+.tre-compte__solde { grid-area: solde; font: 700 1.125rem/1.2 var(--police-texte); text-align: right; }
+.tre-inactifs summary { display: flex; align-items: center; min-height: var(--cible); cursor: pointer; font-weight: 700; }
+.tre-inactifs .tre-compte { opacity: .75; }
+
+/* ---------- Fiche d'un compte ---------- */
+
+.tre-solde {
+  display: grid; gap: .15rem; padding: .75rem 1.25rem; border-radius: var(--rayon-carte);
+  background: var(--surface); border: 1px solid var(--ligne); border-bottom: 4px solid var(--accent); text-align: right;
+}
+.tre-solde__libelle { font-size: var(--taille-s); color: var(--doux); }
+.tre-solde__valeur { font: 800 1.625rem/1.1 var(--police-titre); }
+
+.tre-periode { display: grid; gap: .75rem; margin-bottom: 1rem; }
+.tre-puces { display: flex; flex-wrap: wrap; gap: .5rem; }
+.tre-puces .puce { gap: .4rem; }
+.tre-periode__dates { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; }
+.tre-periode__dates .champ { flex: 1 1 10rem; max-width: 14rem; }
+
+/* position: relative : les libellés .visuellement-cache des en-têtes restent dans le conteneur qui défile */
+.tre-defile { position: relative; margin-inline: -.25rem; }
+.tre-journal td, .tre-transferts td { vertical-align: top; }
+.tre-journal__date { white-space: nowrap; color: var(--doux); }
+.tre-journal__report td { color: var(--doux); font-style: italic; }
+.tre-journal tfoot th, .tre-journal tfoot td { border-bottom: 0; border-top: 2px solid var(--ligne-forte); color: var(--encre); }
+.tre-journal tfoot th { text-transform: none; letter-spacing: 0; font-size: var(--taille-s); }
+.tre-journal td:nth-child(2) { min-width: 12rem; }
+.tre-journal a, .tre-transferts a { text-underline-offset: 3px; }
+.tre-transferts td:nth-child(2) { min-width: 13rem; }
+.tre-journal .montant, .tre-transferts .montant { white-space: nowrap; }
+
+/* ---------- Formulaires ---------- */
+
+.tre-formulaire { display: grid; gap: 1rem; max-width: 50rem; }
+.tre-formulaire > .bloc { margin-top: 0; }
+.tre-paire { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.tre-champ-court { max-width: 12rem; }
+.tre-groupe-champs { margin: 0; padding: 0; border: 0; min-width: 0; }
+.tre-groupe-champs legend { padding: 0; margin-bottom: .4rem; font-size: var(--taille-s); font-weight: 600; }
+.tre-valeur-fixe { margin: 0; min-height: var(--hauteur-bouton); display: flex; align-items: center; }
+.tre-formulaire .bloc h2 { margin-bottom: 1rem; }
+.tre-formulaire .bloc > .champ + .champ, .tre-formulaire .bloc > .champ + .tre-paire,
+.tre-formulaire .bloc > .tre-paire + .tre-paire, .tre-formulaire .bloc > .tre-paire + .champ { margin-top: 1rem; }
+
+/* Moyen de paiement : grandes puces (boutons radio) */
+.tre-moyens { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.tre-moyen { position: relative; display: block; margin: 0; }
+.tre-moyen input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.tre-moyen span {
+  display: flex; align-items: center; justify-content: center; gap: .5rem; min-height: 56px; padding: .5rem .75rem;
+  border: 1.5px solid var(--ligne-forte); border-radius: var(--rayon-rond); background: var(--surface-2);
+  font-weight: 700; text-align: center; cursor: pointer; line-height: 1.2;
+}
+.tre-moyen span:hover { border-color: var(--encre); }
+.tre-moyen input:checked + span { background: var(--encre); color: var(--fond); border-color: var(--encre); }
+.tre-moyen input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 2px; }
+.tre-moyens--compact .tre-moyen span { min-height: var(--cible); font-size: var(--taille-s); }
+
+/* Montant avec le symbole de la devise */
+.tre-montant { position: relative; display: flex; align-items: center; }
+.champ .tre-montant input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]) { padding-right: 4rem; text-align: right; font-variant-numeric: tabular-nums; font-size: 1.125rem; }
+.tre-montant__devise {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  font-weight: 700; color: var(--doux); pointer-events: none; max-width: 3.25rem; overflow: hidden; white-space: nowrap;
+}
+
+/* Transfert : source → destination */
+.tre-transfert { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 1rem; align-items: start; }
+.tre-transfert__cote { display: grid; gap: 1rem; min-width: 0; }
+.tre-transfert__fleche { align-self: center; font: 800 1.75rem/1 var(--police-titre); color: var(--accent-texte); }
+.tre-taux-applique { margin: 0; font-weight: 700; font-size: var(--taille-s); }
+.tre-taux-applique:empty { display: none; }
+.tre-reprendre { justify-self: start; min-height: var(--cible); }
+
+/* Paiements d'une dépense */
+.tre-paiements { display: grid; gap: 1rem; margin-top: 1rem; }
+.tre-paiement {
+  display: grid; gap: .75rem; margin: 0; padding: 1rem; min-width: 0;
+  border: 1px solid var(--ligne-forte); border-radius: var(--rayon-carte); background: var(--fond);
+}
+.tre-paiement__titre { padding: 0 .35rem; font-weight: 700; font-size: var(--taille-s); }
+.tre-paiement__ligne { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 1rem; }
+.tre-paiement__solde { margin: -.25rem 0 0; }
+.tre-paiement__solde:empty { display: none; }
+.tre-paiement__retirer { justify-self: start; min-height: var(--cible); }
+.tre-ajouter-paiement { margin-top: 1rem; }
+.tre-resume {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin-top: 1rem;
+  padding: .85rem 1rem; border-radius: var(--rayon); background: var(--teinte-accent);
+}
+.tre-resume__libelle { font-weight: 600; }
+.tre-resume__montants { font: 800 1.25rem/1.2 var(--police-titre); white-space: normal; }
+.tre-resume__equivalent { color: var(--doux); }
+
+.tre-supprimer { margin-top: 1rem; }
+.tre-supprimer:first-child { margin-top: 0; }
+.tre-supprimer summary { display: inline-flex; align-items: center; min-height: var(--cible); cursor: pointer; }
+.tre-supprimer p { margin: .5rem 0; }
+.tre-supprimer--ligne { margin: 0; }
+.tre-supprimer--ligne summary { white-space: nowrap; }
+.tre-lien-danger { color: var(--erreur); }
+.tre-lien-danger:hover { color: var(--erreur); }
+
+/* ---------- Liste des dépenses ---------- */
+
+.tre-filtres { display: grid; gap: .75rem; overflow: visible; }
+.tre-filtres .tre-periode { margin: 0; }
+.tre-filtres__formulaire { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr)); gap: .75rem; align-items: end; }
+.tre-filtres__boutons { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
+.tre-filtres__boutons .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+
+.tre-depenses { list-style: none; margin: 0; padding: 0; }
+.tre-depense {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .2rem 1rem; padding: .9rem 0;
+  border-top: 1px solid var(--ligne);
+}
+.tre-depense:first-child { border-top: 0; padding-top: 0; }
+.tre-depense__tete { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .75rem; font-size: .8125rem; color: var(--doux); }
+.tre-depense__libelle { grid-column: 1; font-weight: 700; font-size: 1rem; display: inline-flex; align-items: center; min-height: var(--cible); overflow-wrap: anywhere; }
+.tre-depense > .tre-sous-texte { grid-column: 1; margin-top: -.4rem; }
+.tre-depense__paiements { grid-column: 1; list-style: none; margin: .25rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4rem; }
+.tre-depense__paiements li {
+  display: inline-flex; align-items: center; gap: .4rem; padding: .3rem .7rem; border-radius: var(--rayon-rond);
+  background: var(--surface-2); font-size: var(--taille-s);
+}
+.tre-depense__paiements .tre-hors-filtre { opacity: .55; }
+.tre-depense__equivalent { grid-column: 2; grid-row: 2 / span 3; align-self: center; text-align: right; font-weight: 700; color: var(--doux); }
+
+.tre-categories { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; }
+.tre-categories li { display: grid; grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr) 9.5rem; align-items: center; gap: .75rem; }
+.tre-categories__barre { height: 10px; border-radius: var(--rayon-rond); background: var(--surface-2); overflow: hidden; }
+.tre-categories__barre span { display: block; height: 100%; border-radius: inherit; background: var(--braise); }
+.tre-categories .montant { text-align: right; font-weight: 700; }
+.tre-categories .montant .tre-sous-texte { display: inline; margin-left: .35rem; }
+
+/* ---------- Catégories de dépenses ---------- */
+
+.tre-categorie-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 6rem auto; gap: .75rem; align-items: end; }
+.tre-categories-liste { list-style: none; margin: 0; padding: 0; }
+.tre-categorie { padding: 1rem 0; border-top: 1px solid var(--ligne); }
+.tre-categorie:first-child { border-top: 0; padding-top: 0; }
+.tre-categorie--inactive .champ input { color: var(--doux); }
+.tre-categorie__pied { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1.25rem; margin-top: .4rem; }
+.tre-categorie__pied form { margin: 0; }
+.tre-categorie__pied .lien { min-height: var(--cible); }
+.tre-categorie__pied .tre-sous-texte { display: inline; margin: 0; }
+
+/* ---------- Téléphone ---------- */
+
+@media (max-width: 760px) {
+  .tre-transfert { grid-template-columns: minmax(0, 1fr); }
+  .tre-transfert__fleche { justify-self: center; transform: rotate(90deg); }
+  .tre-categorie-form { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .tre-categories li { grid-template-columns: minmax(0, 1fr) auto; }
+  .tre-categories__barre { grid-column: 1 / -1; grid-row: 2; }
+}
+@media (max-width: 600px) {
+  .tre-paire, .tre-paiement__ligne { grid-template-columns: minmax(0, 1fr); }
+  .tre-entete__actions { width: 100%; }
+  .tre-entete__actions .bouton { flex: 1 1 auto; }
+  .tre-solde { width: 100%; text-align: left; }
+  .tre-moyens { gap: .35rem; }
+  .tre-moyen span { flex-direction: column; gap: .2rem; padding: .4rem .25rem; font-size: .8125rem; border-radius: var(--rayon); }
+  .tre-moyens--compact .tre-moyen span { flex-direction: row; min-height: var(--cible); font-size: .75rem; gap: .25rem; }
+  .tre-moyens--compact .tre-icone { display: none; }
+  .tre-periode__dates .champ { max-width: none; }
+  .tre-actions .bouton { flex: 1 1 auto; }
+  .tre-depense { grid-template-columns: minmax(0, 1fr); }
+  .tre-depense__equivalent { grid-column: 1; grid-row: auto; text-align: left; }
+  /* Catégories : noms FR et EN côte à côte, ordre et bouton dessous */
+  .tre-categorie-form { gap: .5rem .75rem; }
+  .tre-categorie-form .bouton { justify-self: start; }
+  /* Journal d'un compte en cartes : date et libellé à gauche, montant et solde à droite */
+  .tre-journal thead { display: none; }
+  .tre-journal, .tre-journal tbody, .tre-journal tfoot { display: block; }
+  .tre-journal tr {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "date montant" "libelle solde";
+    gap: .1rem .75rem; padding: .7rem 0; border-bottom: 1px solid var(--ligne);
+  }
+  .tre-journal td, .tre-journal th { padding: 0; border: 0 !important; min-width: 0 !important; text-align: left; }
+  .tre-journal td:nth-child(1), .tre-journal td.nombre:nth-child(1) { grid-area: date; font-size: .8125rem; text-align: left; }
+  .tre-journal td:nth-child(2) { grid-area: libelle; }
+  .tre-journal td:nth-child(3), .tre-journal td:nth-child(4) { grid-area: montant; text-align: right; font-weight: 700; }
+  .tre-journal tbody td:nth-child(3):not(:empty)::before { content: "+"; }
+  .tre-journal tbody td:nth-child(4):not(:empty)::before { content: "\2212"; }
+  .tre-journal td:nth-child(5) { grid-area: solde; text-align: right; font-size: .8125rem; color: var(--doux); }
+  .tre-journal td:empty { display: none; }
+  .tre-journal__report td:nth-child(5) { grid-area: montant; color: var(--doux); font-size: inherit; }
+  .tre-journal tfoot tr { grid-template-columns: minmax(0, 1fr); grid-template-areas: none; border-top: 2px solid var(--ligne-forte); }
+  .tre-journal tfoot th, .tre-journal tfoot td { grid-area: auto !important; text-align: left; }
+  .tre-journal tfoot td::before { content: attr(data-libelle) " "; color: var(--doux); font-weight: 400; }
+  /* Transferts en cartes : une ligne du tableau par bloc */
+  .tre-transferts thead { display: none; }
+  .tre-transferts, .tre-transferts tbody, .tre-transferts tr, .tre-transferts td { display: block; }
+  .tre-transferts tr { padding: .75rem 0; border-bottom: 1px solid var(--ligne); }
+  .tre-transferts td { padding: .1rem 0; border: 0; min-width: 0 !important; }
+  .tre-transferts td.nombre { text-align: left; }
+  .tre-transferts td[data-libelle]::before { content: attr(data-libelle) " "; color: var(--doux); font-weight: 400; }
+  .tre-transferts td:empty { display: none; }
+  .tre-transferts .tre-sous-texte { display: inline; margin-left: .35rem; }
+}

@@ -9,7 +9,7 @@ declare(strict_types=1);
  *   php bin/creer-instance.php <sous-domaine> --nom="Nom du client" --email=admin@exemple.com [--demo]
  *       [--db-hote=127.0.0.1] [--db-port=3306] [--db-admin=root] [--db-admin-mdp=...]
  *
- * --demo charge les données de démonstration (database/demo.sql).
+ * --demo charge les données de démonstration (database/demo.sql, puis demo-illustrations.sql et demo-tresorerie.sql).
  * Le mot de passe MySQL administrateur peut aussi venir de la variable RBP_DB_ADMIN_MDP.
  */
 
@@ -101,6 +101,10 @@ if (isset($options['demo'])) {
     // Illustrations SVG des produits et des établissements de démonstration
     if (is_file(RACINE . '/database/demo-illustrations.sql')) {
         Migrations::executerFichier($pdo, RACINE . '/database/demo-illustrations.sql');
+    }
+    // Trésorerie : comptes, transferts et dépenses de démonstration
+    if (is_file(RACINE . '/database/demo-tresorerie.sql')) {
+        Migrations::executerFichier($pdo, RACINE . '/database/demo-tresorerie.sql');
     }
 } else {
     $pdo->prepare('INSERT INTO parametres (cle, valeur) VALUES (?, ?), (?, ?), (?, ?)')->execute([

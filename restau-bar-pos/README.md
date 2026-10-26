@@ -24,6 +24,7 @@ Phase 1 en cours. Déjà disponible :
   - **catalogue** (`/gestion/catalogue`) : produits groupés par catégorie et sous-catégorie (deux niveaux) avec filtres, tailles d'un même produit (Primus Petite 33 cl, Grande 72 cl : chacune avec ses formats, prix et disponibilité) listées sous lui, « disponible / épuisé » en un toucher, ordre ; fiche produit (informations FR/EN, badges, allergènes, photo envoyée et ré-encodée avec son crédit, formats, tableau des prix formats × grilles × devises avec le calcul automatique affiché, établissements où il est vendu, désactivation) ; création sur une seule page ; catégories (`/gestion/catalogue/categories`) ;
   - **établissements** (`/gestion/etablissements`) : liste avec l'état ouvert / fermé, création, fiche en six sections (informations et liens, apparence : couleur, logo et couverture, prix et devises, horaires par service, zones avec leur grille, activation) ; **grilles de prix** (`/gestion/grilles`) ;
   - **devises et taux** (`/gestion/devises`) : devise de référence, taux du jour (avec date de début, éventuellement programmée), ajout et modification des devises (format, décimales, arrondi), activation, historique des taux ;
+  - **trésorerie** (`/gestion/tresorerie`) : comptes en espèces, mobile money et banque (une devise par compte : « Caisse USD », « M-Pesa CDF »…) groupés par moyen avec leur solde, totaux par devise (devise locale d'abord, dollar ensuite) et total général au taux du jour ; fiche d'un compte avec ses mouvements et le solde après chaque ligne sur une période ; **transferts** entre comptes (`/gestion/tresorerie/transferts`), entre deux devises avec le montant reçu proposé au taux du jour et le taux réellement appliqué enregistré ; **dépenses** (`/gestion/depenses`) : filtres (période, catégorie, établissement, moyen), totaux par devise et équivalent en devise de référence, saisie où chaque paiement choisit le moyen puis le compte (une dépense payée en dollars et en francs a deux paiements), catégories (`/gestion/depenses/categories`). Les soldes se calculent depuis un journal unique (`mouvements_tresorerie`) où les ventes et achats des phases suivantes écriront aussi ; un découvert est signalé avant d'enregistrer, sans être bloqué ;
   - **mon compte** (`/gestion/compte`) : nom, langue préférée, mot de passe ;
   - **médiathèque** (`/gestion/mediatheque`) : toutes les images, ajout par glisser-déposer, collage ou choix de fichiers, fiche (textes alternatifs, crédit, utilisations), suppression des images non utilisées ; le même champ image (glisser-déposer, collage, choix dans la médiathèque) sert pour la photo des produits, le logo et la couverture des établissements ;
   - codes QR et chevalet (`/gestion/qr`) ;
@@ -50,7 +51,7 @@ app/
   Repositories/          accès aux données : devises et prix, établissements, catalogue,
                          Gestion*Repository pour les écrans de gestion
   routes/                routes d'un module : un fichier par module (catalogue, etablissements,
-                         devises, compte, design), chargé par public/index.php
+                         devises, tresorerie, compte, design), chargé par public/index.php
 bin/
   creer-instance.php     création d'une instance client (base, schéma, migrations, démo, compte admin)
   migrer.php             applique les migrations en attente : php bin/migrer.php demo | --toutes
@@ -63,7 +64,8 @@ database/
   schema.sql             tables d'une instance (version de départ)
   migrations/            évolutions du schéma : NNN_nom.sql, appliquées une seule fois et dans l'ordre
                          (table schema_migrations)
-  demo.sql               données de démonstration ; demo-illustrations.sql : illustrations SVG
+  demo.sql               données de démonstration ; demo-illustrations.sql : illustrations SVG ;
+                         demo-tresorerie.sql : comptes, transferts et dépenses de démonstration
   photos-demo.json       requêtes de recherche des photos de démonstration
 docs/
   design-system.md       système de design « Volcan » : principes, jetons, composants, thèmes

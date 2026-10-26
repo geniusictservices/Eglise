@@ -14,6 +14,8 @@ INSERT INTO devises (id, code, symbole, nom_fr, nom_en, decimales, arrondi, symb
  (2, 'CDF', 'FC',  'Franc congolais',  'Congolese franc', 0, 100, 0, 0, 1, 2),
  (3, 'RWF', 'FRw', 'Franc rwandais',   'Rwandan franc',   0, 50,  0, 0, 1, 3),
  (4, 'EUR', '€',   'Euro',             'Euro',            2, 0,   0, 0, 0, 4);
+-- Devise locale : le franc congolais (tickets et factures en FC, le dollar en deuxième position)
+UPDATE devises SET est_locale = 1 WHERE code = 'CDF';
 
 INSERT INTO taux_change (devise_id, taux, valable_depuis) VALUES
  (1, 1,       '2026-01-01 00:00:00'),
