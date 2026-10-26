@@ -1,4 +1,4 @@
-# Projet
+# restau-bar-pos
 
 Dossier de travail du projet.
 
