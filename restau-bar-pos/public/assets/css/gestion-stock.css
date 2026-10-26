@@ -201,3 +201,6 @@
   .stk-table--cartes .tre-sous-texte { flex-basis: 100%; text-align: right; }
   .stk-table--cartes td:first-child .tre-sous-texte { text-align: left; }
 }
+
+/* Liens-boutons (supprimer, annuler) : cible tactile de 44 px */
+.stk-lieu button.lien, .stk-details button.lien, .tre-actions button.lien { min-height: var(--cible); display: inline-flex; align-items: center; }
