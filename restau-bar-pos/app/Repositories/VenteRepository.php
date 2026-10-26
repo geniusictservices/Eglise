@@ -75,7 +75,9 @@ final class VenteRepository
      *              totaux: list<array{devise: array, total: float, taux: ?float}>,
      *              lignes: list<array{produit_id: int, conditionnement_id: int, libelle: string, format: ?string, quantite: int, prix: float, prix_reference: ?float}>,
      *              paiements: list<array{moyen: string, compte: array, devise: array, recu: float, taux: ?float}>,
-     *              rendu: ?array{montant: float, devise: array, compte: array, taux: ?float}} $v
+     *              rendu: ?array{montant: float, devise: array, compte: array, taux: ?float}, date?: string} $v
+     *        date (facultative, « Y-m-d H:i:s ») : heure de la vente et de ses mouvements de trésorerie,
+     *        maintenant si absente (la caisse ne l'envoie jamais ; bin/demo-ventes.php l'utilise)
      * @return int identifiant de la vente
      */
     public function enregistrer(array $v): int
@@ -95,7 +97,7 @@ final class VenteRepository
                 [(int) $etab['id']]
             )['s'];
             $numero = self::prefixe($etab['slug']) . '-' . str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
-            $maintenant = date('Y-m-d H:i:s');
+            $maintenant = $v['date'] ?? date('Y-m-d H:i:s');
 
             $encaisse = 0.0;
             foreach ($v['paiements'] as $p) {
