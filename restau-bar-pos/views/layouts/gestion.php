@@ -28,8 +28,10 @@ $chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
                     '/gestion/catalogue' => 'gestion.menu_catalogue',
                     '/gestion/etablissements' => 'gestion.menu_etablissements',
                     '/gestion/devises' => 'gestion.menu_devises',
+                    '/gestion/mediatheque' => 'gestion.menu_mediatheque',
                     '/gestion/qr' => 'gestion.qr',
                     '/gestion/compte' => 'gestion.menu_compte',
+                    '/gestion/aide' => 'gestion.menu_aide',
                 ] as $lien => $cleTexte): ?>
                     <a href="<?= $lien ?>" <?= str_starts_with((string) $chemin, $lien) ? 'aria-current="page"' : '' ?>><?= e(t($cleTexte)) ?></a>
                 <?php endforeach; ?>

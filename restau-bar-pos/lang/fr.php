@@ -122,4 +122,6 @@ return [
     'gestion.menu_etablissements' => 'Établissements',
     'gestion.menu_devises' => 'Devises et taux',
     'gestion.menu_compte' => 'Mon compte',
+    'gestion.menu_mediatheque' => 'Médiathèque',
+    'gestion.menu_aide' => 'Aide',
 ];

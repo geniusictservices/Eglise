@@ -122,4 +122,6 @@ return [
     'gestion.menu_etablissements' => 'Venues',
     'gestion.menu_devises' => 'Currencies & rates',
     'gestion.menu_compte' => 'My account',
+    'gestion.menu_mediatheque' => 'Media library',
+    'gestion.menu_aide' => 'Help',
 ];
