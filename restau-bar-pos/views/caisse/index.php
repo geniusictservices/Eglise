@@ -59,7 +59,10 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2v16a8 8 0 0 1 0-16Z"/></svg>
                 <span class="visuellement-cache"><?= e(t('theme.nuit')) ?></span>
             </button>
-            <a class="haut__utilisateur" href="/gestion" title="<?= e(t('gestion.tableau')) ?>"><?= e($utilisateur['nom']) ?></a>
+            <button type="button" class="icone" id="quitter" aria-haspopup="dialog" title="<?= e(t('caisse.quitter')) ?>">
+                <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+                <span class="visuellement-cache"><?= e(t('caisse.quitter')) ?></span>
+            </button>
         </div>
     </header>
 
@@ -97,6 +100,17 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
         <span id="resume-texte"></span>
         <strong id="resume-total"></strong>
     </button>
+
+    <dialog class="formats" id="fenetre-quitter" aria-labelledby="quitter-titre">
+        <form method="dialog">
+            <h2 id="quitter-titre"><?= e(t('caisse.quitter_titre')) ?></h2>
+            <p class="quitter__texte"><?= e(t('caisse.quitter_texte', ['nom' => $utilisateur['nom']])) ?></p>
+            <div class="formats__liste">
+                <a class="bouton" href="/gestion"><?= e(t('caisse.quitter_oui')) ?></a>
+                <button class="bouton bouton--secondaire" value="rester"><?= e(t('caisse.quitter_non')) ?></button>
+            </div>
+        </form>
+    </dialog>
 
     <dialog class="formats" id="formats">
         <form method="dialog">

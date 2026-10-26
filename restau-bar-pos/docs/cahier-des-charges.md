@@ -485,6 +485,7 @@ Principe : chaque personne ne voit que ce dont elle a besoin, au bon moment, sur
 - **Réglages mémorisés par appareil** (taille des tuiles, thème).
 
 ### 14.3 Caisse : produits en grille
+- **Aucun menu sur la caisse** : l'écran sert uniquement à vendre (établissement et zone, recherche, catégories, produits, ticket). Pour en sortir, une seule icône discrète « Quitter la caisse » ouvre une confirmation ; plus tard, elle demandera le PIN d'un gérant (phase 2).
 - **Grille de tuiles** : nom, prix dans la devise principale, photo si elle existe, bandeau de la couleur de la catégorie.
 - **Onglets de catégories** en haut, avec « Tout » en premier. Une catégorie qui a des sous-catégories ouvre une **seconde rangée de puces** (« Toutes », « Locales », « Importées ») ; la couleur reste celle de la catégorie principale.
 - **Un toucher = un article.** Si le produit a plusieurs formats (dose, bouteille…) ou plusieurs tailles (Petite 33 cl, Grande 72 cl), une fenêtre propose chaque taille et chaque format avec son prix (section 9.3).

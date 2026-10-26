@@ -305,7 +305,7 @@ button { cursor: pointer; }
   .haut__lieu { flex: 1 1 100%; }
   .haut__lieu select { flex: 1; min-width: 0; max-width: none; }
   .haut__recherche { flex: 1 1 0; }
-  .segments, .haut__utilisateur { display: none; }
+  .segments { display: none; }
   .grille { --colonnes: 3; gap: 8px; }
 }
 
@@ -313,3 +313,7 @@ button { cursor: pointer; }
   .tuile, .ticket { transition: none; }
   .tuile--pulse { animation: none; }
 }
+
+/* Fenêtre « Quitter la caisse » */
+.quitter__texte { margin: 0; color: var(--doux); }
+#fenetre-quitter .bouton { width: 100%; text-align: center; justify-content: center; }

@@ -375,6 +375,11 @@
     t.classList.add('tuile--pulse');
   }
 
+  // Quitter la caisse : une icône discrète, confirmée dans une fenêtre (aucun menu sur la caisse)
+  var fenetreQuitter = document.getElementById('fenetre-quitter');
+  document.getElementById('quitter').addEventListener('click', function () { fenetreQuitter.showModal(); });
+  fenetreQuitter.addEventListener('click', function (ev) { if (ev.target === fenetreQuitter) { fenetreQuitter.close(); } });
+
   dessinerOnglets();
   dessinerGrille();
   filtrer();

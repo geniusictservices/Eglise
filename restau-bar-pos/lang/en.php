@@ -118,6 +118,11 @@ return [
     'caisse.encaisser' => 'Charge',
     'caisse.note_phase3' => 'Payment and sales recording come in phase 3.',
     'caisse.annuler' => 'Cancel',
+    'caisse.quitter' => 'Leave the point of sale',
+    'caisse.quitter_titre' => 'Leave the point of sale?',
+    'caisse.quitter_texte' => 'Signed-in account: {nom}. The current ticket stays saved on this device.',
+    'caisse.quitter_oui' => 'Open the back office',
+    'caisse.quitter_non' => 'Stay on the point of sale',
 
     // Menu de gestion
     'gestion.menu_catalogue' => 'Catalogue',
