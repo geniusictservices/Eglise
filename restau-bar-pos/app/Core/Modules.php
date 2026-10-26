@@ -19,7 +19,7 @@ final class Modules
         return [
             'caisse' => ['icone' => 'caisse', 'lien' => '/caisse', 'voir' => 'caisse.vendre', 'ecrans' => []],
             'ventes' => ['icone' => 'ventes', 'lien' => null, 'ecrans' => [
-                ['cle' => 'tickets', 'icone' => 'ventes', 'lien' => null, 'voir' => 'ventes.voir'],
+                ['cle' => 'tickets', 'icone' => 'ventes', 'lien' => '/gestion/ventes', 'voir' => 'ventes.voir', 'modifier' => 'ventes.annuler'],
                 ['cle' => 'clients', 'icone' => 'compte', 'lien' => null, 'voir' => 'ventes.voir'],
                 ['cle' => 'dettes', 'icone' => 'dettes', 'lien' => null, 'voir' => 'ventes.voir'],
             ]],
@@ -48,7 +48,7 @@ final class Modules
             ]],
             'rapports' => ['icone' => 'rapports', 'lien' => '/gestion/tableau-de-bord', 'ecrans' => [
                 ['cle' => 'tableau', 'icone' => 'rapports', 'lien' => '/gestion/tableau-de-bord', 'voir' => 'rapports.voir'],
-                ['cle' => 'rapport_ventes', 'icone' => 'ventes', 'lien' => null, 'voir' => 'rapports.voir'],
+                ['cle' => 'rapport_ventes', 'icone' => 'ventes', 'lien' => '/gestion/rapports/ventes', 'voir' => 'rapports.voir'],
                 ['cle' => 'rapport_personnel', 'icone' => 'compte', 'lien' => null, 'voir' => 'rapports.voir'],
             ]],
             'carte' => ['icone' => 'carte', 'lien' => '/gestion/catalogue', 'ecrans' => [

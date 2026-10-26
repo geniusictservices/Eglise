@@ -44,6 +44,9 @@ $libelle = static function (array $m) use ($id): array {
                 implode(' · ', array_filter([champ($m, 'categorie_nom'), $m['beneficiaire']])),
                 $m['source_id'] ? '/gestion/depenses/' . (int) $m['source_id'] : null,
             ];
+        case 'vente':
+            // Encaissement, monnaie rendue ou annulation d'une vente : lien vers sa fiche (Ventes > Tickets)
+            return [t('tresorerie.nature_vente'), (string) $m['libelle'], $m['source_id'] ? '/gestion/ventes/' . (int) $m['source_id'] : null];
         default:
             return [t('tresorerie.nature_' . $m['nature']), (string) $m['libelle'], null];
     }

@@ -1,0 +1,220 @@
+/* Ventes (tickets, fiche d'une vente, reçu imprimé) et rapport « ventes par vendeur ».
+   Complète gestion.css et gestion-tresorerie.css ; n'utilise que les jetons de volcan.css (thèmes jour et nuit),
+   sauf l'impression du reçu, toujours en noir sur blanc. */
+
+/* ---------- Filtres et totaux ---------- */
+
+.ven-filtres .tre-filtres__formulaire { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13.5rem), 1fr)); }
+.ven-chiffres { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+.tre-totaux .ven-chiffres .chiffre__valeur { font-size: clamp(1.25rem, 2vw, 1.625rem); white-space: nowrap; overflow-wrap: normal; }
+
+.ven-encaisse { margin-top: 1.25rem; }
+.ven-encaisse__titre { margin: 0; font: 600 1rem/1.2 var(--police-titre); }
+.ven-encaisse__devises {
+  list-style: none; margin: .75rem 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem;
+}
+.ven-encaisse__devise { padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--rayon-carte); min-width: 0; }
+.ven-encaisse__total { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .25rem .75rem; margin: 0 0 .6rem; }
+.ven-encaisse__total .surtitre { margin: 0; }
+.ven-encaisse__total strong { font: 800 1.375rem/1.1 var(--police-titre); overflow-wrap: anywhere; }
+.ven-encaisse__types { list-style: none; margin: 0; padding: .6rem 0 0; border-top: 1px solid var(--ligne); display: grid; gap: .4rem; }
+.ven-encaisse__types li { display: flex; justify-content: space-between; align-items: center; gap: .75rem; font-size: var(--taille-s); }
+.ven-encaisse__types li > span:first-child { display: inline-flex; align-items: center; gap: .4rem; color: var(--doux); }
+.ven-encaisse__types .montant { font-weight: 700; white-space: nowrap; }
+.ven-annulees-note { margin-top: .75rem; }
+.ven-annulees-note .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+
+/* ---------- Liste des tickets ---------- */
+
+.ven-defile { position: relative; margin-inline: -.25rem; }
+.ven-bloc-liste h2 { margin-bottom: .5rem; }
+.ven-liste td { vertical-align: middle; }
+.ven-numero { display: inline-flex; align-items: center; min-height: var(--cible); font-weight: 700; text-underline-offset: 3px; white-space: nowrap; }
+.ven-ligne__numero { white-space: nowrap; }
+.ven-ligne__numero .badge { margin-left: .35rem; }
+.ven-ligne__date { white-space: nowrap; color: var(--doux); }
+.ven-ligne__total .montant { white-space: nowrap; }
+.ven-ligne--annulee .ven-ligne__total .montant { text-decoration: line-through; color: var(--doux); font-weight: 600; }
+.ven-vendeur { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
+.ven-vendeur > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.ven-moyens { display: inline-flex; flex-wrap: wrap; gap: .3rem; }
+.ven-moyen { display: inline-flex; align-items: center; gap: .3rem; white-space: nowrap; }
+.ven-moyen .tre-icone { width: 1.15em; height: 1.15em; }
+.ven-pages { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.25rem; }
+
+/* ---------- Fiche d'une vente ---------- */
+
+.ven-entete h1 { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; }
+.ven-entete h1 .badge { font-family: var(--police-texte); }
+.ven-detail { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 1.5rem; align-items: start; margin-top: 1.5rem; }
+.ven-detail__infos { min-width: 0; }
+.ven-detail__infos > .bloc { margin-top: 1rem; }
+.ven-detail__infos > .bloc:first-child { margin-top: 0; }
+.ven-detail__infos h2 { margin: 0 0 .75rem; }
+
+.ven-infos { margin: 0; display: grid; gap: 0; }
+.ven-infos > div { display: grid; grid-template-columns: minmax(7rem, 12rem) minmax(0, 1fr); gap: .75rem; padding: .55rem 0; border-top: 1px solid var(--ligne); align-items: center; }
+.ven-infos > div:first-child { border-top: 0; padding-top: 0; }
+.ven-infos dt { color: var(--doux); font-size: var(--taille-s); }
+.ven-infos dd { margin: 0; overflow-wrap: anywhere; }
+.ven-motif { white-space: pre-line; font-weight: 600; }
+
+.ven-annulation-faite {
+  margin: 0 0 1rem; padding: 1rem 1.25rem; border-radius: var(--rayon-carte);
+  border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne)); background: var(--teinte-erreur);
+}
+.ven-annulation-faite .ven-infos > div { border-top-color: color-mix(in srgb, var(--erreur) 25%, var(--ligne)); }
+
+.ven-paiements, .ven-mouvements { list-style: none; margin: 0; padding: 0; }
+.ven-paiements li, .ven-mouvements li {
+  display: flex; justify-content: space-between; align-items: center; gap: .5rem 1rem;
+  padding: .6rem 0; border-top: 1px solid var(--ligne); min-height: var(--cible);
+}
+.ven-paiements li:first-child, .ven-mouvements li:first-child { border-top: 0; }
+.ven-paiements__compte { display: inline-flex; align-items: center; gap: .6rem; min-width: 0; }
+.ven-paiements__compte .tre-icone { color: var(--accent-texte); }
+.ven-paiements__compte a { font-weight: 700; text-underline-offset: 3px; }
+.ven-paiements__montant { text-align: right; }
+.ven-paiements__montant .montant, .ven-mouvements .montant { white-space: nowrap; }
+.ven-paiements__rendu { color: var(--doux); }
+.ven-mouvements li > span { min-width: 0; overflow-wrap: anywhere; }
+.ven-detail__infos .bloc > .aide { margin: -.4rem 0 .5rem; }
+
+.ven-annuler { border-color: color-mix(in srgb, var(--erreur) 35%, var(--ligne)); }
+.ven-annuler__form { display: grid; gap: 1rem; margin-top: 1rem; }
+.ven-annuler__form textarea { min-height: 5.5rem; resize: vertical; }
+.ven-annuler__form .coche { align-items: flex-start; }
+.ven-annuler__form .coche input { flex: none; margin-top: .1rem; }
+.ven-annuler .tre-actions { margin-top: 0; }
+
+/* Reçu à l'écran (la caisse a ses propres styles ; ceux-ci ne valent que dans la fiche) */
+.ven-detail .recu {
+  max-width: 340px; margin: 0 auto; padding: 16px; border: 1px dashed var(--ligne-forte); border-radius: 12px;
+  background: var(--surface); color: var(--encre); font-size: .875rem;
+}
+.ven-detail .recu p { margin: 0; }
+.ven-detail .recu__tete { text-align: center; }
+.ven-detail .recu__etab { font: 800 1.0625rem/1.2 var(--police-titre); }
+.ven-detail .recu__info { margin-top: 2px; color: var(--doux); font-size: .8125rem; }
+.ven-detail .recu__meta { display: grid; gap: 2px; margin: 12px 0; padding: 8px 0; border-block: 1px dashed var(--ligne-forte); }
+.ven-detail .recu__meta div { display: flex; justify-content: space-between; gap: 8px; }
+.ven-detail .recu__meta dt { color: var(--doux); }
+.ven-detail .recu__meta dd { margin: 0; font-weight: 600; text-align: right; }
+.ven-detail .recu__lignes, .ven-detail .recu__paiements { width: 100%; border-collapse: collapse; }
+.ven-detail .recu__lignes td, .ven-detail .recu__paiements td { padding: 3px 0; vertical-align: top; }
+.ven-detail .recu small { color: var(--doux); }
+.ven-detail .recu__qte { width: 2.6em; white-space: nowrap; color: var(--doux); }
+.ven-detail .recu__montant { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; padding-left: 8px; }
+.ven-detail .recu__total { display: flex; justify-content: space-between; align-items: baseline; margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--ligne-forte); }
+.ven-detail .recu__total strong { font: 800 1.375rem/1.1 var(--police-titre); font-variant-numeric: tabular-nums; }
+.ven-detail .recu__equivalent { margin: 2px 0 10px; text-align: right; color: var(--doux); font-variant-numeric: tabular-nums; }
+.ven-detail .recu__paiements { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--ligne-forte); }
+.ven-detail .recu__rendu td { font-weight: 700; }
+.ven-detail .recu__merci { margin-top: 12px; text-align: center; font-weight: 600; }
+.ven-detail .recu__annule {
+  margin: 0 0 8px; padding: 6px; text-align: center; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--erreur); border: 1px solid var(--erreur); border-radius: 8px; background: var(--teinte-erreur);
+}
+.ven-detail .recu--annule .recu__lignes, .ven-detail .recu--annule .recu__total strong { opacity: .7; }
+
+/* ---------- Rapport : ventes par vendeur ---------- */
+
+.rv-vendeurs td { vertical-align: middle; }
+.rv-rang { width: 2.5rem; color: var(--doux); font-weight: 700; }
+.rv-premier .rv-rang { color: var(--prix); }
+.rv-nom .badge { margin-left: .4rem; }
+.rv-nom a { font-weight: 700; text-underline-offset: 3px; display: inline-flex; align-items: center; min-height: var(--cible); }
+.rv-total .montant, .rv-reference { white-space: nowrap; }
+.rv-reference { color: var(--doux); }
+.rv-part { min-width: 9rem; white-space: nowrap; }
+.rv-part .tre-categories__barre { display: inline-block; width: 5rem; vertical-align: middle; margin-right: .5rem; }
+
+.rv-produits { list-style: none; margin: 0; padding: 0; display: grid; gap: .6rem; counter-reset: rv-produit; }
+.rv-produits li {
+  counter-increment: rv-produit;
+  display: grid; grid-template-columns: 2rem minmax(10rem, 18rem) minmax(0, 1fr) 13rem; align-items: center; gap: .75rem;
+}
+.rv-produits li::before { content: counter(rv-produit); color: var(--doux); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.rv-produits__nom { font-weight: 600; overflow-wrap: anywhere; }
+.rv-produits__nom .tre-sous-texte { display: inline; margin: 0 0 0 .25rem; }
+.rv-produits__chiffres { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: baseline; gap: 0 .6rem; text-align: right; }
+.rv-produits__chiffres .tre-sous-texte { margin-top: 0; white-space: nowrap; }
+
+/* ---------- Tablette et téléphone ---------- */
+
+@media (max-width: 980px) {
+  .ven-detail { grid-template-columns: minmax(0, 1fr); }
+  .ven-detail__recu { order: 0; }
+}
+@media (max-width: 760px) {
+  .rv-produits__chiffres { flex-direction: column; align-items: flex-end; }
+  .rv-produits li { grid-template-columns: 1.5rem minmax(0, 1fr) auto; }
+  .rv-produits .tre-categories__barre { grid-column: 2 / -1; grid-row: 2; }
+}
+@media (max-width: 600px) {
+  .ven-infos > div { grid-template-columns: minmax(0, 1fr); gap: .1rem; }
+
+  /* Tickets en cartes : numéro et total, date et articles, établissement, vendeur et paiements */
+  .ven-liste thead { display: none; }
+  .ven-liste, .ven-liste tbody { display: block; }
+  .ven-liste tr {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "numero total" "date articles" "etab etab" "vendeur moyens";
+    gap: .15rem .75rem; padding: .7rem 0; border-bottom: 1px solid var(--ligne);
+  }
+  .ven-liste tr:last-child { border-bottom: 0; }
+  .ven-liste td { padding: 0; border: 0; min-width: 0; text-align: left; }
+  .ven-ligne__numero { grid-area: numero; white-space: normal; }
+  .ven-ligne__total { grid-area: total; text-align: right !important; align-self: center; font-size: 1.0625rem; }
+  .ven-ligne__date { grid-area: date; font-size: .8125rem; }
+  .ven-ligne__articles { grid-area: articles; text-align: right !important; font-size: .8125rem; color: var(--doux); }
+  .ven-ligne__articles::before { content: attr(data-libelle) " "; }
+  .ven-ligne__etab { grid-area: etab; font-size: .8125rem; color: var(--doux); }
+  .ven-ligne__vendeur { grid-area: vendeur; margin-top: .35rem; }
+  .ven-ligne__moyens { grid-area: moyens; margin-top: .35rem; align-self: center; text-align: right !important; }
+  .ven-moyens { justify-content: flex-end; }
+
+  /* Classement en cartes : nom ; total et équivalent ; tickets, articles et panier moyen ; part */
+  .rv-vendeurs thead { display: none; }
+  .rv-vendeurs, .rv-vendeurs tbody { display: block; }
+  .rv-vendeurs tr {
+    display: grid; grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+    grid-template-areas: "rang nom nom" "rang total reference" "rang tickets articles" "rang panier panier" "rang part part";
+    gap: .2rem .75rem; padding: .75rem 0; border-bottom: 1px solid var(--ligne);
+  }
+  .rv-vendeurs tr:last-child { border-bottom: 0; }
+  .rv-vendeurs td { padding: 0; border: 0; min-width: 0; text-align: left; }
+  .rv-rang { grid-area: rang; width: auto; align-self: start; padding-top: .6rem !important; }
+  .rv-nom { grid-area: nom; }
+  .rv-total { grid-area: total; text-align: left !important; align-self: baseline; font-size: 1.0625rem; }
+  .rv-reference { grid-area: reference; text-align: right !important; align-self: baseline; font-size: .8125rem; }
+  .rv-vendeurs td[data-cle="tickets"] { grid-area: tickets; }
+  .rv-vendeurs td[data-cle="articles"] { grid-area: articles; }
+  .rv-vendeurs td[data-cle="articles"] { text-align: right !important; }
+  .rv-vendeurs td[data-cle="panier"] { grid-area: panier; }
+  .rv-vendeurs td[data-libelle] { font-size: .8125rem; color: var(--doux); white-space: nowrap; }
+  .rv-vendeurs td[data-libelle]::before { content: attr(data-libelle) " "; }
+  .rv-part { grid-area: part; min-width: 0; display: flex; align-items: center; gap: .5rem; margin-top: .25rem; }
+  .rv-part .tre-categories__barre { flex: 1 1 auto; width: auto; margin: 0; }
+}
+
+/* ---------- Impression du reçu : seulement le reçu, au format d'une imprimante de tickets (80 mm) ---------- */
+
+@media print {
+  @page { size: 80mm auto; margin: 4mm; }
+  .haut, .lateral, .barre-bas, .ven-retour, .ven-entete, .alerte, .ven-detail__infos { display: none !important; }
+  html, body { background: #fff !important; }
+  body.avec-module { padding: 0 !important; }
+  .cadre, .avec-module .cadre { display: block !important; }
+  .page { max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .ven-detail { display: block; margin: 0; }
+  .ven-detail .recu {
+    max-width: none; width: auto; margin: 0; padding: 0; border: 0; border-radius: 0;
+    background: #fff; color: #000; font-size: 10pt;
+  }
+  .ven-detail .recu * { color: #000 !important; }
+  .ven-detail .recu__meta, .ven-detail .recu__total, .ven-detail .recu__paiements { border-color: #000 !important; }
+  .ven-detail .recu__annule { background: #fff; border: 2px solid #000; }
+  .ven-detail .recu--annule .recu__lignes, .ven-detail .recu--annule .recu__total strong { opacity: 1; }
+}
