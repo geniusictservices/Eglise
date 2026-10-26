@@ -77,6 +77,7 @@ final class EtablissementController
                 'grille_prix_id' => $this->grilleParDefaut($grilles),
                 'devises' => array_keys($this->devises->actives()),
                 'devise_affichage_id' => $reference ? (int) $reference['id'] : null,
+                'credit_delai_jours' => 7,
             ],
         ]);
     }
@@ -102,7 +103,7 @@ final class EtablissementController
         $pdo = Database::pdo();
         $pdo->beginTransaction();
         try {
-            $id = $this->depot->creer(EtablissementSaisie::pourBase($infos), (int) $prix['grille_prix_id'], $prix['devises'], $prix['devise_affichage_id']);
+            $id = $this->depot->creer(EtablissementSaisie::pourBase($infos), (int) $prix['grille_prix_id'], $prix['devises'], $prix['devise_affichage_id'], (int) $prix['credit_delai_jours']);
             $pdo->commit();
         } catch (Throwable $erreur) {
             $pdo->rollBack();
@@ -237,7 +238,7 @@ final class EtablissementController
             $this->afficherFiche($utilisateur, $etab, ['prix' => $prix, 'erreurs' => ['prix' => $erreurs]], 422);
             return;
         }
-        $this->depot->definirPrix((int) $etab['id'], (int) $prix['grille_prix_id'], $prix['devises'], $prix['devise_affichage_id']);
+        $this->depot->definirPrix((int) $etab['id'], (int) $prix['grille_prix_id'], $prix['devises'], $prix['devise_affichage_id'], (int) $prix['credit_delai_jours']);
         $this->succes($etab, 'etab.prix_enregistres', 'prix');
     }
 
@@ -323,7 +324,7 @@ final class EtablissementController
             'titre' => t('etab.nouveau'),
             'utilisateur' => $utilisateur,
             'infos' => $etat['infos'] ?? [],
-            'prix' => $etat['prix'] ?? ['grille_prix_id' => null, 'devises' => [], 'devise_affichage_id' => null],
+            'prix' => $etat['prix'] ?? ['grille_prix_id' => null, 'devises' => [], 'devise_affichage_id' => null, 'credit_delai_jours' => 7],
             'grilles' => $this->depot->grilles(),
             'devises' => $this->devises->actives(),
             'erreurs' => $etat['erreurs'] ?? [],
@@ -353,6 +354,7 @@ final class EtablissementController
                 'grille_prix_id' => (int) $etab['grille_prix_id'],
                 'devises' => $this->etablissements->deviseIds($id),
                 'devise_affichage_id' => $etab['devise_affichage_id'] === null ? null : (int) $etab['devise_affichage_id'],
+                'credit_delai_jours' => (int) $etab['credit_delai_jours'],
             ],
             'horaires' => $etat['horaires'] ?? $this->depot->horairesPourEditeur($id),
             'etatOuverture' => $this->etablissements->etatOuverture($horaires, new DateTimeImmutable()),

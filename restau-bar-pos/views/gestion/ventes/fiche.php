@@ -7,6 +7,9 @@
  * @var array<int, array> $devises
  * @var bool $peutAnnuler
  * @var bool $voirComptes
+ * @var list<array> $credits dettes nées de cette vente (part mise à l'ardoise d'un client)
+ * @var bool $voirDettes
+ * @var bool $voirClients
  * @var array<string, string> $erreurs
  * @var string $motif
  */
@@ -129,6 +132,43 @@ $articles = array_sum(array_map(static fn (array $l) => (int) $l['quantite'], $f
                 <?php endif; ?>
             </ul>
         </section>
+
+        <?php if (!empty($credits)): ?>
+            <section class="bloc ven-credit" aria-labelledby="ven-credit-titre" data-credits="<?= count($credits) ?>">
+                <h2 id="ven-credit-titre"><?= e(t('gventes.a_credit')) ?></h2>
+                <p class="aide"><?= e(t('gventes.a_credit_aide')) ?></p>
+                <ul class="ven-paiements">
+                    <?php foreach ($credits as $c): ?>
+                        <li data-dette="<?= (int) $c['id'] ?>">
+                            <span class="ven-paiements__compte">
+                                <span>
+                                    <?php if ($voirClients): ?>
+                                        <a href="/gestion/clients/<?= (int) $c['client_id'] ?>"><?= e($c['client_nom']) ?></a>
+                                    <?php else: ?>
+                                        <?= e($c['client_nom']) ?>
+                                    <?php endif; ?>
+                                    <span class="tre-sous-texte">
+                                        <?php if ($voirDettes): ?>
+                                            <a href="/gestion/dettes/<?= (int) $c['id'] ?>"><?= e(t('gdettes.fiche_titre', ['id' => $c['id']])) ?></a>
+                                        <?php else: ?>
+                                            <?= e(t('gdettes.fiche_titre', ['id' => $c['id']])) ?>
+                                        <?php endif; ?>
+                                        · <?= e(t('gdettes.statut_' . $c['statut'])) ?>
+                                        <?php if ($c['statut'] === 'ouverte'): ?> · <?= e(t('gdettes.echeance_le', ['date' => A::jour($c['echeance'])])) ?><?php endif; ?>
+                                    </span>
+                                </span>
+                            </span>
+                            <span class="ven-paiements__montant">
+                                <strong class="montant"><?= e($montant($c['montant'], $c['devise_id'])) ?></strong>
+                                <?php if ($c['statut'] === 'ouverte' && (float) $c['reste'] < (float) $c['montant']): ?>
+                                    <span class="tre-sous-texte montant"><?= e(t('gventes.credit_reste', ['montant' => $montant($c['reste'], $c['devise_id'])])) ?></span>
+                                <?php endif; ?>
+                            </span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </section>
+        <?php endif; ?>
 
         <?php if ($fiche['mouvements'] !== []): ?>
             <section class="bloc" aria-labelledby="ven-mouvements-titre">

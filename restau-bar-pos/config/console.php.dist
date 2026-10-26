@@ -1,0 +1,25 @@
+<?php
+
+// Console super admin (admin.<domaine>) : copier ce fichier en config/console.php et le remplir.
+// config/console.php n'est pas versionné (il contient un mot de passe). Voir docs/console.md.
+//
+// Ce fichier sert aussi aux instances : chacune y trouve la base de la console pour lire son abonnement,
+// ses modules et ses limites, et les réglages communs de la messagerie. Sans ce fichier, il n'y a pas
+// de console : les instances fonctionnent sans limite (développement, démonstration).
+return [
+    // Base de la console, créée dans cPanel (LWS préfixe les noms par le compte cPanel : moncompte_rbpconsole)
+    'db' => [
+        'hote' => 'localhost',
+        'port' => 3306,
+        'nom' => 'moncompte_rbpconsole',
+        'utilisateur' => 'moncompte_rbpconsole',
+        'mot_de_passe' => 'changez-moi',
+    ],
+
+    // Jeton de la page d'installation (https://admin.<domaine>/installation), utilisable tant qu'aucun
+    // super admin n'existe : une longue chaîne au hasard, par exemple 40 caractères.
+    'jeton_installation' => '',
+
+    // Les instances relisent leur abonnement au plus toutes les N secondes (et toujours à l'ouverture de la caisse).
+    'cache_licence_secondes' => 300,
+];

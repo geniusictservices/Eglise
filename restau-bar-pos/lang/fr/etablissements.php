@@ -32,7 +32,7 @@ return [
     // Sections
     'etab.section_infos' => 'Informations',
     'etab.section_apparence' => 'Apparence',
-    'etab.section_prix' => 'Prix et devises',
+    'etab.section_prix' => 'Prix, devises et ardoise',
     'etab.section_horaires' => 'Horaires',
     'etab.section_zones' => 'Zones',
     'etab.section_activation' => 'Activer ou désactiver',
@@ -112,6 +112,10 @@ return [
     'etab.aucune_devise' => 'Aucune devise active. Les prix ne pourront pas être affichés.',
     'etab.devise_affichage' => 'Devise affichée par défaut',
     'etab.devise_affichage_aide' => 'Celle que le visiteur voit en arrivant. Elle doit faire partie des devises acceptées.',
+    'etab.credit_delai' => 'Délai de paiement proposé pour une ardoise',
+    'etab.credit_delai_jours' => 'jours',
+    'etab.credit_delai_aide' => 'À la caisse, l\'échéance d\'une note mise à crédit est proposée à ce nombre de jours après la vente (0 : le jour même). Le caissier peut la changer. De 0 à 365 jours.',
+    'etab.erreur_credit_delai' => 'Indiquez un délai de paiement entre 0 et 365 jours, par exemple 7.',
     'etab.prix_enregistres' => 'Prix et devises enregistrés.',
 
     // Horaires

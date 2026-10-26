@@ -16,6 +16,7 @@ use App\Repositories\CatalogueRepository;
 use App\Repositories\DetteRepository;
 use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
+use App\Repositories\SessionCaisseRepository;
 use App\Repositories\VenteRepository;
 
 /**
@@ -89,6 +90,14 @@ final class CaisseController
         $donnees['delai'] = (int) $etab['credit_delai_jours'];
         $donnees['aujourdhui'] = date('Y-m-d');
         $donnees['garanties'] = CaisseDetteController::garantiesJson($personne['id']);
+        // Sessions de caisse (au choix de l'établissement) : pas d'encaissement sans session ouverte
+        $donnees['sessions'] = SessionCaisseRepository::obligatoires($etab) && ($donnees['encaisser'] || $donnees['rembourser']);
+        $donnees['session'] = null;
+        if ($donnees['sessions']) {
+            $session = (new SessionCaisseRepository())->ouverte($id, $personne['id']);
+            $donnees['session'] = $session ? ['id' => (int) $session['id'], 'depuis' => date('H:i', strtotime($session['ouverte_le']))] : null;
+            $donnees['caissesACompter'] = (new SessionCaisseRepository())->caissesACompter($id, $contexte['acceptees']);
+        }
         $donnees['etab'] = $etab['slug'];
         $donnees['zone'] = $zone['code'] ?? '';
         $personne['avatar'] = Database::un('SELECT avatar FROM utilisateurs WHERE id = ?', [$personne['id']])['avatar'] ?? null;
@@ -104,7 +113,7 @@ final class CaisseController
             'aLaGestion' => Acces::aLaGestion($personne['id']),
             'peutAutoriser' => $appareil === null && Acces::a($personne['id'], 'caisse.appareils', $id),
             'photoPermise' => (bool) $etab['photo_a_la_caisse'],
-            'scripts' => ['/assets/js/caisse.js', '/assets/js/caisse-ardoise.js', '/assets/js/photo-profil.js'],
+            'scripts' => ['/assets/js/caisse.js', '/assets/js/caisse-ardoise.js', '/assets/js/caisse-session.js', '/assets/js/photo-profil.js'],
             'messagePhoto' => $messagePhoto,
             'etab' => $etab,
             'etablissements' => $liste,
@@ -254,6 +263,7 @@ final class CaisseController
             $this->repondre(422, ['erreur' => t('encaisser.illisible')]);
         }
         $ventes = new VenteRepository();
+        $session = self::sessionExigee($etab, $personne);
         if (($deja = $ventes->parCle($cle)) !== null) {
             // Double envoi : la même vente, sans rien refaire
             $this->repondreVente((int) $deja['id'], $etab, $appareil);
@@ -364,6 +374,7 @@ final class CaisseController
             'totaux' => array_map(fn (string $code) => ['devise' => $acceptees[$code], 'total' => $totaux[$code], 'taux' => $this->taux($acceptees[$code])], array_keys($totaux)),
             'lignes' => $lignes, 'paiements' => $paiements, 'rendu' => $rendu,
             'credits' => $credit !== null ? [$credit] : [],
+            'session_id' => $session !== null ? (int) $session['id'] : null,
         ]);
         $this->repondreVente($id, $etab, $appareil);
     }
@@ -421,6 +432,25 @@ final class CaisseController
             'client_id' => (int) $client['id'], 'devise' => $acceptees[$code], 'montant' => $montant, 'echeance' => $echeance,
             'servi_par' => $servi, 'garant_id' => $garant, 'note' => $note !== '' ? mb_substr($note, 0, 255) : null,
         ];
+    }
+
+    /**
+     * Session de caisse ouverte de la personne, si l'établissement les demande ; sinon refus 409.
+     * null : l'établissement ne demande pas de session.
+     */
+    public static function sessionExigee(array $etab, array $personne): ?array
+    {
+        if (!SessionCaisseRepository::obligatoires($etab)) {
+            return null;
+        }
+        $session = (new SessionCaisseRepository())->ouverte((int) $etab['id'], $personne['id']);
+        if ($session === null) {
+            http_response_code(409);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['erreur' => t('session.fermee'), 'code' => 'session_fermee'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        return $session;
     }
 
     /** Réponse d'une vente enregistrée ; la caisse partagée se verrouille si l'établissement l'exige. */

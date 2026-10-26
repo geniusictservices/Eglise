@@ -36,6 +36,20 @@ final class Icones
         'paie' => '<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v5M18 9.5v5"/>',
         'sortie' => '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
         'retour' => '<path d="M15 18l-6-6 6-6"/>',
+        // Clients : une carte de visite avec une personne
+        'clients' => '<rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><circle cx="8.5" cy="10.5" r="2.3"/><path d="M5 16.5a3.6 3.6 0 0 1 7 0M14.5 9.5h4M14.5 13h4"/>',
+        // Remboursement : une pièce et une flèche qui revient
+        'remboursement' => '<circle cx="9" cy="12" r="6"/><path d="M9 9.2v5.6M7.3 10.4h2.6a1.1 1.1 0 0 1 0 2.2H8.1a1.1 1.1 0 0 0 0 2.2h2.6"/><path d="M17 7.5a6 6 0 0 1 0 9"/><path d="M19.5 15l-2.5 1.6-.2-2.9"/>',
+        // Garantie : un bouclier coché
+        'garantie' => '<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8-7.5 9.5-4.3-1.5-7.5-4.9-7.5-9.5V6z"/><path d="M8.8 12.2l2.2 2.2 4.3-4.4"/>',
+        // Messagerie : une bulle de conversation
+        'messagerie' => '<path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17.5H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5z"/><path d="M7 10h10M7 13.5h6"/>',
+        // Stock : journal (liste), perte (verre brisé), fiche technique (toque), emballage (casier), lieux (entrepôt)
+        'journal' => '<path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+        'perte' => '<path d="M7 3h10l-1.5 9a3.5 3.5 0 0 1-7 0z"/><path d="M12 15.5V21M8.5 21h7"/><path d="M11 6l1.5 2-2 1.5 1.5 2"/>',
+        'recette' => '<path d="M7 14a4 4 0 0 1-.9-7.9 5 5 0 0 1 9.8 0A4 4 0 0 1 17 14"/><path d="M7 14h10v6H7z"/><path d="M10 17h4"/>',
+        'emballage' => '<rect x="3" y="8" width="18" height="12" rx="1.5"/><path d="M3 12h18M7.5 8v12M12 8v12M16.5 8v12"/><path d="M8 8V5h8v3"/>',
+        'lieux' => '<path d="M3 21V9l9-5 9 5v12"/><path d="M7 21v-8h10v8"/><path d="M7 17h10"/>',
     ];
 
     public static function svg(string $nom, int $taille = 22): string

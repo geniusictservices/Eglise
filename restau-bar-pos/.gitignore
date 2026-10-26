@@ -2,6 +2,8 @@
 /config/app.local.php
 /config/instances/*.php
 !/config/instances/exemple.php.dist
+# Console super admin : accès à sa base (modèle : config/console.php.dist)
+/config/console.php
 
 # Journaux
 /storage/logs/*

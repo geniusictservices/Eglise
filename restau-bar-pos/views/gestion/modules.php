@@ -5,6 +5,7 @@
  * @var array $utilisateur
  * @var ?string $flash
  * @var array<string, array> $modules
+ * @var int $garanties ardoises dont la personne est garante, en attente de sa réponse
  */
 use App\Core\Icones;
 ?>
@@ -15,6 +16,13 @@ use App\Core\Icones;
 
     <?php if ($flash): ?>
         <p class="alerte" role="status"><?= e($flash) ?></p>
+    <?php endif; ?>
+
+    <?php if (!empty($garanties)): ?>
+        <p class="alerte modules-garanties" role="status" data-garanties="<?= (int) $garanties ?>">
+            <span><?= e(t($garanties > 1 ? 'garanties.accueil_n' : 'garanties.accueil_1', ['n' => $garanties])) ?></span>
+            <a class="bouton bouton--petit" href="/gestion/garanties"><?= e(t('garanties.accueil_repondre')) ?></a>
+        </p>
     <?php endif; ?>
 
     <ul class="modules">

@@ -53,6 +53,13 @@ $date = static fn (?string $d): string => $d ? date('d/m/Y H:i', strtotime($d)) 
                 <input type="checkbox" name="photo_a_la_caisse" value="1" <?= $etab['photo_a_la_caisse'] ? 'checked' : '' ?>>
                 <span><?= e(t('verrou.photo')) ?></span>
             </label>
+            <fieldset class="uti-groupe">
+                <legend><?= e(t('session.reglage')) ?></legend>
+                <label class="coche">
+                    <input type="checkbox" name="sessions_caisse" value="1" <?= !empty($etab['sessions_caisse']) ? 'checked' : '' ?>>
+                    <span><?= e(t('session.reglage_texte')) ?><br><small class="uti-facultatif"><?= e(t('session.reglage_aide')) ?></small></span>
+                </label>
+            </fieldset>
             <div class="uti-actions">
                 <button class="bouton" type="submit"><?= e(t('utilisateurs.enregistrer')) ?></button>
             </div>

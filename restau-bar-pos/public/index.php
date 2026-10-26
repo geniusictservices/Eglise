@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\CaisseController;
 use App\Controllers\CaisseDetteController;
+use App\Controllers\CaisseSessionController;
 use App\Controllers\Gestion\ConnexionController;
 use App\Controllers\Gestion\ModulesController;
 use App\Controllers\Gestion\QrController;
@@ -25,10 +26,13 @@ if (PHP_SAPI === 'cli-server' && is_file(__DIR__ . parse_url($_SERVER['REQUEST_U
 
 $sousDomaine = Instance::sousDomaineDepuisHote($_SERVER['HTTP_HOST'] ?? '');
 if ($sousDomaine === null) {
-    // admin.<domaine> : console super admin, prévue en phase 2
-    http_response_code(503);
-    View::afficher('erreurs/console', [], null);
-    exit;
+    // admin.<domaine> : console super admin (clients, abonnements, API de messagerie) ; autres sous-domaines réservés : rien
+    if (str_starts_with(strtolower($_SERVER['HTTP_HOST'] ?? ''), 'admin.')) {
+        require RACINE . '/app/console.php';
+        exit;
+    }
+    I18n::initialiser();
+    pageIntrouvable();
 }
 
 $instance = Instance::charger($sousDomaine);
@@ -64,6 +68,9 @@ $routeur->post('/caisse/clients', [CaisseDetteController::class, 'creer']);
 $routeur->get('/caisse/clients/{id}', [CaisseDetteController::class, 'client']);
 $routeur->post('/caisse/garanties', [CaisseDetteController::class, 'garantie']);
 $routeur->post('/caisse/rembourser', [CaisseDetteController::class, 'rembourser']);
+// Sessions de caisse (si l'établissement les demande)
+$routeur->post('/caisse/session/ouvrir', [CaisseSessionController::class, 'ouvrir']);
+$routeur->post('/caisse/session/cloturer', [CaisseSessionController::class, 'cloturer']);
 
 // Espace de gestion
 $routeur->get('/gestion', [ModulesController::class, 'index']);
@@ -82,6 +89,8 @@ foreach (glob(RACINE . '/app/routes/*.php') ?: [] as $fichierRoutes) {
 
 $methode = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+// Abonnement (console super admin) : statut, modules, limites, assistance ; jamais en plein service
+App\Core\Plateforme::garder($methode, $chemin);
 // Droits de la personne connectée sur l'écran demandé (rôles et permissions), avant toute action
 App\Core\Acces::garder($methode, $chemin);
 $routeur->traiter($methode, $chemin);

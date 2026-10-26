@@ -1,0 +1,27 @@
+/* Instance : pages et bandeaux de la plateforme (abonnement, assistance). N'utilise que les jetons de volcan.css.
+   Contour fin et égal sur tous les côtés ; la couleur passe par le fond teinté. */
+
+.plf-bandeaux { display: grid; gap: 1px; }
+.plf-bandeau {
+  margin: 0; padding: .7rem max(16px, env(safe-area-inset-left, 0px));
+  font-size: var(--taille-s); font-weight: 600; text-align: center; text-wrap: balance;
+}
+.plf-bandeau--braise { background: var(--teinte-braise); color: var(--encre); }
+.plf-bandeau--erreur { background: var(--teinte-erreur); color: var(--encre); }
+.plf-bandeau--glace { background: var(--teinte-glace); color: var(--encre); }
+
+.plf-refus {
+  max-width: 36rem; margin: 2rem auto; padding: 1.75rem;
+  background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--rayon-carte);
+}
+.plf-refus p { margin: .5rem 0 0; }
+.plf-contact { margin-top: 1.25rem; padding: 1rem 1.1rem; border: 1px solid var(--ligne); border-radius: var(--rayon); background: var(--surface-2); }
+.plf-contact__titre { margin: 0 !important; font-weight: 700; }
+.plf-contact ul { list-style: none; margin: .4rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: .25rem 1rem; }
+.plf-contact .lien { display: inline-flex; align-items: center; min-height: var(--cible); overflow-wrap: anywhere; }
+.plf-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.plf-actions form { margin: 0; }
+
+/* Paramètres > Assistance */
+.plf-assistance__etat { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; }
+.plf-assistance form { margin-top: 1rem; }

@@ -662,3 +662,14 @@ button { cursor: pointer; }
 @media (max-width: 420px) {
   .paiement-ardoise__champs { grid-template-columns: 1fr; }
 }
+
+/* ---------- Sessions de caisse ---------- */
+.session-fenetre { max-width: 30rem; }
+.session-form, .session-rapport { display: grid; gap: 12px; }
+.session-caisses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.session-caisses input { text-align: right; font: 700 1.25rem/1 var(--police-titre); font-variant-numeric: tabular-nums; }
+.session-rapport__recu { display: grid; justify-items: center; }
+.session-note { margin-top: 6px; text-align: center; }
+.recu__session-caisse caption { text-align: left; font-weight: 700; padding-top: 6px; }
+.recu__ecart--manquant td { font-weight: 700; }
+@media (max-width: 420px) { .session-caisses { grid-template-columns: 1fr; } }

@@ -177,7 +177,8 @@
       nbArticles + ' ' + (nbArticles > 1 ? T.articles : T.article) + ' · ' + T.voirTicket;
     document.getElementById('resume-total').textContent = elTotal.textContent;
     document.getElementById('encaisser-total').textContent = vide ? '' : elTotal.textContent;
-    var peutEncaisser = !vide && D.encaisser;
+    // Sessions de caisse demandées par l'établissement : rien à encaisser avant d'ouvrir sa caisse
+    var peutEncaisser = !vide && D.encaisser && (!D.sessions || !!D.session);
     document.getElementById('encaisser').disabled = !peutEncaisser;
     document.querySelectorAll('.paiements [data-compte], .paiements [data-ardoise]').forEach(function (b) { b.disabled = !peutEncaisser; });
   }

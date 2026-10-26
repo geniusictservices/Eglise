@@ -47,15 +47,15 @@ final class GestionEtablissementRepository
         return $slug;
     }
 
-    /** Crée un établissement avec la grille et les devises données ; rend son identifiant. */
-    public function creer(array $infos, int $grilleId, array $deviseIds, ?int $deviseAffichage): int
+    /** Crée un établissement avec la grille et les devises données (et le délai de paiement d'une ardoise) ; rend son identifiant. */
+    public function creer(array $infos, int $grilleId, array $deviseIds, ?int $deviseAffichage, int $creditDelaiJours = 7): int
     {
         $colonnes = self::CHAMPS_INFOS;
         $position = (int) (Database::un('SELECT COALESCE(MAX(position), 0) + 1 AS p FROM etablissements')['p'] ?? 1);
         Database::executer(
-            'INSERT INTO etablissements (' . implode(', ', $colonnes) . ', grille_prix_id, devise_affichage_id, actif, position)
-             VALUES (' . implode(', ', array_fill(0, count($colonnes), '?')) . ', ?, ?, 1, ?)',
-            [...array_map(static fn (string $c) => $infos[$c], $colonnes), $grilleId, $deviseAffichage, $position]
+            'INSERT INTO etablissements (' . implode(', ', $colonnes) . ', grille_prix_id, devise_affichage_id, credit_delai_jours, actif, position)
+             VALUES (' . implode(', ', array_fill(0, count($colonnes), '?')) . ', ?, ?, ?, 1, ?)',
+            [...array_map(static fn (string $c) => $infos[$c], $colonnes), $grilleId, $deviseAffichage, $creditDelaiJours, $position]
         );
         $id = Database::dernierId();
         $this->definirDevises($id, $deviseIds);
@@ -85,11 +85,14 @@ final class GestionEtablissementRepository
         Database::executer('UPDATE etablissements SET ' . $colonne . ' = ? WHERE id = ?', [$chemin, $id]);
     }
 
-    public function definirPrix(int $id, int $grilleId, array $deviseIds, ?int $deviseAffichage): void
+    public function definirPrix(int $id, int $grilleId, array $deviseIds, ?int $deviseAffichage, ?int $creditDelaiJours = null): void
     {
         $pdo = Database::pdo();
         $pdo->beginTransaction();
         Database::executer('UPDATE etablissements SET grille_prix_id = ?, devise_affichage_id = ? WHERE id = ?', [$grilleId, $deviseAffichage, $id]);
+        if ($creditDelaiJours !== null) {
+            Database::executer('UPDATE etablissements SET credit_delai_jours = ? WHERE id = ?', [$creditDelaiJours, $id]);
+        }
         $this->definirDevises($id, $deviseIds);
         $pdo->commit();
     }

@@ -13,11 +13,20 @@ declare(strict_types=1);
  * Chaque paiement va sur un compte du bon type qui tient la devise payée (la caisse de l'établissement
  * reçoit les francs et les dollars), dans cette devise.
  *
+ * Ardoises (clients et dettes) : une quinzaine de clients de Goma, environ 5 % des tickets mis à crédit
+ * en tout ou en partie (clé « credits » de VenteRepository::enregistrer : les paiements couvrent le reste),
+ * accordés par qui en a le droit (caisse.credit), servis par le vendeur ou un serveur, parfois avec un garant.
+ * Puis, dans l'ordre des dates : réponses des garants (acceptée, refusée, ou encore en attente), remboursements
+ * (DetteRepository::rembourser avec leur date, en francs ou en dollars, à la caisse ou par mobile money),
+ * un remboursement annulé, une dette mise à la charge du responsable, une dette remise, et les rappels
+ * inscrits au journal des messages.
+ *
  *   php bin/demo-ventes.php demo              refuse si des ventes de démonstration existent déjà
  *   php bin/demo-ventes.php demo --reset      les supprime (avec leurs mouvements) et recommence
  *   php bin/demo-ventes.php demo --jours=14   nombre de jours avant aujourd'hui (21 par défaut)
  *
- * Les ventes de démonstration se reconnaissent à leur clé (« de305a1e-… ») ; les autres ventes ne sont jamais touchées.
+ * Les ventes de démonstration se reconnaissent à leur clé (« de305a1e-… ») et les clients de démonstration à leur
+ * numéro (CLIENTS_DEMO) ; les autres ventes, clients et dettes ne sont jamais touchés.
  */
 
 use App\Core\Acces;
@@ -27,6 +36,7 @@ use App\Core\I18n;
 use App\Core\Instance;
 use App\Core\Reglement;
 use App\Repositories\CatalogueRepository;
+use App\Repositories\DetteRepository;
 use App\Repositories\DeviseRepository;
 use App\Repositories\EtablissementRepository;
 use App\Repositories\GestionTresorerieRepository;
@@ -43,6 +53,24 @@ const PREFIXE_CLE = 'de305a1e';
 const TYPE_CAISSE = 'caisse';
 const TYPE_MOBILE = 'mobile_money';
 const TYPE_BANQUE = 'banque';
+// Clients de démonstration : nom, téléphone, type, canal, langue, plafond [montant, code], e-mail, notes, bloqué
+const CLIENTS_DEMO = [
+    ['Jean-Marie Bisimwa', '+243971234501', 'habitue', 'whatsapp', 'fr', null, null, 'Primus bien fraîche, table près de la fenêtre.', false],
+    ['Furaha Mapendo', '+243812345602', 'particulier', 'sms', 'fr', null, null, null, false],
+    ['Moïse Paluku', '+243893456703', 'vip', 'whatsapp', 'fr', [500, 'USD'], 'moise.paluku@exemple.cd', 'Carré VIP le samedi, champagne.', false],
+    ['Neema Kavira', '+243974567804', 'habitue', 'sms', 'fr', [300000, 'CDF'], null, 'Allergique aux arachides.', false],
+    ['Kivu Logistique SARL', '+243815678905', 'entreprise', 'sms', 'fr', [1500, 'USD'], 'compta@kivulogistique.exemple.cd', 'Repas d\'affaires, facture mensuelle au service comptable.', false],
+    ['Dieudonné Mumbere', '+243996789006', 'particulier', 'sms', 'fr', null, null, 'Ardoise de mars jamais réglée.', true],
+    ['Sifa Masika', '+243897890107', 'habitue', 'whatsapp', 'fr', [200000, 'CDF'], null, null, false],
+    ['Claude Muhindo', '+243978901208', 'vip', 'sms', 'fr', [400, 'USD'], 'claude.muhindo@exemple.cd', null, false],
+    ['Aimée Nabintu', '+243819012309', 'particulier', 'sms', 'fr', null, null, null, false],
+    ['Patient Bahati', '+243820123410', 'revendeur', 'sms', 'fr', [800000, 'CDF'], null, 'Achète des casiers de Primus pour sa boutique de Birere.', false],
+    ['Joséphine Kahambu', '+243971122311', 'particulier', 'whatsapp', 'fr', null, null, null, false],
+    ['Innocent Sikuli', '+243892233412', 'habitue', 'whatsapp', 'fr', [250000, 'CDF'], null, 'Supporter de l\'AS Dauphins Noirs, vient les soirs de match.', false],
+    ['Espérance Kasoki', '+243813344513', 'particulier', 'sms', 'fr', null, null, null, false],
+    ['Olivier Ndungo', '+243854455614', 'habitue', 'whatsapp', 'en', null, 'o.ndungo@exemple.cd', 'Speaks English (works for an NGO).', false],
+    ['Rachel Kanyere', '+243975566715', 'vip', 'whatsapp', 'fr', [600, 'USD'], null, 'Anniversaires au club.', false],
+];
 
 function arreter(string $message): never
 {
@@ -83,10 +111,70 @@ $existantes = array_map('intval', array_column(
     Database::tous('SELECT id FROM ventes WHERE cle LIKE ?', [PREFIXE_CLE . '-%']),
     'id'
 ));
-if ($existantes !== []) {
-    if (!$reset) {
-        arreter(count($existantes) . " ventes de démonstration existent déjà. Relancez avec --reset pour les remplacer.");
+if ($existantes !== [] && !$reset) {
+    arreter(count($existantes) . " ventes de démonstration existent déjà. Relancez avec --reset pour les remplacer.");
+}
+if ($reset) {
+    supprimerArdoisesDemo($existantes);
+}
+
+/**
+ * Supprime les ardoises de démonstration : dettes des ventes de démonstration et des clients de démonstration
+ * (et les dettes du personnel nées de leur mise à charge), leurs remboursements (avec leurs mouvements de
+ * trésorerie), leurs messages, puis les clients de démonstration et les clients « personnel » restés sans dette.
+ */
+function supprimerArdoisesDemo(array $ventes): void
+{
+    $marques = static fn (array $ids): string => implode(',', array_fill(0, count($ids), '?'));
+    $telephones = array_column(CLIENTS_DEMO, 1);
+    $clients = array_map('intval', array_column(Database::tous('SELECT id FROM clients WHERE telephone IN (' . $marques($telephones) . ')', $telephones), 'id'));
+    $dettes = [];
+    foreach (array_chunk($ventes, 500) as $paquet) {
+        $dettes = array_merge($dettes, array_map('intval', array_column(Database::tous('SELECT id FROM dettes WHERE vente_id IN (' . $marques($paquet) . ')', $paquet), 'id')));
     }
+    if ($clients !== []) {
+        $dettes = array_merge($dettes, array_map('intval', array_column(Database::tous('SELECT id FROM dettes WHERE client_id IN (' . $marques($clients) . ')', $clients), 'id')));
+    }
+    // Dettes du personnel nées de la mise à charge d'une de ces dettes (et ainsi de suite)
+    for ($nouvelles = $dettes; $nouvelles !== [];) {
+        $nouvelles = array_values(array_diff(array_map('intval', array_column(
+            Database::tous('SELECT id FROM dettes WHERE origine_id IN (' . $marques($nouvelles) . ')', $nouvelles), 'id')), $dettes));
+        $dettes = array_merge($dettes, $nouvelles);
+    }
+    $dettes = array_values(array_unique($dettes));
+    if ($dettes === [] && $clients === []) {
+        return;
+    }
+    $pdo = Database::pdo();
+    $pdo->beginTransaction();
+    $remboursements = [];
+    if ($dettes !== []) {
+        $remboursements = array_map('intval', array_column(Database::tous('SELECT DISTINCT remboursement_id FROM remboursement_dettes WHERE dette_id IN (' . $marques($dettes) . ')', $dettes), 'remboursement_id'));
+    }
+    if ($clients !== []) {
+        $remboursements = array_values(array_unique(array_merge($remboursements, array_map('intval', array_column(
+            Database::tous('SELECT id FROM remboursements WHERE client_id IN (' . $marques($clients) . ')', $clients), 'id')))));
+    }
+    if ($remboursements !== []) {
+        Database::executer("DELETE FROM mouvements_tresorerie WHERE nature = 'remboursement' AND source_id IN (" . $marques($remboursements) . ')', $remboursements);
+        Database::executer('DELETE FROM remboursements WHERE id IN (' . $marques($remboursements) . ')', $remboursements);
+    }
+    if ($dettes !== []) {
+        Database::executer('DELETE FROM messages WHERE dette_id IN (' . $marques($dettes) . ')', $dettes);
+        Database::executer('UPDATE dettes SET origine_id = NULL WHERE id IN (' . $marques($dettes) . ')', $dettes);
+        Database::executer('DELETE FROM dettes WHERE id IN (' . $marques($dettes) . ')', $dettes);
+    }
+    if ($clients !== []) {
+        Database::executer('DELETE FROM messages WHERE client_id IN (' . $marques($clients) . ')', $clients);
+        Database::executer('DELETE FROM clients WHERE id IN (' . $marques($clients) . ')', $clients);
+    }
+    Database::executer("DELETE FROM clients WHERE type = 'personnel' AND NOT EXISTS (SELECT 1 FROM dettes d WHERE d.client_id = clients.id)
+                        AND NOT EXISTS (SELECT 1 FROM remboursements r WHERE r.client_id = clients.id)");
+    $pdo->commit();
+    echo count($dettes) . " dettes, " . count($remboursements) . " remboursements et " . count($clients) . " clients de démonstration supprimés.\n";
+}
+
+if ($existantes !== []) {
     $pdo = Database::pdo();
     $pdo->beginTransaction();
     foreach (array_chunk($existantes, 500) as $paquet) {
@@ -99,6 +187,34 @@ if ($existantes !== []) {
 }
 
 mt_srand(20261026);
+
+// ---------- Clients de démonstration (retrouvés par leur numéro s'ils existent déjà) ----------
+
+$dettesRepo = new DetteRepository();
+$clientsDemo = [];
+// Créés par le propriétaire (le journal note toujours qui a fait quoi)
+$createur = Database::un('SELECT ur.utilisateur_id AS id FROM utilisateur_roles ur JOIN roles r ON r.id = ur.role_id WHERE r.tout = 1 ORDER BY ur.utilisateur_id LIMIT 1');
+foreach (CLIENTS_DEMO as [$nomClient, $telephone, $typeClient, $canal, $langue, $plafond, $email, $notes, $bloque]) {
+    $existant = $dettesRepo->clientParTelephone($telephone);
+    if ($existant === null) {
+        $plafondDevise = $plafond ? Database::un('SELECT id FROM devises WHERE code = ?', [$plafond[1]]) : null;
+        $id = $dettesRepo->creerClient([
+            'nom' => $nomClient, 'telephone' => $telephone, 'email' => $email, 'langue' => $langue, 'type' => $typeClient,
+            'notes' => $notes, 'canal' => $canal, 'relances' => true,
+            'plafond' => $plafondDevise ? (float) $plafond[0] : null, 'plafond_devise_id' => $plafondDevise ? (int) $plafondDevise['id'] : null,
+        ], $createur ? (int) $createur['id'] : null);
+        Database::executer('UPDATE clients SET bloque = ?, cree_le = ? WHERE id = ?', [(int) $bloque, date('Y-m-d H:i:s', strtotime('-' . ($jours + 30) . ' days')), $id]);
+        $existant = $dettesRepo->client($id);
+    }
+    if (!$bloque) {
+        $clientsDemo[(int) $existant['id']] = $existant;
+    }
+}
+// Les habitués, VIP et entreprises prennent plus souvent à crédit
+$poidsClients = [];
+foreach ($clientsDemo as $id => $client) {
+    $poidsClients[$id] = ['habitue' => 4, 'vip' => 3, 'entreprise' => 3, 'revendeur' => 2][$client['type']] ?? 1;
+}
 
 $devisesRepo = new DeviseRepository();
 $etablissementsRepo = new EtablissementRepository();
@@ -270,7 +386,21 @@ foreach ($etablissementsRepo->actifs() as $etab) {
         );
     }
     $appareils = array_map('intval', array_column(Database::tous('SELECT id FROM appareils_caisse WHERE etablissement_id = ? AND actif = 1', [$etabId]), 'id'));
-    $contextes[$etabId] = compact('etab', 'profil', 'acceptees', 'principale', 'comptes', 'zones', 'grilleDefaut', 'catalogues', 'appareils');
+    // Ardoises : accordées par qui a le droit (caisse.credit), servies par le vendeur ou un serveur de l'établissement
+    $accordeurs = [];
+    $serveurs = [];
+    foreach ($utilisateurs as $u) {
+        $uid = (int) $u['id'];
+        if (Acces::droits($uid)['tout']) {
+            continue;
+        }
+        if (Acces::a($uid, 'caisse.credit', $etabId)) {
+            $accordeurs[] = $uid;
+        } elseif (Acces::a($uid, 'caisse.vendre', $etabId)) {
+            $serveurs[] = $uid;
+        }
+    }
+    $contextes[$etabId] = compact('etab', 'profil', 'acceptees', 'principale', 'comptes', 'zones', 'grilleDefaut', 'catalogues', 'appareils', 'accordeurs', 'serveurs');
 
     // Heures des ventes sur la période, jusqu'à maintenant
     $maintenant = time();
@@ -370,69 +500,118 @@ foreach ($plan as $p) {
     $totaux = array_filter($totaux, static fn ($t) => $t !== null);
     $total = $totaux[$codeP];
 
-    // Paiements : francs ou dollars à la caisse, mobile money, carte, ou dollars + francs
-    $compte = static fn (string $type, string $code): ?array => compteCaisse($c['comptes'], $type, $acceptees[$code] ?? null);
-    $usd = $reference ? ($totaux[$reference['code']] ?? null) : null;
+    // Ardoise : environ 5 % des tickets, en entier (parfois en dollars pour une entreprise ou un VIP) ou en partie
+    // (en francs, le reste payé) ; les paiements ne couvrent que ce qui n'est pas à crédit ($aRegler)
     $codeUsd = $reference['code'] ?? null;
-    $mode = (string) tirer([
-        'fc' => 42, 'usd' => $usd !== null ? 20 : 0, 'mobile_fc' => 18, 'mobile_usd' => $usd !== null ? 5 : 0,
-        'mixte' => $usd !== null && $usd >= 6 ? 10 : 0, 'carte' => $usd !== null && $usd >= 15 ? 5 : 0,
-    ]);
-    $paiements = [];
-    $ajouter = static function (string $moyen, string $code, float $recu) use (&$paiements, $compte, $acceptees, $tauxEnVigueur): bool {
-        $cpt = $compte($moyen, $code);
-        if ($cpt === null || $recu <= 0) {
-            return false;
+    $credits = [];
+    $aRegler = $totaux;
+    $vendeur = $p['vendeur'];
+    if ($c['accordeurs'] !== [] && $clientsDemo !== [] && mt_rand(1, 1000) <= 55) {
+        $client = $clientsDemo[(int) tirer($poidsClients)];
+        $vendeur = $c['accordeurs'][mt_rand(0, count($c['accordeurs']) - 1)];
+        $servi = $c['serveurs'] !== [] && mt_rand(0, 2) > 0 ? $c['serveurs'][mt_rand(0, count($c['serveurs']) - 1)] : $vendeur;
+        $garant = null;
+        if (mt_rand(1, 100) <= 25) {
+            $candidats = array_values(array_diff(array_unique(array_merge($c['accordeurs'], $c['serveurs'])), [$servi]));
+            $garant = $candidats !== [] ? $candidats[mt_rand(0, count($candidats) - 1)] : null;
         }
-        $paiements[] = ['moyen' => $moyen, 'compte' => $cpt, 'devise' => $acceptees[$code], 'recu' => round($recu, (int) $acceptees[$code]['decimales']), 'taux' => $tauxEnVigueur($acceptees[$code])];
-        return true;
-    };
-    $ok = match ($mode) {
-        'usd' => $ajouter(TYPE_CAISSE, $codeUsd, especesTendues($usd, $acceptees[$codeUsd])),
-        'mobile_fc' => $ajouter(TYPE_MOBILE, $codeP, $total),
-        'mobile_usd' => $ajouter(TYPE_MOBILE, $codeUsd, $usd),
-        'carte' => $ajouter(TYPE_BANQUE, $codeUsd, $usd),
-        // Quelques billets de dollars, le reste en francs (ajouté plus bas)
-        'mixte' => $ajouter(TYPE_CAISSE, $codeUsd, max(1.0, floor($usd * 0.7 / 5) * 5 ?: floor($usd * 0.6))),
-        default => $ajouter(TYPE_CAISSE, $codeP, especesTendues($total, $principale)),
-    };
-    if (!$ok) {
-        $ajouter(TYPE_CAISSE, $codeP, especesTendues($total, $principale));
-    }
-    $reglement = Reglement::calculer($totaux, $acceptees, array_map(static fn (array $x) => ['devise' => $x['devise']['code'], 'recu' => $x['recu']], $paiements), $codeP);
-    if (!$reglement['regle']) {
-        // Le reste en francs, à la caisse (billets)
-        $ajouter(TYPE_CAISSE, $codeP, especesTendues($reglement['reste'][$codeP], $principale));
-        $reglement = Reglement::calculer($totaux, $acceptees, array_map(static fn (array $x) => ['devise' => $x['devise']['code'], 'recu' => $x['recu']], $paiements), $codeP);
-    }
-    if (!$reglement['regle'] || $paiements === []) {
-        continue;
+        $delai = $client['type'] === 'entreprise' ? 30 : (int) $c['etab']['credit_delai_jours'];
+        $echeance = date('Y-m-d', strtotime(substr($p['date'], 0, 10) . ' +' . $delai . ' days'));
+        $code = $codeP;
+        $montantCredit = 0.0;
+        if (mt_rand(1, 10) <= 4) {
+            if ($codeUsd !== null && isset($totaux[$codeUsd]) && in_array($client['type'], ['entreprise', 'vip'], true) && mt_rand(0, 1) === 1) {
+                $code = $codeUsd;
+            }
+            $montantCredit = (float) $totaux[$code];
+            $aRegler = [];
+        } else {
+            $pas = Reglement::pas($principale);
+            $montantCredit = round($total * mt_rand(30, 70) / 100 / $pas) * $pas;
+            if ($montantCredit > 0 && $montantCredit < $total) {
+                $part = 1 - $montantCredit / $total;
+                foreach ($aRegler as $k => $v) {
+                    $aRegler[$k] = $k === $codeP ? $total - $montantCredit : round($v * $part, (int) $acceptees[$k]['decimales']);
+                }
+            } else {
+                $montantCredit = 0.0;
+            }
+        }
+        if ($montantCredit > 0) {
+            $credits[] = ['client_id' => (int) $client['id'], 'devise' => $acceptees[$code], 'montant' => $montantCredit, 'echeance' => $echeance,
+                          'servi_par' => $servi, 'garant_id' => $garant, 'note' => null];
+        } else {
+            $vendeur = $p['vendeur'];
+        }
     }
 
-    // Monnaie : en francs le plus souvent ; en dollars quand l'excédent fait des dollars ronds (pas de pièces)
+    // Tout à crédit : aucun paiement
+    $paiements = [];
     $rendu = null;
-    if (array_sum($reglement['rendu']) > 0) {
-        $enDollars = $reglement['rendu'][$codeUsd] ?? 0;
-        $codeRendu = $codeUsd !== null && $enDollars >= 1 && abs($enDollars - round($enDollars)) < 0.005 && mt_rand(0, 1) === 0 ? $codeUsd : $codeP;
-        $caisse = $compte(TYPE_CAISSE, $codeRendu);
-        if ($caisse === null) {
-            $codeRendu = $codeP;
-            $caisse = $compte(TYPE_CAISSE, $codeP);
+    if ($aRegler !== []) {
+        // Paiements : francs ou dollars à la caisse, mobile money, carte, ou dollars + francs
+        $compte = static fn (string $type, string $code): ?array => compteCaisse($c['comptes'], $type, $acceptees[$code] ?? null);
+        $usd = $reference ? ($aRegler[$reference['code']] ?? null) : null;
+        $mode = (string) tirer([
+            'fc' => 42, 'usd' => $usd !== null ? 20 : 0, 'mobile_fc' => 18, 'mobile_usd' => $usd !== null ? 5 : 0,
+            'mixte' => $usd !== null && $usd >= 6 ? 10 : 0, 'carte' => $usd !== null && $usd >= 15 ? 5 : 0,
+        ]);
+        $paiements = [];
+        $ajouter = static function (string $moyen, string $code, float $recu) use (&$paiements, $compte, $acceptees, $tauxEnVigueur): bool {
+            $cpt = $compte($moyen, $code);
+            if ($cpt === null || $recu <= 0) {
+                return false;
+            }
+            $paiements[] = ['moyen' => $moyen, 'compte' => $cpt, 'devise' => $acceptees[$code], 'recu' => round($recu, (int) $acceptees[$code]['decimales']), 'taux' => $tauxEnVigueur($acceptees[$code])];
+            return true;
+        };
+        $ok = match ($mode) {
+            'usd' => $ajouter(TYPE_CAISSE, $codeUsd, especesTendues($usd, $acceptees[$codeUsd])),
+            'mobile_fc' => $ajouter(TYPE_MOBILE, $codeP, $aRegler[$codeP]),
+            'mobile_usd' => $ajouter(TYPE_MOBILE, $codeUsd, $usd),
+            'carte' => $ajouter(TYPE_BANQUE, $codeUsd, $usd),
+            // Quelques billets de dollars, le reste en francs (ajouté plus bas)
+            'mixte' => $ajouter(TYPE_CAISSE, $codeUsd, max(1.0, floor($usd * 0.7 / 5) * 5 ?: floor($usd * 0.6))),
+            default => $ajouter(TYPE_CAISSE, $codeP, especesTendues($aRegler[$codeP], $principale)),
+        };
+        if (!$ok) {
+            $ajouter(TYPE_CAISSE, $codeP, especesTendues($aRegler[$codeP], $principale));
         }
-        if ($caisse !== null && ($reglement['rendu'][$codeRendu] ?? 0) > 0) {
-            $rendu = ['montant' => $reglement['rendu'][$codeRendu], 'devise' => $acceptees[$codeRendu], 'compte' => $caisse, 'taux' => $tauxEnVigueur($acceptees[$codeRendu])];
+        $reglement = Reglement::calculer($aRegler, $acceptees, array_map(static fn (array $x) => ['devise' => $x['devise']['code'], 'recu' => $x['recu']], $paiements), $codeP);
+        if (!$reglement['regle']) {
+            // Le reste en francs, à la caisse (billets)
+            $ajouter(TYPE_CAISSE, $codeP, especesTendues($reglement['reste'][$codeP], $principale));
+            $reglement = Reglement::calculer($aRegler, $acceptees, array_map(static fn (array $x) => ['devise' => $x['devise']['code'], 'recu' => $x['recu']], $paiements), $codeP);
+        }
+        if (!$reglement['regle'] || $paiements === []) {
+            continue;
+        }
+
+        // Monnaie : en francs le plus souvent ; en dollars quand l'excédent fait des dollars ronds (pas de pièces)
+        $rendu = null;
+        if (array_sum($reglement['rendu']) > 0) {
+            $enDollars = $reglement['rendu'][$codeUsd] ?? 0;
+            $codeRendu = $codeUsd !== null && $enDollars >= 1 && abs($enDollars - round($enDollars)) < 0.005 && mt_rand(0, 1) === 0 ? $codeUsd : $codeP;
+            $caisse = $compte(TYPE_CAISSE, $codeRendu);
+            if ($caisse === null) {
+                $codeRendu = $codeP;
+                $caisse = $compte(TYPE_CAISSE, $codeP);
+            }
+            if ($caisse !== null && ($reglement['rendu'][$codeRendu] ?? 0) > 0) {
+                $rendu = ['montant' => $reglement['rendu'][$codeRendu], 'devise' => $acceptees[$codeRendu], 'compte' => $caisse, 'taux' => $tauxEnVigueur($acceptees[$codeRendu])];
+            }
         }
     }
 
     $ventes->enregistrer([
         'etablissement' => $c['etab'], 'cle' => cleDemo(), 'zone_id' => $zone ? (int) $zone['id'] : null,
-        'grille_id' => $grille, 'utilisateur_id' => $p['vendeur'],
+        'grille_id' => $grille, 'utilisateur_id' => $vendeur,
         'appareil_id' => $c['appareils'] !== [] && mt_rand(0, 9) < 7 ? $c['appareils'][array_rand($c['appareils'])] : null,
         'devise' => $principale, 'total' => $total,
         'reference' => $reference, 'total_reference' => $reference ? ($totaux[$reference['code']] ?? null) : null,
         'totaux' => array_map(static fn (string $code) => ['devise' => $acceptees[$code], 'total' => $totaux[$code], 'taux' => $tauxEnVigueur($acceptees[$code])], array_keys($totaux)),
         'lignes' => $lignes, 'paiements' => $paiements, 'rendu' => $rendu,
-        'date' => $p['date'],
+        'date' => $p['date'], 'credits' => $credits,
     ]);
     $compteur[$c['etab']['nom']] = ($compteur[$c['etab']['nom']] ?? 0) + 1;
 }
@@ -441,3 +620,245 @@ foreach ($compteur as $nom => $n) {
     echo "$nom : $n ventes de démonstration.\n";
 }
 echo array_sum($compteur) . " ventes enregistrées sur " . ($jours + 1) . " jours.\n";
+
+// ---------- Ardoises : garants, remboursements, décisions du gérant, rappels ----------
+
+/** « 45 000 FC », « $12 » comme dans les SMS (espaces simples). */
+function montantSms(float $montant, array $devise, string $langue): string
+{
+    $decimales = abs($montant - round($montant)) < 0.005 ? 0 : (int) $devise['decimales'];
+    $nombre = $langue === 'fr' ? number_format($montant, $decimales, ',', ' ') : number_format($montant, $decimales, '.', ',');
+    return $devise['symbole_avant'] ? $devise['symbole'] . $nombre : $nombre . ' ' . $devise['symbole'];
+}
+
+$maintenant = time();
+$horodatage = static fn (int $t): string => date('Y-m-d H:i:s', $t);
+$entre = static fn (int $min, int $max): int => $max <= $min ? $min : mt_rand($min, $max);
+$devisesToutes = $tresorerie->devises();
+$listeDettes = static fn (): array => Database::tous(
+    "SELECT d.*, c.nom AS client_nom, c.telephone AS client_telephone, c.langue AS client_langue, c.canal AS client_canal, c.relances AS client_relances,
+            r.nom AS responsable_nom, r.telephone AS responsable_telephone, r.langue AS responsable_langue,
+            g.nom AS garant_nom, g.telephone AS garant_telephone, s.nom AS servi_nom, e.nom AS etablissement_nom
+       FROM dettes d LEFT JOIN ventes v ON v.id = d.vente_id JOIN clients c ON c.id = d.client_id JOIN etablissements e ON e.id = d.etablissement_id
+  LEFT JOIN utilisateurs r ON r.id = d.responsable_id LEFT JOIN utilisateurs g ON g.id = d.garant_id LEFT JOIN utilisateurs s ON s.id = d.servi_par
+      WHERE (v.cle LIKE ? OR (d.vente_id IS NULL AND d.origine_id IS NULL AND c.telephone IN (" . implode(',', array_fill(0, count(CLIENTS_DEMO), '?')) . ")))
+   ORDER BY d.cree_le, d.id",
+    array_merge([PREFIXE_CLE . '-%'], array_column(CLIENTS_DEMO, 1))
+);
+$proprietaire = null;
+$gerants = [];
+$encaisseurs = [];
+foreach ($utilisateurs as $u) {
+    $uid = (int) $u['id'];
+    if (Acces::droits($uid)['tout']) {
+        $proprietaire ??= $uid;
+        continue;
+    }
+    foreach (array_keys($contextes) as $etabId) {
+        if (Acces::a($uid, 'dettes.gerer', $etabId)) {
+            $gerants[$etabId] ??= $uid;
+        }
+        if (Acces::a($uid, 'caisse.rembourser', $etabId)) {
+            $encaisseurs[$etabId][] = $uid;
+        }
+    }
+}
+$gerantDe = static fn (int $etabId): int => $gerants[$etabId] ?? (int) $proprietaire;
+
+// Deux ardoises reprises du cahier papier, plus anciennes que les ventes de démonstration (ancienneté > 30 et > 60 jours)
+$premier = array_key_first($contextes);
+if ($premier !== null) {
+    $c = $contextes[$premier];
+    $servi = $c['serveurs'][0] ?? ($c['accordeurs'][0] ?? null);
+    $locale = $devisesRepo->locale() ?? $reference;
+    foreach ([['+243996789006', 75, 185000], ['+243820123410', 45, 420000]] as [$telephone, $age, $montant]) {
+        $client = $dettesRepo->clientParTelephone($telephone);
+        if ($client === null || $locale === null) {
+            continue;
+        }
+        $date = date('Y-m-d 19:30:00', strtotime("-$age days"));
+        $dettesRepo->creer([
+            'client_id' => (int) $client['id'], 'etablissement_id' => (int) $c['etab']['id'], 'devise_id' => (int) $locale['id'],
+            'montant' => (float) $montant, 'echeance' => date('Y-m-d', strtotime($date . ' +' . (int) $c['etab']['credit_delai_jours'] . ' days')),
+            'servi_par' => $servi, 'accorde_par' => $gerantDe((int) $c['etab']['id']), 'note' => 'Reprise du cahier d\'ardoises', 'date' => $date,
+        ]);
+    }
+}
+
+// Garants : la plupart répondent dans les deux jours (acceptent souvent) ; les plus récents attendent encore
+$garanties = ['accepte' => 0, 'refuse' => 0, 'en_attente' => 0];
+foreach ($listeDettes() as $d) {
+    if ($d['garant_statut'] !== 'en_attente') {
+        continue;
+    }
+    $cree = strtotime($d['cree_le']);
+    Database::executer(
+        "INSERT IGNORE INTO messages (canal, destinataire, utilisateur_id, dette_id, evenement, etape, texte, statut, cree_le)
+         VALUES ('sms', ?, ?, ?, 'garant_demande', 'demande', ?, 'simule', ?)",
+        [(string) $d['garant_telephone'], (int) $d['garant_id'], (int) $d['id'], I18n::dans('fr', 'msg.garant_demande', [
+            'etab' => $d['etablissement_nom'], 'servi' => $d['servi_nom'] ?? '—', 'client' => $d['client_nom'],
+            'montant' => montantSms((float) $d['montant'], $devisesToutes[(int) $d['devise_id']], 'fr'),
+        ]), $horodatage($cree + 300)]
+    );
+    $tirage = mt_rand(1, 100);
+    if ($maintenant - $cree < 2 * 86400 || $tirage > 80) {
+        $garanties['en_attente']++;
+        continue;
+    }
+    $accepte = $tirage <= 60;
+    $dettesRepo->repondreGarant((int) $d['id'], (int) $d['garant_id'], $accepte);
+    Database::executer('UPDATE dettes SET garant_repondu_le = ? WHERE id = ?', [$horodatage(min($maintenant - 3600, $cree + $entre(2, 40) * 3600)), (int) $d['id']]);
+    $garanties[$accepte ? 'accepte' : 'refuse']++;
+}
+
+// Remboursements : près de la moitié des ardoises sont soldées avant l'échéance ou peu après, d'autres en partie
+$evenements = [];
+foreach ($listeDettes() as $d) {
+    $cree = strtotime($d['cree_le']);
+    $limite = min($maintenant - 3600, strtotime($d['echeance'] . ' 20:00') + 4 * 86400);
+    if ($limite <= $cree + 3 * 3600) {
+        continue;
+    }
+    $tirage = mt_rand(1, 100);
+    if ($tirage <= 45) {
+        $evenements[] = ['dette' => (int) $d['id'], 'date' => $entre($cree + 3 * 3600, $limite), 'part' => 1.0];
+    } elseif ($tirage <= 65) {
+        $evenements[] = ['dette' => (int) $d['id'], 'date' => $entre($cree + 3 * 3600, $limite), 'part' => mt_rand(30, 60) / 100];
+    }
+}
+usort($evenements, static fn (array $a, array $b) => $a['date'] <=> $b['date']);
+$remboursements = [];
+foreach ($evenements as $ev) {
+    $d = $dettesRepo->dette($ev['dette']);
+    if ($d === null || $d['statut'] !== 'ouverte') {
+        continue;
+    }
+    $etabId = (int) $d['etablissement_id'];
+    $deviseDette = $devisesToutes[(int) $d['devise_id']];
+    $date = $horodatage($ev['date']);
+    // Payé en francs le plus souvent ; parfois en dollars (converti au taux du jour par DetteRepository)
+    $devisePaiement = $deviseDette;
+    if ($reference && (int) $deviseDette['id'] !== (int) $reference['id'] && mt_rand(1, 100) <= 25) {
+        $devisePaiement = $devisesToutes[(int) $reference['id']];
+    }
+    $du = (float) $d['reste'] * $ev['part'];
+    $enPaiement = (int) $devisePaiement['id'] === (int) $deviseDette['id'] ? $du : ($dettesRepo->convertir($du, (int) $deviseDette['id'], (int) $devisePaiement['id'], $date) ?? 0.0);
+    if ($ev['part'] < 1) {
+        $pas = (int) $devisePaiement['decimales'] === 0 ? 500 : 1;
+        $enPaiement = floor($enPaiement / $pas) * $pas;
+    } else {
+        $facteur = 10 ** (int) $devisePaiement['decimales'];
+        $enPaiement = (int) $devisePaiement['id'] === (int) $deviseDette['id'] ? $enPaiement : floor($enPaiement * $facteur) / $facteur;
+    }
+    if ($enPaiement <= 0) {
+        continue;
+    }
+    $compte = compteCaisse($contextes[$etabId]['comptes'], mt_rand(1, 100) <= 70 ? TYPE_CAISSE : TYPE_MOBILE, $devisePaiement)
+        ?? compteCaisse($contextes[$etabId]['comptes'], TYPE_CAISSE, $devisePaiement);
+    if ($compte === null) {
+        continue;
+    }
+    $parQui = $encaisseurs[$etabId] ?? [$gerantDe($etabId)];
+    try {
+        $id = $dettesRepo->rembourser([
+            'client_id' => (int) $d['client_id'], 'etablissement_id' => $etabId, 'compte' => ['id' => (int) $compte['id'], 'type' => $compte['type']],
+            'devise_id' => (int) $devisePaiement['id'], 'montant' => $enPaiement, 'utilisateur_id' => $parQui[mt_rand(0, count($parQui) - 1)],
+            'cle' => cleDemo(), 'dettes' => [(int) $d['id']], 'date' => $date,
+        ]);
+        $remboursements[] = ['id' => $id, 'part' => $ev['part'], 'etablissement' => $etabId];
+    } catch (DomainException) {
+        continue;
+    }
+}
+
+// Un remboursement saisi deux fois, annulé par le gérant
+$annule = null;
+foreach (array_reverse($remboursements) as $r) {
+    if ($r['part'] < 1) {
+        try {
+            $dettesRepo->annulerRemboursement($r['id'], $gerantDe($r['etablissement']), 'Saisi deux fois par erreur à la caisse');
+            $annule = $r['id'];
+        } catch (DomainException) {
+        }
+        break;
+    }
+}
+
+// Décisions du gérant sur deux ardoises échues sans remboursement : une mise à la charge du serveur, une remise
+$aujourdhui = date('Y-m-d');
+$decisions = ['a_charge' => null, 'remise' => null];
+foreach ($listeDettes() as $d) {
+    if ($d['statut'] !== 'ouverte' || $d['vente_id'] === null || $d['echeance'] >= date('Y-m-d', strtotime('-4 days')) || $dettesRepo->aDesRemboursements((int) $d['id'])) {
+        continue;
+    }
+    $etabId = (int) $d['etablissement_id'];
+    if ($decisions['a_charge'] === null && $d['responsable_id'] !== null && in_array((int) $d['responsable_id'], $contextes[$etabId]['serveurs'], true)) {
+        $decisions['a_charge'] = $dettesRepo->mettreALaCharge((int) $d['id'], $gerantDe($etabId),
+            'Client injoignable depuis l\'échéance ; ardoise accordée sans garant', $aujourdhui);
+        continue;
+    }
+    if ($decisions['remise'] === null && $decisions['a_charge'] !== null) {
+        $dettesRepo->cloturer((int) $d['id'], 'remise', $gerantDe($etabId), 'Client fidèle : geste commercial après la coupure de courant');
+        $decisions['remise'] = (int) $d['id'];
+    }
+    if ($decisions['remise'] !== null) {
+        break;
+    }
+}
+
+// Rappels inscrits au journal (comme bin/relances.php : la veille de l'échéance, puis J+1, J+7, J+30), au client
+// et au responsable, tant que l'ardoise était ouverte ; la plupart sans envoi (messagerie pas encore réglée)
+$etapes = array_map('intval', explode(',', (string) ($parametres['relances.etapes'] ?? '-1,1,7,30')));
+$nbMessages = 0;
+foreach ($listeDettes() as $d) {
+    $devise = $devisesToutes[(int) $d['devise_id']];
+    $close = $d['statut'] !== 'ouverte' ? strtotime((string) $d['cloturee_le']) : PHP_INT_MAX;
+    foreach ($etapes as $etape) {
+        $moment = strtotime($d['echeance'] . ' 10:05') + $etape * 86400 + mt_rand(0, 900);
+        if ($moment > $maintenant || $moment <= strtotime($d['cree_le']) || $moment >= $close) {
+            continue;
+        }
+        $libelle = DetteRepository::libelleEtape($etape);
+        $retard = $etape >= 0;
+        $reste = (float) ($d['statut'] === 'ouverte' ? $d['reste'] : $d['montant']);
+        $statut = mt_rand(1, 100) <= 80 ? 'simule' : 'envoye';
+        $destinataires = [];
+        if ($d['client_telephone'] && $d['client_relances']) {
+            $langue = $d['client_langue'] ?: 'fr';
+            $destinataires[] = ['rappel_client', $d['client_telephone'], (int) $d['client_id'], null, $d['client_canal'] ?: 'sms', I18n::dans($langue, 'msg.rappel_client.' . ($retard ? 'retard' : 'avant'), [
+                'etab' => $d['etablissement_nom'], 'client' => explode(' ', $d['client_nom'])[0], 'reste' => montantSms($reste, $devise, $langue),
+                'date' => $langue === 'fr' ? date('d/m/Y', strtotime($d['echeance'])) : date('M j, Y', strtotime($d['echeance'])), 'jours' => $etape,
+            ])];
+        }
+        if ($d['responsable_telephone']) {
+            $langue = $d['responsable_langue'] ?: 'fr';
+            $destinataires[] = ['rappel_responsable', $d['responsable_telephone'], null, (int) $d['responsable_id'], 'sms', I18n::dans($langue, 'msg.rappel_responsable.' . ($retard ? 'retard' : 'avant'), [
+                'etab' => $d['etablissement_nom'], 'responsable' => explode(' ', (string) $d['responsable_nom'])[0], 'client' => $d['client_nom'],
+                'reste' => montantSms($reste, $devise, $langue), 'date' => date('d/m/Y', strtotime($d['echeance'])), 'jours' => $etape,
+            ])];
+        }
+        foreach ($destinataires as [$evenement, $telephone, $clientId, $utilisateurId, $canal, $texte]) {
+            $nbMessages += Database::executer(
+                'INSERT IGNORE INTO messages (canal, destinataire, client_id, utilisateur_id, dette_id, evenement, etape, texte, statut, fournisseur_id, cree_le)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [$canal, $telephone, $clientId, $utilisateurId, (int) $d['id'], $evenement, $libelle, $texte, $statut,
+                 $statut === 'envoye' ? ($canal === 'whatsapp' ? 'wamid.demo' : 'ATXid_demo') . substr(md5((string) mt_rand()), 0, 10) : null, $horodatage($moment)]
+            );
+        }
+    }
+}
+// Un échec d'envoi (solde du compte SMS épuisé), pour l'exemple
+Database::executer(
+    "UPDATE messages SET statut = 'echec', fournisseur_id = NULL, erreur = 'sms : HTTP 201 InsufficientBalance'
+      WHERE id = (SELECT id FROM (SELECT m.id FROM messages m JOIN dettes d ON d.id = m.dette_id JOIN ventes v ON v.id = d.vente_id
+                                   WHERE v.cle LIKE ? AND m.statut = 'envoye' AND m.canal = 'sms' ORDER BY m.cree_le DESC LIMIT 1) x)",
+    [PREFIXE_CLE . '-%']
+);
+
+$compteDettes = ['n' => count($listeDettes()), 'ouvertes' => count(array_filter($listeDettes(), static fn (array $d) => $d['statut'] === 'ouverte'))];
+echo sprintf(
+    "%d clients, %d ardoises (%d encore ouvertes), %d remboursements%s, garants : %d acceptés, %d refusés, %d en attente ; %s%s%d rappels inscrits.\n",
+    count(CLIENTS_DEMO), (int) $compteDettes['n'], (int) $compteDettes['ouvertes'], count($remboursements), $annule ? ' (1 annulé)' : '',
+    $garanties['accepte'], $garanties['refuse'], $garanties['en_attente'],
+    $decisions['a_charge'] ? '1 mise à la charge du responsable, ' : '', $decisions['remise'] ? '1 remise, ' : '', $nbMessages
+);

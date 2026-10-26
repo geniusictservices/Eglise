@@ -1,0 +1,67 @@
+<?php
+
+// Instance: what the super admin console decides (subscription, modules, limits, support access) — App\Core\Plateforme
+return [
+    'plateforme.surtitre' => '{plateforme} subscription',
+    'plateforme.contact_titre' => 'Contact {plateforme}',
+    'plateforme.donnees_gardees' => 'Your data is kept: nothing is deleted.',
+    'plateforme.reessayer' => 'Try opening the till again',
+
+    'plateforme.suspendu.titre' => 'Subscription suspended',
+    'plateforme.suspendu.texte' => 'Access to your workspace is suspended. To restore it, pay your subscription to {plateforme}: it is reactivated as soon as the payment is recorded.',
+    'plateforme.lecture_seule.titre' => 'Read-only subscription',
+    'plateforme.lecture_seule.texte' => 'You can view your data but not change it. Pay your subscription to {plateforme} to get every feature back.',
+    'plateforme.caisse_lecture_seule.titre' => 'The till cannot open',
+    'plateforme.caisse_lecture_seule.texte' => 'The subscription is read-only: the till can no longer be opened and nothing can be sold. Tills that were already open were able to finish their service. Pay the subscription to {plateforme}.',
+    'plateforme.caisse_non_incluse.titre' => 'Till not included',
+    'plateforme.caisse_non_incluse.texte' => 'Your “{formule}” plan does not include the till. Contact {plateforme} to change plans.',
+    'plateforme.module_non_inclus.titre' => 'Module not included',
+    'plateforme.module_non_inclus.texte' => 'The “{module}” module is not part of your “{formule}” plan. Contact {plateforme} to add it.',
+    'plateforme.limite_etablissements.titre' => 'Plan limit reached',
+    'plateforme.limite_etablissements.texte' => 'Your “{formule}” plan allows {limite} active venue(s), and you already have them. Deactivate one, or contact {plateforme} to change plans.',
+    'plateforme.limite_utilisateurs.titre' => 'Plan limit reached',
+    'plateforme.limite_utilisateurs.texte' => 'Your “{formule}” plan allows {limite} active user(s), and you already have them. Deactivate someone who no longer works with you, or contact {plateforme} to change plans.',
+    'plateforme.indisponible.titre' => 'Menu temporarily unavailable',
+    'plateforme.indisponible.texte' => 'This menu is not available at the moment. Thank you for your understanding. · Ce menu est momentanément indisponible.',
+
+    'plateforme.bandeau.a_relancer' => 'Your subscription is due on {date}. Remember to pay {plateforme} ({contact}).',
+    'plateforme.bandeau.essai' => 'Your free trial ends on {date}. To continue, pay your subscription to {plateforme} ({contact}).',
+    'plateforme.bandeau.grace' => 'The {date} due date has passed. Everything works until {grace}; then the workspace becomes read-only. Pay {plateforme} ({contact}).',
+    'plateforme.bandeau.lecture_seule' => 'Read-only: you can see your data but can no longer sell or make changes. Suspension planned after {suspension}. Contact: {contact}.',
+    'plateforme.bandeau.lecture_seule_force' => 'Read-only: you can see your data but can no longer sell or make changes. Contact: {contact}.',
+    'plateforme.bandeau.assistance' => 'Support: session opened by the platform support team, with the owner\'s consent (until {jusqua}).',
+    'plateforme.mdp_temporaire' => 'Welcome! Choose your own password: the temporary password you received when your workspace was created must be replaced.',
+    'plateforme.assistance.compte' => '{plateforme} Support',
+    'plateforme.assistance.poste' => 'Platform support',
+
+    // Settings > Support access
+    'ecran.assistance' => 'Support access',
+    'assistance.titre' => 'Support access',
+    'assistance.aide' => '{plateforme} support only enters your workspace with your consent, for 24 hours at most. Everything it does is written to the log, under the name “Support”.',
+    'assistance.etat' => 'Consent',
+    'assistance.autorisee' => 'Allowed',
+    'assistance.non_autorisee' => 'Not allowed',
+    'assistance.jusqua' => 'until {jusqua}, by {par}',
+    'assistance.non_autorisee_texte' => 'Support cannot enter your workspace.',
+    'assistance.autoriser' => 'Allow support access for 24 h',
+    'assistance.retirer' => 'Withdraw consent now',
+    'assistance.reserve_proprietaire' => 'Only an owner can give or withdraw consent.',
+    'assistance.erreur_proprietaire' => 'Only an owner can give or withdraw consent.',
+    'assistance.autorisee_flash' => 'Support access allowed until {jusqua}.',
+    'assistance.retiree_flash' => 'Consent withdrawn: support can no longer enter.',
+    'assistance.historique' => 'History',
+
+    'journal.action_assistance_autorisee' => 'Support access allowed (24 h)',
+    'journal.action_assistance_retiree' => 'Support consent withdrawn',
+    'journal.action_assistance_expiree' => 'Support consent expired',
+    'journal.action_assistance_ouverte' => 'Support session opened',
+    'journal.action_assistance_refusee' => 'Support entry refused (invalid or expired link)',
+    'journal.action_plateforme_sauvegarde' => 'Backup downloaded by the platform',
+    'journal.action_plateforme_mise_a_jour' => 'Update installed by the platform',
+
+    // Upcoming modules a subscription plan can already include (App\Core\Modules::A_VENIR)
+    'module.cuisine.nom' => 'Kitchen',
+    'module.nightclub.nom' => 'Nightclub',
+    'module.evenements.nom' => 'Events',
+    'module.cashless.nom' => 'Cashless',
+];

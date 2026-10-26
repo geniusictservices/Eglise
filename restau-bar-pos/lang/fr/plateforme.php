@@ -1,0 +1,67 @@
+<?php
+
+// Instance : ce que décide la console super admin (abonnement, modules, limites, assistance) — App\Core\Plateforme
+return [
+    'plateforme.surtitre' => 'Abonnement {plateforme}',
+    'plateforme.contact_titre' => 'Contacter {plateforme}',
+    'plateforme.donnees_gardees' => 'Vos données sont conservées : rien n\'est supprimé.',
+    'plateforme.reessayer' => 'Réessayer d\'ouvrir la caisse',
+
+    'plateforme.suspendu.titre' => 'Abonnement suspendu',
+    'plateforme.suspendu.texte' => 'L\'accès à votre espace est suspendu. Pour le rétablir, réglez votre abonnement auprès de {plateforme} : il sera réactivé dès le paiement enregistré.',
+    'plateforme.lecture_seule.titre' => 'Abonnement en lecture seule',
+    'plateforme.lecture_seule.texte' => 'Vous pouvez consulter vos données, mais pas les modifier. Réglez votre abonnement auprès de {plateforme} pour retrouver toutes les fonctions.',
+    'plateforme.caisse_lecture_seule.titre' => 'La caisse ne peut pas s\'ouvrir',
+    'plateforme.caisse_lecture_seule.texte' => 'L\'abonnement est en lecture seule : on ne peut plus ouvrir la caisse ni vendre. Les caisses déjà ouvertes ont pu finir leur service. Réglez l\'abonnement auprès de {plateforme}.',
+    'plateforme.caisse_non_incluse.titre' => 'Caisse non incluse',
+    'plateforme.caisse_non_incluse.texte' => 'Votre formule « {formule} » ne comprend pas la caisse. Contactez {plateforme} pour changer de formule.',
+    'plateforme.module_non_inclus.titre' => 'Module non inclus',
+    'plateforme.module_non_inclus.texte' => 'Le module « {module} » n\'est pas compris dans votre formule « {formule} ». Contactez {plateforme} pour l\'ajouter.',
+    'plateforme.limite_etablissements.titre' => 'Limite de votre formule atteinte',
+    'plateforme.limite_etablissements.texte' => 'Votre formule « {formule} » permet {limite} établissement(s) actif(s), et vous les avez déjà. Désactivez-en un, ou contactez {plateforme} pour changer de formule.',
+    'plateforme.limite_utilisateurs.titre' => 'Limite de votre formule atteinte',
+    'plateforme.limite_utilisateurs.texte' => 'Votre formule « {formule} » permet {limite} utilisateur(s) actif(s), et vous les avez déjà. Désactivez une personne qui ne travaille plus chez vous, ou contactez {plateforme} pour changer de formule.',
+    'plateforme.indisponible.titre' => 'Menu momentanément indisponible',
+    'plateforme.indisponible.texte' => 'Ce menu n\'est pas disponible pour le moment. Merci de votre compréhension. · This menu is temporarily unavailable.',
+
+    'plateforme.bandeau.a_relancer' => 'Votre abonnement arrive à échéance le {date}. Pensez à le régler auprès de {plateforme} ({contact}).',
+    'plateforme.bandeau.essai' => 'Votre essai gratuit se termine le {date}. Pour continuer, réglez votre abonnement auprès de {plateforme} ({contact}).',
+    'plateforme.bandeau.grace' => 'L\'échéance du {date} est dépassée. Tout fonctionne jusqu\'au {grace} ; ensuite l\'espace passe en lecture seule. Réglez auprès de {plateforme} ({contact}).',
+    'plateforme.bandeau.lecture_seule' => 'Lecture seule : vous voyez vos données mais ne pouvez plus vendre ni modifier. Suspension prévue après le {suspension}. Contact : {contact}.',
+    'plateforme.bandeau.lecture_seule_force' => 'Lecture seule : vous voyez vos données mais ne pouvez plus vendre ni modifier. Contact : {contact}.',
+    'plateforme.bandeau.assistance' => 'Assistance : session ouverte par le support de la plateforme, avec l\'accord du propriétaire (jusqu\'au {jusqua}).',
+    'plateforme.mdp_temporaire' => 'Bienvenue ! Choisissez votre propre mot de passe : le mot de passe temporaire reçu à la création de votre espace doit être remplacé.',
+    'plateforme.assistance.compte' => 'Assistance {plateforme}',
+    'plateforme.assistance.poste' => 'Support de la plateforme',
+
+    // Paramètres > Assistance
+    'ecran.assistance' => 'Assistance',
+    'assistance.titre' => 'Assistance',
+    'assistance.aide' => 'Le support de {plateforme} n\'entre dans votre espace qu\'avec votre accord, pour 24 heures au plus. Tout ce qu\'il fait est inscrit au journal, sous le nom « Assistance ».',
+    'assistance.etat' => 'Accord',
+    'assistance.autorisee' => 'Autorisée',
+    'assistance.non_autorisee' => 'Non autorisée',
+    'assistance.jusqua' => 'jusqu\'au {jusqua}, par {par}',
+    'assistance.non_autorisee_texte' => 'Le support ne peut pas entrer dans votre espace.',
+    'assistance.autoriser' => 'Autoriser l\'assistance pendant 24 h',
+    'assistance.retirer' => 'Retirer l\'accord maintenant',
+    'assistance.reserve_proprietaire' => 'Seul un propriétaire peut donner ou retirer l\'accord.',
+    'assistance.erreur_proprietaire' => 'Seul un propriétaire peut donner ou retirer l\'accord.',
+    'assistance.autorisee_flash' => 'Assistance autorisée jusqu\'au {jusqua}.',
+    'assistance.retiree_flash' => 'Accord retiré : le support ne peut plus entrer.',
+    'assistance.historique' => 'Historique',
+
+    'journal.action_assistance_autorisee' => 'Assistance autorisée (24 h)',
+    'journal.action_assistance_retiree' => 'Accord d\'assistance retiré',
+    'journal.action_assistance_expiree' => 'Accord d\'assistance expiré',
+    'journal.action_assistance_ouverte' => 'Session d\'assistance ouverte',
+    'journal.action_assistance_refusee' => 'Entrée d\'assistance refusée (lien invalide ou expiré)',
+    'journal.action_plateforme_sauvegarde' => 'Sauvegarde téléchargée par la plateforme',
+    'journal.action_plateforme_mise_a_jour' => 'Mise à jour installée par la plateforme',
+
+    // Modules à venir, qu'une formule d'abonnement peut déjà inclure (App\Core\Modules::A_VENIR)
+    'module.cuisine.nom' => 'Cuisine',
+    'module.nightclub.nom' => 'Nightclub',
+    'module.evenements.nom' => 'Événements',
+    'module.cashless.nom' => 'Cashless',
+];

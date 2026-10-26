@@ -112,11 +112,13 @@ final class CaisseDetteController
             || $client === null || $client['type'] === 'personnel') {
             $this->repondre(422, ['erreur' => t('ardoise.remboursement_invalide')]);
         }
+        $session = CaisseController::sessionExigee($etab, $personne);
         try {
             $id = $this->dettes->rembourser([
                 'client_id' => (int) $client['id'], 'etablissement_id' => (int) $etab['id'], 'compte' => $compte,
                 'devise_id' => (int) $acceptees[$code]['id'], 'montant' => $montant, 'utilisateur_id' => $personne['id'],
                 'appareil_id' => $appareil ? (int) $appareil['id'] : null, 'cle' => $cle,
+                'session_id' => $session !== null ? (int) $session['id'] : null,
             ]);
         } catch (\DomainException $e) {
             $this->repondre(422, ['erreur' => match ($e->getMessage()) {

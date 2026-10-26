@@ -77,7 +77,8 @@ final class VenteRepository
      *              lignes: list<array{produit_id: int, conditionnement_id: int, libelle: string, format: ?string, quantite: int, prix: float, prix_reference: ?float}>,
      *              paiements: list<array{moyen: string, compte: array, devise: array, recu: float, taux: ?float}>,
      *              rendu: ?array{montant: float, devise: array, compte: array, taux: ?float}, date?: string,
-     *              credits?: list<array{client_id: int, devise: array, montant: float, echeance: string, servi_par: ?int, garant_id: ?int, note: ?string}>} $v
+     *              credits?: list<array{client_id: int, devise: array, montant: float, echeance: string, servi_par: ?int, garant_id: ?int, note: ?string}>,
+     *              session_id?: ?int} $v
      *        credits : part du ticket mise à l'ardoise d'un client (une dette par ligne, accordée par utilisateur_id)
      *        date (facultative, « Y-m-d H:i:s ») : heure de la vente et de ses mouvements de trésorerie,
      *        maintenant si absente (la caisse ne l'envoie jamais ; bin/demo-ventes.php l'utilise)
@@ -126,6 +127,10 @@ final class VenteRepository
                 ]
             );
             $id = Database::dernierId();
+            // Session de caisse (établissements qui les demandent)
+            if (!empty($v['session_id'])) {
+                Database::executer('UPDATE ventes SET session_id = ? WHERE id = ?', [(int) $v['session_id'], $id]);
+            }
 
             foreach ($v['totaux'] as $t) {
                 Database::executer(
@@ -168,6 +173,7 @@ final class VenteRepository
                 $this->tresorerie->ajouterMouvement($v['rendu']['compte'], 'sortie', $v['rendu']['montant'], 'vente', $id, $maintenant,
                     'Monnaie rendue ' . $numero, $v['utilisateur_id'], (int) $v['rendu']['devise']['id']);
             }
+            (new StockRepository())->sortieVente($id);
             $pdo->commit();
             return $id;
         } catch (\Throwable $e) {

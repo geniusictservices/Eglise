@@ -585,6 +585,15 @@ Chaque phase est utilisable seule.
 | Connexion | Gestion : téléphone ou e-mail et mot de passe ; caisse : PIN de 6 chiffres sur un appareil autorisé, verrouillage après chaque encaissement (section 6.3) |
 | Navigation | Après la connexion, écran des modules ; dans un module, barre latérale sur ordinateur et barre du bas sur téléphone, sans menu caché |
 | Rapports du personnel | Serveur ou serveuse de la période (classement configurable) et dettes des clients liées à chaque utilisateur (section 13.7) |
+| Console super admin | Le super admin gère les abonnements (suivi simple : formules avec modules et limites, échéance, paiements notés à la main, essai, relances, délai de grâce, lecture seule puis suspension, jamais en plein service) et les API de messagerie (section 1.2) |
+| Messagerie (SMS, WhatsApp) | Un seul compte Africa's Talking et un seul numéro WhatsApp Business pour tous les clients, réglés par le super admin ; chaque message porte le nom du bar ; les SMS sont refacturés dans l'abonnement ; les bars ne voient jamais les clés |
+| Hébergement | LWS mutualisé cPanel : sous-domaine et base de données de chaque client créés à la main dans cPanel, la console guide puis installe les tables |
+| Stock négatif | Au choix du gérant, par établissement : vendre quand même avec une alerte, ou bloquer (le produit passe « épuisé » à 0) |
+| Sessions de caisse | Au choix par établissement : ouverture avec fond de caisse par devise, clôture avec comptage et écart ; un manquant peut être retenu sur la paie |
+| Mode hors ligne | La caisse vend sans réseau : les ventes payées attendent sur l'appareil et partent au retour du réseau, sans double comptage ; ardoises et remboursements demandent le réseau |
+| Retenues sur la paie | Ardoises mises à la charge d'un employé et manquants de caisse proposés sur le bulletin ; le gérant peut réduire ou étaler avant de valider |
+| Pointage | Code QR changeant + position GPS (rayon réglable, 100 m par défaut) ; « pointage obligatoire pour ouvrir la caisse » au choix par établissement ; pointage de secours à la caisse avec PIN validé par le gérant |
+| Cashless | Carte ou bracelet à code QR scanné par la caméra de la tablette ; solde par devise, recharge, remboursement du solde |
 | Ardoises (dettes) | La dette engage la personne qui a servi, sauf si un garant (agent, gérant, promoteur) l'accepte plus tard ; après l'échéance, le gérant décide de la mettre à la charge du responsable ; relances automatiques seulement, par SMS (Africa's Talking) ou WhatsApp Business, au client et au responsable (section 7.2 bis) |
 
 ## 18. Questions ouvertes

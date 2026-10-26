@@ -7,6 +7,7 @@ namespace App\Controllers\Gestion;
 use App\Core\Acces;
 use App\Core\Session;
 use App\Core\View;
+use App\Repositories\DetteRepository;
 use App\Repositories\DeviseRepository;
 use App\Repositories\GestionDeviseRepository;
 use App\Repositories\GestionTresorerieRepository;
@@ -159,6 +160,10 @@ final class VenteController
             'peutAnnuler' => $this->ventes->peutAnnuler($fiche['vente'], $uid),
             // Lien vers la fiche d'un compte seulement pour qui voit la trésorerie
             'voirComptes' => Acces::a($uid, 'finance.voir'),
+            // Part du ticket mise à l'ardoise d'un client (Clients et dettes)
+            'credits' => (new DetteRepository())->dettesDeVente((int) $fiche['vente']['id']),
+            'voirDettes' => Acces::a($uid, 'dettes.voir', (int) $fiche['vente']['etablissement_id']),
+            'voirClients' => Acces::a($uid, 'clients.voir'),
             'erreurs' => $erreurs,
             'motif' => $motif,
         ], 'gestion');

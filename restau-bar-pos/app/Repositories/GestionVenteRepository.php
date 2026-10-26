@@ -294,6 +294,7 @@ final class GestionVenteRepository
                 );
             }
             Journal::ecrire('vente_annulee', $vente['numero'], ['motif' => mb_substr($motif, 0, 255)], $utilisateurId);
+            (new StockRepository())->annulationVente($id);
             return 'annulee';
         });
     }

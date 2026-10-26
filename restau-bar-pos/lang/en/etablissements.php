@@ -32,7 +32,7 @@ return [
     // Sections
     'etab.section_infos' => 'Details',
     'etab.section_apparence' => 'Look',
-    'etab.section_prix' => 'Prices and currencies',
+    'etab.section_prix' => 'Prices, currencies and tabs',
     'etab.section_horaires' => 'Opening hours',
     'etab.section_zones' => 'Areas',
     'etab.section_activation' => 'Activate or deactivate',
@@ -112,6 +112,10 @@ return [
     'etab.aucune_devise' => 'No active currency. Prices cannot be shown.',
     'etab.devise_affichage' => 'Currency shown by default',
     'etab.devise_affichage_aide' => 'The one visitors see when they arrive. It must be one of the accepted currencies.',
+    'etab.credit_delai' => 'Payment term offered for a tab',
+    'etab.credit_delai_jours' => 'days',
+    'etab.credit_delai_aide' => 'At the till, the due date of a bill put on credit is set this many days after the sale (0: the same day). The cashier can change it. From 0 to 365 days.',
+    'etab.erreur_credit_delai' => 'Enter a payment term between 0 and 365 days, for example 7.',
     'etab.prix_enregistres' => 'Prices and currencies saved.',
 
     // Opening hours

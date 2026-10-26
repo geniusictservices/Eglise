@@ -164,6 +164,9 @@ final class EtablissementSaisie
         }
         $deviseIds = array_values(array_unique($deviseIds));
         $affichage = self::entier($post['devise_affichage_id'] ?? null);
+        // Délai de paiement proposé à la caisse pour une ardoise (échéance = jour de la vente + délai)
+        $delaiSaisi = trim(is_string($post['credit_delai_jours'] ?? null) ? $post['credit_delai_jours'] : '7');
+        $delai = self::entier($delaiSaisi === '' ? '7' : $delaiSaisi);
 
         $erreurs = [];
         if ($grilleId === null || !in_array($grilleId, array_map('intval', array_column($grilles, 'id')), true)) {
@@ -172,11 +175,15 @@ final class EtablissementSaisie
         if ($deviseIds === []) {
             $erreurs['devises'] = t('etab.erreur_devises');
         }
+        if ($delai === null || $delai > 365) {
+            $erreurs['credit_delai_jours'] = t('etab.erreur_credit_delai');
+        }
         // Devise affichée : forcément une des devises acceptées (la première à défaut)
         if ($affichage === null || !in_array($affichage, $deviseIds, true)) {
             $affichage = $deviseIds[0] ?? null;
         }
-        return [['grille_prix_id' => $grilleId, 'devises' => $deviseIds, 'devise_affichage_id' => $affichage], $erreurs];
+        return [['grille_prix_id' => $grilleId, 'devises' => $deviseIds, 'devise_affichage_id' => $affichage,
+                 'credit_delai_jours' => $delai ?? $delaiSaisi], $erreurs];
     }
 
     // Horaires

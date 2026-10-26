@@ -1,0 +1,226 @@
+/* Clients, dettes, remboursements, garanties, messagerie et rapport des créances.
+   Complète gestion.css et gestion-tresorerie.css ; n'utilise que les jetons de volcan.css (thèmes jour et nuit).
+   Contours fins et égaux sur tous les côtés : la couleur passe par le fond teinté, une pastille ou le texte. */
+
+.det-retard { color: var(--erreur); font-weight: 700; }
+.det-barre { text-decoration: line-through; color: var(--doux); }
+.det-texte-long { white-space: pre-line; overflow-wrap: anywhere; }
+.det-lien-fort { display: inline-flex; align-items: center; min-height: var(--cible); font-weight: 700; text-underline-offset: 3px; overflow-wrap: anywhere; }
+.det-pied { margin: .75rem 0 0; }
+.det-pied .lien, .det-note .lien, .det-filtre-client .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+.det-sous-titre { margin: 1.25rem 0 .25rem; font: 600 1rem/1.2 var(--police-titre); }
+.det-entete h1 { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; }
+.det-entete h1 .badge { font-family: var(--police-texte); }
+.det-note { display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1rem; }
+.det-code { margin: .5rem 0 0; padding: .75rem 1rem; border-radius: var(--rayon); background: var(--surface-2); border: 1px solid var(--ligne); overflow-x: auto; font-size: .875rem; }
+.det-code code { white-space: pre; }
+.det-compteur { display: inline-grid; place-items: center; min-width: 1.6em; padding: 0 .35em; border-radius: var(--rayon-rond); background: var(--ligne); color: var(--encre); font-size: .75rem; font-variant-numeric: tabular-nums; }
+.puce[aria-current] .det-compteur { background: var(--fond); color: var(--encre); }
+
+/* ---------- Filtres et totaux ---------- */
+
+.det-filtres { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+.det-filtres__recherche { grid-column: span 2; }
+.det-filtres__coche { align-self: end; }
+.det-coche { margin-top: .5rem; }
+.det-filtre-client {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .25rem 1rem; margin: 1rem 0 0; padding: .4rem 1rem;
+  border-radius: var(--rayon); background: var(--teinte-glace); border: 1px solid color-mix(in srgb, var(--glace) 40%, var(--ligne));
+}
+.det-filtre-client span { font-weight: 700; }
+.det-chiffres { grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+.tre-totaux .det-chiffres .chiffre__valeur { font-size: clamp(1.25rem, 2vw, 1.625rem); overflow-wrap: anywhere; }
+.det-chiffres .chiffre__libelle .tre-sous-texte { margin-top: .15rem; }
+.det-chiffres .chiffre__libelle .det-retard { display: block; margin-top: .15rem; }
+.tre-totaux .det-chiffres .det-chiffre--texte { font-size: clamp(1.125rem, 1.8vw, 1.375rem); }
+.det-chiffre--retard { background: var(--teinte-erreur); border-color: color-mix(in srgb, var(--erreur) 40%, var(--ligne)); }
+.chiffre--principal { background: var(--teinte-accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--ligne)); }
+
+.det-anciennete { margin-top: 1rem; }
+.det-anciennete .det-sous-titre { margin-top: 0; }
+.det-tranches { margin-top: .75rem; }
+.det-tranches th[scope="row"] { font-weight: 600; text-transform: none; letter-spacing: 0; font-size: var(--taille-s); color: var(--encre); }
+
+/* ---------- Listes ---------- */
+
+.det-liste td { vertical-align: middle; }
+.det-cellule--titre .badge { margin-left: .35rem; }
+.det-cellule--titre .tre-sous-texte { margin-top: -.25rem; }
+.det-cellule--montant, .det-cellule--reste { white-space: nowrap; }
+.det-montant-ligne { display: block; }
+.det-cellule--telephone .badge, .det-cellule--client .badge, .det-cellule--personne .badge { margin-left: .35rem; }
+.det-cellule--client .lien { display: inline-flex; align-items: center; min-height: var(--cible); }
+.det-ligne--close td, .det-lignes .det-ligne--close { color: var(--doux); }
+.det-compte { display: inline-flex; align-items: center; gap: .4rem; }
+.det-compte .tre-icone { color: var(--accent-texte); }
+.det-personne { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; }
+.det-personne > span:last-child, .det-personne > a, .det-personne > strong { min-width: 0; overflow-wrap: anywhere; }
+.det-pages { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 1rem; margin-top: 1.25rem; }
+
+/* Lignes simples : libellé à gauche, montant à droite */
+.det-lignes { list-style: none; margin: .5rem 0 0; padding: 0; }
+.det-lignes li { display: flex; justify-content: space-between; align-items: center; gap: .5rem 1rem; padding: .6rem 0; border-top: 1px solid var(--ligne); min-height: var(--cible); }
+.det-lignes li:first-child { border-top: 0; }
+.det-lignes li > span { min-width: 0; overflow-wrap: anywhere; }
+.det-lignes li > .montant { white-space: nowrap; }
+.det-lignes .badge { margin-left: .35rem; }
+.det-lignes--numerotees { counter-reset: det-dette; }
+.det-lignes--numerotees li { counter-increment: det-dette; }
+.det-lignes--numerotees li > span::before { content: counter(det-dette) ". "; color: var(--doux); font-weight: 700; }
+.det-origines { margin: .75rem 0 0; padding-left: 1.2rem; color: var(--doux); }
+
+/* ---------- Fiches ---------- */
+
+.det-colonnes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 1.5rem; }
+.det-colonnes > .bloc { min-width: 0; }
+.det-infos { margin: 0; display: grid; }
+.det-infos > div { display: grid; grid-template-columns: minmax(7rem, 11rem) minmax(0, 1fr); gap: .75rem; padding: .55rem 0; border-top: 1px solid var(--ligne); align-items: center; }
+.det-infos > div:first-child { border-top: 0; padding-top: 0; }
+.det-infos dt { color: var(--doux); font-size: var(--taille-s); }
+.det-infos dd { margin: 0; overflow-wrap: anywhere; }
+.det-infos dd .badge { margin-left: .35rem; }
+
+.det-annule {
+  margin: 1rem 0 0; padding: 1rem 1.25rem; border-radius: var(--rayon-carte);
+  border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne)); background: var(--teinte-erreur);
+}
+.det-annule h2 { margin-bottom: .5rem; }
+.det-danger, .det-decisions { border-color: color-mix(in srgb, var(--erreur) 30%, var(--ligne)); }
+.det-decision { margin-top: .75rem; border: 1px solid var(--ligne); border-radius: var(--rayon); background: var(--fond); }
+.det-decision > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 48px; padding: 0 1rem; cursor: pointer; font-weight: 700; list-style: none;
+}
+.det-decision > summary::-webkit-details-marker { display: none; }
+/* Chevron : vers le bas fermé, vers le haut ouvert */
+.det-decision > summary::after {
+  content: ""; flex: none; width: .55rem; height: .55rem; margin-right: .2rem;
+  border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-25%) rotate(45deg);
+}
+.det-decision[open] > summary::after { transform: translateY(25%) rotate(-135deg); }
+.det-decision > summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: var(--rayon); }
+.det-decision > .aide, .det-decision > form { margin: 0; padding: 0 1rem 1rem; }
+.det-decision__form { display: grid; gap: .75rem; max-width: 40rem; }
+.det-decision__form .tre-actions { margin-top: 0; }
+.det-decision__form .coche, .det-radios .coche { align-items: flex-start; }
+.det-decision__form .coche input, .det-radios .coche input { flex: none; margin-top: .1rem; }
+.det-radios { display: grid; gap: .25rem; }
+.det-radios input:disabled + span { opacity: .6; }
+
+/* ---------- Formulaires ---------- */
+
+.tre-moyens.det-choix-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.det-plafond { display: grid; grid-template-columns: minmax(0, 16rem) minmax(0, 8rem); gap: 1rem; align-items: end; }
+.det-groupe { margin-top: 1rem; }
+.det-recherche { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem 1rem; }
+.det-recherche .champ { flex: 1 1 16rem; max-width: 28rem; }
+.det-resultats { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: .5rem; }
+.det-resultat {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .25rem 1rem;
+  min-height: 56px; padding: .6rem 1rem; border: 1px solid var(--ligne); border-radius: var(--rayon); color: inherit; text-decoration: none;
+}
+a.det-resultat:hover { background: var(--surface-2); border-color: var(--ligne-forte); }
+.det-resultat--rien { color: var(--doux); }
+.det-resultat__nom { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.det-resultat__nom .badge { margin-left: .35rem; }
+.det-resultat__encours { text-align: right; }
+.det-resultats-vide { margin-top: 1rem; }
+.det-client-choisi__tete { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: .5rem 1.5rem; }
+.det-client-choisi__tete h2 { margin: 0; }
+.det-client-choisi__tete h2 a { text-underline-offset: 3px; }
+.det-client-choisi__encours { display: grid; justify-items: end; text-align: right; }
+.det-client-choisi__encours strong { font: 800 1.375rem/1.2 var(--police-titre); white-space: normal; }
+.det-client-choisi > .aide { margin-top: 1rem; }
+.det-ligne-paiement { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 7.5rem) minmax(0, 1fr); gap: 1rem; align-items: start; margin-top: 1rem; }
+.det-form-remb .bloc > .champ + .champ { margin-top: 1rem; }
+
+/* ---------- Garanties ---------- */
+
+.det-garanties { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; gap: 1rem; }
+.det-garantie {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem 1.5rem; align-items: center;
+  padding: 1.25rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--rayon-carte);
+}
+.det-garantie__corps { min-width: 0; }
+.det-garantie__corps p { margin: 0; }
+.det-garantie__client { margin: .15rem 0 .25rem; font-size: 1.25rem; overflow-wrap: anywhere; }
+.det-garantie__montant strong { font: 800 1.5rem/1.2 var(--police-titre); color: var(--prix); }
+.det-garantie__actions { display: flex; flex-wrap: wrap; gap: .5rem; margin: 0; }
+.det-garantie__explication { grid-column: 1 / -1; margin: 0; }
+
+/* ---------- Messages ---------- */
+
+.det-messages { list-style: none; margin: .75rem 0 0; padding: 0; }
+.det-message { padding: .75rem 0; border-top: 1px solid var(--ligne); }
+.det-message:first-child { border-top: 0; padding-top: .25rem; }
+.det-message__tete { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .6rem; }
+.det-message__date { margin-left: auto; color: var(--doux); font-size: .8125rem; white-space: nowrap; }
+.det-message p { margin: .3rem 0 0; }
+.det-message__destinataire { font-size: var(--taille-s); color: var(--doux); }
+.det-message__destinataire .lien { min-height: var(--cible); }
+.det-message__texte { padding: .5rem .75rem; border-radius: var(--rayon); background: var(--surface-2); overflow-wrap: anywhere; font-size: var(--taille-s); }
+.det-message__erreur { color: var(--erreur); font-size: var(--taille-s); font-weight: 600; overflow-wrap: anywhere; }
+
+/* ---------- Messagerie ---------- */
+
+.det-onglets { margin-top: 1rem; }
+.det-etats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .75rem; margin-top: 1.25rem; }
+.det-etat {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .4rem .75rem; min-height: 56px;
+  padding: .6rem 1rem; background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--rayon-carte);
+}
+.det-etats__aide { margin-top: .5rem; }
+
+/* ---------- Rapport des créances ---------- */
+
+.det-tranches-cartes { list-style: none; margin: .75rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.det-tranche { display: grid; gap: .3rem; padding: 1rem 1.25rem; border: 1px solid var(--ligne); border-radius: var(--rayon-carte); background: var(--fond); min-width: 0; }
+.det-tranche .surtitre { margin: 0; }
+.det-tranche__valeur { font: 800 1.375rem/1.2 var(--police-titre); overflow-wrap: anywhere; }
+.det-tranche--plus_60 { background: var(--teinte-erreur); border-color: color-mix(in srgb, var(--erreur) 35%, var(--ligne)); }
+.det-tranche--plus_60 .tre-categories__barre span { background: var(--erreur); }
+.det-tranche--31_60 { background: var(--teinte-braise); border-color: color-mix(in srgb, var(--braise) 35%, var(--ligne)); }
+.det-part { display: inline-flex; align-items: center; gap: .5rem; white-space: nowrap; }
+.det-part .tre-categories__barre { display: inline-block; width: 5rem; }
+
+/* ---------- Tablette et téléphone ---------- */
+
+@media (max-width: 900px) {
+  .det-colonnes { grid-template-columns: minmax(0, 1fr); }
+  .det-ligne-paiement { grid-template-columns: minmax(0, 1fr) minmax(0, 7.5rem); }
+  .det-ligne-paiement > .champ:first-child { grid-column: 1 / -1; }
+}
+@media (max-width: 760px) {
+  .det-tranches-cartes { grid-template-columns: minmax(0, 1fr); }
+  .det-garantie { grid-template-columns: minmax(0, 1fr); }
+  .det-garantie__actions .bouton { flex: 1 1 8rem; }
+}
+@media (max-width: 600px) {
+  .det-filtres__recherche { grid-column: auto; }
+  .det-infos > div { grid-template-columns: minmax(0, 1fr); gap: .1rem; }
+  .det-plafond { grid-template-columns: minmax(0, 1fr) minmax(0, 7rem); }
+  .det-ligne-paiement { grid-template-columns: minmax(0, 1fr); }
+  .det-recherche .bouton { flex: 1 1 100%; }
+  .det-client-choisi__encours { justify-items: start; text-align: left; }
+  .det-message__date { margin-left: 0; flex-basis: 100%; }
+
+  /* Tableaux en cartes : titre et montant principal en haut, le reste dessous, une ligne chacun */
+  .det-liste thead { display: none; }
+  .det-liste, .det-liste tbody { display: block; }
+  .det-liste tr {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .15rem .75rem;
+    padding: .75rem 0; border-bottom: 1px solid var(--ligne);
+  }
+  .det-liste tr:last-child { border-bottom: 0; }
+  .det-liste td { padding: 0; border: 0; min-width: 0; text-align: left; grid-column: 1 / -1; }
+  .det-liste td.nombre { text-align: left; }
+  .det-liste .det-cellule--titre { grid-column: 1; grid-row: 1; }
+  .det-liste .det-cellule--reste { grid-column: 2; grid-row: 1; text-align: right; align-self: center; font-size: 1.0625rem; }
+  .det-liste--clients .det-cellule--montant { grid-column: 2; grid-row: 1; text-align: right; align-self: center; }
+  .det-liste--dettes .det-cellule--montant::before, .det-liste--rapport .det-cellule--nb::before { content: attr(data-libelle) " "; color: var(--doux); }
+  .det-liste--dettes .det-cellule--montant, .det-liste--rapport .det-cellule--nb { font-size: .8125rem; color: var(--doux); }
+  .det-liste--rapport .det-montant-ligne { display: inline; margin-right: .6rem; }
+  .det-liste td:empty { display: none; }
+  .det-cellule--etab, .det-cellule--echeance, .det-cellule--telephone { font-size: .875rem; }
+  .det-part .tre-categories__barre { flex: 1 1 auto; width: auto; min-width: 4rem; }
+  .det-part { display: flex; }
+}

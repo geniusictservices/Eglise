@@ -264,3 +264,11 @@ a.module--caisse:hover { border-color: var(--accent); filter: brightness(1.05); 
 .design__regles { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
 .design__regles ul { margin: .25rem 0 0; padding-left: 1.1rem; color: var(--doux); }
 .design__regles li + li { margin-top: .25rem; }
+
+/* ---------- Accueil : garanties qui attendent une réponse ---------- */
+
+.modules-garanties {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem;
+  border-color: color-mix(in srgb, var(--glace) 45%, var(--ligne)); background: var(--teinte-glace);
+}
+.modules-garanties span { font-weight: 600; }

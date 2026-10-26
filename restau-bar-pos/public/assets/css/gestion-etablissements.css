@@ -193,3 +193,8 @@
 .etb-erreurs { margin: 0 0 1rem; }
 .etb-erreurs p { display: inline; margin: 0; font-weight: 700; }
 .etb-erreurs ul { margin: .4rem 0 0; padding-left: 1.25rem; }
+
+/* Délai de paiement d'une ardoise (section Prix, devises et ardoise) */
+.etb-credit { margin-top: 1rem; }
+.etb-credit__saisie { display: flex; align-items: center; gap: .6rem; }
+.etb-credit__saisie input { max-width: 7.5rem; text-align: right; font-variant-numeric: tabular-nums; }

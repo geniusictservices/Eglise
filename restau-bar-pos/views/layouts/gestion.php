@@ -50,6 +50,7 @@ if ($module !== null && !isset($modules[$module['module']])) {
         </div>
     </div>
 </header>
+<?= App\Core\View::rendre('layouts/_bandeau-plateforme', ['utilisateur' => $utilisateur ?? null]) ?>
 <div class="cadre">
     <?php if ($module): $code = $module['module']; $nomModule = t('module.' . $code . '.nom'); ?>
         <nav class="lateral" aria-label="<?= e(t('modules.navigation', ['module' => $nomModule])) ?>">

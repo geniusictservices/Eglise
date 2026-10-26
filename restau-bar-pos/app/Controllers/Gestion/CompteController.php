@@ -110,6 +110,8 @@ final class CompteController
             'UPDATE utilisateurs SET mot_de_passe = ? WHERE id = ?',
             [password_hash($nouveau, PASSWORD_DEFAULT), (int) $utilisateur['id']]
         );
+        // Mot de passe temporaire donné à la création de l'instance (console) : remplacé
+        \App\Core\Plateforme::motDePasseChange((int) $utilisateur['id']);
         // Nouvel identifiant de session : une session volée avant le changement ne sert plus
         session_regenerate_id(true);
         Session::flash(t('compte.mot_de_passe_change'));

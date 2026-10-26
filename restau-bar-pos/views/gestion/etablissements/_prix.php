@@ -1,7 +1,7 @@
 <?php
 /**
  * Champs de la section « Prix et devises » (création et fiche).
- * @var array $prix ['grille_prix_id', 'devises', 'devise_affichage_id']
+ * @var array $prix ['grille_prix_id', 'devises', 'devise_affichage_id', 'credit_delai_jours']
  * @var array $grilles
  * @var array $devises devises actives indexées par id
  * @var array $erreurs indexées par champ
@@ -49,3 +49,14 @@ $choisies = array_map('intval', $prix['devises'] ?? []);
         <p class="aide" id="etb-devise-affichage-aide"><?= e(t('etab.devise_affichage_aide')) ?></p>
     </div>
 <?php endif; ?>
+
+<div class="champ etb-credit">
+    <label for="etb-credit-delai"><?= e(t('etab.credit_delai')) ?></label>
+    <div class="etb-credit__saisie">
+        <input id="etb-credit-delai" name="credit_delai_jours" type="number" inputmode="numeric" min="0" max="365" step="1" required
+               value="<?= e((string) ($prix['credit_delai_jours'] ?? 7)) ?>" aria-describedby="etb-credit-delai-aide<?= isset($erreurs['credit_delai_jours']) ? ' etb-credit-delai-erreur' : '' ?>"<?= isset($erreurs['credit_delai_jours']) ? ' aria-invalid="true"' : '' ?>>
+        <span><?= e(t('etab.credit_delai_jours')) ?></span>
+    </div>
+    <?php if (isset($erreurs['credit_delai_jours'])): ?><p class="etb-erreur-champ" id="etb-credit-delai-erreur"><?= e($erreurs['credit_delai_jours']) ?></p><?php endif; ?>
+    <p class="aide" id="etb-credit-delai-aide"><?= e(t('etab.credit_delai_aide')) ?></p>
+</div>

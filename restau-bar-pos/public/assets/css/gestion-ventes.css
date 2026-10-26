@@ -218,3 +218,9 @@
   .ven-detail .recu__annule { background: #fff; border: 2px solid #000; }
   .ven-detail .recu--annule .recu__lignes, .ven-detail .recu--annule .recu__total strong { opacity: 1; }
 }
+
+/* Rapport de clôture d'une session de caisse et reçu de remboursement (même présentation que le reçu) */
+.ven-detail .recu__titre { margin: 6px 0 0; text-align: center; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: .8125rem; }
+.ven-detail .recu__session-caisse { margin-top: 8px; }
+.ven-detail .recu__session-caisse caption { text-align: left; font-weight: 700; padding-top: 6px; }
+.ven-detail .recu__ecart--manquant td { font-weight: 700; color: var(--erreur); }

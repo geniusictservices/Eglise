@@ -117,6 +117,15 @@ final class Acces
         if ($ecran === null) {
             return;
         }
+        // Module que la formule d'abonnement n'inclut pas (console super admin) : écran refusé
+        if (!Plateforme::moduleInclus($ecran['module'])) {
+            http_response_code(403);
+            View::afficher('plateforme/refus', [
+                'titre' => t('plateforme.module_non_inclus.titre'), 'raison' => 'module_non_inclus', 'utilisateur' => $utilisateur,
+                'module' => $ecran['module'], 'formule' => Plateforme::licence()['formule'] ?? null, 'contact' => Plateforme::contact(), 'etat' => [],
+            ], 'gestion');
+            exit;
+        }
         $id = (int) $utilisateur['id'];
         $permission = $methode === 'POST' ? ($ecran['modifier'] ?? $ecran['voir']) : $ecran['voir'];
         $permis = self::a($id, $permission);

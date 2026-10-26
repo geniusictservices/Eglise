@@ -303,7 +303,7 @@ final class DetteRepository
      * Un montant plus grand que ce que le client doit est refusé (avec le maximum dans la devise payée).
      *
      * @param array{client_id: int, etablissement_id: int, compte: array{id: int, type: string}, devise_id: int, montant: float,
-     *              utilisateur_id: ?int, appareil_id?: ?int, cle?: ?string, dettes?: ?list<int>, date?: string} $r
+     *              utilisateur_id: ?int, appareil_id?: ?int, cle?: ?string, dettes?: ?list<int>, date?: string, session_id?: ?int} $r
      * @return int identifiant du remboursement (le même pour une clé déjà enregistrée)
      * @throws \DomainException « montant », « rien_a_rembourser », « trop » (maximum dans $this->maximum), « taux »
      */
@@ -371,6 +371,9 @@ final class DetteRepository
                 ]
             );
             $id = Database::dernierId();
+            if (!empty($r['session_id'])) {
+                Database::executer('UPDATE remboursements SET session_id = ? WHERE id = ?', [(int) $r['session_id'], $id]);
+            }
             foreach ($affectations as $a) {
                 Database::executer('INSERT INTO remboursement_dettes (remboursement_id, dette_id, montant) VALUES (?, ?, ?)',
                     [$id, (int) $a['dette']['id'], GestionTresorerieRepository::decimal($a['montant'])]);

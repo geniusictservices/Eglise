@@ -150,7 +150,13 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
                     </button>
                 <?php endif; ?>
             </div>
-            <button type="button" class="encaisser bouton bouton--large" id="encaisser" disabled><?= e(t('caisse.encaisser')) ?> <span id="encaisser-total"></span></button>
+            <?php if ($donnees['sessions'] && !$donnees['session']): ?>
+                <button type="button" class="encaisser bouton bouton--large" id="ouvrir-session" aria-haspopup="dialog"><?= e(t('session.ouvrir')) ?></button>
+            <?php endif; ?>
+            <button type="button" class="encaisser bouton bouton--large" id="encaisser" disabled<?= $donnees['sessions'] && !$donnees['session'] ? ' hidden' : '' ?>><?= e(t('caisse.encaisser')) ?> <span id="encaisser-total"></span></button>
+            <?php if ($donnees['session']): ?>
+                <p class="note session-note"><?= e(t('session.ouverte_depuis', ['heure' => $donnees['session']['depuis']])) ?></p>
+            <?php endif; ?>
             <?php if (!$donnees['encaisser']): ?>
                 <p class="note" id="note-encaisser"><?= e(t('paiement.pas_le_droit')) ?></p>
             <?php endif; ?>
@@ -171,6 +177,9 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
         <p class="quitter__texte"><?= e(t($partagee ? 'caisse.session_partagee' : 'caisse.session_personnelle', ['appareil' => $appareil['nom'] ?? ''])) ?></p>
         <?php if ($regle): ?><p class="quitter__texte"><?= e($regle) ?></p><?php endif; ?>
         <div class="formats__liste">
+            <?php if ($donnees['session']): ?>
+                <button class="bouton bouton--secondaire" type="button" id="cloturer-session" aria-haspopup="dialog"><?= e(t('session.cloturer')) ?></button>
+            <?php endif; ?>
             <?php if ($partagee): ?>
                 <form method="post" action="/caisse/verrouiller" id="form-verrouiller">
                     <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
@@ -240,6 +249,44 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
         </div>
     </dialog>
     <div id="zone-impression" aria-hidden="true"></div>
+
+    <?php if ($donnees['sessions']): ?>
+        <?php foreach ($donnees['session'] ? ['cloture'] : ['ouverture'] as $sens): ?>
+            <dialog class="formats session-fenetre" id="fenetre-<?= $sens ?>" aria-labelledby="titre-<?= $sens ?>">
+                <form class="session-form" data-session="<?= $sens ?>" novalidate>
+                    <h2 id="titre-<?= $sens ?>"><?= e(t($sens === 'ouverture' ? 'session.ouvrir' : 'session.cloturer')) ?></h2>
+                    <p class="quitter__texte"><?= e(t($sens === 'ouverture' ? 'session.ouvrir_aide' : 'session.cloturer_aide')) ?></p>
+                    <div class="session-caisses">
+                        <?php foreach ($donnees['caissesACompter'] as $c): ?>
+                            <div class="ardoise-champ">
+                                <label class="paiement-fenetre__etiquette" for="<?= $sens ?>-<?= $c['compte_id'] ?>-<?= $c['devise_id'] ?>"><?= e($c['nom']) ?> · <?= e($c['code']) ?></label>
+                                <input id="<?= $sens ?>-<?= $c['compte_id'] ?>-<?= $c['devise_id'] ?>" inputmode="decimal" autocomplete="off"
+                                       data-compte="<?= $c['compte_id'] ?>" data-devise="<?= $c['devise_id'] ?>" placeholder="0">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php if ($sens === 'cloture'): ?>
+                        <div class="ardoise-champ">
+                            <label class="paiement-fenetre__etiquette" for="cloture-note"><?= e(t('session.note')) ?></label>
+                            <input id="cloture-note" name="note" maxlength="255" autocomplete="off">
+                        </div>
+                    <?php endif; ?>
+                    <p class="paiement-fenetre__erreur session-erreur" role="alert" hidden></p>
+                    <div class="paiement-fenetre__actions">
+                        <button type="button" class="bouton bouton--secondaire" data-fermer><?= e(t('caisse.annuler')) ?></button>
+                        <button type="submit" class="bouton"><?= e(t($sens === 'ouverture' ? 'session.valider_ouverture' : 'session.valider_cloture')) ?></button>
+                    </div>
+                </form>
+                <div class="session-rapport" hidden>
+                    <div class="session-rapport__recu"></div>
+                    <div class="paiement-fenetre__actions">
+                        <button type="button" class="bouton bouton--secondaire" data-imprimer><?= e(t('paiement.imprimer')) ?></button>
+                        <button type="button" class="bouton" data-terminer><?= e(t('session.terminer')) ?></button>
+                    </div>
+                </div>
+            </dialog>
+        <?php endforeach; ?>
+    <?php endif; ?>
 
     <?php if ($donnees['garanties'] !== []): ?>
         <dialog class="formats garanties-fenetre" id="fenetre-garanties" aria-labelledby="garanties-titre">

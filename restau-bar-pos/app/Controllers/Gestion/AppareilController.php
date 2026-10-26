@@ -59,11 +59,13 @@ final class AppareilController
             $minutes = 0;
         }
         Database::executer(
-            'UPDATE etablissements SET verrou_apres_encaissement = ?, verrou_minutes = ?, message_verrou_fr = ?, message_verrou_en = ?, photo_a_la_caisse = ? WHERE id = ?',
-            [(int) !empty($_POST['verrou_apres_encaissement']), $minutes, $texte('message_verrou_fr'), $texte('message_verrou_en'), (int) !empty($_POST['photo_a_la_caisse']), (int) $etab['id']]
+            'UPDATE etablissements SET verrou_apres_encaissement = ?, verrou_minutes = ?, message_verrou_fr = ?, message_verrou_en = ?, photo_a_la_caisse = ?, sessions_caisse = ? WHERE id = ?',
+            [(int) !empty($_POST['verrou_apres_encaissement']), $minutes, $texte('message_verrou_fr'), $texte('message_verrou_en'), (int) !empty($_POST['photo_a_la_caisse']),
+             (int) !empty($_POST['sessions_caisse']), (int) $etab['id']]
         );
         Journal::ecrire('reglages_caisse', $etab['nom'], [
             'apres_encaissement' => !empty($_POST['verrou_apres_encaissement']), 'minutes' => $minutes, 'photo' => !empty($_POST['photo_a_la_caisse']),
+            'sessions' => !empty($_POST['sessions_caisse']),
         ]);
         Session::flash(t('verrou.enregistre', ['etablissement' => $etab['nom']]));
         rediriger('/gestion/utilisateurs/appareils#reglages-' . (int) $etab['id']);

@@ -17,8 +17,8 @@ final class Permissions
         return [
             'caisse' => ['caisse.vendre', 'caisse.encaisser', 'caisse.credit', 'caisse.rembourser', 'caisse.remise', 'caisse.annuler', 'caisse.appareils'],
             'ventes' => ['ventes.voir', 'ventes.annuler', 'clients.voir', 'clients.modifier', 'dettes.voir', 'dettes.rembourser', 'dettes.gerer'],
-            'achats' => ['achats.voir'],
-            'stock' => ['stock.voir'],
+            'achats' => ['achats.voir', 'achats.fournisseurs', 'achats.commander', 'achats.recevoir', 'achats.payer'],
+            'stock' => ['stock.voir', 'stock.transferer', 'stock.inventorier', 'stock.valider', 'stock.ajuster', 'stock.recettes', 'stock.parametrer'],
             'personnel' => ['personnel.voir', 'personnel.paie'],
             'finance' => ['finance.voir', 'finance.operations', 'finance.comptes', 'finance.taux'],
             'rapports' => ['rapports.voir', 'rapports.marges'],

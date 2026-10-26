@@ -10,12 +10,15 @@ use PDO;
 final class Database
 {
     private static ?PDO $pdo = null;
+    private static ?string $pour = null;
 
     public static function pdo(): PDO
     {
-        if (self::$pdo === null) {
-            $db = Instance::courante()->config['db'];
-            self::$pdo = self::connecter($db);
+        // Une connexion par instance : un script qui parcourt les instances (relances --toutes) change de base
+        $instance = Instance::courante();
+        if (self::$pdo === null || self::$pour !== $instance->sousDomaine) {
+            self::$pdo = self::connecter($instance->config['db']);
+            self::$pour = $instance->sousDomaine;
         }
         return self::$pdo;
     }

@@ -318,6 +318,8 @@
   var etat = null; // { client, devise, compte, montant, cle, envoi }
 
   function ouvrirRemboursement() {
+    // Sessions de caisse : le remboursement entre dans la session, il faut d'abord ouvrir sa caisse
+    if (D.sessions && !D.session && document.getElementById('ouvrir-session')) { document.getElementById('ouvrir-session').click(); return; }
     etat = { client: null, devise: D.principale, compte: null, montant: 0, cle: C.cle(), envoi: false };
     dessinerRemboursement();
     fenetreR.showModal();
