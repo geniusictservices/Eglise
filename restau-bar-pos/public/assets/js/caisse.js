@@ -378,6 +378,42 @@
   }
 
   // Quitter la caisse : une icône discrète, confirmée dans une fenêtre (aucun menu sur la caisse)
+  // ---------- Verrouillage automatique (caisse partagée, délai choisi par l'administrateur) ----------
+  // Sans toucher l'écran pendant le délai : avertissement 10 s avant, puis retour à « Qui êtes-vous ? ».
+  var formVerrou = document.getElementById('form-verrouiller');
+  if (D.verrou && D.verrou.minutes > 0 && formVerrou) {
+    var delai = D.verrou.minutes * 60000;
+    var avertissement = Math.min(10000, delai / 2);
+    var minuterie = null, compte = null, bandeau = null;
+    var effacerBandeau = function () {
+      if (compte) { clearInterval(compte); compte = null; }
+      if (bandeau) { bandeau.remove(); bandeau = null; }
+    };
+    var avertir = function () {
+      var reste = Math.round(avertissement / 1000);
+      bandeau = document.createElement('div');
+      bandeau.className = 'verrou-bientot';
+      bandeau.setAttribute('role', 'status');
+      var ecrire = function () { bandeau.textContent = T.verrouBientot.replace('{n}', String(reste)); };
+      ecrire();
+      document.body.appendChild(bandeau);
+      compte = setInterval(function () {
+        reste--;
+        if (reste <= 0) { effacerBandeau(); formVerrou.submit(); return; }
+        ecrire();
+      }, 1000);
+    };
+    var relancer = function () {
+      effacerBandeau();
+      clearTimeout(minuterie);
+      minuterie = setTimeout(avertir, delai - avertissement);
+    };
+    ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach(function (type) {
+      document.addEventListener(type, relancer, { passive: true, capture: true });
+    });
+    relancer();
+  }
+
   var fenetreQuitter = document.getElementById('fenetre-quitter');
   document.getElementById('quitter').addEventListener('click', function () { fenetreQuitter.showModal(); });
   fenetreQuitter.addEventListener('click', function (ev) { if (ev.target === fenetreQuitter) { fenetreQuitter.close(); } });

@@ -20,7 +20,8 @@ Phase 1 en cours. Déjà disponible :
 - **codes QR** : `/q/<code>` compte le scan puis ouvre le menu (avec la zone) ; création, téléchargement (SVG) et chevalet de table à imprimer depuis l'espace de gestion ;
 - **écran des modules** après la connexion (Caisse, Ventes, Achats, Stock, Personnel et paie, Finance, Rapports, Carte et vitrine, Paramètres), filtré selon les rôles ; dans un module, barre latérale sur ordinateur et barre du bas sur téléphone ;
 - **rôles et permissions** vérifiés avant chaque action, connexion par téléphone ou e-mail ;
-- **caisse partagée** : un gérant autorise une tablette, puis chacun choisit son nom et tape son PIN de 6 chiffres ; verrouillage, blocage après 5 PIN faux ;
+- **caisse partagée** : un gérant autorise une tablette ; écran de verrouillage façon Windows (heure, message de l'administrateur, personnes avec leur photo), puis PIN de 6 chiffres ; verrouillage obligatoire après chaque encaissement et/ou après N minutes sans toucher, réglé par établissement ; blocage après 5 PIN faux ;
+- **photos de profil** : par le gérant, dans « Mon compte », ou en selfie sur la caisse ;
 - **écran de caisse** (`/caisse`) : produits en grille par catégorie (et sous-catégorie), choix de la taille et du format, ticket avec totaux dans chaque devise acceptée, prix de la zone, adapté au type d'établissement (grandes tuiles et thème nuit pour un nightclub ou un lounge), utilisable sur tablette et téléphone. L'enregistrement des ventes arrive en phase 3 ;
 - **espace de gestion** (`/gestion`), en français et en anglais, utilisable sur téléphone :
   - connexion (limite des essais, langue préférée du compte appliquée) et tableau de bord ;

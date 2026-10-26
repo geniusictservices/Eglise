@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Acces;
+use App\Core\Avatars;
 use App\Core\CaissePartagee;
 use App\Core\Database;
 use App\Core\Journal;
@@ -86,6 +87,10 @@ final class CaisseController
             ?? $acceptees[(int) $etab['devise_affichage_id']] ?? $devises->reference() ?? reset($acceptees);
 
         $donnees = $this->donnees($id, $grille, $grilleDefaut, $acceptees, $principale, $etab['type']);
+        $personne['avatar'] = Database::un('SELECT avatar FROM utilisateurs WHERE id = ?', [$personne['id']])['avatar'] ?? null;
+        Session::demarrer();
+        $messagePhoto = $_SESSION['caisse_photo'] ?? null;
+        unset($_SESSION['caisse_photo']);
         View::afficher('caisse/index', [
             'titre' => t('caisse.titre'),
             'utilisateur' => $personne,
@@ -94,12 +99,20 @@ final class CaisseController
             // « Revenir aux modules » seulement pour qui a des modules de gestion
             'aLaGestion' => Acces::aLaGestion($personne['id']),
             'peutAutoriser' => $appareil === null && Acces::a($personne['id'], 'caisse.appareils', $id),
+            'photoPermise' => (bool) $etab['photo_a_la_caisse'],
+            'scripts' => ['/assets/js/caisse.js', '/assets/js/photo-profil.js'],
+            'messagePhoto' => $messagePhoto,
             'etab' => $etab,
             'etablissements' => $liste,
             'zones' => $zones,
             'zone' => $zone,
             // Ticket gardé par personne : un serveur ne retrouve pas le ticket du précédent
-            'donnees' => $donnees + ['cleTicket' => $etab['slug'] . '.' . $personne['id']],
+            'regle' => $appareil !== null ? CaissePartagee::regle($etab) : null,
+            // Verrouillage choisi par l'administrateur (caisses partagées seulement)
+            'donnees' => $donnees + ['cleTicket' => $etab['slug'] . '.' . $personne['id'], 'verrou' => [
+                'minutes' => $appareil !== null ? (int) $etab['verrou_minutes'] : 0,
+                'apresEncaissement' => $appareil !== null && (bool) $etab['verrou_apres_encaissement'],
+            ]],
         ], 'caisse');
     }
 
@@ -160,6 +173,28 @@ final class CaisseController
         rediriger('/caisse' . ($zone !== '' ? '?zone=' . $zone : ''));
     }
 
+    /** Photo de profil prise sur la caisse (selfie), si l'établissement le permet. */
+    public function photo(): void
+    {
+        Session::verifierCsrf();
+        $appareil = CaissePartagee::appareil();
+        if ($appareil !== null) {
+            $personne = CaissePartagee::caissier();
+            $etab = (new EtablissementRepository())->parSlug($appareil['slug']);
+        } else {
+            $utilisateur = Session::exigerConnexion();
+            $personne = ['id' => (int) $utilisateur['id'], 'nom' => $utilisateur['nom']];
+            $etab = (new EtablissementRepository())->parSlug(is_string($_GET['e'] ?? null) ? $_GET['e'] : '');
+        }
+        if ($personne === null || $etab === null || !$etab['photo_a_la_caisse'] || !Acces::a($personne['id'], 'caisse.vendre', (int) $etab['id'])) {
+            http_response_code(403);
+            exit(t('acces.interdit_titre'));
+        }
+        $erreur = Avatars::traiterFormulaire($personne['id'], $personne['nom']);
+        $_SESSION['caisse_photo'] = $erreur ?? t('profil.photo_enregistree_moi');
+        rediriger('/caisse' . ($appareil === null ? '?e=' . $etab['slug'] : ''));
+    }
+
     /** Verrouille la caisse partagée : retour à « Qui êtes-vous ? » (après chaque encaissement, ou à la demande). */
     public function verrouiller(): void
     {
@@ -197,7 +232,7 @@ final class CaisseController
     {
         http_response_code($code);
         $personnes = [];
-        foreach (Database::tous('SELECT id, nom, poste, pin_bloque_le FROM utilisateurs WHERE actif = 1 AND pin IS NOT NULL ORDER BY nom') as $ligne) {
+        foreach (Database::tous('SELECT id, nom, poste, avatar, pin_bloque_le FROM utilisateurs WHERE actif = 1 AND pin IS NOT NULL ORDER BY nom') as $ligne) {
             if (Acces::a((int) $ligne['id'], 'caisse.vendre', (int) $etab['id'])) {
                 $personnes[] = $ligne;
             }

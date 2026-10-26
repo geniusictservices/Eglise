@@ -7,6 +7,7 @@
  * @var array<string, string> $erreursProfil
  * @var array<string, string> $erreursMotDePasse
  * @var int $longueurMin
+ * @var ?string $erreurPhoto
  */
 
 use App\Controllers\Gestion\DeviseAffichage;
@@ -27,6 +28,13 @@ $erreurChamp = static fn (array $erreurs, string $champ): string => isset($erreu
 <?php if ($flash): ?>
     <p class="alerte" role="status"><?= e($flash) ?></p>
 <?php endif; ?>
+
+<section class="bloc" id="photo" aria-labelledby="cpt-photo">
+    <h2 id="cpt-photo"><?= e(t('profil.photo')) ?></h2>
+    <p class="aide"><?= e(t('profil.photo_moi_aide')) ?></p>
+    <?= App\Core\View::rendre('partials/_photo-form', ['action' => '/gestion/compte/photo', 'nom' => $compte['nom'], 'photo' => $compte['avatar'], 'selfie' => false, 'erreur' => $erreurPhoto]) ?>
+</section>
+<script src="/assets/js/photo-profil.js" defer></script>
 
 <div class="cpt-grille">
     <section class="bloc" aria-labelledby="cpt-profil">

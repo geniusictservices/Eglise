@@ -23,7 +23,7 @@ use App\Core\View;
     <?php foreach ($personnes as $p): ?>
         <li>
             <a class="uti-carte<?= $p['actif'] ? '' : ' uti-carte--inactive' ?>" href="/gestion/utilisateurs/<?= (int) $p['id'] ?>">
-                <?= View::rendre('gestion/utilisateurs/_initiales', ['nom' => $p['nom']]) ?>
+                <?= View::rendre('partials/_avatar', ['nom' => $p['nom'], 'photo' => $p['avatar'], 'classe' => '']) ?>
                 <span class="uti-carte__texte">
                     <span class="uti-carte__nom"><?= e($p['nom']) ?></span>
                     <span class="uti-carte__info"><?= e(implode(' · ', array_filter([$p['poste'], afficherTelephone($p['telephone']), $p['email']]))) ?></span>

@@ -54,6 +54,7 @@ $routeur->get('/q/{code}', [VitrineController::class, 'scanQr']);
 $routeur->get('/caisse', [CaisseController::class, 'index']);
 $routeur->post('/caisse/pin', [CaisseController::class, 'pin']);
 $routeur->post('/caisse/verrouiller', [CaisseController::class, 'verrouiller']);
+$routeur->post('/caisse/photo', [CaisseController::class, 'photo']);
 $routeur->post('/caisse/appareil', [CaisseController::class, 'autoriserAppareil']);
 
 // Espace de gestion

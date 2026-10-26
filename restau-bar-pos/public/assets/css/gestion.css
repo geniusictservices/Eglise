@@ -27,6 +27,8 @@ h2 { margin: 0 0 .75rem; font: 600 1.0625rem/1.25 var(--police-titre); }
   font-weight: 700; font-size: var(--taille-s); text-decoration: none; border-radius: var(--rayon);
 }
 .haut__langue:hover, .haut__icone:hover { background: var(--surface-2); }
+.haut__profil { display: inline-grid; place-items: center; min-width: var(--cible); min-height: var(--cible); border-radius: 50%; }
+.haut__profil:hover .avatar { box-shadow: 0 0 0 3px var(--surface-2); }
 .avec-module .haut__ligne { max-width: none; }
 
 /* ---------- Cadre : barre latérale du module + contenu ---------- */

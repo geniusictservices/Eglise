@@ -20,6 +20,7 @@ $textes = [
     'retirer' => t('caisse.retirer'),
     'ajouter' => t('caisse.ajouter'),
     'quantite' => t('caisse.quantite'),
+    'verrouBientot' => t('verrou.bientot'),
 ];
 $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
 ?>
@@ -64,9 +65,8 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
                 <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2v16a8 8 0 0 1 0-16Z"/></svg>
                 <span class="visuellement-cache"><?= e(t('theme.nuit')) ?></span>
             </button>
-            <?php $initiales = mb_strtoupper(implode('', array_map(static fn (string $m) => mb_substr($m, 0, 1), array_slice(preg_split('/\s+/', trim($utilisateur['nom'])) ?: [], 0, 2)))); ?>
             <button type="button" class="personne" id="quitter" aria-haspopup="dialog" title="<?= e(t('caisse.session_titre')) ?>">
-                <span class="personne__initiales" aria-hidden="true"><?= e($initiales) ?></span>
+                <?= App\Core\View::rendre('partials/_avatar', ['nom' => $utilisateur['nom'], 'photo' => $utilisateur['avatar'] ?? null, 'classe' => 'avatar--petit']) ?>
                 <span class="personne__nom"><?= e($utilisateur['nom']) ?></span>
             </button>
         </div>
@@ -114,11 +114,16 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
     </button>
 
     <dialog class="formats" id="fenetre-quitter" aria-labelledby="quitter-titre">
-        <h2 id="quitter-titre"><?= e($utilisateur['nom']) ?></h2>
+        <div class="session__tete">
+            <?= App\Core\View::rendre('partials/_avatar', ['nom' => $utilisateur['nom'], 'photo' => $utilisateur['avatar'] ?? null, 'classe' => 'avatar--moyen']) ?>
+            <h2 id="quitter-titre"><?= e($utilisateur['nom']) ?></h2>
+        </div>
+        <?php if ($messagePhoto): ?><p class="quitter__texte session__message" role="status"><?= e($messagePhoto) ?></p><?php endif; ?>
         <p class="quitter__texte"><?= e(t($partagee ? 'caisse.session_partagee' : 'caisse.session_personnelle', ['appareil' => $appareil['nom'] ?? ''])) ?></p>
+        <?php if ($regle): ?><p class="quitter__texte"><?= e($regle) ?></p><?php endif; ?>
         <div class="formats__liste">
             <?php if ($partagee): ?>
-                <form method="post" action="/caisse/verrouiller">
+                <form method="post" action="/caisse/verrouiller" id="form-verrouiller">
                     <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
                     <button class="bouton" type="submit" id="verrouiller"><?= e(t('caisse.verrouiller')) ?></button>
                 </form>
@@ -137,6 +142,14 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug']], JS
                         <input id="nom-appareil" name="nom" maxlength="80" placeholder="<?= e(t('caisse.partager_exemple')) ?>">
                         <button class="bouton" type="submit"><?= e(t('caisse.partager_oui')) ?></button>
                     </form>
+                </details>
+            <?php endif; ?>
+            <?php if ($photoPermise): ?>
+                <details class="partager" <?= $messagePhoto ? 'open' : '' ?>>
+                    <summary class="bouton bouton--secondaire"><?= e(t('profil.ma_photo')) ?></summary>
+                    <div class="partager__form">
+                        <?= App\Core\View::rendre('partials/_photo-form', ['action' => '/caisse/photo' . ($partagee ? '' : '?e=' . $etab['slug']), 'nom' => $utilisateur['nom'], 'photo' => $utilisateur['avatar'] ?? null, 'selfie' => true, 'erreur' => null]) ?>
+                    </div>
                 </details>
             <?php endif; ?>
             <form method="dialog"><button class="bouton bouton--secondaire" value="rester"><?= e(t('caisse.quitter_non')) ?></button></form>

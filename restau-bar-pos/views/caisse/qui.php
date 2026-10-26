@@ -1,6 +1,8 @@
 <?php
 /**
- * Caisse partagée verrouillée : « Qui êtes-vous ? », puis le PIN de 6 chiffres.
+ * Caisse partagée verrouillée, à la manière de l'écran de connexion de Windows :
+ * fond de l'établissement, grande heure, message choisi par l'administrateur, personnes en bas à gauche ;
+ * une personne touchée → sa grande photo au centre et le pavé du PIN.
  *
  * @var array $etab
  * @var array $appareil
@@ -9,67 +11,84 @@
  * @var ?int $choisi
  * @var string $zone
  */
+use App\Core\Avatars;
 use App\Core\CaissePartagee;
+use App\Core\I18n;
+use App\Core\View;
 
-$initiales = static fn (string $nom): string => mb_strtoupper(implode('', array_map(
-    static fn (string $m) => mb_substr($m, 0, 1),
-    array_slice(preg_split('/\s+/', trim($nom)) ?: [], 0, 2)
-)));
 $personneChoisie = null;
 foreach ($personnes as $p) {
     if ((int) $p['id'] === $choisi) {
         $personneChoisie = $p;
     }
 }
+$fond = urlImageSure($etab['couverture'] ?? null);
+$logo = urlImageSure($etab['logo'] ?? null);
+$message = trim((string) champ($etab, 'message_verrou'));
+$regle = App\Core\CaissePartagee::regle($etab);
+$langue = I18n::langue();
+$date = class_exists(IntlDateFormatter::class)
+    ? (new IntlDateFormatter($langue === 'en' ? 'en_GB' : 'fr_FR', IntlDateFormatter::FULL, IntlDateFormatter::NONE, null, null, 'EEEE d MMMM'))->format(time())
+    : date('d/m/Y');
 ?>
-<div class="qui" id="qui">
-    <header class="qui__haut">
-        <div>
-            <p class="qui__lieu"><?= e($etab['nom']) ?></p>
-            <p class="qui__appareil"><?= e($appareil['nom']) ?></p>
+<div class="verrou<?= $personneChoisie ? ' verrou--pin' : '' ?>" id="qui" data-langue="<?= e($langue) ?>">
+    <div class="verrou__fond" aria-hidden="true" <?= $fond ? 'style="background-image: url(\'' . e($fond) . '\')"' : '' ?>></div>
+
+    <header class="verrou__haut">
+        <div class="verrou__lieu">
+            <?php if ($logo): ?><img class="verrou__logo" src="<?= e($logo) ?>" alt=""><?php endif; ?>
+            <div>
+                <p class="verrou__etab"><?= e($etab['nom']) ?></p>
+                <p class="verrou__appareil"><?= e($appareil['nom']) ?></p>
+            </div>
         </div>
-        <button type="button" class="icone" data-bascule-theme aria-pressed="false" title="<?= e(t('theme.nuit')) ?>">
-            <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 2v16a8 8 0 0 1 0-16Z"/></svg>
-            <span class="visuellement-cache"><?= e(t('theme.nuit')) ?></span>
-        </button>
     </header>
 
-    <main class="qui__corps">
-        <h1 class="qui__titre"><?= e(t('caisse_pin.titre')) ?></h1>
-        <?php if ($erreur && $personneChoisie === null): ?>
-            <p class="qui__erreur" role="alert"><?= e($erreur) ?></p>
+    <section class="verrou__accueil" aria-labelledby="verrou-heure">
+        <p class="verrou__heure" id="verrou-heure" data-heure><?= e(date('H:i')) ?></p>
+        <p class="verrou__date" data-date><?= e(mb_convert_case($date, MB_CASE_TITLE)) ?></p>
+        <?php if ($message !== ''): ?>
+            <p class="verrou__message"><?= e($message) ?></p>
         <?php endif; ?>
+        <?php if ($erreur && $personneChoisie === null): ?>
+            <p class="verrou__erreur" role="alert"><?= e($erreur) ?></p>
+        <?php endif; ?>
+    </section>
 
+    <nav class="verrou__personnes" aria-labelledby="verrou-qui">
+        <h1 class="verrou__titre" id="verrou-qui"><?= e(t('caisse_pin.titre')) ?></h1>
         <?php if ($personnes === []): ?>
-            <p class="qui__vide"><?= e(t('caisse_pin.personne')) ?></p>
+            <p class="verrou__vide"><?= e(t('caisse_pin.personne')) ?></p>
         <?php else: ?>
-            <ul class="qui__liste">
+            <ul class="verrou__liste">
                 <?php foreach ($personnes as $p): $bloque = $p['pin_bloque_le'] !== null; ?>
                     <li>
-                        <a class="qui__personne<?= $bloque ? ' qui__personne--bloquee' : '' ?>"
+                        <a class="verrou__personne<?= $bloque ? ' verrou__personne--bloquee' : '' ?>"
                            href="/caisse?personne=<?= (int) $p['id'] ?><?= $zone !== '' ? '&amp;zone=' . e($zone) : '' ?>"
-                           data-personne="<?= (int) $p['id'] ?>" data-nom="<?= e($p['nom']) ?>" data-initiales="<?= e($initiales($p['nom'])) ?>"
-                           <?= $bloque ? 'data-bloque="1"' : '' ?>>
-                            <span class="qui__initiales" aria-hidden="true"><?= e($initiales($p['nom'])) ?></span>
-                            <span class="qui__nom"><?= e($p['nom']) ?></span>
-                            <span class="qui__poste"><?= e($bloque ? t('caisse_pin.bloque_court') : ($p['poste'] ?? '')) ?></span>
+                           data-personne="<?= (int) $p['id'] ?>" data-nom="<?= e($p['nom']) ?>"
+                           <?= (int) $p['id'] === $choisi ? 'aria-current="true"' : '' ?> <?= $bloque ? 'data-bloque="1"' : '' ?>>
+                            <?= View::rendre('partials/_avatar', ['nom' => $p['nom'], 'photo' => $p['avatar'], 'classe' => '']) ?>
+                            <span class="verrou__nom"><?= e($p['nom']) ?></span>
+                            <span class="verrou__poste"><?= e($bloque ? t('caisse_pin.bloque_court') : ($p['poste'] ?? '')) ?></span>
                         </a>
                     </li>
                 <?php endforeach; ?>
             </ul>
         <?php endif; ?>
-    </main>
+    </nav>
 
-    <dialog class="pave" id="pave" aria-labelledby="pave-nom" <?= $personneChoisie ? 'open data-ouvrir="1"' : '' ?>>
+    <section class="verrou__pin" id="pave" aria-labelledby="pave-nom" <?= $personneChoisie ? '' : 'hidden' ?>>
         <form method="post" action="/caisse/pin" class="pave__form" id="pave-form">
             <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
             <input type="hidden" name="utilisateur_id" id="pave-utilisateur" value="<?= (int) ($personneChoisie['id'] ?? 0) ?>">
             <input type="hidden" name="zone" value="<?= e($zone) ?>">
-            <span class="qui__initiales qui__initiales--grand" id="pave-initiales" aria-hidden="true"><?= e($personneChoisie ? $initiales($personneChoisie['nom']) : '') ?></span>
+            <div class="pave__avatar" id="pave-avatar">
+                <?php if ($personneChoisie): ?><?= View::rendre('partials/_avatar', ['nom' => $personneChoisie['nom'], 'photo' => $personneChoisie['avatar'], 'classe' => 'avatar--geant']) ?><?php endif; ?>
+            </div>
             <h2 class="pave__nom" id="pave-nom"><?= e($personneChoisie['nom'] ?? '') ?></h2>
             <p class="pave__aide" id="pave-aide"><?= e(t('caisse_pin.taper', ['n' => CaissePartagee::LONGUEUR_PIN])) ?></p>
             <?php if ($erreur && $personneChoisie !== null): ?>
-                <p class="qui__erreur" role="alert" id="pave-erreur"><?= e($erreur) ?></p>
+                <p class="verrou__erreur" role="alert" id="pave-erreur"><?= e($erreur) ?></p>
             <?php endif; ?>
             <label class="visuellement-cache" for="pave-pin"><?= e(t('caisse_pin.pin')) ?></label>
             <input class="pave__champ" id="pave-pin" name="pin" type="password" inputmode="numeric" autocomplete="off"
@@ -90,5 +109,14 @@ foreach ($personnes as $p) {
                 <a class="lien" href="/caisse"><?= e(t('caisse_pin.annuler')) ?></a>
             </div>
         </form>
-    </dialog>
+    </section>
+
+    <?php if ($regle !== null): ?>
+        <p class="verrou__regles"><?= e($regle) ?></p>
+    <?php endif; ?>
+    <template id="modeles-avatars">
+        <?php foreach ($personnes as $p): ?>
+            <div data-avatar-de="<?= (int) $p['id'] ?>"><?= View::rendre('partials/_avatar', ['nom' => $p['nom'], 'photo' => $p['avatar'], 'classe' => 'avatar--geant']) ?></div>
+        <?php endforeach; ?>
+    </template>
 </div>

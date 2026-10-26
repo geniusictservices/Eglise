@@ -374,10 +374,6 @@ button { cursor: pointer; }
   display: inline-flex; align-items: center; gap: 8px; height: 46px; padding: 0 12px 0 5px;
   border: 1px solid var(--ligne); border-radius: 23px; background: var(--saisie); font-weight: 600; max-width: 14rem;
 }
-.personne__initiales {
-  flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
-  background: var(--accent); color: var(--sur-accent); font-size: .8125rem; font-weight: 800;
-}
 .personne__nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 600px) {
   .personne { padding: 0 5px; }
@@ -390,59 +386,120 @@ button { cursor: pointer; }
 .partager__form { display: grid; gap: 8px; margin-top: 4px; }
 .partager__form input { min-height: var(--cible); padding: 0 12px; border: 1px solid var(--ligne-forte); border-radius: var(--rayon); background: var(--saisie); color: var(--encre); font: inherit; user-select: text; }
 
-/* ---------- Caisse partagée verrouillée : « Qui êtes-vous ? » et pavé du PIN ---------- */
+/* ---------- Caisse partagée verrouillée, façon écran de connexion de Windows ----------
+   Toujours en clair sur un fond sombre (photo de l'établissement assombrie), quel que soit le thème. */
 
-.qui { min-height: 100%; display: flex; flex-direction: column; background: var(--fond); color: var(--encre); }
-.qui__haut {
-  display: flex; justify-content: space-between; align-items: center; gap: 12px;
-  padding: calc(12px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 12px max(20px, env(safe-area-inset-left, 0px));
-  border-bottom: 1px solid var(--ligne);
+.verrou {
+  --verrou-texte: #F6F4F1;
+  --verrou-doux: rgb(246 244 241 / .78);
+  --verrou-verre: rgb(18 20 23 / .55);
+  --verrou-ligne: rgb(255 255 255 / .16);
+  position: relative; isolation: isolate; min-height: 100%; overflow: hidden;
+  display: grid;
+  grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas: "haut haut" "accueil accueil" "personnes regles";
+  color: var(--verrou-texte); background: #0F1113;
 }
-.qui__lieu { margin: 0; font: 600 1.0625rem/1.2 var(--police-titre); }
-.qui__appareil { margin: 2px 0 0; font-size: .8125rem; color: var(--doux); }
-.qui__corps { width: 100%; max-width: 64rem; margin-inline: auto; padding: 28px max(20px, env(safe-area-inset-left, 0px)) 40px; }
-.qui__titre { margin: 0 0 20px; font: 800 clamp(1.5rem, 5vw, 2.25rem)/1.1 var(--police-titre); }
-.qui__erreur { margin: 0 0 16px; padding: 12px 14px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--erreur) 45%, var(--ligne)); background: var(--teinte-erreur); font-weight: 600; }
-.qui__vide { color: var(--doux); }
-.qui__liste { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
-@media (max-width: 899px) { .qui__liste { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; } }
-.qui__personne {
-  display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 150px; padding: 18px 10px 14px;
-  border: 1px solid var(--ligne); border-radius: var(--rayon-carte); background: var(--tuile-fond);
-  color: var(--encre); text-align: center; text-decoration: none;
-  transition: transform .08s ease-out, border-color var(--transition);
+.verrou__fond {
+  position: absolute; inset: 0; z-index: -1;
+  background:
+    radial-gradient(120% 90% at 85% 10%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 60%),
+    radial-gradient(90% 80% at 0% 100%, color-mix(in srgb, var(--accent) 25%, transparent), transparent 55%),
+    #14171B;
+  background-size: cover; background-position: center;
 }
-.qui__personne:hover { border-color: var(--ligne-forte); }
-.qui__personne:active { transform: scale(.97); }
-.qui__personne--bloquee { opacity: .55; cursor: not-allowed; }
-.qui__initiales {
-  display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%;
-  background: var(--teinte-accent); color: var(--accent-texte); font: 800 1.25rem/1 var(--police-titre);
+.verrou__fond[style] { filter: saturate(1.05); }
+.verrou__fond::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgb(10 11 13 / .35) 0%, rgb(10 11 13 / .55) 55%, rgb(10 11 13 / .82) 100%);
 }
-.qui__initiales--grand { width: 72px; height: 72px; margin: 0 auto 6px; background: var(--accent); color: var(--sur-accent); }
-.qui__nom { font-weight: 700; line-height: 1.2; overflow-wrap: break-word; }
-.qui__poste { font-size: .8125rem; color: var(--doux); }
+.verrou--pin .verrou__fond { filter: blur(14px) saturate(1.05); transform: scale(1.06); }
 
-.pave {
-  width: min(380px, calc(100% - 24px)); padding: 22px 20px 20px; border: 1px solid var(--ligne);
-  border-radius: 22px; background: var(--surface); color: var(--encre); box-shadow: var(--ombre);
+.verrou__haut { grid-area: haut; padding: calc(16px + env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) 0 max(24px, env(safe-area-inset-left, 0px)); }
+.verrou__lieu { display: flex; align-items: center; gap: 12px; }
+.verrou__logo { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; background: #fff; }
+.verrou__etab { margin: 0; font: 600 1.0625rem/1.2 var(--police-titre); }
+.verrou__appareil { margin: 2px 0 0; font-size: .8125rem; color: var(--verrou-doux); }
+
+.verrou__accueil { grid-area: accueil; align-self: center; padding: 0 max(24px, env(safe-area-inset-left, 0px)); max-width: 46rem; }
+.verrou__heure { margin: 0; font: 800 clamp(4.5rem, 13vw, 8.5rem)/1 var(--police-titre); letter-spacing: -.02em; font-variant-numeric: tabular-nums; text-shadow: 0 2px 30px rgb(0 0 0 / .35); }
+.verrou__date { margin: 8px 0 0; font: 600 clamp(1.125rem, 2.6vw, 1.625rem)/1.2 var(--police-texte); }
+.verrou__message {
+  margin: 22px 0 0; max-width: 36rem; padding: 12px 16px; border-radius: 14px;
+  background: var(--verrou-verre); border: 1px solid var(--verrou-ligne);
+  font-size: 1.0625rem; line-height: 1.4; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
-.pave::backdrop { background: var(--voile); }
-.pave[open]:not(:modal) { position: fixed; inset: 0; margin: auto; z-index: 40; }
-.pave__form { display: grid; gap: 10px; text-align: center; }
-.pave__nom { margin: 0; font: 600 1.25rem/1.2 var(--police-titre); }
-.pave__aide { margin: 0; color: var(--doux); font-size: .875rem; }
-.pave__champ { min-height: 52px; padding: 0 14px; border: 1px solid var(--ligne-forte); border-radius: 12px; background: var(--saisie); color: var(--encre); font: 700 1.5rem/1 var(--police-texte); letter-spacing: .4em; text-align: center; user-select: text; }
+.verrou__erreur { margin: 14px 0 0; padding: 10px 14px; border-radius: 12px; background: rgb(192 52 31 / .85); color: #fff; font-weight: 600; }
+.verrou--pin .verrou__accueil { visibility: hidden; }
+
+/* Personnes : en bas à gauche, comme la liste des comptes de Windows */
+.verrou__personnes { grid-area: personnes; align-self: end; padding: 0 0 calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.verrou__titre { margin: 0 0 8px 8px; font: 600 .9375rem/1.2 var(--police-texte); color: var(--verrou-doux); }
+.verrou__vide { margin: 0 8px; color: var(--verrou-doux); }
+.verrou__liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: min(52vh, 30rem); overflow-y: auto; scrollbar-width: thin; }
+.verrou__personne {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 12px; align-items: center;
+  min-height: 56px; padding: 6px 12px 6px 6px; border-radius: 12px; color: var(--verrou-texte); text-decoration: none;
+}
+.verrou__personne .avatar { grid-row: 1 / 3; box-shadow: 0 0 0 2px rgb(255 255 255 / .25); }
+.verrou__personne:hover, .verrou__personne:focus-visible { background: rgb(255 255 255 / .12); }
+.verrou__personne[aria-current] { background: rgb(255 255 255 / .2); }
+.verrou__personne--bloquee { opacity: .55; cursor: not-allowed; }
+.verrou__nom { font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; align-self: end; }
+.verrou__poste { font-size: .8125rem; color: var(--verrou-doux); align-self: start; }
+.verrou__regles { grid-area: regles; align-self: end; justify-self: end; margin: 0; padding: 0 max(24px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) 0; font-size: .8125rem; color: var(--verrou-doux); text-align: right; }
+
+/* PIN : grande photo au centre, puis le pavé */
+.verrou__pin { grid-area: 1 / 1 / -1 / -1; z-index: 1; display: grid; place-items: center; padding: 24px 16px; pointer-events: none; }
+.verrou__pin[hidden] { display: none; }
+.verrou__pin .pave__form { pointer-events: auto; width: min(340px, 100%); display: grid; gap: 10px; text-align: center; }
+.pave__avatar { display: grid; place-items: center; margin-bottom: 6px; }
+.pave__avatar .avatar { box-shadow: 0 0 0 4px rgb(255 255 255 / .22), 0 12px 40px rgb(0 0 0 / .4); }
+.pave__nom { margin: 0; font: 600 1.625rem/1.2 var(--police-titre); text-shadow: 0 1px 12px rgb(0 0 0 / .4); }
+.pave__aide { margin: 0; color: var(--verrou-doux); font-size: .9375rem; }
+.pave__champ { min-height: 52px; padding: 0 14px; border: 1px solid var(--verrou-ligne); border-radius: 12px; background: var(--verrou-verre); color: var(--verrou-texte); font: 700 1.5rem/1 var(--police-texte); letter-spacing: .4em; text-align: center; user-select: text; }
 .pave__points { display: flex; justify-content: center; gap: 14px; padding: 8px 0 4px; }
-.pave__points span { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ligne-forte); transition: background-color .1s, border-color .1s; }
-.pave__points span.plein { background: var(--accent); border-color: var(--accent); }
+.pave__points span { width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgb(255 255 255 / .6); transition: background-color .1s, border-color .1s; }
+.pave__points span.plein { background: #fff; border-color: #fff; }
 .pave__touches { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 6px; }
 .pave__touche {
-  min-height: 64px; border: 1px solid var(--ligne); border-radius: 16px; background: var(--saisie);
-  color: var(--encre); font: 700 1.5rem/1 var(--police-texte); font-variant-numeric: tabular-nums; touch-action: manipulation;
+  min-height: 64px; border: 1px solid var(--verrou-ligne); border-radius: 16px; background: var(--verrou-verre);
+  color: var(--verrou-texte); font: 700 1.5rem/1 var(--police-texte); font-variant-numeric: tabular-nums; touch-action: manipulation;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
-.pave__touche:active { background: var(--surface-2); transform: scale(.97); }
-.pave__touche--action { color: var(--doux); font-size: 1.25rem; }
+.pave__touche:hover { background: rgb(255 255 255 / .14); }
+.pave__touche:active { background: rgb(255 255 255 / .22); transform: scale(.97); }
+.pave__touche--action { color: var(--verrou-doux); font-size: 1.25rem; }
 .pave__actions { display: grid; gap: 8px; justify-items: center; }
-.pave__actions .lien { min-height: var(--cible); display: inline-flex; align-items: center; }
+.pave__actions .lien { min-height: var(--cible); display: inline-flex; align-items: center; color: var(--verrou-texte); }
 .pave__form--envoi .pave__touches { opacity: .5; pointer-events: none; }
+.verrou--pin .verrou__personnes { opacity: .9; }
+
+/* Téléphone et petite tablette : heure en haut, personnes en grille, PIN en plein écran */
+@media (max-width: 760px) {
+  .verrou { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto auto; grid-template-areas: "haut" "accueil" "personnes" "regles"; }
+  .verrou__accueil { padding-top: 28px; }
+  .verrou__heure { font-size: clamp(3.75rem, 20vw, 5.5rem); }
+  .verrou__personnes { align-self: start; padding: 22px max(12px, env(safe-area-inset-right, 0px)) 16px max(12px, env(safe-area-inset-left, 0px)); }
+  .verrou__liste { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-height: none; overflow: visible; }
+  .verrou__personne { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto; justify-items: center; text-align: center; padding: 12px 6px; background: rgb(255 255 255 / .08); }
+  .verrou__personne .avatar { grid-row: auto; width: 56px; height: 56px; }
+  .verrou__nom { white-space: normal; overflow-wrap: break-word; margin-top: 6px; }
+  .verrou__regles { justify-self: start; text-align: left; padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0px)); }
+  .verrou--pin .verrou__personnes, .verrou--pin .verrou__regles { display: none; }
+  .verrou__pin { position: fixed; inset: 0; background: rgb(10 11 13 / .55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .pave__avatar .avatar { width: 112px; height: 112px; font-size: 2.25rem; }
+}
+.session__tete { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.session__tete h2 { margin: 0; }
+.session__message { padding: 8px 12px; border-radius: 10px; background: var(--surface-2); color: var(--encre); }
+#fenetre-quitter .photo-profil { justify-content: center; text-align: center; }
+#fenetre-quitter .photo-profil__actions { justify-content: center; }
+
+/* Avertissement avant le verrouillage automatique */
+.verrou-bientot {
+  position: fixed; z-index: 60; left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  max-width: calc(100% - 24px); padding: 14px 20px; border-radius: 14px;
+  background: var(--encre); color: var(--fond); font-weight: 700; box-shadow: var(--ombre); text-align: center;
+}

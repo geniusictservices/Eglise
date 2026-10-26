@@ -12,3 +12,4 @@ use App\Controllers\Gestion\CompteController;
 $routeur->get('/gestion/compte', [CompteController::class, 'index']);
 $routeur->post('/gestion/compte', [CompteController::class, 'enregistrer']);
 $routeur->post('/gestion/compte/mot-de-passe', [CompteController::class, 'changerMotDePasse']);
+$routeur->post('/gestion/compte/photo', [CompteController::class, 'photo']);

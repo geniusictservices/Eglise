@@ -95,6 +95,19 @@ final class CaissePartagee
         session_regenerate_id(true);
     }
 
+    /** Règle de verrouillage de l'établissement, en une phrase (écran de verrouillage, fenêtre de la caisse). */
+    public static function regle(array $etab): ?string
+    {
+        $minutes = (int) ($etab['verrou_minutes'] ?? 0);
+        $apres = !empty($etab['verrou_apres_encaissement']);
+        return match (true) {
+            $apres && $minutes > 0 => t('verrou.regle_les_deux', ['n' => $minutes]),
+            $apres => t('verrou.regle_encaissement'),
+            $minutes > 0 => t('verrou.regle_minutes', ['n' => $minutes]),
+            default => null,
+        };
+    }
+
     public static function pinValide(string $pin): bool
     {
         return preg_match('/^\d{' . self::LONGUEUR_PIN . '}$/', $pin) === 1;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers\Gestion;
 
+use App\Core\Avatars;
 use App\Core\Config;
 use App\Core\Database;
 use App\Core\I18n;
@@ -115,11 +116,25 @@ final class CompteController
         rediriger('/gestion/compte');
     }
 
+    /** Sa propre photo de profil (montrée sur l'écran « Qui êtes-vous ? » et à la caisse). */
+    public function photo(): void
+    {
+        $utilisateur = Session::exigerConnexion();
+        Session::verifierCsrf();
+        $erreur = Avatars::traiterFormulaire((int) $utilisateur['id'], $utilisateur['nom']);
+        if ($erreur !== null) {
+            $this->afficher($utilisateur, ['erreurPhoto' => $erreur], 422);
+            return;
+        }
+        Session::flash(t('profil.photo_enregistree_moi'));
+        rediriger('/gestion/compte#photo');
+    }
+
     private function afficher(array $utilisateur, array $etat = [], int $code = 200): void
     {
         http_response_code($code);
         $compte = Database::un(
-            'SELECT nom, email, langue, derniere_connexion, cree_le FROM utilisateurs WHERE id = ?',
+            'SELECT nom, email, avatar, langue, derniere_connexion, cree_le FROM utilisateurs WHERE id = ?',
             [(int) $utilisateur['id']]
         );
         if ($compte === null) {
@@ -135,6 +150,7 @@ final class CompteController
             'saisieProfil' => $etat['saisieProfil'] ?? ['nom' => $compte['nom'], 'langue' => $compte['langue']],
             'erreursProfil' => $etat['erreursProfil'] ?? [],
             'erreursMotDePasse' => $etat['erreursMotDePasse'] ?? [],
+            'erreurPhoto' => $etat['erreurPhoto'] ?? null,
             'longueurMin' => self::LONGUEUR_MIN,
         ], 'gestion');
     }

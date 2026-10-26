@@ -19,3 +19,13 @@ SELECT '+243810000101' AS tel, 'gerant' AS role, 1 AS etab
     UNION ALL SELECT '+243810000106' AS tel, 'serveur' AS role, 2 AS etab
     UNION ALL SELECT '+243810000107' AS tel, 'superviseur' AS role, 2 AS etab
 ) x JOIN utilisateurs u ON u.telephone = x.tel JOIN roles r ON r.code = x.role;
+
+-- Caisses partagées : message de l'écran de verrouillage et règles, choisis par établissement
+UPDATE etablissements SET verrou_apres_encaissement = 1, verrou_minutes = 2,
+    message_verrou_fr = 'Bienvenue au Comptoir du Lac. Touchez votre nom, puis tapez votre PIN.',
+    message_verrou_en = 'Welcome to Le Comptoir du Lac. Tap your name, then enter your PIN.'
+ WHERE slug = 'comptoir-du-lac';
+UPDATE etablissements SET verrou_apres_encaissement = 1, verrou_minutes = 0,
+    message_verrou_fr = 'Une vente, un PIN : la caisse se verrouille après chaque encaissement. Bonne soirée au Volcano Club !',
+    message_verrou_en = 'One sale, one PIN: the till locks after each payment. Have a great night at Volcano Club!'
+ WHERE slug = 'volcano-club';

@@ -444,3 +444,24 @@ img { max-width: 100%; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0s !important; animation-duration: 0s !important; }
 }
+
+/* ---------- Avatar : photo de la personne, sinon ses initiales sur une couleur tirée de son nom ---------- */
+.avatar {
+  --teinte: 20;
+  flex: none; display: inline-grid; place-items: center; overflow: hidden;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: hsl(var(--teinte) 55% 30%); color: #FFFFFF;
+  font: 800 .9375rem/1 var(--police-titre); letter-spacing: .02em; user-select: none;
+}
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar--petit { width: 36px; height: 36px; font-size: .8125rem; }
+.avatar--moyen { width: 64px; height: 64px; font-size: 1.25rem; }
+.avatar--grand { width: 120px; height: 120px; font-size: 2.25rem; }
+.avatar--geant { width: 168px; height: 168px; font-size: 3rem; }
+
+/* Formulaire de photo de profil */
+.photo-profil { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.25rem; margin: 0; }
+.photo-profil__actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.photo-profil__choisir { cursor: pointer; }
+.photo-profil > .champ__aide, .photo-profil > .champ__erreur { flex-basis: 100%; margin: 0; }
+.photo-profil input[type=file]:focus-visible + .photo-profil__choisir { outline: 3px solid var(--focus); outline-offset: 2px; }

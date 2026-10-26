@@ -40,7 +40,8 @@ if ($module !== null && !isset($modules[$module['module']])) {
             <?php endif; ?>
             <a class="haut__langue" href="<?= e(urlAvec(['lang' => $autreLangue])) ?>" lang="<?= e($autreLangue) ?>"><?= strtoupper($autreLangue) ?></a>
             <?= App\Core\View::rendre('layouts/_bouton-theme') ?>
-            <?php if (!empty($utilisateur)): ?>
+            <?php if (!empty($utilisateur)): $moi = App\Core\Database::un('SELECT nom, avatar FROM utilisateurs WHERE id = ?', [(int) $utilisateur['id']]); ?>
+                <a class="haut__profil" href="/gestion/compte" title="<?= e(t('ecran.compte')) ?>"><?= App\Core\View::rendre('partials/_avatar', ['nom' => $moi['nom'] ?? $utilisateur['nom'], 'photo' => $moi['avatar'] ?? null, 'classe' => 'avatar--petit']) ?><span class="visuellement-cache"><?= e(t('ecran.compte')) ?> : <?= e($moi['nom'] ?? $utilisateur['nom']) ?></span></a>
                 <form method="post" action="/gestion/deconnexion">
                     <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
                     <button class="lien haut__sortie" type="submit" title="<?= e(t('gestion.deconnexion')) ?>"><?= Icones::svg('sortie', 20) ?><span><?= e(t('gestion.deconnexion')) ?></span></button>

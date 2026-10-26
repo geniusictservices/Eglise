@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Gestion;
 
 use App\Core\Acces;
+use App\Core\Avatars;
 use App\Core\CaissePartagee;
 use App\Core\Config;
 use App\Core\Journal;
@@ -108,6 +109,22 @@ final class UtilisateurController
         Journal::ecrire('pin_defini', $personne['nom']);
         Session::flash(t('utilisateurs.pin_defini', ['nom' => $personne['nom']]));
         rediriger('/gestion/utilisateurs/' . (int) $personne['id'] . '#section-pin');
+    }
+
+    /** Photo de profil choisie par le gérant (ou retirée). */
+    public function photo(string $id): void
+    {
+        $moi = Session::exigerConnexion();
+        Session::verifierCsrf();
+        $personne = $this->personneOu404($id);
+        $this->exigerDroitSur($moi, $personne);
+        $erreur = Avatars::traiterFormulaire((int) $personne['id'], $personne['nom']);
+        if ($erreur !== null) {
+            $this->afficherFiche($moi, $personne, ['erreurPhoto' => $erreur], 422);
+            return;
+        }
+        Session::flash(t('profil.photo_enregistree', ['nom' => $personne['nom']]));
+        rediriger('/gestion/utilisateurs/' . (int) $personne['id']);
     }
 
     public function debloquer(string $id): void
@@ -390,6 +407,7 @@ final class UtilisateurController
             'roles' => $this->depot->roles(),
             'etablissements' => (new EtablissementRepository())->actifs(),
             'erreurs' => $etat['erreurs'] ?? [],
+            'erreurPhoto' => $etat['erreurPhoto'] ?? null,
             'pinMontre' => $pinMontre,
             'moiProprietaire' => Acces::droits((int) $moi['id'])['tout'],
             'aLaGestion' => $personne ? Acces::aLaGestion((int) $personne['id']) : false,

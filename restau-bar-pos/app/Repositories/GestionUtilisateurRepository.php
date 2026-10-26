@@ -13,7 +13,7 @@ final class GestionUtilisateurRepository
     public function tous(): array
     {
         $utilisateurs = Database::tous(
-            'SELECT id, nom, email, telephone, poste, langue, actif, derniere_connexion, cree_le,
+            'SELECT id, nom, email, telephone, poste, avatar, langue, actif, derniere_connexion, cree_le,
                     pin IS NOT NULL AS a_pin, pin_bloque_le, mot_de_passe IS NOT NULL AS a_mot_de_passe
                FROM utilisateurs ORDER BY actif DESC, nom'
         );
@@ -28,7 +28,7 @@ final class GestionUtilisateurRepository
     public function parId(int $id): ?array
     {
         $u = Database::un(
-            'SELECT id, nom, email, telephone, poste, langue, actif, derniere_connexion, cree_le,
+            'SELECT id, nom, email, telephone, poste, avatar, langue, actif, derniere_connexion, cree_le,
                     pin IS NOT NULL AS a_pin, pin_bloque_le, mot_de_passe IS NOT NULL AS a_mot_de_passe
                FROM utilisateurs WHERE id = ?',
             [$id]

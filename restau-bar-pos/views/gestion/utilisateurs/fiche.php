@@ -7,6 +7,7 @@
  * @var list<array> $roles
  * @var list<array> $etablissements
  * @var array<string, string> $erreurs
+ * @var ?string $erreurPhoto
  * @var ?string $pinMontre PIN tiré au hasard, montré une seule fois
  * @var bool $moiProprietaire
  * @var bool $aLaGestion
@@ -56,7 +57,7 @@ $ligneRole = static function (int $i, array $choix) use ($roles, $etablissements
 
 <div class="uti-tete">
     <div class="uti-tete__nom">
-        <?php if ($personne): ?><?= View::rendre('gestion/utilisateurs/_initiales', ['nom' => $personne['nom']]) ?><?php endif; ?>
+        <?php if ($personne): ?><?= View::rendre('partials/_avatar', ['nom' => $personne['nom'], 'photo' => $personne['avatar'], 'classe' => 'avatar--moyen']) ?><?php endif; ?>
         <div>
             <h1><?= e($personne ? $personne['nom'] : t('utilisateurs.nouveau')) ?></h1>
             <?php if ($personne): ?>
@@ -93,6 +94,12 @@ $ligneRole = static function (int $i, array $choix) use ($roles, $etablissements
     </form>
 <?php endif; ?>
 
+<?php if ($personne && $modifiable): ?>
+    <section class="bloc" id="photo">
+        <h2><?= e(t('profil.photo')) ?></h2>
+        <?= View::rendre('partials/_photo-form', ['action' => '/gestion/utilisateurs/' . (int) $personne['id'] . '/photo', 'nom' => $personne['nom'], 'photo' => $personne['avatar'], 'selfie' => false, 'erreur' => $erreurPhoto]) ?>
+    </section>
+<?php endif; ?>
 <?php if (!$modifiable): ?>
     <p class="alerte uti-attention"><?= e(t('utilisateurs.lecture_seule')) ?></p>
 <?php endif; ?>
@@ -213,3 +220,4 @@ $ligneRole = static function (int $i, array $choix) use ($roles, $etablissements
     </section>
 <?php endif; ?>
 <script src="/assets/js/gestion-utilisateurs.js" defer></script>
+<script src="/assets/js/photo-profil.js" defer></script>
