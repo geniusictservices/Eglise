@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Controllers\CaisseController;
 use App\Controllers\Gestion\ConnexionController;
+use App\Controllers\Gestion\ModulesController;
 use App\Controllers\Gestion\QrController;
 use App\Controllers\Gestion\TableauController;
 use App\Controllers\VitrineController;
@@ -53,7 +54,8 @@ $routeur->get('/q/{code}', [VitrineController::class, 'scanQr']);
 $routeur->get('/caisse', [CaisseController::class, 'index']);
 
 // Espace de gestion
-$routeur->get('/gestion', [TableauController::class, 'index']);
+$routeur->get('/gestion', [ModulesController::class, 'index']);
+$routeur->get('/gestion/tableau-de-bord', [TableauController::class, 'index']);
 $routeur->get('/gestion/connexion', [ConnexionController::class, 'formulaire']);
 $routeur->post('/gestion/connexion', [ConnexionController::class, 'connecter']);
 $routeur->post('/gestion/deconnexion', [ConnexionController::class, 'deconnecter']);

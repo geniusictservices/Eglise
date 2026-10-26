@@ -126,7 +126,7 @@ return [
     'caisse.quitter' => 'Leave the point of sale',
     'caisse.quitter_titre' => 'Leave the point of sale?',
     'caisse.quitter_texte' => 'Signed-in account: {nom}. The current ticket stays saved on this device.',
-    'caisse.quitter_oui' => 'Open the back office',
+    'caisse.quitter_oui' => 'Back to the modules',
     'caisse.quitter_non' => 'Stay on the point of sale',
 
     // Menu de gestion

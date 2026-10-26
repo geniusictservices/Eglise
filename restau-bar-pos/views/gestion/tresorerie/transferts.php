@@ -36,7 +36,6 @@ $tousLesComptes = $comptes;
     </div>
 </div>
 
-<?= View::rendre('gestion/tresorerie/_onglets', ['actif' => 'transferts']) ?>
 
 <?php if ($flash): ?>
     <p class="alerte" role="status"><?= e($flash) ?></p>

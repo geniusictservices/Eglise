@@ -2,13 +2,9 @@
 
 // Trésorerie (comptes, transferts) et dépenses
 return [
-    'gestion.menu_tresorerie' => 'Trésorerie',
 
     'tresorerie.titre' => 'Trésorerie',
     'tresorerie.aide' => 'L\'argent de chaque caisse, compte mobile money et compte bancaire, dans sa devise.',
-    'tresorerie.onglet_comptes' => 'Comptes',
-    'tresorerie.onglet_transferts' => 'Transferts',
-    'tresorerie.onglet_depenses' => 'Dépenses',
     'tresorerie.action_transfert' => '⇄ Transfert',
     'tresorerie.premiers_pas' => 'Pour commencer',
     'tresorerie.premiers_pas_texte' => 'Créez un compte pour chaque caisse et chaque devise : « Caisse USD », « Caisse CDF », « M-Pesa CDF », « Rawbank USD »… avec l\'argent qu\'il contient aujourd\'hui.',

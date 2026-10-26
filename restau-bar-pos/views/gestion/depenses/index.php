@@ -33,7 +33,6 @@ $filtre = $filtres['categorie'] || $filtres['etablissement'] !== '' || $filtres[
     </div>
 </div>
 
-<?= View::rendre('gestion/tresorerie/_onglets', ['actif' => 'depenses']) ?>
 
 <?php if ($flash): ?>
     <p class="alerte" role="status"><?= e($flash) ?></p>

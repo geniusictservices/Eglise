@@ -53,7 +53,6 @@ $ligneCompte = static function (array $compte) use ($devises): string {
     <?php endif; ?>
 </div>
 
-<?= View::rendre('gestion/tresorerie/_onglets', ['actif' => 'comptes']) ?>
 
 <?php if ($flash): ?>
     <p class="alerte" role="status"><?= e($flash) ?></p>

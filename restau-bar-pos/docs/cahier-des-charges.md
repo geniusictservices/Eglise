@@ -438,6 +438,14 @@ Caisse et ERP partagent **la même base de données** : chaque vente fait baisse
 - Salaires, **avances sur salaire**, retenues (dettes du personnel, manquants de caisse).
 - Commissions des serveurs et des promoteurs, répartition des pourboires.
 
+**Paie**
+- **Salaire fixé en dollars, en francs ou dans les deux** (par exemple 150 $ + 100 000 FC), par mois, par semaine ou par soirée pour les extras.
+- **Bulletin de paie** : salaire de base, heures supplémentaires, primes et commissions, moins les avances, les retenues (dettes du personnel, manquants de caisse) et les absences non justifiées ; montants en devise locale d'abord, le dollar en deuxième position.
+- **Chaque paiement de salaire ou d'avance précise le moyen (espèces, mobile money, banque), la devise ou les deux, et le compte payeur** : il sort du compte de trésorerie choisi (section 10.5) et apparaît dans les dépenses de salaires.
+- Avances sur salaire accordées à tout moment, déduites automatiquement de la paie suivante.
+- Historique des paies par employé, et masse salariale par établissement et par mois.
+- Module « Personnel et paie » sur l'écran d'accueil des modules.
+
 ### 13.5 Événements (lounge et nightclub)
 - Soirées : date, thème, DJ ou artistes, budget.
 - Coûts (cachets, publicité, location de matériel) comparés aux recettes (entrées, bar, bouteilles VIP).

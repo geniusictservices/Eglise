@@ -2,13 +2,9 @@
 
 // Treasury (accounts, transfers) and expenses
 return [
-    'gestion.menu_tresorerie' => 'Treasury',
 
     'tresorerie.titre' => 'Treasury',
     'tresorerie.aide' => 'The money in each cash box, mobile money account and bank account, in its currency.',
-    'tresorerie.onglet_comptes' => 'Accounts',
-    'tresorerie.onglet_transferts' => 'Transfers',
-    'tresorerie.onglet_depenses' => 'Expenses',
     'tresorerie.action_transfert' => '⇄ Transfer',
     'tresorerie.premiers_pas' => 'Getting started',
     'tresorerie.premiers_pas_texte' => 'Create one account per cash box and per currency: “Cash USD”, “Cash CDF”, “M-Pesa CDF”, “Rawbank USD”… with the money it holds today.',

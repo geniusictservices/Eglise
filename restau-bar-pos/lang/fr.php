@@ -126,7 +126,7 @@ return [
     'caisse.quitter' => 'Quitter la caisse',
     'caisse.quitter_titre' => 'Quitter la caisse ?',
     'caisse.quitter_texte' => 'Compte connecté : {nom}. Le ticket en cours reste gardé sur cet appareil.',
-    'caisse.quitter_oui' => 'Ouvrir la gestion',
+    'caisse.quitter_oui' => 'Revenir aux modules',
     'caisse.quitter_non' => 'Rester sur la caisse',
 
     // Menu de gestion

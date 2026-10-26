@@ -1,7 +1,13 @@
 <?php
 /** @var string $contenu */
 $autreLangue = App\Core\I18n::langue() === 'fr' ? 'en' : 'fr';
-$chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+$chemin = (string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
+use App\Core\Icones;
+use App\Core\Modules;
+
+// Module de la page (barre latérale sur ordinateur, barre du bas sur téléphone) ; aucun sur l'accueil des modules
+$modules = Modules::tous();
+$module = !empty($utilisateur) ? Modules::courant($chemin) : null;
 ?>
 <!doctype html>
 <html lang="<?= e(App\Core\I18n::langue()) ?>" data-theme="auto" data-theme-cle="gestion.theme"
@@ -18,50 +24,61 @@ $chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     <script src="/assets/js/theme.js"></script>
     <script src="/assets/js/mot-de-passe.js" defer></script>
 </head>
-<body>
+<body<?= $module ? ' class="avec-module"' : '' ?>>
 <header class="haut">
     <div class="haut__ligne">
-        <a class="haut__marque" href="/gestion"><?= e(App\Core\Config::get('parametres.nom_client', '')) ?></a>
-        <?php if (!empty($utilisateur)): ?>
-            <nav class="haut__nav" aria-label="<?= e(t('gestion.nom')) ?>">
-                <a href="/gestion" <?= $chemin === '/gestion' ? 'aria-current="page"' : '' ?>><?= e(t('gestion.tableau')) ?></a>
-                <a href="/caisse"><?= e(t('gestion.caisse')) ?></a>
-                <?php foreach ([
-                    '/gestion/catalogue' => 'gestion.menu_catalogue',
-                    '/gestion/etablissements' => 'gestion.menu_etablissements',
-                    '/gestion/devises' => 'gestion.menu_devises',
-                    '/gestion/tresorerie' => 'gestion.menu_tresorerie',
-                    '/gestion/mediatheque' => 'gestion.menu_mediatheque',
-                    '/gestion/qr' => 'gestion.qr',
-                    '/gestion/compte' => 'gestion.menu_compte',
-                    '/gestion/aide' => 'gestion.menu_aide',
-                ] as $lien => $cleTexte): ?>
-                    <?php // Les dépenses font partie de la trésorerie
-                    $navActif = str_starts_with((string) $chemin, $lien) || ($lien === '/gestion/tresorerie' && str_starts_with((string) $chemin, '/gestion/depenses')); ?>
-                    <a href="<?= $lien ?>" <?= $navActif ? 'aria-current="page"' : '' ?>><?= e(t($cleTexte)) ?></a>
-                <?php endforeach; ?>
-                <a href="/" target="_blank" rel="noopener"><?= e(t('gestion.voir_vitrine')) ?></a>
-            </nav>
+        <a class="haut__marque" href="/gestion" title="<?= e(t('modules.retour_titre')) ?>"><span class="haut__client"><?= e(App\Core\Config::get('parametres.nom_client', '')) ?></span></a>
+        <?php if ($module): ?>
+            <span class="haut__module"><?= Icones::svg($modules[$module['module']]['icone'], 18) ?><?= e(t('module.' . $module['module'] . '.nom')) ?></span>
         <?php endif; ?>
         <div class="haut__droite">
+            <?php if ($module && $module['module'] === 'carte'): ?>
+                <a class="haut__icone" href="/" target="_blank" rel="noopener" title="<?= e(t('gestion.voir_vitrine')) ?>"><?= Icones::svg('vitrine', 20) ?><span class="visuellement-cache"><?= e(t('gestion.voir_vitrine')) ?></span></a>
+            <?php endif; ?>
             <a class="haut__langue" href="<?= e(urlAvec(['lang' => $autreLangue])) ?>" lang="<?= e($autreLangue) ?>"><?= strtoupper($autreLangue) ?></a>
             <?= App\Core\View::rendre('layouts/_bouton-theme') ?>
             <?php if (!empty($utilisateur)): ?>
                 <form method="post" action="/gestion/deconnexion">
                     <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
-                    <button class="lien" type="submit"><?= e(t('gestion.deconnexion')) ?></button>
+                    <button class="lien haut__sortie" type="submit" title="<?= e(t('gestion.deconnexion')) ?>"><?= Icones::svg('sortie', 20) ?><span><?= e(t('gestion.deconnexion')) ?></span></button>
                 </form>
             <?php endif; ?>
         </div>
     </div>
 </header>
-<main class="page">
-<?= $contenu ?>
-</main>
-<?php if (!empty($utilisateur)): ?>
-    <footer class="pied">
-        <a href="/gestion/design" <?= $chemin === '/gestion/design' ? 'aria-current="page"' : '' ?>><?= e(t('design.titre')) ?></a>
-    </footer>
+<div class="cadre">
+    <?php if ($module): $code = $module['module']; $nomModule = t('module.' . $code . '.nom'); ?>
+        <nav class="lateral" aria-label="<?= e(t('modules.navigation', ['module' => $nomModule])) ?>">
+            <a class="lateral__retour" href="/gestion" title="<?= e(t('modules.retour_titre')) ?>"><?= Icones::svg('modules', 18) ?><?= e(t('modules.retour')) ?></a>
+            <p class="lateral__titre"><?= Icones::svg($modules[$code]['icone'], 22) ?><?= e($nomModule) ?></p>
+            <ul class="lateral__liste">
+                <?php foreach ($modules[$code]['ecrans'] as $ecran): ?>
+                    <li>
+                        <?php if ($ecran['lien'] !== null): ?>
+                            <a class="lateral__lien" href="<?= e($ecran['lien']) ?>" <?= $ecran['cle'] === $module['ecran'] ? 'aria-current="page"' : '' ?>><?= Icones::svg($ecran['icone'], 20) ?><span><?= e(t('ecran.' . $ecran['cle'])) ?></span></a>
+                        <?php else: ?>
+                            <span class="lateral__lien lateral__lien--bientot" aria-disabled="true"><?= Icones::svg($ecran['icone'], 20) ?><span><?= e(t('ecran.' . $ecran['cle'])) ?></span><span class="badge badge--neutre"><?= e(t('modules.bientot')) ?></span></span>
+                        <?php endif; ?>
+                    </li>
+                <?php endforeach; ?>
+                <?php if ($code === 'carte'): ?>
+                    <li><a class="lateral__lien" href="/" target="_blank" rel="noopener"><?= Icones::svg('vitrine', 20) ?><span><?= e(t('gestion.voir_vitrine')) ?></span></a></li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+    <?php endif; ?>
+    <main class="page">
+    <?= $contenu ?>
+    </main>
+</div>
+<?php if ($module): ?>
+    <?php // Téléphone : barre du bas du module (ses écrans disponibles) et retour aux modules, sans menu caché ?>
+    <nav class="barre-bas" aria-label="<?= e(t('modules.navigation', ['module' => $nomModule])) ?>">
+        <a class="barre-bas__lien" href="/gestion"><?= Icones::svg('modules', 22) ?><span><?= e(t('modules.retour')) ?></span></a>
+        <?php foreach ($modules[$code]['ecrans'] as $ecran): if ($ecran['lien'] === null) { continue; } ?>
+            <a class="barre-bas__lien" href="<?= e($ecran['lien']) ?>" <?= $ecran['cle'] === $module['ecran'] ? 'aria-current="page"' : '' ?>><?= Icones::svg($ecran['icone'], 22) ?><span><?= e(t('ecran.' . $ecran['cle'])) ?></span></a>
+        <?php endforeach; ?>
+    </nav>
 <?php endif; ?>
 </body>
 </html>

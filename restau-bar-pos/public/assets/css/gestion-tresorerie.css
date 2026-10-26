@@ -16,8 +16,6 @@
 .tre-entete h1 { margin: 0; }
 .tre-entete .surtitre { display: flex; align-items: center; gap: .4rem; margin-bottom: .25rem; }
 .tre-entete__actions { display: flex; flex-wrap: wrap; gap: .5rem; }
-.tre-onglets { display: flex; gap: .5rem; margin-top: 1.25rem; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
-.tre-onglets::-webkit-scrollbar { display: none; }
 
 .tre-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin-top: 1rem; }
 .tre-actions form { margin: 0; }

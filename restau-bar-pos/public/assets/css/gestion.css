@@ -18,31 +18,116 @@ h2 { margin: 0 0 .75rem; font: 600 1.0625rem/1.25 var(--police-titre); }
   font: 800 1rem/1.1 var(--police-titre); text-decoration: none;
 }
 .haut__marque::before { content: ""; width: 12px; height: 12px; border-radius: 3px; background: var(--lave); transform: rotate(45deg); flex: none; }
-.haut__nav { order: 3; flex: 1 1 100%; display: flex; gap: .25rem; flex-wrap: wrap; margin-inline: -.35rem; }
-.haut__nav a {
-  display: inline-flex; align-items: center; min-height: var(--cible); padding: 0 .7rem;
-  border-radius: var(--rayon); text-decoration: none; color: var(--doux); font-weight: 600; white-space: nowrap;
-}
-.haut__nav a:hover { color: var(--encre); background: var(--surface-2); }
-.haut__nav a[aria-current] { color: var(--encre); box-shadow: inset 0 -3px 0 var(--lave); border-radius: var(--rayon) var(--rayon) 0 0; }
+.haut__module { display: none; align-items: center; gap: .4rem; min-height: var(--cible); font-weight: 700; color: var(--doux); }
 .haut__droite { margin-left: auto; display: flex; align-items: center; gap: .5rem; }
 .haut__droite form { margin: 0; }
 .haut__droite .lien { min-height: var(--cible); padding: 0 .5rem; }
-.haut__langue {
+.haut__langue, .haut__icone {
   display: inline-grid; place-items: center; min-width: var(--cible); min-height: var(--cible);
   font-weight: 700; font-size: var(--taille-s); text-decoration: none; border-radius: var(--rayon);
 }
-.haut__langue:hover { background: var(--surface-2); }
+.haut__langue:hover, .haut__icone:hover { background: var(--surface-2); }
+.avec-module .haut__ligne { max-width: none; }
 
-/* Téléphone : la navigation passe sous la marque et défile horizontalement */
-@media (max-width: 900px) {
-  .haut__nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-  .haut__nav::-webkit-scrollbar { display: none; }
+/* ---------- Cadre : barre latérale du module + contenu ---------- */
+
+.cadre { display: block; }
+.page { max-width: 72rem; margin-inline: auto; padding: 1.75rem max(16px, env(safe-area-inset-left, 0px)) 3rem; }
+
+.lateral { display: none; }
+@media (min-width: 900px) {
+  .avec-module .cadre { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); align-items: start; }
+  .lateral {
+    position: sticky; top: 0; display: flex; flex-direction: column; gap: .25rem;
+    min-height: calc(100vh - 61px); padding: 1rem .75rem 2rem;
+    background: var(--surface); border-right: 1px solid var(--ligne);
+  }
+  .avec-module .page { width: 100%; padding-inline: 2rem; }
+}
+.lateral__retour {
+  display: inline-flex; align-items: center; gap: .5rem; min-height: var(--cible); padding: 0 .75rem;
+  border-radius: var(--rayon); color: var(--doux); font-weight: 600; text-decoration: none;
+}
+.lateral__retour:hover { color: var(--encre); background: var(--surface-2); }
+.lateral__titre { display: flex; align-items: center; gap: .6rem; margin: .5rem .75rem .75rem; font: 600 1.0625rem/1.2 var(--police-titre); }
+.lateral__titre .icone-trait { color: var(--accent-texte); }
+.lateral__liste { list-style: none; margin: 0; padding: 0; display: grid; gap: .15rem; }
+.lateral__lien {
+  display: flex; align-items: center; gap: .7rem; min-height: var(--cible); padding: .35rem .75rem;
+  border-radius: 12px; color: var(--encre); font-weight: 600; text-decoration: none;
+}
+.lateral__lien .icone-trait { flex: none; color: var(--doux); }
+a.lateral__lien:hover { background: var(--surface-2); }
+.lateral__lien[aria-current] { background: var(--teinte-accent); color: var(--accent-texte); }
+.lateral__lien[aria-current] .icone-trait { color: var(--accent-texte); }
+.lateral__lien--bientot { color: var(--doux); cursor: default; }
+.lateral__lien--bientot .badge { margin-left: auto; }
+
+/* ---------- Téléphone : barre du bas du module, pas de menu caché ---------- */
+
+.barre-bas { display: none; }
+@media (max-width: 899px) {
+  .haut__module { display: inline-flex; }
+  .avec-module { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  .barre-bas {
+    position: fixed; z-index: 30; left: 0; right: 0; bottom: 0;
+    display: flex; gap: 2px; padding: 6px max(6px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-left, 0px));
+    background: var(--surface); border-top: 1px solid var(--ligne);
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .barre-bas::-webkit-scrollbar { display: none; }
+  .barre-bas__lien {
+    flex: 1 0 3.6rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 54px; padding: 4px 2px; border-radius: 12px;
+    color: var(--doux); font-size: .6875rem; font-weight: 600; line-height: 1.1; text-align: center; text-decoration: none;
+  }
+  .barre-bas__lien[aria-current] { color: var(--accent-texte); background: var(--teinte-accent); }
+  .barre-bas__lien:first-child { flex-grow: 0; flex-basis: 3.6rem; color: var(--encre); }
+}
+.haut__sortie { display: inline-flex; align-items: center; gap: .4rem; }
+.haut__sortie .icone-trait { display: none; }
+/* Téléphone : une seule ligne — dans un module, son nom remplace celui du client ; déconnexion en icône */
+@media (max-width: 600px) {
+  .haut__ligne { flex-wrap: nowrap; gap: .25rem; }
+  .avec-module .haut__client { display: none; }
+  .haut__module { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--encre); }
+  .haut__droite { gap: .15rem; }
+  .haut__sortie { justify-content: center; min-width: var(--cible); text-decoration: none; }
+  .haut__sortie .icone-trait { display: block; }
+  .haut__sortie span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 
-.page { max-width: 72rem; margin-inline: auto; padding: 1.75rem max(16px, env(safe-area-inset-left, 0px)) 3rem; }
-.pied { max-width: 72rem; margin-inline: auto; padding: 0 max(16px, env(safe-area-inset-left, 0px)) 2rem; font-size: var(--taille-s); color: var(--doux); }
-.pied a { display: inline-flex; align-items: center; min-height: var(--cible); }
+/* ---------- Accueil : la liste des modules ---------- */
+
+.modules-accueil { max-width: 60rem; margin-inline: auto; }
+.modules { list-style: none; margin: 1.5rem 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+@media (max-width: 899px) { .modules { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; } }
+.modules > li { display: flex; }
+.module {
+  flex: 1; display: flex; flex-direction: column; gap: .4rem; min-height: 9.5rem; padding: 1.1rem;
+  border: 1px solid var(--ligne); border-radius: var(--rayon-carte); background: var(--surface);
+  color: var(--encre); text-decoration: none;
+  transition: border-color var(--transition), transform .08s ease-out, background-color var(--transition);
+}
+a.module:hover { border-color: var(--ligne-forte); }
+a.module:active { transform: scale(.98); }
+.module__icone {
+  display: grid; place-items: center; width: 48px; height: 48px; margin-bottom: .35rem;
+  border-radius: 14px; background: var(--teinte-accent); color: var(--accent-texte);
+}
+.module__nom { font: 600 1.0625rem/1.2 var(--police-titre); display: flex; flex-wrap: wrap; align-items: center; gap: .4rem; }
+.module__description { font-size: var(--taille-s); color: var(--doux); }
+/* La caisse, module le plus utilisé, en couleur d'accent */
+.module--caisse { background: var(--accent); border-color: var(--accent); color: var(--sur-accent); }
+.module--caisse .module__icone { background: color-mix(in srgb, var(--sur-accent) 14%, transparent); color: var(--sur-accent); }
+.module--caisse .module__description { color: var(--sur-accent); }
+a.module--caisse:hover { border-color: var(--accent); filter: brightness(1.05); }
+.module--bientot { background: transparent; border-style: dashed; color: var(--doux); }
+.module--bientot .module__icone { background: var(--surface-2); color: var(--doux); }
+@media (max-width: 480px) {
+  .module { min-height: 8.5rem; padding: .9rem; }
+  .module__description { font-size: .8125rem; }
+}
 
 /* ---------- Blocs, chiffres ---------- */
 
