@@ -473,7 +473,7 @@ Chaque phase est utilisable seule.
 
 | Phase | Contenu |
 |---|---|
-| 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · **écran de caisse en grille** (sans enregistrement des ventes) · français et anglais |
+| 1 | Fondations : structure du code, instances par sous-domaine · catalogue (catégories, produits, conditionnements, prix, devises configurables) · **page publique et menu par code QR** · espace de gestion du catalogue · **écran de caisse en grille** (sans enregistrement des ventes) · gestion des établissements, des devises et taux, du compte · design Volcan · français et anglais |
 | 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules) · utilisateurs, rôles et permissions · établissements, dépôts, comptoirs, points de vente |
 | 3 | Caisse : commandes, encaissement multi-devises, taux de change, sessions de caisse · stock simple et transferts |
 | 4 | Clients et dettes · plan de salle · cuisine (circuit des commandes, fiches techniques) · services horaires |
@@ -493,6 +493,8 @@ Chaque phase est utilisable seule.
 | Technologie | PHP natif, sans framework (section 1.3) |
 | Vitrine | Page publique par établissement avec le menu et les prix, accessible par code QR |
 | Interfaces | Simples et adaptées au contexte (établissement, service, rôle, lieu, appareil) ; à la caisse, les produits sont en grille |
+| Design | Direction « Volcan », choisie parmi 4 propositions : thème nuit (nightclub, lounge) et thème jour (restaurant-bar), polices Unbounded et Sora (voir docs/design-system.md) |
+| Images | Illustrations SVG pour la démonstration ; les vraies photos s'ajoutent depuis la gestion du catalogue ; import de photos libres possible (docs/photos.md) |
 
 ## 18. Questions ouvertes
 
