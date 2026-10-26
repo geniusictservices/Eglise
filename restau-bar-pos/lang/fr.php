@@ -124,4 +124,8 @@ return [
     'gestion.menu_compte' => 'Mon compte',
     'gestion.menu_mediatheque' => 'Médiathèque',
     'gestion.menu_aide' => 'Aide',
+
+    // Champ mot de passe
+    'mdp.afficher' => 'Afficher le mot de passe',
+    'mdp.masquer' => 'Masquer le mot de passe',
 ];

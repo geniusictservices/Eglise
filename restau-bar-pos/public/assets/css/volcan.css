@@ -344,6 +344,18 @@ img { max-width: 100%; }
 .champ__aide { margin: 0; font-size: var(--taille-xs); color: var(--doux); }
 .champ__erreur { margin: 0; font-size: var(--taille-s); font-weight: 600; color: var(--erreur); }
 
+/* Champ mot de passe avec bouton « œil » (mot-de-passe.js) */
+.mdp { position: relative; display: block; width: 100%; }
+.mdp input { width: 100%; padding-right: 52px !important; }
+.mdp input::-ms-reveal, .mdp input::-ms-clear { display: none; }
+.mdp__oeil {
+  position: absolute; top: 50%; right: 2px; transform: translateY(-50%);
+  width: var(--cible); height: var(--cible); display: grid; place-items: center;
+  border: 0; border-radius: var(--rayon); background: transparent; color: var(--doux); cursor: pointer;
+}
+.mdp__oeil:hover, .mdp__oeil[aria-pressed="true"] { color: var(--encre); }
+.mdp__oeil:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
 /* Case à cocher et bouton radio : zone tactile de 44 px */
 .coche { display: inline-flex; align-items: center; gap: 10px; min-height: var(--cible); cursor: pointer; }
 .coche input { width: 22px; height: 22px; margin: 0; accent-color: var(--accent); }

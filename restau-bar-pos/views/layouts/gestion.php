@@ -4,7 +4,8 @@ $autreLangue = App\Core\I18n::langue() === 'fr' ? 'en' : 'fr';
 $chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 ?>
 <!doctype html>
-<html lang="<?= e(App\Core\I18n::langue()) ?>" data-theme="auto" data-theme-cle="gestion.theme">
+<html lang="<?= e(App\Core\I18n::langue()) ?>" data-theme="auto" data-theme-cle="gestion.theme"
+      data-mdp-afficher="<?= e(t('mdp.afficher')) ?>" data-mdp-masquer="<?= e(t('mdp.masquer')) ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -15,6 +16,7 @@ $chemin = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
     <link rel="stylesheet" href="/assets/css/volcan.css">
     <link rel="stylesheet" href="/assets/css/gestion.css">
     <script src="/assets/js/theme.js"></script>
+    <script src="/assets/js/mot-de-passe.js" defer></script>
 </head>
 <body>
 <header class="haut">
