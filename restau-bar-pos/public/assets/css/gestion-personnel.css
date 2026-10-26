@@ -36,6 +36,8 @@
 .per-carte__poste { color: var(--doux); font-size: var(--taille-s); overflow-wrap: anywhere; }
 .per-carte__salaire { font-weight: 700; white-space: normal; }
 .per-entete__identite { display: flex; gap: 1rem; align-items: center; min-width: 0; }
+.per-entete__identite > div { min-width: 0; }
+.per-entete .per-badges .badge { white-space: normal; }
 .per-entete__identite h1 { margin: 0 0 .35rem; overflow-wrap: anywhere; }
 .per-entete .tre-entete__actions form { margin: 0; }
 .per-notes { margin: .75rem 0 0; color: var(--doux); }

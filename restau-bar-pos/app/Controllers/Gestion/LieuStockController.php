@@ -14,7 +14,8 @@ use App\Repositories\StockRepository;
 /**
  * Stock > Dépôts et comptoirs : lieux de chaque établissement (et dépôts centraux), comptoir par défaut,
  * routage des ventes (catégorie → comptoir, zone → comptoir, appareil → comptoir) et réglages du stock
- * (stock négatif : vendre avec une alerte ou bloquer ; validation des inventaires par une autre personne).
+ * (stock négatif : vendre avec une alerte ou bloquer ; validation des inventaires par une autre personne ;
+ * alerte de péremption ; caisse des achats au marché) ; un dépôt d'établissement peut vendre en gros.
  * Consultation avec stock.voir, modifications avec stock.parametrer pour l'établissement.
  */
 final class LieuStockController
@@ -55,6 +56,8 @@ final class LieuStockController
                 'zones' => $this->depot->zones($id),
                 'appareils' => $this->depot->appareils($id),
                 'parametres' => $this->stock->parametres($id),
+                // Caisse des achats au marché : comptes « caisse » de l'établissement (ou communs)
+                'comptesMarche' => StockRepository::suite() ? $this->comptesMarche($id) : null,
                 'modifiable' => StockAcces::peut($uid, 'stock.parametrer', $id),
             ];
         }
@@ -113,6 +116,9 @@ final class LieuStockController
             return;
         }
         $this->depot->modifierLieu((int) $lieu['id'], $nom, $description !== '' ? $description : null, $actif);
+        if (StockRepository::suite() && $lieu['type'] === 'depot' && $etab !== null) {
+            $this->depot->definirVenteGros((int) $lieu['id'], !empty($_POST['vente_gros']));
+        }
         Session::flash(t('stock.lieu_modifie', ['nom' => $nom]));
         rediriger('/gestion/stock/lieux');
     }
@@ -181,9 +187,30 @@ final class LieuStockController
         $etab = $this->etablissementModifiable($id, $utilisateur);
         $mode = ($_POST['mode_negatif'] ?? '') === 'bloquer' ? 'bloquer' : 'vendre';
         $this->stock->definirParametres($etab, $mode, !empty($_POST['validation_separee']), (int) $utilisateur['id']);
-        Journal::ecrire('stock_reglages', (string) $etab, ['mode_negatif' => $mode], (int) $utilisateur['id']);
+        $journal = ['mode_negatif' => $mode];
+        if (StockRepository::suite() && array_key_exists('alerte_peremption', $_POST)) {
+            $alerte = TresorerieSaisie::post('alerte_peremption');
+            $compte = StockAcces::id($_POST['compte_marche_id'] ?? null);
+            $comptes = array_map('intval', array_column($this->comptesMarche($etab), 'id'));
+            if (!ctype_digit($alerte) || (int) $alerte > 60 || ($compte !== null && !in_array($compte, $comptes, true))) {
+                Session::flash(t('stock.erreur_reglages_cuisine'));
+                rediriger('/gestion/stock/lieux#reglages-' . $etab);
+            }
+            $this->stock->definirReglagesCuisine($etab, (int) $alerte, $compte, (int) $utilisateur['id']);
+            $journal += ['alerte_peremption' => (int) $alerte, 'compte_marche' => $compte];
+        }
+        Journal::ecrire('stock_reglages', (string) $etab, $journal, (int) $utilisateur['id']);
         Session::flash(t('stock.reglages_enregistres'));
         rediriger('/gestion/stock/lieux#reglages-' . $etab);
+    }
+
+    /** Comptes de trésorerie de type caisse, actifs, de l'établissement ou communs. */
+    private function comptesMarche(int $etablissementId): array
+    {
+        return Database::tous(
+            'SELECT id, nom FROM comptes_tresorerie WHERE type = \'caisse\' AND active = 1 AND (etablissement_id = ? OR etablissement_id IS NULL) ORDER BY position, id',
+            [$etablissementId]
+        );
     }
 
     /** Catégories qui ont des produits vendus (ou dont une sous-catégorie en a) : les ingrédients et emballages ne se routent pas. */

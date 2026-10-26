@@ -64,7 +64,8 @@ foreach ($r['paiements'] as $p) {
                             $ecart = $l['quantite_commandee'] !== null ? round((float) $l['quantite'] - (float) $l['quantite_commandee'], 3) : null; ?>
                             <tr data-ligne-reception="<?= (int) $l['id'] ?>">
                                 <td><strong><?= e(champ($l, 'nom')) ?></strong>
-                                    <?php if ($l['quantite_commandee'] !== null): ?><span class="tre-sous-texte"><?= e(t('achats.commandee', ['quantite' => S::nombre($l['quantite_commandee'])])) ?></span><?php endif; ?></td>
+                                    <?php if ($l['quantite_commandee'] !== null): ?><span class="tre-sous-texte"><?= e(t('achats.commandee', ['quantite' => S::nombre($l['quantite_commandee'])])) ?></span><?php endif; ?>
+                                    <?php if (!empty($l['peremption']) || !empty($l['lot_numero'])): ?><span class="tre-sous-texte" data-lot-reception><?= e(trim((!empty($l['lot_numero']) ? t('stock.lot_numero', ['numero' => $l['lot_numero']]) . ' · ' : '') . (!empty($l['peremption']) ? t('stock.perime_le', ['date' => App\Controllers\Gestion\TresorerieAffichage::date($l['peremption'])]) : ''), ' ·')) ?></span><?php endif; ?></td>
                                 <td class="nombre"><?= e(S::nombre($l['quantite']) . ' ' . S::format($formatDe($l), (float) $l['quantite'])) ?>
                                     <span class="tre-sous-texte"><?= e(S::base($l['quantite_base'], $a)) ?></span>
                                     <?php if ($ecart !== null && abs($ecart) > 0.0005): ?><span class="badge badge--erreur" data-ecart="<?= e((string) $ecart) ?>"><?= e(t('stock.ecart_de', ['ecart' => ($ecart > 0 ? '+' : '') . S::nombre($ecart)])) ?></span><?php endif; ?></td>

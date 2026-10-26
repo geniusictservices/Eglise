@@ -9,6 +9,7 @@
  * @var bool $avecPrix
  * @var bool $achat
  * @var string $symbole symbole de la devise des prix
+ * @var bool $avecPeremption réception : lot facultatif (date de péremption, numéro de lot)
  */
 
 use App\Core\View;
@@ -18,6 +19,7 @@ $idBase = 'ligne-' . $i;
 $erreurFormat = $erreurs['lignes-' . $i . '-format'] ?? null;
 $erreurQuantite = $erreurs['lignes-' . $i . '-quantite'] ?? null;
 $erreurPrix = $erreurs['lignes-' . $i . '-prix'] ?? null;
+$erreurPeremption = $erreurs['lignes-' . $i . '-peremption'] ?? null;
 $numero = is_int($i) ? $i + 1 : '__n__';
 ?>
 <fieldset class="stk-ligne<?= !empty($avecPrix) ? ' stk-ligne--prix' : '' ?>" data-ligne>
@@ -48,9 +50,25 @@ $numero = is_int($i) ? $i + 1 : '__n__';
             </div>
         <?php endif; ?>
     </div>
+    <?php if (!empty($avecPeremption)): ?>
+        <details class="stk-ligne__lot"<?= ($ligne['peremption'] ?? '') !== '' || ($ligne['lot_numero'] ?? '') !== '' || $erreurPeremption ? ' open' : '' ?>>
+            <summary class="lien"><?= e(t('stock.lot_facultatif')) ?></summary>
+            <div class="stk-ligne__champs">
+                <div class="champ">
+                    <label for="<?= $idBase ?>-peremption"><?= e(t('stock.peremption')) ?></label>
+                    <input type="date" id="<?= $idBase ?>-peremption" name="<?= $prefixe ?>[peremption]" value="<?= e($ligne['peremption'] ?? '') ?>" data-ligne-peremption<?= $erreurPeremption ? ' aria-invalid="true" aria-describedby="' . $idBase . '-erreur-peremption"' : '' ?>>
+                </div>
+                <div class="champ">
+                    <label for="<?= $idBase ?>-lot"><?= e(t('stock.lot_numero_champ')) ?></label>
+                    <input id="<?= $idBase ?>-lot" name="<?= $prefixe ?>[lot_numero]" maxlength="64" autocomplete="off" value="<?= e($ligne['lot_numero'] ?? '') ?>">
+                </div>
+            </div>
+        </details>
+    <?php endif; ?>
     <p class="champ__aide stk-ligne__base" data-ligne-base aria-live="polite"></p>
     <?php if ($erreurFormat): ?><p class="champ__erreur" id="<?= $idBase ?>-erreur-format"><?= e($erreurFormat) ?></p><?php endif; ?>
     <?php if ($erreurQuantite): ?><p class="champ__erreur" id="<?= $idBase ?>-erreur-quantite"><?= e($erreurQuantite) ?></p><?php endif; ?>
     <?php if ($erreurPrix): ?><p class="champ__erreur" id="<?= $idBase ?>-erreur-prix"><?= e($erreurPrix) ?></p><?php endif; ?>
+    <?php if ($erreurPeremption): ?><p class="champ__erreur" id="<?= $idBase ?>-erreur-peremption"><?= e($erreurPeremption) ?></p><?php endif; ?>
     <button type="button" class="lien stk-ligne__retirer" data-retirer-ligne hidden><?= e(t('stock.retirer_ligne')) ?></button>
 </fieldset>

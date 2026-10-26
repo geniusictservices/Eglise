@@ -156,6 +156,7 @@ final class TransfertStockRepository
             $source = $this->stock->lieu((int) $t['lieu_source_id']);
             $motif = $t['numero'] . ' ← ' . ($source['nom'] ?? '');
             $ecarts = 0;
+            $lotsVus = [];
             foreach (Database::tous('SELECT * FROM transfert_stock_lignes WHERE transfert_id = ? ORDER BY position, id', [$id]) as $l) {
                 $recu = $recues[(int) $l['id']] ?? (float) $l['quantite_base'];
                 Database::executer('UPDATE transfert_stock_lignes SET quantite_recue_base = ? WHERE id = ?', [StockRepository::q($recu), (int) $l['id']]);
@@ -164,7 +165,7 @@ final class TransfertStockRepository
                 }
                 if ($recu > 0.0005) {
                     $this->stock->mouvement((int) $t['lieu_destination_id'], (int) $l['produit_id'], $recu, 'transfert_entree', $id, $date,
-                        $motif, $utilisateurId);
+                        $motif, $utilisateurId, null, null, ['lots' => $this->lotsArrivee($id, (int) $l['produit_id'], $recu, $lotsVus)]);
                 }
             }
             Database::executer('UPDATE transferts_stock SET statut = \'recu\', recu_par = ?, recu_le = ?, note_reception = ? WHERE id = ?', [$utilisateurId, $date, $note, $id]);
@@ -183,15 +184,46 @@ final class TransfertStockRepository
             }
             $date = date('Y-m-d H:i:s');
             if ($t['statut'] === 'expedie') {
-                foreach (Database::tous('SELECT * FROM transfert_stock_lignes WHERE transfert_id = ?', [$id]) as $l) {
-                    $this->stock->mouvement((int) $t['lieu_source_id'], (int) $l['produit_id'], (float) $l['quantite_base'], 'transfert_retour', $id,
-                        $date, 'Annulation ' . $t['numero'], $utilisateurId);
+                // La marchandise revient dans ses lots d'origine (même date de péremption)
+                foreach (Database::tous('SELECT * FROM stock_mouvements WHERE type = \'transfert_sortie\' AND source_id = ? ORDER BY id', [$id]) as $m) {
+                    $this->stock->mouvement((int) $m['lieu_id'], (int) $m['produit_id'], -(float) $m['quantite'], 'transfert_retour', $id,
+                        $date, 'Annulation ' . $t['numero'], $utilisateurId, null, null, ['rendre_de' => (int) $m['id']]);
                 }
             }
             Database::executer('UPDATE transferts_stock SET statut = \'annule\', annule_par = ?, annule_le = ? WHERE id = ?', [$utilisateurId, $date, $id]);
             Journal::ecrire('stock_transfert_annule', $t['numero'], [], $utilisateurId);
             return true;
         });
+    }
+
+    /**
+     * Lots à créer à l'arrivée d'une ligne : ceux pris au départ pour ce produit (péremption gardée), dans l'ordre
+     * de péremption, jusqu'à la quantité reçue ; ce qui dépasse n'a pas de lot.
+     * @param array<int, float> $vus quantité déjà attribuée par lot (plusieurs lignes du même produit)
+     */
+    private function lotsArrivee(int $transfertId, int $produitId, float $recu, array &$vus): array
+    {
+        if (!StockRepository::suite()) {
+            return [];
+        }
+        $lots = [];
+        foreach (Database::tous(
+            'SELECT l.id, l.peremption, l.numero, -lm.quantite AS quantite FROM stock_mouvements m
+               JOIN stock_lot_mouvements lm ON lm.mouvement_id = m.id AND lm.quantite < 0 JOIN stock_lots l ON l.id = lm.lot_id
+              WHERE m.type = \'transfert_sortie\' AND m.source_id = ? AND m.produit_id = ?
+              ORDER BY l.peremption IS NULL, l.peremption, l.id',
+            [$transfertId, $produitId]
+        ) as $l) {
+            $dispo = (float) $l['quantite'] - ($vus[(int) $l['id']] ?? 0);
+            $pris = min($dispo, $recu);
+            if ($pris <= 0.0005) {
+                continue;
+            }
+            $vus[(int) $l['id']] = ($vus[(int) $l['id']] ?? 0) + $pris;
+            $lots[] = ['peremption' => $l['peremption'], 'numero' => $l['numero'], 'quantite' => $pris];
+            $recu -= $pris;
+        }
+        return $lots;
     }
 
     private function transaction(callable $fonction): mixed

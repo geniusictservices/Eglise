@@ -15,3 +15,6 @@
 # Fichiers envoyés (photos des produits…)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# Documents du personnel (contrats, pièces d'identité) : hors de la racine web, jamais versionnés
+/storage/documents/

@@ -383,6 +383,8 @@ final class ReceptionController
                     'prix' => TresorerieSaisie::texte($l['prix'] ?? null),
                     'commande_ligne_id' => StockAcces::id($l['commande_ligne_id'] ?? null),
                     'commandee' => TresorerieSaisie::texte($l['commandee'] ?? null),
+                    'peremption' => TresorerieSaisie::texte($l['peremption'] ?? null),
+                    'lot_numero' => mb_substr(TresorerieSaisie::texte($l['lot_numero'] ?? null), 0, 64),
                 ];
             }
         }
@@ -430,6 +432,12 @@ final class ReceptionController
                     continue;
                 }
             }
+            // Lot facultatif : date de péremption et numéro (produits frais, sauces, laitages…)
+            [$peremption, $erreur] = StockAcces::date($s['peremption'] ?? '');
+            if ($erreur !== null) {
+                $erreurs['lignes-' . $i . '-peremption'] = t('stock.ligne_n', $n) . ' : ' . $erreur;
+                continue;
+            }
             $commandee = null;
             if ($avecCommande && $s['commandee'] !== '' && ($c = DeviseAffichage::lireNombre($s['commandee'])) !== null) {
                 $commandee = (float) $c;
@@ -438,6 +446,7 @@ final class ReceptionController
                 'produit_id' => (int) $trouve[0]['id'], 'conditionnement_id' => (int) $trouve[1]['id'], 'quantite' => $quantite,
                 'quantite_base' => $quantite * (float) $trouve[1]['quantite_base'], 'prix' => $prix,
                 'commande_ligne_id' => $avecCommande ? (int) $s['commande_ligne_id'] : null, 'quantite_commandee' => $commandee,
+                'peremption' => $peremption, 'lot_numero' => ($s['lot_numero'] ?? '') !== '' ? $s['lot_numero'] : null,
             ];
         }
         return [$lignes, $erreurs];

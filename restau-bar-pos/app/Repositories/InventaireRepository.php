@@ -163,7 +163,7 @@ final class InventaireRepository
                     COALESCE(SUM(IF(date_mouvement > ? AND date_mouvement <= ? AND type IN (\'reception\', \'transfert_entree\', \'ouverture\', \'vide_recupere\'), quantite, 0)), 0) AS entrees,
                     COALESCE(SUM(IF(date_mouvement > ? AND date_mouvement <= ? AND type IN (\'vente\', \'recette\', \'annulation_vente\'), -quantite, 0)), 0) AS ventes,
                     COALESCE(SUM(IF(date_mouvement > ? AND date_mouvement <= ? AND type = \'perte\', -quantite, 0)), 0) AS pertes,
-                    COALESCE(SUM(IF(date_mouvement > ? AND date_mouvement <= ? AND type IN (\'transfert_sortie\', \'transfert_retour\', \'inventaire\', \'ajustement\', \'vide_rendu\'), quantite, 0)), 0) AS autres
+                    COALESCE(SUM(IF(date_mouvement > ? AND date_mouvement <= ? AND type IN (\'transfert_sortie\', \'transfert_retour\', \'inventaire\', \'ajustement\', \'vide_rendu\', \'production\'), quantite, 0)), 0) AS autres
                FROM stock_mouvements WHERE lieu_id = ? AND produit_id = ?',
             [$date, $depuis, $date, $depuis, $date, $depuis, $date, $depuis, $date, $lieuId, $produitId]
         );

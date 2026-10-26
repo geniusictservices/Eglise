@@ -50,7 +50,7 @@ final class GestionStockRepository
               WHERE ' . ($avecInactifs ? '1 = 1' : 'p.actif = 1') . '
                 AND EXISTS (SELECT 1 FROM conditionnements x WHERE x.produit_id = p.id)
                 AND NOT EXISTS (SELECT 1 FROM recettes r JOIN recette_ingredients ri ON ri.recette_id = r.id
-                                 WHERE r.produit_id = p.id AND r.actif = 1)
+                                 WHERE r.produit_id = p.id AND r.actif = 1' . (StockRepository::suite() ? ' AND r.preparation = 0' : '') . ')
            ORDER BY COALESCE(cp.position, c.position), COALESCE(cp.id, c.id), c.parent_id IS NOT NULL, c.position, c.id,
                     COALESCE(pp.position, p.position), COALESCE(p.parent_id, p.id), p.parent_id IS NOT NULL, p.position, p.id'
         );
@@ -133,6 +133,13 @@ final class GestionStockRepository
     public function modifierLieu(int $id, string $nom, ?string $description, bool $actif): void
     {
         Database::executer('UPDATE lieux_stock SET nom = ?, description = ?, actif = ? WHERE id = ?', [$nom, $description, (int) $actif, $id]);
+        $this->stock->oublierCache();
+    }
+
+    /** Le dépôt vend-il en gros (par casier, grille « gros », clients revendeurs) ? */
+    public function definirVenteGros(int $id, bool $venteGros): void
+    {
+        Database::executer('UPDATE lieux_stock SET vente_gros = ? WHERE id = ? AND type = \'depot\' AND etablissement_id IS NOT NULL', [(int) $venteGros, $id]);
         $this->stock->oublierCache();
     }
 
@@ -357,6 +364,45 @@ final class GestionStockRepository
         return ['mouvements' => $mouvements, 'total' => $total];
     }
 
+    // ---------- Lots et péremption ----------
+
+    /**
+     * Lots restants (quantité > 0) avec une date de péremption, dans ces lieux : périmés ou qui périment
+     * d'ici $jours jours (réglage de chaque établissement si $jours est null), le plus urgent d'abord.
+     * @param list<int> $lieuIds
+     */
+    public function lotsAlerte(array $lieuIds, ?int $jours = null, bool $tous = false): array
+    {
+        if ($lieuIds === [] || !StockRepository::suite()) {
+            return [];
+        }
+        $lots = Database::tous(
+            'SELECT lo.*, p.nom_fr, p.nom_en, p.unite_base, l.nom AS lieu_nom, l.etablissement_id, e.nom AS etablissement_nom,
+                    COALESCE(sp.alerte_peremption, 3) AS alerte, DATEDIFF(lo.peremption, CURDATE()) AS jours_restants
+               FROM stock_lots lo
+               JOIN produits p ON p.id = lo.produit_id
+               JOIN lieux_stock l ON l.id = lo.lieu_id
+          LEFT JOIN etablissements e ON e.id = l.etablissement_id
+          LEFT JOIN stock_parametres sp ON sp.etablissement_id = l.etablissement_id
+              WHERE lo.lieu_id IN (' . implode(',', array_fill(0, count($lieuIds), '?')) . ')
+                AND lo.quantite_restante > 0.0005 AND lo.peremption IS NOT NULL
+           ORDER BY lo.peremption, lo.id',
+            array_values($lieuIds)
+        );
+        if ($tous) {
+            return $lots;
+        }
+        return array_values(array_filter($lots, static fn (array $l): bool => (int) $l['jours_restants'] <= ($jours ?? (int) $l['alerte'])));
+    }
+
+    public function lot(int $id): ?array
+    {
+        return StockRepository::suite() ? Database::un(
+            'SELECT lo.*, l.etablissement_id, l.nom AS lieu_nom FROM stock_lots lo JOIN lieux_stock l ON l.id = lo.lieu_id WHERE lo.id = ?',
+            [$id]
+        ) : null;
+    }
+
     // ---------- Pertes ----------
 
     /** @param array{lieu_id: int, produit_id: int, conditionnement_id: ?int, quantite: float, quantite_base: float, motif: string, commentaire: string, date: string} $v */
@@ -374,7 +420,8 @@ final class GestionStockRepository
             );
             $id = Database::dernierId();
             $this->stock->mouvement($v['lieu_id'], $v['produit_id'], -$v['quantite_base'], 'perte', $id, $v['date'],
-                t('stock.motif_perte_' . $v['motif']) . ' : ' . $v['commentaire'], $utilisateurId, $v['conditionnement_id'], $v['quantite']);
+                t('stock.motif_perte_' . $v['motif']) . ' : ' . $v['commentaire'], $utilisateurId, $v['conditionnement_id'], $v['quantite'],
+                !empty($v['lot_id']) ? ['lot_id' => (int) $v['lot_id']] : []);
             Journal::ecrire('stock_perte', (string) $id, ['lieu' => $v['lieu_id'], 'produit' => $v['produit_id'], 'quantite' => $v['quantite_base'], 'motif' => $v['motif']], $utilisateurId);
             return $id;
         });

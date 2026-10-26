@@ -66,6 +66,9 @@ final class RecetteRepository
                 [$produitId, StockRepository::q($rendement), $notes, (int) $active, $utilisateurId]
             );
             $id = (int) Database::un('SELECT id FROM recettes WHERE produit_id = ?', [$produitId])['id'];
+            if (StockRepository::suite()) {
+                Database::executer('UPDATE recettes SET preparation = ? WHERE id = ?', [(int) $this->estPreparation($produitId), $id]);
+            }
             Database::executer('DELETE FROM recette_ingredients WHERE recette_id = ?', [$id]);
             foreach (array_values($ingredients) as $position => $i) {
                 Database::executer(
@@ -76,6 +79,78 @@ final class RecetteRepository
             Journal::ecrire('stock_recette', (string) $produitId, ['ingredients' => count($ingredients)], $utilisateurId);
         });
         $this->stock->oublierCache();
+    }
+
+    // ---------- Préparations intermédiaires ----------
+
+    /** Catégorie cachée « Préparations » (créée au besoin). */
+    public function categoriePreparations(): int
+    {
+        $c = Database::un('SELECT id FROM categories WHERE nom_fr = \'Préparations\' AND parent_id IS NULL LIMIT 1');
+        if ($c !== null) {
+            return (int) $c['id'];
+        }
+        $position = (int) Database::un('SELECT COALESCE(MAX(position), 0) + 1 AS p FROM categories WHERE parent_id IS NULL')['p'];
+        Database::executer('INSERT INTO categories (nom_fr, nom_en, position, visible_public) VALUES (\'Préparations\', \'Preparations\', ?, 0)', [$position]);
+        return Database::dernierId();
+    }
+
+    /** Une préparation : produit de la catégorie « Préparations », ou avec une fiche « préparation ». */
+    public function estPreparation(int $produitId): bool
+    {
+        if (StockRepository::suite() && Database::un('SELECT id FROM recettes WHERE produit_id = ? AND preparation = 1', [$produitId]) !== null) {
+            return true;
+        }
+        return Database::un(
+            'SELECT p.id FROM produits p JOIN categories c ON c.id = p.categorie_id WHERE p.id = ? AND c.nom_fr = \'Préparations\' AND c.parent_id IS NULL',
+            [$produitId]
+        ) !== null;
+    }
+
+    /** Identifiants de toutes les préparations. @return list<int> */
+    public function idsPreparations(): array
+    {
+        $ids = array_map('intval', array_column(Database::tous(
+            'SELECT p.id FROM produits p JOIN categories c ON c.id = p.categorie_id WHERE c.nom_fr = \'Préparations\' AND c.parent_id IS NULL'
+        ), 'id'));
+        if (StockRepository::suite()) {
+            $ids = array_merge($ids, array_map('intval', array_column(Database::tous('SELECT produit_id FROM recettes WHERE preparation = 1'), 'produit_id')));
+        }
+        return array_values(array_unique($ids));
+    }
+
+    /** Préparations avec leur fiche (si elle existe). */
+    public function preparations(): array
+    {
+        $ids = $this->idsPreparations();
+        if ($ids === []) {
+            return [];
+        }
+        return Database::tous(
+            'SELECT p.id, p.nom_fr, p.nom_en, p.unite_base, r.id AS recette_id, r.actif AS recette_active, r.rendement,
+                    (SELECT COUNT(*) FROM recette_ingredients ri WHERE ri.recette_id = r.id) AS nb_ingredients
+               FROM produits p LEFT JOIN recettes r ON r.produit_id = p.id
+              WHERE p.actif = 1 AND p.id IN (' . implode(',', $ids) . ') ORDER BY p.nom_fr'
+        );
+    }
+
+    /**
+     * Nouvelle préparation : produit caché (ni menu ni caisse), compté dans son unité de base, avec un format
+     * d'une unité (pour les transferts, inventaires et pertes).
+     */
+    public function creerPreparation(string $nomFr, string $nomEn, string $unite): int
+    {
+        return (new GestionTresorerieRepository())->transaction(function () use ($nomFr, $nomEn, $unite): int {
+            $categorie = $this->categoriePreparations();
+            $position = (int) Database::un('SELECT COALESCE(MAX(position), 0) + 1 AS p FROM produits WHERE categorie_id = ?', [$categorie])['p'];
+            Database::executer('INSERT INTO produits (categorie_id, nom_fr, nom_en, unite_base, visible_public, position) VALUES (?, ?, ?, ?, 0, ?)', [$categorie, $nomFr, $nomEn, $unite, $position]);
+            $id = Database::dernierId();
+            Database::executer(
+                'INSERT INTO conditionnements (produit_id, nom_fr, nom_en, quantite_base, vendable, achetable, position) VALUES (?, ?, ?, 1, 0, 0, 1)',
+                [$id, t('stock.unite_' . $unite . '_1'), \App\Core\I18n::dans('en', 'stock.unite_' . $unite . '_1')]
+            );
+            return $id;
+        });
     }
 
     public function supprimer(int $produitId, int $utilisateurId): void

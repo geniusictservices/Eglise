@@ -78,4 +78,21 @@ final class StockAcces
         }
         return [round($valeur, 3), null];
     }
+
+    /**
+     * Date facultative (péremption) au format AAAA-MM-JJ : null si vide.
+     * @return array{0: ?string, 1: ?string} date, ou message d'erreur
+     */
+    public static function date(mixed $saisie): array
+    {
+        $texte = TresorerieSaisie::texte($saisie);
+        if ($texte === '') {
+            return [null, null];
+        }
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $texte);
+        if ($date === false || $date->format('Y-m-d') !== $texte || $date->format('Y') < '2000' || $date->format('Y') > '2100') {
+            return [null, t('stock.erreur_date_peremption')];
+        }
+        return [$texte, null];
+    }
 }

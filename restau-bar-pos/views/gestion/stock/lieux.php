@@ -25,6 +25,7 @@ $listeLieux = static function (array $lieux, bool $modifiable) use ($csrf, $erre
                     <span class="stk-lieu__badges">
                         <span class="badge badge--neutre"><?= e(t('stock.type_lieu_' . $l['type'])) ?></span>
                         <?php if ($l['par_defaut']): ?><span class="badge badge--lave"><?= e(t('stock.par_defaut')) ?></span><?php endif; ?>
+                        <?php if (!empty($l['vente_gros'])): ?><span class="badge badge--lave" data-vente-gros><?= e(t('stock.vente_gros_badge')) ?></span><?php endif; ?>
                         <?php if (!$l['actif']): ?><span class="badge badge--erreur"><?= e(t('stock.inactif')) ?></span><?php endif; ?>
                     </span>
                 </div>
@@ -45,6 +46,10 @@ $listeLieux = static function (array $lieux, bool $modifiable) use ($csrf, $erre
                             </div>
                             <?php if (!$l['par_defaut']): ?>
                                 <label class="coche"><input type="checkbox" name="actif" value="1" <?= $l['actif'] ? 'checked' : '' ?>> <?= e(t('stock.lieu_actif')) ?></label>
+                            <?php endif; ?>
+                            <?php if ($l['type'] === 'depot' && $l['etablissement_id'] !== null && array_key_exists('vente_gros', $l)): ?>
+                                <label class="coche"><input type="checkbox" name="vente_gros" value="1" <?= !empty($l['vente_gros']) ? 'checked' : '' ?>> <?= e(t('stock.vente_gros_option')) ?></label>
+                                <p class="champ__aide"><?= e(t('stock.vente_gros_option_aide')) ?></p>
                             <?php endif; ?>
                             <div class="tre-actions"><button class="bouton bouton--secondaire" type="submit"><?= e(t('stock.enregistrer')) ?></button></div>
                         </form>
@@ -185,6 +190,25 @@ $ajout = static function (string $cle, bool $central) use ($csrf, $erreurs, $val
                     </div>
                 </fieldset>
                 <label class="coche"><input type="checkbox" name="validation_separee" value="1" <?= $b['parametres']['validation_separee'] ? 'checked' : '' ?><?= $b['modifiable'] ? '' : ' disabled' ?>> <?= e(t('stock.validation_separee')) ?></label>
+                <?php if (isset($b['comptesMarche'])): ?>
+                    <div class="stk-form-grille stk-reglages-cuisine">
+                        <div class="champ">
+                            <label for="alerte-peremption-<?= $eid ?>"><?= e(t('stock.alerte_peremption')) ?></label>
+                            <input type="number" min="0" max="60" step="1" id="alerte-peremption-<?= $eid ?>" name="alerte_peremption" value="<?= (int) $b['parametres']['alerte_peremption'] ?>"<?= $b['modifiable'] ? '' : ' disabled' ?>>
+                            <p class="champ__aide"><?= e(t('stock.alerte_peremption_aide')) ?></p>
+                        </div>
+                        <div class="champ">
+                            <label for="compte-marche-<?= $eid ?>"><?= e(t('stock.compte_marche')) ?></label>
+                            <select id="compte-marche-<?= $eid ?>" name="compte_marche_id"<?= $b['modifiable'] ? '' : ' disabled' ?>>
+                                <option value=""><?= e(t('stock.compte_marche_aucun')) ?></option>
+                                <?php foreach ($b['comptesMarche'] as $c): ?>
+                                    <option value="<?= (int) $c['id'] ?>" <?= (int) ($b['parametres']['compte_marche_id'] ?? 0) === (int) $c['id'] ? 'selected' : '' ?>><?= e($c['nom']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="champ__aide"><?= e(t('stock.compte_marche_aide')) ?></p>
+                        </div>
+                    </div>
+                <?php endif; ?>
                 <?php if ($b['modifiable']): ?><div class="tre-actions"><button class="bouton bouton--secondaire" type="submit"><?= e(t('stock.enregistrer_reglages')) ?></button></div><?php endif; ?>
             </form>
         </div>

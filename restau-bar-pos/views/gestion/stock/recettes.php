@@ -8,6 +8,9 @@
  * @var bool $voirMarges
  * @var ?array $reference
  * @var bool $peutModifier
+ * @var list<array> $preparations préparations intermédiaires (sauce, marinade) avec leur fiche
+ * @var array{nom_fr: string, nom_en: string, unite: string} $valeursPreparation
+ * @var array<string, string> $erreursPreparation
  */
 
 use App\Controllers\Gestion\StockAffichage as S;
@@ -45,6 +48,55 @@ $sans = array_filter($produits, static fn (array $p): bool => $p['recette_id'] =
                 </li>
             <?php endforeach; ?>
         </ul>
+    <?php endif; ?>
+</section>
+
+<section class="bloc" aria-labelledby="preparations-titre" id="preparations">
+    <h2 id="preparations-titre"><?= e(t('stock.prep_titre', ['n' => count($preparations)])) ?></h2>
+    <p class="aide"><?= e(t('stock.prep_aide')) ?></p>
+    <?php if ($preparations !== []): ?>
+        <ul class="stk-cartes">
+            <?php foreach ($preparations as $p): $c = $couts[(int) $p['id']] ?? null; ?>
+                <li>
+                    <a class="stk-carte" href="/gestion/stock/recettes/<?= (int) $p['id'] ?>" data-preparation="<?= (int) $p['id'] ?>">
+                        <span class="stk-carte__nom"><?= App\Core\Icones::svg('recette', 20) ?><strong><?= e(champ($p, 'nom')) ?></strong></span>
+                        <span class="tre-sous-texte"><?= $p['recette_id'] !== null && (int) $p['nb_ingredients'] > 0
+                            ? e(t((int) $p['nb_ingredients'] > 1 ? 'stock.n_ingredients' : 'stock.un_ingredient', ['n' => (int) $p['nb_ingredients']])) . ' · ' . e(t('stock.prep_rendement', ['n' => S::nombre((float) $p['rendement']), 'unite' => S::unite((string) $p['unite_base'], (float) $p['rendement'])]))
+                            : e(t('stock.prep_sans_fiche')) ?></span>
+                        <?php if ($voirMarges && $c !== null && $c['cout'] !== null && $reference): ?>
+                            <span class="stk-carte__cout"><?= e(t('stock.cout_par', ['cout' => A::montant($c['cout'], $reference), 'unite' => S::unite((string) $p['unite_base'])])) ?></span>
+                        <?php endif; ?>
+                    </a>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+        <p><a class="lien" href="/gestion/stock/productions"><?= e(t('stock.prep_vers_productions')) ?></a></p>
+    <?php endif; ?>
+    <?php if ($peutModifier): ?>
+        <?= View::rendre('gestion/tresorerie/_erreurs', ['erreurs' => array_values($erreursPreparation)]) ?>
+        <details class="stk-nouvelle-prep"<?= $erreursPreparation !== [] || $preparations === [] ? ' open' : '' ?>>
+            <summary class="bouton bouton--secondaire"><?= e(t('stock.prep_nouvelle')) ?></summary>
+            <form method="post" action="/gestion/stock/recettes/preparation" class="tre-formulaire stk-form-ligne" novalidate data-form-preparation>
+                <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
+                <div class="champ">
+                    <label for="prep-nom-fr"><?= e(t('stock.prep_nom_fr')) ?></label>
+                    <input id="prep-nom-fr" name="nom_fr" maxlength="128" required value="<?= e($valeursPreparation['nom_fr']) ?>"<?= isset($erreursPreparation['nom_fr']) ? ' aria-invalid="true"' : '' ?>>
+                </div>
+                <div class="champ">
+                    <label for="prep-nom-en"><?= e(t('stock.prep_nom_en')) ?> <span class="tre-facultatif"><?= e(t('tresorerie.facultatif')) ?></span></label>
+                    <input id="prep-nom-en" name="nom_en" maxlength="128" value="<?= e($valeursPreparation['nom_en']) ?>">
+                </div>
+                <div class="champ">
+                    <label for="prep-unite"><?= e(t('stock.prep_unite')) ?></label>
+                    <select id="prep-unite" name="unite"<?= isset($erreursPreparation['unite']) ? ' aria-invalid="true"' : '' ?>>
+                        <?php foreach (S::UNITES as $u): ?>
+                            <option value="<?= e($u) ?>" <?= $valeursPreparation['unite'] === $u ? 'selected' : '' ?>><?= e(S::unite($u, 2)) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="tre-actions"><button class="bouton" type="submit"><?= e(t('stock.prep_creer')) ?></button></div>
+            </form>
+        </details>
     <?php endif; ?>
 </section>
 

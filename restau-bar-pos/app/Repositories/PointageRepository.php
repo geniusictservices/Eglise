@@ -473,10 +473,10 @@ final class PointageRepository
                 $avant = Database::un('SELECT * FROM pointages WHERE id = ? FOR UPDATE', [$pointageId]);
                 $departChange = $avant['depart'] !== $depart;
                 Database::executer(
-                    'UPDATE pointages SET journee = ?, arrivee = ?, depart = ?,
-                            arrivee_source = IF(arrivee <> ?, \'gestion\', arrivee_source), arrivee_valide_par = IF(arrivee <> ?, ?, arrivee_valide_par),
-                            depart_source = ?, depart_valide_par = ? WHERE id = ?',
-                    [$journee, $arrivee, $depart, $arrivee, $arrivee, $par,
+                    // Source et validation avant l'heure : MySQL évalue les affectations dans l'ordre
+                    'UPDATE pointages SET arrivee_source = IF(arrivee <> ?, \'gestion\', arrivee_source), arrivee_valide_par = IF(arrivee <> ?, ?, arrivee_valide_par),
+                            journee = ?, arrivee = ?, depart = ?, depart_source = ?, depart_valide_par = ? WHERE id = ?',
+                    [$arrivee, $arrivee, $par, $journee, $arrivee, $depart,
                         $depart === null ? null : ($departChange ? 'gestion' : $avant['depart_source']),
                         $depart === null ? null : ($departChange ? $par : $avant['depart_valide_par']), $pointageId]
                 );

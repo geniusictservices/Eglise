@@ -270,4 +270,46 @@
     echange.querySelectorAll('input[name="tiers"]').forEach(function (r) { r.addEventListener('change', majTiers); });
     majTiers();
   }
+  // ---------- Production d'une préparation : ingrédients qui vont sortir du lieu ----------
+
+  var production = document.querySelector('[data-production]');
+  if (production) {
+    var besoins = {};
+    try { besoins = JSON.parse(production.querySelector('[data-production-besoins]').textContent || '{}'); } catch (e) { besoins = {}; }
+    var textes = production.querySelector('[data-texte-manque]');
+    var apercu = production.querySelector('[data-production-apercu]');
+    var liste = production.querySelector('[data-production-lignes]');
+    var majProduction = function () {
+      var prep = production.querySelector('[data-production-preparation]').value;
+      var lieu = production.querySelector('[data-production-lieu]').value;
+      var q = lireNombre(production.querySelector('[data-production-quantite]').value);
+      var lignes = besoins[prep] || [];
+      liste.textContent = '';
+      if (!prep || q === null || q <= 0 || lignes.length === 0) { apercu.hidden = true; return; }
+      lignes.forEach(function (l) {
+        var besoin = l.q * q;
+        var li = document.createElement('li');
+        var nom = document.createElement('span');
+        nom.textContent = l.nom;
+        var valeur = document.createElement('span');
+        valeur.className = 'montant';
+        valeur.textContent = nombre(besoin) + ' ' + (besoin > 1 ? l.uniteN : l.unite1);
+        if (lieu && l.stock && l.stock[lieu] !== undefined) {
+          var stock = l.stock[lieu];
+          var detail = document.createElement('span');
+          detail.className = 'tre-sous-texte' + (stock < besoin - 0.0005 ? ' tre-negatif' : '');
+          detail.textContent = (stock < besoin - 0.0005 ? textes.dataset.texteManque : textes.dataset.texteStock) + ' ' + nombre(stock) + ' ' + (stock > 1 ? l.uniteN : l.unite1);
+          if (stock < besoin - 0.0005) li.setAttribute('data-manque', '');
+          nom.appendChild(detail);
+        }
+        li.appendChild(nom);
+        li.appendChild(valeur);
+        liste.appendChild(li);
+      });
+      apercu.hidden = false;
+    };
+    production.addEventListener('input', majProduction);
+    production.addEventListener('change', majProduction);
+    majProduction();
+  }
 })();

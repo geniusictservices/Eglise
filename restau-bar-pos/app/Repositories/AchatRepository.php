@@ -372,6 +372,10 @@ final class AchatRepository
                         $coutBase !== null ? number_format($coutBase, 6, '.', '') : null, $position,
                     ]
                 );
+                $peremption = $l['peremption'] ?? null;
+                if (($peremption !== null || ($l['lot_numero'] ?? null) !== null) && StockRepository::suite()) {
+                    Database::executer('UPDATE reception_lignes SET peremption = ?, lot_numero = ? WHERE id = ?', [$peremption, $l['lot_numero'] ?? null, Database::dernierId()]);
+                }
                 if ($l['quantite_base'] <= 0) {
                     continue;
                 }
@@ -379,7 +383,8 @@ final class AchatRepository
                     $this->stock->majCump($l['produit_id'], $l['quantite_base'], $coutBase, (int) $reference['id']);
                 }
                 $this->stock->mouvement($v['lieu_id'], $l['produit_id'], $l['quantite_base'], 'reception', $id, $v['date'], $motif, $utilisateurId,
-                    $l['conditionnement_id'], $l['quantite']);
+                    $l['conditionnement_id'], $l['quantite'],
+                    $peremption !== null || ($l['lot_numero'] ?? null) !== null ? ['lot' => ['peremption' => $peremption, 'numero' => $l['lot_numero'] ?? null, 'origine' => 'reception']] : []);
                 foreach ($liens[$l['conditionnement_id'] ?? 0] ?? [] as $emballageId => $parFormat) {
                     $recus[$emballageId] = ($recus[$emballageId] ?? 0) + $parFormat * $l['quantite'];
                 }

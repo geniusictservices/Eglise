@@ -8,7 +8,7 @@
  */
 ?>
 <main class="borne" id="borne"
-      data-url="<?= e($code['url']) ?>" data-expire="<?= (int) $code['expire_dans'] ?>" data-duree="<?= (int) $code['duree'] ?>"
+      data-url="<?= e($code['url']) ?>" data-decalage="<?= (int) date('Z') / 60 ?>" data-expire="<?= (int) $code['expire_dans'] ?>" data-duree="<?= (int) $code['duree'] ?>"
       data-texte-renouvele="<?= e(t('pointage.borne_renouvele')) ?>" data-texte-hors-ligne="<?= e(t('pointage.borne_hors_ligne')) ?>"
       data-texte-retire="<?= e(t('pointage.borne_retiree')) ?>">
     <header class="borne__tete">

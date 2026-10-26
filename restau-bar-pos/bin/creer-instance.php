@@ -139,6 +139,14 @@ if ($demo && is_file(RACINE . '/bin/demo-stock.php')) {
     }
 }
 
+// Personnel et paie de démonstration (fiches des employés, plannings, pointages, avance, bulletins), après les ventes
+if ($demo && is_file(RACINE . '/bin/demo-personnel.php')) {
+    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(RACINE . '/bin/demo-personnel.php') . ' ' . escapeshellarg($sousDomaine), $code);
+    if ($code !== 0) {
+        fwrite(STDERR, "Personnel de démonstration non créé (php bin/demo-personnel.php $sousDomaine pour réessayer).\n");
+    }
+}
+
 $domaine = Config::get('domaine_base');
 echo <<<TXT
 Instance « $sousDomaine » créée.

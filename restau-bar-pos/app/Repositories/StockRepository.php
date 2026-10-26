@@ -19,7 +19,7 @@ final class StockRepository
 {
     public const TYPES = [
         'ouverture', 'reception', 'vente', 'recette', 'annulation_vente', 'transfert_sortie', 'transfert_entree',
-        'transfert_retour', 'inventaire', 'perte', 'ajustement', 'vide_recupere', 'vide_rendu',
+        'transfert_retour', 'inventaire', 'perte', 'ajustement', 'vide_recupere', 'vide_rendu', 'production',
     ];
     /** Types liés à une vente (source_id = ventes.id). */
     public const TYPES_VENTE = ['vente', 'recette', 'vide_recupere', 'annulation_vente'];
@@ -43,6 +43,8 @@ final class StockRepository
             $this->parametres[$etablissementId] = [
                 'mode_negatif' => $ligne['mode_negatif'] ?? 'vendre',
                 'validation_separee' => $ligne === null || (bool) $ligne['validation_separee'],
+                'alerte_peremption' => isset($ligne['alerte_peremption']) ? (int) $ligne['alerte_peremption'] : 3,
+                'compte_marche_id' => isset($ligne['compte_marche_id']) ? (int) $ligne['compte_marche_id'] : null,
             ];
         }
         return $this->parametres[$etablissementId];
@@ -55,6 +57,19 @@ final class StockRepository
              ON DUPLICATE KEY UPDATE mode_negatif = VALUES(mode_negatif), validation_separee = VALUES(validation_separee),
                                      maj_par = VALUES(maj_par), maj_le = VALUES(maj_le)',
             [$etablissementId, $modeNegatif, (int) $validationSeparee, $utilisateurId]
+        );
+        unset($this->parametres[$etablissementId]);
+    }
+
+    /** Alerte de péremption (jours) et caisse des achats au marché d'un établissement. */
+    public function definirReglagesCuisine(int $etablissementId, int $alerte, ?int $compteMarcheId, int $utilisateurId): void
+    {
+        $this->parametres($etablissementId);
+        Database::executer(
+            'INSERT INTO stock_parametres (etablissement_id, alerte_peremption, compte_marche_id, maj_par, maj_le) VALUES (?, ?, ?, ?, NOW())
+             ON DUPLICATE KEY UPDATE alerte_peremption = VALUES(alerte_peremption), compte_marche_id = VALUES(compte_marche_id),
+                                     maj_par = VALUES(maj_par), maj_le = VALUES(maj_le)',
+            [$etablissementId, max(0, min(60, $alerte)), $compteMarcheId, $utilisateurId]
         );
         unset($this->parametres[$etablissementId]);
     }
@@ -179,6 +194,7 @@ final class StockRepository
     {
         $this->routage = [];
         $this->recettes = [];
+        $this->preparations = [];
         $this->parametres = [];
     }
 
@@ -186,11 +202,20 @@ final class StockRepository
 
     /**
      * Écrit un mouvement et met à jour le stock du lieu (créé à 0 s'il n'existe pas : il peut devenir négatif).
+     * Lots (péremption) : une sortie prend d'abord dans les lots qui périment le plus tôt (puis les plus anciens) ;
+     * une entrée crée un lot si $options['lot'] est donné.
      * @param float $quantite unité de base, positive pour une entrée, négative pour une sortie
+     * @param array{origine?: ?int, lot?: array{peremption: ?string, numero?: ?string, origine: string, source_id?: ?int},
+     *              lots?: list<array{peremption: ?string, numero: ?string, quantite: float}>, lot_id?: ?int, rendre_de?: ?int} $options
+     *        origine : produit vendu dont la fiche technique demande cet ingrédient ;
+     *        lots : entrée répartie en plusieurs lots (transfert reçu : les lots envoyés gardent leur date) ;
+     *        lot_id : sortie prise d'abord dans ce lot (perte d'un lot périmé) ;
+     *        rendre_de : entrée qui rend aux lots ce que ce mouvement leur avait pris (annulation)
      * @return int identifiant du mouvement
      */
     public function mouvement(int $lieuId, int $produitId, float $quantite, string $type, ?int $sourceId, string $date,
-                              ?string $motif, ?int $utilisateurId, ?int $conditionnementId = null, ?float $quantiteSaisie = null): int
+                              ?string $motif, ?int $utilisateurId, ?int $conditionnementId = null, ?float $quantiteSaisie = null,
+                              array $options = []): int
     {
         if (!in_array($type, self::TYPES, true)) {
             throw new \InvalidArgumentException('Type de mouvement inconnu : ' . $type);
@@ -202,18 +227,129 @@ final class StockRepository
         );
         $apres = Database::un('SELECT quantite FROM stock_niveaux WHERE lieu_id = ? AND produit_id = ?', [$lieuId, $produitId]);
         $cout = $this->cump($produitId);
+        if (!self::suite()) {
+            // Base pas encore migrée (021) : sans lots ni origine
+            Database::executer(
+                'INSERT INTO stock_mouvements (lieu_id, produit_id, type, quantite, stock_apres, conditionnement_id, quantite_saisie,
+                                               cout_unitaire, source_id, motif, utilisateur_id, date_mouvement)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                [
+                    $lieuId, $produitId, $type, self::q($quantite), $apres['quantite'] ?? null, $conditionnementId,
+                    $quantiteSaisie !== null ? self::q($quantiteSaisie) : null, $cout !== null ? number_format($cout, 6, '.', '') : null,
+                    $sourceId, $motif !== null ? mb_substr($motif, 0, 255) : null, $utilisateurId ?: null, $date,
+                ]
+            );
+            return Database::dernierId();
+        }
         Database::executer(
-            'INSERT INTO stock_mouvements (lieu_id, produit_id, type, quantite, stock_apres, conditionnement_id, quantite_saisie,
+            'INSERT INTO stock_mouvements (lieu_id, produit_id, origine_produit_id, type, quantite, stock_apres, conditionnement_id, quantite_saisie,
                                            cout_unitaire, source_id, motif, utilisateur_id, date_mouvement)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [
-                $lieuId, $produitId, $type, self::q($quantite), $apres['quantite'] ?? null, $conditionnementId,
+                $lieuId, $produitId, $options['origine'] ?? null, $type, self::q($quantite), $apres['quantite'] ?? null, $conditionnementId,
                 $quantiteSaisie !== null ? self::q($quantiteSaisie) : null,
                 $cout !== null ? number_format($cout, 6, '.', '') : null,
                 $sourceId, $motif !== null ? mb_substr($motif, 0, 255) : null, $utilisateurId ?: null, $date,
             ]
         );
-        return Database::dernierId();
+        $id = Database::dernierId();
+        if ($quantite < -0.0005) {
+            $this->prendreDansLots($id, $lieuId, $produitId, -$quantite, $options['lot_id'] ?? null);
+        } elseif ($quantite > 0.0005) {
+            if (!empty($options['rendre_de'])) {
+                $this->rendreAuxLots($id, (int) $options['rendre_de']);
+            } elseif (!empty($options['lots'])) {
+                foreach ($options['lots'] as $l) {
+                    if ($l['quantite'] > 0.0005) {
+                        $this->creerLot($id, $lieuId, $produitId, $l['quantite'], $l['peremption'], $l['numero'], 'transfert', $sourceId, $date);
+                    }
+                }
+            } elseif (!empty($options['lot'])) {
+                $l = $options['lot'];
+                $this->creerLot($id, $lieuId, $produitId, $quantite, $l['peremption'] ?? null, $l['numero'] ?? null, $l['origine'], $l['source_id'] ?? $sourceId, $date);
+            }
+        }
+        return $id;
+    }
+
+    private static ?bool $suite = null;
+
+    /** La migration 021 (lots, productions, vente en gros) est-elle appliquée ? */
+    public static function suite(): bool
+    {
+        return self::$suite ??= Database::un("SHOW TABLES LIKE 'stock_lots'") !== null;
+    }
+
+    // ---------- Lots et péremption ----------
+
+    private function creerLot(int $mouvementId, int $lieuId, int $produitId, float $quantite, ?string $peremption, ?string $numero,
+                              string $origine, ?int $sourceId, string $date): int
+    {
+        Database::executer(
+            'INSERT INTO stock_lots (lieu_id, produit_id, numero, peremption, quantite_initiale, quantite_restante, origine, source_id, cree_le)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [$lieuId, $produitId, $numero !== null && $numero !== '' ? mb_substr($numero, 0, 64) : null, $peremption, self::q($quantite), self::q($quantite), $origine, $sourceId, $date]
+        );
+        $lot = Database::dernierId();
+        Database::executer('INSERT INTO stock_lot_mouvements (lot_id, mouvement_id, quantite) VALUES (?, ?, ?)', [$lot, $mouvementId, self::q($quantite)]);
+        return $lot;
+    }
+
+    /** Sortie : prend dans les lots restants, celui qui périme le plus tôt d'abord (sans date : en dernier), puis le plus ancien. */
+    private function prendreDansLots(int $mouvementId, int $lieuId, int $produitId, float $quantite, ?int $lotPrioritaire): void
+    {
+        $lots = Database::tous(
+            'SELECT id, quantite_restante FROM stock_lots WHERE lieu_id = ? AND produit_id = ? AND quantite_restante > 0.0005
+              ORDER BY id = ? DESC, peremption IS NULL, peremption, cree_le, id FOR UPDATE',
+            [$lieuId, $produitId, (int) $lotPrioritaire]
+        );
+        foreach ($lots as $lot) {
+            if ($quantite <= 0.0005) {
+                break;
+            }
+            $pris = min($quantite, (float) $lot['quantite_restante']);
+            Database::executer('UPDATE stock_lots SET quantite_restante = quantite_restante - ? WHERE id = ?', [self::q($pris), (int) $lot['id']]);
+            Database::executer(
+                'INSERT INTO stock_lot_mouvements (lot_id, mouvement_id, quantite) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE quantite = quantite + VALUES(quantite)',
+                [(int) $lot['id'], $mouvementId, self::q(-$pris)]
+            );
+            $quantite -= $pris;
+        }
+    }
+
+    /** Entrée d'annulation : rend aux lots ce que le mouvement d'origine leur avait pris. */
+    private function rendreAuxLots(int $mouvementId, int $origineId): void
+    {
+        foreach (Database::tous('SELECT lot_id, quantite FROM stock_lot_mouvements WHERE mouvement_id = ? AND quantite < 0', [$origineId]) as $part) {
+            Database::executer('UPDATE stock_lots SET quantite_restante = quantite_restante - ? WHERE id = ?', [$part['quantite'], (int) $part['lot_id']]);
+            Database::executer('INSERT INTO stock_lot_mouvements (lot_id, mouvement_id, quantite) VALUES (?, ?, ?)', [(int) $part['lot_id'], $mouvementId, self::q(-(float) $part['quantite'])]);
+        }
+    }
+
+    /**
+     * Lots pris par une sortie (pour les recréer à l'arrivée d'un transfert, avec leur date de péremption).
+     * @return list<array{peremption: ?string, numero: ?string, quantite: float}>
+     */
+    public function lotsPris(int $mouvementId): array
+    {
+        return array_map(static fn (array $l): array => ['peremption' => $l['peremption'], 'numero' => $l['numero'], 'quantite' => -(float) $l['quantite']], Database::tous(
+            'SELECT l.peremption, l.numero, lm.quantite FROM stock_lot_mouvements lm JOIN stock_lots l ON l.id = lm.lot_id
+              WHERE lm.mouvement_id = ? AND lm.quantite < 0 ORDER BY l.peremption IS NULL, l.peremption, l.id',
+            [$mouvementId]
+        ));
+    }
+
+    /** Annule l'effet sur les lots des mouvements donnés (avant de les effacer pour les rejouer). */
+    public function annulerLotsDe(string $conditionMouvements): void
+    {
+        if (!self::suite()) {
+            return;
+        }
+        Database::executer(
+            'UPDATE stock_lots l JOIN (SELECT lm.lot_id, SUM(lm.quantite) AS q FROM stock_lot_mouvements lm
+                                         JOIN stock_mouvements m ON m.id = lm.mouvement_id WHERE ' . $conditionMouvements . ' GROUP BY lm.lot_id) x ON x.lot_id = l.id
+                SET l.quantite_restante = l.quantite_restante - x.q'
+        );
     }
 
     /** Stock d'un produit dans un lieu (0 s'il n'a jamais bougé). */
@@ -280,10 +416,11 @@ final class StockRepository
         $pdo = Database::pdo();
         $pdo->beginTransaction();
         try {
-            Database::executer(
-                'DELETE FROM stock_mouvements WHERE type IN (\'vente\', \'recette\', \'annulation_vente\')
-                    OR (type = \'vide_recupere\' AND source_id IS NOT NULL AND EXISTS (SELECT 1 FROM ventes v WHERE v.id = stock_mouvements.source_id))'
-            );
+            $condition = 'm.type IN (\'vente\', \'recette\', \'annulation_vente\')
+                    OR (m.type = \'vide_recupere\' AND m.source_id IS NOT NULL AND EXISTS (SELECT 1 FROM ventes v WHERE v.id = m.source_id))';
+            // Ce que ces ventes avaient pris aux lots y revient avant de les rejouer
+            $this->annulerLotsDe($condition);
+            Database::executer('DELETE m FROM stock_mouvements m WHERE ' . $condition);
             $ventes = Database::tous('SELECT id, statut FROM ventes ORDER BY cree_le, id');
             foreach ($ventes as $v) {
                 $this->sortieVente((int) $v['id']);
@@ -311,7 +448,7 @@ final class StockRepository
     public function sortieVente(int $venteId, ?string $date = null): void
     {
         $this->sansBloquer(function () use ($venteId, $date): void {
-            $vente = Database::un('SELECT id, etablissement_id, zone_id, appareil_id, utilisateur_id, numero, cree_le FROM ventes WHERE id = ?', [$venteId]);
+            $vente = Database::un('SELECT id, etablissement_id, zone_id, appareil_id, utilisateur_id, numero, cle, cree_le FROM ventes WHERE id = ?', [$venteId]);
             if ($vente === null) {
                 return;
             }
@@ -324,6 +461,9 @@ final class StockRepository
             $appareil = $vente['appareil_id'] !== null ? (int) $vente['appareil_id'] : null;
             $uid = $vente['utilisateur_id'] !== null ? (int) $vente['utilisateur_id'] : null;
             $motif = 'Vente ' . $vente['numero'];
+            // Vente en gros : tout sort du dépôt de la commande, tel quel (pas de fiche technique, les emballages
+            // partent avec le client et sont suivis à part)
+            $gros = self::$grosPrevus[$vente['cle'] ?? ''] ?? (self::suite() && ($g = Database::un('SELECT lieu_id FROM ventes_gros WHERE vente_id = ?', [$venteId])) ? (int) $g['lieu_id'] : null);
             $lignes = Database::tous(
                 'SELECT l.produit_id AS ligne_produit, l.conditionnement_id, l.quantite, c.produit_id AS cond_produit, c.quantite_base,
                         p.id AS produit_id, p.categorie_id
@@ -341,11 +481,15 @@ final class StockRepository
                 $nombre = (float) $l['quantite'];
                 $base = $nombre * ($l['quantite_base'] !== null ? (float) $l['quantite_base'] : 1.0);
                 $condId = $l['cond_produit'] !== null ? (int) $l['conditionnement_id'] : null;
+                if ($gros !== null) {
+                    $this->mouvement($gros, $produitId, -$base, 'vente', $venteId, $date, $motif, $uid, $condId, $nombre);
+                    continue;
+                }
                 $lieu = $this->comptoirPour($etab, (int) $l['categorie_id'], $zone, $appareil);
                 $recette = $this->recetteActive($produitId);
                 if ($recette !== null) {
                     foreach ($this->consommation($recette, $base) as $ingredientId => $quantite) {
-                        $this->mouvement($lieu, $ingredientId, -$quantite, 'recette', $venteId, $date, $motif, $uid);
+                        $this->mouvement($lieu, $ingredientId, -$quantite, 'recette', $venteId, $date, $motif, $uid, null, null, ['origine' => $produitId]);
                     }
                 } else {
                     $this->mouvement($lieu, $produitId, -$base, 'vente', $venteId, $date, $motif, $uid, $condId, $nombre);
@@ -380,9 +524,19 @@ final class StockRepository
                 $this->mouvement((int) $m['lieu_id'], (int) $m['produit_id'], -(float) $m['quantite'], 'annulation_vente', $venteId,
                     $date, 'Annulation vente ' . $vente['numero'], $uid,
                     $m['conditionnement_id'] !== null ? (int) $m['conditionnement_id'] : null,
-                    $m['quantite_saisie'] !== null ? (float) $m['quantite_saisie'] : null);
+                    $m['quantite_saisie'] !== null ? (float) $m['quantite_saisie'] : null,
+                    ['origine' => $m['origine_produit_id'] !== null ? (int) $m['origine_produit_id'] : null, 'rendre_de' => (int) $m['id']]);
             }
         });
+    }
+
+    /** @var array<string, int> ventes en gros en cours d'enregistrement : clé de la vente => dépôt */
+    private static array $grosPrevus = [];
+
+    /** Annonce qu'une vente (par sa clé) est une vente en gros sortant de ce dépôt, avant VenteRepository::enregistrer(). */
+    public static function prevoirVenteGros(string $cle, int $lieuId): void
+    {
+        self::$grosPrevus[$cle] = $lieuId;
     }
 
     /**
@@ -471,16 +625,36 @@ final class StockRepository
     public function recetteActive(int $produitId): ?array
     {
         if (!array_key_exists($produitId, $this->recettes)) {
-            $recette = Database::un('SELECT id, rendement FROM recettes WHERE produit_id = ? AND actif = 1', [$produitId]);
-            if ($recette !== null) {
-                $ingredients = array_map(static fn (array $i): array => [
-                    'produit_id' => (int) $i['produit_id'], 'quantite' => (float) $i['quantite'], 'rendement_pct' => (float) $i['rendement_pct'],
-                ], Database::tous('SELECT produit_id, quantite, rendement_pct FROM recette_ingredients WHERE recette_id = ? ORDER BY position, id', [(int) $recette['id']]));
-                $recette = $ingredients === [] ? null : ['id' => (int) $recette['id'], 'rendement' => max(0.001, (float) $recette['rendement']), 'ingredients' => $ingredients];
-            }
-            $this->recettes[$produitId] = $recette;
+            $this->recettes[$produitId] = $this->chargerRecette($produitId, false);
         }
         return $this->recettes[$produitId];
+    }
+
+    /** @var array<int, ?array> fiches « préparation » par produit */
+    private array $preparations = [];
+
+    /** Fiche active d'une préparation (sauce, marinade) : elle se produit, elle ne se vend pas. */
+    public function recettePreparation(int $produitId): ?array
+    {
+        if (!array_key_exists($produitId, $this->preparations)) {
+            $this->preparations[$produitId] = self::suite() ? $this->chargerRecette($produitId, true) : null;
+        }
+        return $this->preparations[$produitId];
+    }
+
+    private function chargerRecette(int $produitId, bool $preparation): ?array
+    {
+        $recette = Database::un(
+            'SELECT id, rendement FROM recettes WHERE produit_id = ? AND actif = 1' . (self::suite() ? ' AND preparation = ' . (int) $preparation : ''),
+            [$produitId]
+        );
+        if ($recette === null) {
+            return null;
+        }
+        $ingredients = array_map(static fn (array $i): array => [
+            'produit_id' => (int) $i['produit_id'], 'quantite' => (float) $i['quantite'], 'rendement_pct' => (float) $i['rendement_pct'],
+        ], Database::tous('SELECT produit_id, quantite, rendement_pct FROM recette_ingredients WHERE recette_id = ? ORDER BY position, id', [(int) $recette['id']]));
+        return $ingredients === [] ? null : ['id' => (int) $recette['id'], 'rendement' => max(0.001, (float) $recette['rendement']), 'ingredients' => $ingredients];
     }
 
     /**
@@ -546,18 +720,46 @@ final class StockRepository
     {
         $recette = $this->recetteActive($produitId);
         if ($recette === null) {
-            $cump = $this->cump($produitId);
-            return ['cout' => $cump, 'complet' => $cump !== null];
+            return $this->coutArticle($produitId);
         }
         $total = 0.0;
         $complet = true;
         foreach ($this->consommation($recette, 1.0) as $ingredientId => $quantite) {
-            $cump = $this->cump($ingredientId);
-            if ($cump === null) {
+            $cout = $this->coutArticle($ingredientId);
+            if ($cout['cout'] === null) {
                 $complet = false;
                 continue;
             }
-            $total += $cump * $quantite;
+            $complet = $complet && $cout['complet'];
+            $total += $cout['cout'] * $quantite;
+        }
+        return ['cout' => $total, 'complet' => $complet];
+    }
+
+    /**
+     * Coût d'une unité de base d'un article stocké : son CUMP ; pour une préparation jamais produite, le coût
+     * de ses ingrédients d'après sa fiche (un seul niveau : une préparation n'utilise pas d'autre préparation).
+     * @return array{cout: ?float, complet: bool}
+     */
+    public function coutArticle(int $produitId): array
+    {
+        $cump = $this->cump($produitId);
+        if ($cump !== null) {
+            return ['cout' => $cump, 'complet' => true];
+        }
+        $preparation = $this->recettePreparation($produitId);
+        if ($preparation === null) {
+            return ['cout' => null, 'complet' => false];
+        }
+        $total = 0.0;
+        $complet = true;
+        foreach ($this->consommation($preparation, 1.0) as $ingredientId => $quantite) {
+            $c = $this->cump($ingredientId);
+            if ($c === null) {
+                $complet = false;
+                continue;
+            }
+            $total += $c * $quantite;
         }
         return ['cout' => $total, 'complet' => $complet];
     }

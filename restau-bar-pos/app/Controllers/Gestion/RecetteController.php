@@ -17,7 +17,9 @@ use App\Repositories\StockRepository;
 /**
  * Stock > Fiches techniques : cocktails et plats avec leurs ingrédients (unités de base, part utilisable),
  * rendement ; coût de revient au CUMP et marge par format vendu (marges visibles avec rapports.marges).
- * Modifier : stock.recettes.
+ * Préparations intermédiaires (sauce, marinade, bouillon) : produits cachés avec une fiche « préparation » qui se
+ * produit à l'avance (Stock > Productions) ; les fiches des plats peuvent les utiliser comme ingrédient, une
+ * préparation n'utilise pas d'autre préparation. Modifier : stock.recettes.
  */
 final class RecetteController
 {
@@ -34,7 +36,7 @@ final class RecetteController
         $this->depot = new GestionStockRepository($this->stock);
     }
 
-    public function index(): void
+    public function index(?array $valeursPreparation = null, array $erreursPreparation = []): void
     {
         $utilisateur = Session::exigerConnexion();
         $uid = (int) $utilisateur['id'];
@@ -46,12 +48,48 @@ final class RecetteController
             'utilisateur' => $utilisateur,
             'flash' => Session::lireFlash(),
             'produits' => $this->recettes->produitsVendus(),
+            'preparations' => $this->recettes->preparations(),
+            'valeursPreparation' => $valeursPreparation ?? ['nom_fr' => '', 'nom_en' => '', 'unite' => 'portion'],
+            'erreursPreparation' => $erreursPreparation ?? [],
             'couts' => $this->couts(),
             'marges' => $voirMarges && $reference ? $this->recettes->marges((new GestionCatalogueRepository())->grilleParDefaut(), $reference, $devises->locale()) : [],
             'voirMarges' => $voirMarges,
             'reference' => $reference,
             'peutModifier' => Acces::a($uid, 'stock.recettes'),
         ], 'gestion');
+    }
+
+    /** Nouvelle préparation (sauce, marinade, bouillon) : produit caché, puis sa fiche. */
+    public function creerPreparation(): void
+    {
+        $utilisateur = Session::exigerConnexion();
+        Session::verifierCsrf();
+        if (!Acces::a((int) $utilisateur['id'], 'stock.recettes')) {
+            StockAcces::interdit($utilisateur);
+        }
+        $valeurs = [
+            'nom_fr' => mb_substr(TresorerieSaisie::post('nom_fr'), 0, 128),
+            'nom_en' => mb_substr(TresorerieSaisie::post('nom_en'), 0, 128),
+            'unite' => (string) ($_POST['unite'] ?? ''),
+        ];
+        $erreurs = [];
+        if ($valeurs['nom_fr'] === '') {
+            $erreurs['nom_fr'] = t('stock.erreur_nom_preparation');
+        } elseif (Database::un('SELECT id FROM produits WHERE nom_fr = ? AND actif = 1', [$valeurs['nom_fr']]) !== null) {
+            $erreurs['nom_fr'] = t('stock.erreur_nom_preparation_pris');
+        }
+        if (!in_array($valeurs['unite'], StockAffichage::UNITES, true)) {
+            $erreurs['unite'] = t('stock.erreur_unite');
+        }
+        if ($erreurs !== []) {
+            http_response_code(422);
+            $this->index($valeurs, $erreurs);
+            return;
+        }
+        $id = $this->recettes->creerPreparation($valeurs['nom_fr'], $valeurs['nom_en'] !== '' ? $valeurs['nom_en'] : $valeurs['nom_fr'], $valeurs['unite']);
+        \App\Core\Journal::ecrire('stock_preparation', (string) $id, ['nom' => $valeurs['nom_fr']], (int) $utilisateur['id']);
+        Session::flash(t('stock.preparation_creee', ['nom' => $valeurs['nom_fr']]));
+        rediriger('/gestion/stock/recettes/' . $id);
     }
 
     /** Coût de revient par unité de base de chaque produit qui a une fiche. */
@@ -111,6 +149,8 @@ final class RecetteController
             $erreurs['rendement'] = t('stock.rendement') . ' : ' . $erreur;
         }
         $articles = $this->depot->articles();
+        $preparation = $this->recettes->estPreparation((int) $produit['id']);
+        $idsPreparations = array_flip($this->recettes->idsPreparations());
         $ingredients = [];
         $vus = [];
         foreach ($saisies as $i => $s) {
@@ -120,6 +160,11 @@ final class RecetteController
             $n = ['n' => $i + 1];
             if ($s['produit_id'] === null || !isset($articles[$s['produit_id']]) || $s['produit_id'] === (int) $produit['id']) {
                 $erreurs['ingredients-' . $i . '-produit'] = t('stock.ingredient_n', $n) . ' : ' . t('stock.erreur_ingredient');
+                continue;
+            }
+            if ($preparation && isset($idsPreparations[$s['produit_id']])) {
+                // Un seul niveau : une préparation n'utilise pas d'autre préparation (pas de boucle possible)
+                $erreurs['ingredients-' . $i . '-produit'] = t('stock.ingredient_n', $n) . ' : ' . t('stock.erreur_ingredient_preparation');
                 continue;
             }
             if (isset($vus[$s['produit_id']])) {
@@ -172,15 +217,20 @@ final class RecetteController
         http_response_code($code);
         $uid = (int) $utilisateur['id'];
         $reference = (new DeviseRepository())->reference();
+        $preparation = $this->recettes->estPreparation((int) $produit['id']);
+        $idsPreparations = array_flip($this->recettes->idsPreparations());
         View::afficher('gestion/stock/recette', [
+            'preparation' => $preparation,
+            'preparations' => $idsPreparations,
             'titre' => t('stock.recette_titre', ['produit' => champ($produit, 'nom')]),
             'utilisateur' => $utilisateur,
             'flash' => Session::lireFlash(),
             'produit' => $produit,
             'recette' => $recette,
-            'articles' => array_filter($this->depot->articles(), static fn (array $a): bool => (int) $a['id'] !== (int) $produit['id'] && !$a['emballage']),
+            'articles' => array_filter($this->depot->articles(), static fn (array $a): bool => (int) $a['id'] !== (int) $produit['id'] && !$a['emballage']
+                && !($preparation && isset($idsPreparations[(int) $a['id']]))),
             'cumps' => $this->depot->cumps(),
-            'cout' => $recette ? $this->stock->coutRevient((int) $produit['id']) : null,
+            'cout' => $recette ? ($preparation ? $this->stock->coutArticle((int) $produit['id']) : $this->stock->coutRevient((int) $produit['id'])) : null,
             'formats' => Database::tous('SELECT * FROM conditionnements WHERE produit_id = ? AND vendable = 1 ORDER BY position, id', [(int) $produit['id']]),
             'marges' => Acces::a($uid, 'rapports.marges') && $reference
                 ? array_values(array_filter($this->recettes->marges((new GestionCatalogueRepository())->grilleParDefaut(), $reference, (new DeviseRepository())->locale()),
@@ -198,9 +248,13 @@ final class RecetteController
 
     private function produitOu404(string $id): array
     {
-        $produit = ($i = StockAcces::id($id)) !== null
+        $i = StockAcces::id($id);
+        $produit = $i !== null
             ? Database::un('SELECT * FROM produits WHERE id = ? AND actif = 1 AND EXISTS (SELECT 1 FROM conditionnements c WHERE c.produit_id = produits.id AND c.vendable = 1)', [$i])
             : null;
+        if ($produit === null && $i !== null && $this->recettes->estPreparation($i)) {
+            $produit = Database::un('SELECT * FROM produits WHERE id = ? AND actif = 1', [$i]);
+        }
         if ($produit === null) {
             pageIntrouvable();
         }

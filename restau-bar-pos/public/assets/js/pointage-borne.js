@@ -13,6 +13,7 @@
   var duree = parseInt(borne.getAttribute('data-duree'), 10) || 30;
   var url = borne.getAttribute('data-url');
   var finFenetre = Date.now() + (parseInt(borne.getAttribute('data-expire'), 10) || duree) * 1000;
+  var decalage = parseInt(borne.getAttribute('data-decalage'), 10) || 0;
   var horsLigne = false;
   var enCours = false;
 
@@ -65,8 +66,9 @@
   }
 
   function battement() {
-    var maintenant = new Date();
-    heure.textContent = ('0' + maintenant.getHours()).slice(-2) + ':' + ('0' + maintenant.getMinutes()).slice(-2);
+    // Heure de l'établissement (fuseau de l'instance), même si la tablette est mal réglée
+    var maintenant = new Date(Date.now() + decalage * 60000);
+    heure.textContent = ('0' + maintenant.getUTCHours()).slice(-2) + ':' + ('0' + maintenant.getUTCMinutes()).slice(-2);
     var reste = Math.ceil((finFenetre - Date.now()) / 1000);
     if (reste <= 0) {
       renouveler();

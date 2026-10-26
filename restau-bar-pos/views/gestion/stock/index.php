@@ -55,6 +55,17 @@ foreach ($lieux as $l) {
     </div>
 <?php endif; ?>
 
+<?php $peremptions ??= ['perimes' => 0, 'bientot' => 0]; if ($peremptions['perimes'] + $peremptions['bientot'] > 0): ?>
+    <div class="stk-alertes" role="status" data-alertes-peremption>
+        <?php if ($peremptions['perimes'] > 0): ?>
+            <a class="stk-alerte stk-alerte--negatif" href="/gestion/stock/peremptions"><strong data-compteur="perimes"><?= (int) $peremptions['perimes'] ?></strong> <?= e(t($peremptions['perimes'] > 1 ? 'stock.alerte_lots_perimes' : 'stock.alerte_lot_perime')) ?></a>
+        <?php endif; ?>
+        <?php if ($peremptions['bientot'] > 0): ?>
+            <a class="stk-alerte stk-alerte--bas" href="/gestion/stock/peremptions"><strong data-compteur="bientot"><?= (int) $peremptions['bientot'] ?></strong> <?= e(t($peremptions['bientot'] > 1 ? 'stock.alerte_lots_bientot' : 'stock.alerte_lot_bientot')) ?></a>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>
+
 <section class="bloc tre-filtres" aria-label="<?= e(t('stock.filtres')) ?>">
     <nav class="tre-puces stk-lieux" aria-label="<?= e(t('stock.choisir_lieu')) ?>">
         <a class="puce" href="<?= e(urlAvec(['lieu' => null, 'tous' => null])) ?>"<?= $lieu === null ? ' aria-current="true"' : '' ?>><?= e(t('stock.tous_lieux')) ?></a>

@@ -111,7 +111,14 @@ final class StockController
             $lignes[] = ['article' => $article, 'niveau' => $n, 'etat' => $etat, 'par_lieu' => $parLieu, 'valeur' => $valeur];
         }
 
+        // Lots qui périment bientôt ou déjà périmés (réglage d'alerte de chaque établissement)
+        $peremptions = ['perimes' => 0, 'bientot' => 0];
+        foreach ($this->depot->lotsAlerte($lieu !== null ? [(int) $lieu['id']] : array_keys($lieux)) as $lot) {
+            $peremptions[(int) $lot['jours_restants'] < 0 ? 'perimes' : 'bientot']++;
+        }
+
         View::afficher('gestion/stock/index', [
+            'peremptions' => $peremptions,
             'titre' => t('stock.titre'),
             'utilisateur' => $utilisateur,
             'flash' => Session::lireFlash(),

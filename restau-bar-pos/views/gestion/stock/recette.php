@@ -16,6 +16,8 @@
  * @var list<array> $lignes produit_id, quantite, rendement_pct
  * @var array<string, string> $erreurs
  * @var int $max
+ * @var bool $preparation fiche d'une préparation intermédiaire (elle se produit, elle ne se vend pas)
+ * @var array<int, int> $preparations identifiants des préparations (ingrédients possibles d'un plat)
  */
 
 use App\Controllers\Gestion\StockAffichage as S;
@@ -27,7 +29,9 @@ $groupes = [];
 foreach ($articles as $a) {
     $groupes[$a['categorie']][] = $a;
 }
-$ligneIngredient = static function (string|int $i, array $ligne) use ($groupes, $erreurs, $peutModifier): string {
+$preparations ??= [];
+$preparation ??= false;
+$ligneIngredient = static function (string|int $i, array $ligne) use ($groupes, $erreurs, $peutModifier, $preparations): string {
     $p = 'ingredients[' . $i . ']';
     $numero = is_int($i) ? $i + 1 : '__n__';
     ob_start(); ?>
@@ -41,7 +45,7 @@ $ligneIngredient = static function (string|int $i, array $ligne) use ($groupes, 
                     <?php foreach ($groupes as $categorie => $liste): ?>
                         <optgroup label="<?= e($categorie) ?>">
                             <?php foreach ($liste as $a): ?>
-                                <option value="<?= (int) $a['id'] ?>" data-unite="<?= e(S::unite((string) $a['unite_base'], 2)) ?>" <?= (int) ($ligne['produit_id'] ?? 0) === (int) $a['id'] ? 'selected' : '' ?>><?= e(champ($a, 'nom') . ' (' . S::unite((string) $a['unite_base'], 2) . ')') ?></option>
+                                <option value="<?= (int) $a['id'] ?>"<?= isset($preparations[(int) $a['id']]) ? ' data-preparation' : '' ?> data-unite="<?= e(S::unite((string) $a['unite_base'], 2)) ?>" <?= (int) ($ligne['produit_id'] ?? 0) === (int) $a['id'] ? 'selected' : '' ?>><?= e(champ($a, 'nom') . ' (' . S::unite((string) $a['unite_base'], 2) . ')') ?></option>
                             <?php endforeach; ?>
                         </optgroup>
                     <?php endforeach; ?>
@@ -63,9 +67,14 @@ $ligneIngredient = static function (string|int $i, array $ligne) use ($groupes, 
 ?>
 <?= View::rendre('gestion/stock/_onglets', ['flash' => $flash ?? null]) ?>
 
-<p class="tre-retour"><a class="lien" href="/gestion/stock/recettes">← <?= e(t('stock.recettes_titre')) ?></a></p>
-<h1><?= e(t('stock.recette_titre', ['produit' => champ($produit, 'nom')])) ?></h1>
-<p class="aide"><?= e(t('stock.recette_aide', ['unite' => S::unite((string) $produit['unite_base'])])) ?></p>
+<p class="tre-retour"><a class="lien" href="/gestion/stock/recettes<?= $preparation ? '#preparations' : '' ?>">← <?= e(t('stock.recettes_titre')) ?></a></p>
+<h1><?= e(t($preparation ? 'stock.prep_fiche_titre' : 'stock.recette_titre', ['produit' => champ($produit, 'nom')])) ?></h1>
+<?php if ($preparation): ?>
+    <p class="aide"><?= e(t('stock.prep_fiche_aide', ['unite' => S::unite((string) $produit['unite_base'], 2)])) ?></p>
+    <?php if ($recette): ?><p><a class="bouton bouton--secondaire" href="/gestion/stock/productions?preparation=<?= (int) $produit['id'] ?>"><?= e(t('stock.prep_produire')) ?></a></p><?php endif; ?>
+<?php else: ?>
+    <p class="aide"><?= e(t('stock.recette_aide', ['unite' => S::unite((string) $produit['unite_base'])])) ?></p>
+<?php endif; ?>
 
 <?= View::rendre('gestion/tresorerie/_erreurs', ['erreurs' => array_values($erreurs)]) ?>
 
@@ -82,7 +91,7 @@ $ligneIngredient = static function (string|int $i, array $ligne) use ($groupes, 
         </section>
         <section class="bloc" aria-labelledby="ingredients-titre">
             <h2 id="ingredients-titre"><?= e(t('stock.ingredients')) ?></h2>
-            <p class="aide"><?= e(t('stock.ingredients_aide')) ?></p>
+            <p class="aide"><?= e(t($preparation ? 'stock.prep_ingredients_aide' : 'stock.ingredients_aide')) ?></p>
             <div class="stk-lignes" data-lignes>
                 <?php foreach (array_values($lignes) as $i => $ligne): ?><?= $ligneIngredient($i, $ligne) ?><?php endforeach; ?>
             </div>
@@ -97,7 +106,7 @@ $ligneIngredient = static function (string|int $i, array $ligne) use ($groupes, 
                 <textarea id="notes" name="notes" rows="3" maxlength="2000"<?= $peutModifier ? '' : ' disabled' ?>><?= e($valeurs['notes']) ?></textarea>
             </div>
             <label class="coche"><input type="checkbox" name="actif" value="1" <?= $valeurs['actif'] ? 'checked' : '' ?><?= $peutModifier ? '' : ' disabled' ?>> <?= e(t('stock.fiche_active')) ?></label>
-            <p class="aide"><?= e(t('stock.fiche_active_aide')) ?></p>
+            <p class="aide"><?= e(t($preparation ? 'stock.prep_active_aide' : 'stock.fiche_active_aide')) ?></p>
             <?php if ($peutModifier): ?>
                 <div class="tre-actions"><button class="bouton" type="submit"><?= e(t('stock.enregistrer_fiche')) ?></button></div>
             <?php endif; ?>

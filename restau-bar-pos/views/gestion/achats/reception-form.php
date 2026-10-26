@@ -117,11 +117,11 @@ $devisesJs = array_map([A::class, 'deviseJs'], $devisesTresorerie);
         <?= $erreurChamp('lignes') ?>
         <div class="stk-lignes" data-lignes>
             <?php foreach (array_values($lignes) as $i => $ligne): ?>
-                <?= View::rendre('gestion/stock/_ligne-article', ['i' => $i, 'ligne' => $ligne, 'articles' => $articles, 'erreurs' => $erreurs, 'avecPrix' => true, 'achat' => true, 'symbole' => $devise['symbole'] ?? '']) ?>
+                <?= View::rendre('gestion/stock/_ligne-article', ['i' => $i, 'ligne' => $ligne, 'articles' => $articles, 'erreurs' => $erreurs, 'avecPrix' => true, 'achat' => true, 'avecPeremption' => true, 'symbole' => $devise['symbole'] ?? '']) ?>
             <?php endforeach; ?>
         </div>
         <template data-modele-ligne>
-            <?= View::rendre('gestion/stock/_ligne-article', ['i' => '__i__', 'ligne' => ['conditionnement_id' => null, 'quantite' => '', 'prix' => ''], 'articles' => $articles, 'erreurs' => [], 'avecPrix' => true, 'achat' => true, 'symbole' => $devise['symbole'] ?? '']) ?>
+            <?= View::rendre('gestion/stock/_ligne-article', ['i' => '__i__', 'ligne' => ['conditionnement_id' => null, 'quantite' => '', 'prix' => '', 'peremption' => '', 'lot_numero' => ''], 'articles' => $articles, 'erreurs' => [], 'avecPrix' => true, 'achat' => true, 'avecPeremption' => true, 'symbole' => $devise['symbole'] ?? '']) ?>
         </template>
         <button class="bouton bouton--secondaire stk-ajouter-ligne" type="submit" name="action" value="ajouter_ligne" formnovalidate data-ajouter-ligne>+ <?= e(t('stock.ajouter_ligne')) ?></button>
         <p class="tre-resume" data-total-lignes aria-live="polite" hidden></p>
