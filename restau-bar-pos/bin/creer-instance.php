@@ -9,7 +9,8 @@ declare(strict_types=1);
  *   php bin/creer-instance.php <sous-domaine> --nom="Nom du client" --email=admin@exemple.com [--demo]
  *       [--db-hote=127.0.0.1] [--db-port=3306] [--db-admin=root] [--db-admin-mdp=...]
  *
- * --demo charge les données de démonstration (database/demo.sql, puis demo-illustrations.sql et demo-tresorerie.sql).
+ * --demo charge les données de démonstration (database/demo.sql, puis demo-illustrations.sql et demo-tresorerie.sql),
+ * les employés (demo-utilisateurs.sql) et trois semaines de ventes (bin/demo-ventes.php).
  * Le mot de passe MySQL administrateur peut aussi venir de la variable RBP_DB_ADMIN_MDP.
  */
 
@@ -138,6 +139,14 @@ if (file_put_contents($fichierConfig, $contenu) === false) {
     arreter("Impossible d'écrire $fichierConfig");
 }
 chmod($fichierConfig, 0600);
+
+// Ventes de démonstration (après les employés : ce sont eux qui vendent), enregistrées comme à la caisse
+if (isset($options['demo']) && is_file(RACINE . '/bin/demo-ventes.php')) {
+    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(RACINE . '/bin/demo-ventes.php') . ' ' . escapeshellarg($sousDomaine), $code);
+    if ($code !== 0) {
+        fwrite(STDERR, "Ventes de démonstration non créées (php bin/demo-ventes.php $sousDomaine pour réessayer).\n");
+    }
+}
 
 $domaine = Config::get('domaine_base');
 echo <<<TXT

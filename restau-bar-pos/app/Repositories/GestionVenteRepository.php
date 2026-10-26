@@ -20,7 +20,6 @@ use App\Core\Journal;
 final class GestionVenteRepository
 {
     public const PAR_PAGE = 50;
-    public const MOYENS = ['especes', 'mobile_money', 'banque'];
     public const STATUTS = ['payee', 'annulee'];
 
     private GestionTresorerieRepository $tresorerie;
@@ -81,7 +80,7 @@ final class GestionVenteRepository
             $conditions[] = 'v.utilisateur_id = ?';
             $params[] = (int) $filtres['vendeur'];
         }
-        if (!empty($filtres['moyen']) && in_array($filtres['moyen'], self::MOYENS, true)) {
+        if (!empty($filtres['moyen']) && in_array($filtres['moyen'], GestionTresorerieRepository::TYPES, true)) {
             $conditions[] = 'EXISTS (SELECT 1 FROM vente_paiements fp WHERE fp.vente_id = v.id AND fp.moyen = ?)';
             $params[] = $filtres['moyen'];
         }
@@ -107,8 +106,7 @@ final class GestionVenteRepository
             'SELECT v.id, v.numero, v.cree_le, v.etablissement_id, v.devise_id, v.total, v.statut, v.annulee_le,
                     e.nom AS etablissement_nom, u.nom AS vendeur, u.avatar AS vendeur_avatar,
                     (SELECT COALESCE(SUM(l.quantite), 0) FROM vente_lignes l WHERE l.vente_id = v.id) AS articles,
-                    (SELECT GROUP_CONCAT(DISTINCT p.moyen ORDER BY FIELD(p.moyen, \'especes\', \'mobile_money\', \'banque\'))
-                       FROM vente_paiements p WHERE p.vente_id = v.id) AS moyens
+                    (SELECT GROUP_CONCAT(DISTINCT p.moyen) FROM vente_paiements p WHERE p.vente_id = v.id) AS moyens
                FROM ventes v
                JOIN etablissements e ON e.id = v.etablissement_id
           LEFT JOIN utilisateurs u ON u.id = v.utilisateur_id
@@ -118,7 +116,10 @@ final class GestionVenteRepository
             $params
         );
         foreach ($ventes as &$vente) {
-            $vente['moyens'] = $vente['moyens'] !== null && $vente['moyens'] !== '' ? explode(',', $vente['moyens']) : [];
+            // Types des comptes payés, dans l'ordre des types de la trésorerie
+            $types = $vente['moyens'] !== null && $vente['moyens'] !== '' ? explode(',', $vente['moyens']) : [];
+            $vente['moyens'] = array_values(array_unique(array_merge(
+                array_intersect(GestionTresorerieRepository::TYPES, $types), array_diff($types, GestionTresorerieRepository::TYPES))));
         }
         unset($vente);
         return ['ventes' => $ventes, 'total' => $total];
