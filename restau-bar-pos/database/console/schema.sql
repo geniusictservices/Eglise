@@ -148,6 +148,6 @@ INSERT INTO parametres (cle, valeur) VALUES
 
 -- Formules proposées au départ (modifiables dans la console)
 INSERT INTO formules (nom, description, modules, max_etablissements, max_utilisateurs, prix_mois, prix_trimestre, prix_annee, sms_inclus) VALUES
-    ('Essentiel', 'Un bar : caisse, ventes et ardoises, carte et vitrine.', '["caisse","ventes","carte","rapports"]', 1, 8, 25.00, 70.00, 250.00, 100),
-    ('Pro', 'Plusieurs établissements, finance, stock et achats.', '["caisse","ventes","achats","stock","finance","rapports","carte"]', 3, 25, 49.00, 135.00, 490.00, 300),
-    ('Club', 'Tout, avec les modules nightclub, événements et cashless.', '["caisse","ventes","achats","stock","personnel","finance","rapports","carte","cuisine","nightclub","evenements","cashless"]', NULL, NULL, 89.00, 240.00, 890.00, 800);
+    ('Essentiel', 'Un bar : caisse, ventes et ardoises, tables et notes, carte et vitrine.', '["caisse","ventes","salle","carte","rapports"]', 1, 8, 25.00, 70.00, 250.00, 100),
+    ('Pro', 'Plusieurs établissements : cuisine, finance, stock et achats, personnel et paie.', '["caisse","ventes","salle","cuisine","achats","stock","personnel","finance","rapports","carte"]', 3, 25, 49.00, 135.00, 490.00, 300),
+    ('Club', 'Tout, avec les modules nuit et entrées, événements et cashless.', '["caisse","ventes","salle","cuisine","achats","stock","personnel","finance","rapports","evenements","nightclub","cashless","carte"]', NULL, NULL, 89.00, 240.00, 890.00, 800);
