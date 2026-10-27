@@ -88,6 +88,10 @@ final class GestionVenteRepository
             $conditions[] = 'v.statut = ?';
             $params[] = $filtres['statut'];
         }
+        // Ventes faites sans réseau, envoyées au retour du réseau (migration 023)
+        if (!empty($filtres['hors_ligne']) && VenteRepository::horsLigneDisponible()) {
+            $conditions[] = 'v.hors_ligne = 1';
+        }
         return [implode(' AND ', $conditions), $params];
     }
 
@@ -104,6 +108,7 @@ final class GestionVenteRepository
         $decalage = max(0, ($page - 1) * self::PAR_PAGE);
         $ventes = Database::tous(
             'SELECT v.id, v.numero, v.cree_le, v.etablissement_id, v.devise_id, v.total, v.statut, v.annulee_le,
+                    ' . (VenteRepository::horsLigneDisponible() ? 'v.hors_ligne, v.ecart_hors_ligne,' : '0 AS hors_ligne, NULL AS ecart_hors_ligne,') . '
                     e.nom AS etablissement_nom, u.nom AS vendeur, u.avatar AS vendeur_avatar,
                     (SELECT COALESCE(SUM(l.quantite), 0) FROM vente_lignes l WHERE l.vente_id = v.id) AS articles,
                     (SELECT GROUP_CONCAT(DISTINCT p.moyen) FROM vente_paiements p WHERE p.vente_id = v.id) AS moyens

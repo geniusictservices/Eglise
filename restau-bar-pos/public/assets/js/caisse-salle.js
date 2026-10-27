@@ -843,7 +843,8 @@
   var minuterie = null;
   var enCours = false;
   function actualiser() {
-    if (enCours) { return; }
+    // Sans réseau (ou caisse servie depuis l'appareil) : rien à demander au serveur
+    if (enCours || (C.horsLigne && C.horsLigne.actif())) { return; }
     enCours = true;
     requete('GET', '/caisse/salle' + (D.zone ? '?zone=' + encodeURIComponent(D.zone) : '')).then(function (j) {
       enCours = false;

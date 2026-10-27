@@ -24,7 +24,7 @@ use App\Repositories\GestionTresorerieRepository;
 
 $types = GestionTresorerieRepository::TYPES;
 $type = static fn (string $t): string => t('tresorerie.type_' . $t);
-$filtre = $filtres['etablissement'] || $filtres['vendeur'] || $filtres['moyen'] || $filtres['statut'];
+$filtre = $filtres['etablissement'] || $filtres['vendeur'] || $filtres['moyen'] || $filtres['statut'] || !empty($filtres['hors_ligne']);
 $montant = static fn ($m, int $deviseId): string => isset($devises[$deviseId]) ? A::montant($m, $devises[$deviseId]) : (string) $m;
 // Devises des totaux dans l'ordre d'affichage (locale, dollar, autres)
 $ordre = array_flip(array_keys($devises));
@@ -93,6 +93,13 @@ uksort($parDevise, static fn ($a, $b) => ($ordre[$a] ?? 999) <=> ($ordre[$b] ?? 
                 <option value=""><?= e(t('gventes.tous_statuts')) ?></option>
                 <option value="payee" <?= $filtres['statut'] === 'payee' ? 'selected' : '' ?>><?= e(t('gventes.statut_payee')) ?></option>
                 <option value="annulee" <?= $filtres['statut'] === 'annulee' ? 'selected' : '' ?>><?= e(t('gventes.statut_annulee')) ?></option>
+            </select>
+        </div>
+        <div class="champ">
+            <label for="filtre-hors-ligne"><?= e(t('gventes.filtre_hors_ligne')) ?></label>
+            <select id="filtre-hors-ligne" name="hors_ligne">
+                <option value=""><?= e(t('gventes.toutes_ventes')) ?></option>
+                <option value="1" <?= !empty($filtres['hors_ligne']) ? 'selected' : '' ?>><?= e(t('gventes.seulement_hors_ligne')) ?></option>
             </select>
         </div>
         <div class="tre-filtres__boutons">
@@ -185,6 +192,10 @@ uksort($parDevise, static fn ($a, $b) => ($ordre[$a] ?? 999) <=> ($ordre[$b] ?? 
                             <td class="ven-ligne__numero">
                                 <a class="ven-numero" href="/gestion/ventes/<?= (int) $v['id'] ?>"><?= e($v['numero']) ?></a>
                                 <?php if ($annulee): ?><span class="badge badge--erreur"><?= e(t('gventes.badge_annulee')) ?></span><?php endif; ?>
+                                <?php if (!empty($v['hors_ligne'])): ?>
+                                    <?php // Vente faite sans réseau : badge (et écart de prix) sous le numéro ?>
+                                    <span class="ven-hl"><span class="badge badge--braise" title="<?= e(t('gventes.hl_titre')) ?>"><?= e(t('gventes.hors_ligne')) ?></span><?php if ($v['ecart_hors_ligne'] !== null && abs((float) $v['ecart_hors_ligne']) > 0.0005): ?><span class="badge badge--erreur"><?= e(t('gventes.hl_ecart_court', ['montant' => $montant($v['ecart_hors_ligne'], (int) $v['devise_id'])])) ?></span><?php endif; ?></span>
+                                <?php endif; ?>
                             </td>
                             <td class="ven-ligne__date"><?= e(A::dateHeure($v['cree_le'])) ?></td>
                             <td class="ven-ligne__etab"><?= e($v['etablissement_nom']) ?></td>

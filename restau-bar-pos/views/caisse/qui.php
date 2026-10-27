@@ -43,6 +43,14 @@ $date = class_exists(IntlDateFormatter::class)
                 <p class="verrou__appareil"><?= e($appareil['nom']) ?></p>
             </div>
         </div>
+        <?php if (!empty($horsLigne)): ?>
+        <?php // Réseau : en ligne ou hors ligne, et ventes en attente sur l'appareil (caisse-hors-ligne.js) ?>
+        <button type="button" class="hl-etat" id="hl-etat" aria-haspopup="dialog" hidden>
+            <span class="hl-etat__point" aria-hidden="true"></span>
+            <span class="hl-etat__texte" id="hl-etat-texte"><?= e(t('horsligne.en_ligne')) ?></span>
+            <span class="hl-etat__nombre" id="hl-etat-nombre" hidden></span>
+        </button>
+    <?php endif; ?>
     </header>
 
     <section class="verrou__accueil" aria-labelledby="verrou-heure">
@@ -116,9 +124,12 @@ $date = class_exists(IntlDateFormatter::class)
     <?php if ($regle !== null): ?>
         <p class="verrou__regles"><?= e($regle) ?></p>
     <?php endif; ?>
+    <?php // Sans réseau (service worker) : message d'un PIN vérifié sur l'appareil ?>
+    <p class="verrou__erreur" role="alert" id="hl-pin-message" hidden></p>
     <template id="modeles-avatars">
         <?php foreach ($personnes as $p): ?>
             <div data-avatar-de="<?= (int) $p['id'] ?>"><?= View::rendre('partials/_avatar', ['nom' => $p['nom'], 'photo' => $p['avatar'], 'classe' => 'avatar--geant']) ?></div>
         <?php endforeach; ?>
     </template>
 </div>
+<?php if (!empty($horsLigne)): ?><?= View::rendre('caisse/_hors-ligne', ['horsLigne' => $horsLigne]) ?><?php endif; ?>

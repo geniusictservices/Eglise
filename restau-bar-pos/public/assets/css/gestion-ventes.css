@@ -33,6 +33,9 @@
 .ven-numero { display: inline-flex; align-items: center; min-height: var(--cible); font-weight: 700; text-underline-offset: 3px; white-space: nowrap; }
 .ven-ligne__numero { white-space: nowrap; }
 .ven-ligne__numero .badge { margin-left: .35rem; }
+/* Vente faite sans réseau (mode hors ligne de la caisse) : badges sous le numéro */
+.ven-hl { display: flex; flex-wrap: wrap; gap: 4px; }
+.ven-ligne__numero .ven-hl .badge { margin-left: 0; }
 .ven-ligne__date { white-space: nowrap; color: var(--doux); }
 .ven-ligne__total .montant { white-space: nowrap; }
 .ven-ligne--annulee .ven-ligne__total .montant { text-decoration: line-through; color: var(--doux); font-weight: 600; }

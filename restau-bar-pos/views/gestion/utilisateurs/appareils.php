@@ -95,3 +95,6 @@ $date = static fn (?string $d): string => $d ? date('d/m/Y H:i', strtotime($d)) 
     </ul>
 <?php endif; ?>
 <p class="aide"><?= e(t('appareils.comment')) ?></p>
+<?php // Mode hors ligne de la caisse : ce que l'appareil fait sans réseau ?>
+<h2 class="uti-sous-titre"><?= e(t('appareils.hors_ligne_titre')) ?></h2>
+<p class="aide"><?= e(t('appareils.hors_ligne')) ?></p>

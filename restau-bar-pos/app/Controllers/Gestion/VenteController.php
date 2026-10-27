@@ -50,6 +50,8 @@ final class VenteController
         $filtres = [
             'debut' => $periode['debut'], 'fin' => $periode['fin'],
             'etablissement' => $etablissement, 'vendeur' => $vendeur, 'moyen' => $moyen, 'statut' => $statut,
+            // Ventes faites sans réseau (mode hors ligne de la caisse)
+            'hors_ligne' => ($_GET['hors_ligne'] ?? '') === '1',
         ];
 
         $page = TresorerieSaisie::id($_GET['page'] ?? null) ?? 1;

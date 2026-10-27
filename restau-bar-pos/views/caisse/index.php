@@ -105,6 +105,15 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
         </div>
 
         <div class="haut__reglages">
+            <?php if (!empty($horsLigne) && $poste === 'caisse'): ?>
+                <?php // Réseau : en ligne ou hors ligne, et ventes en attente sur l'appareil (caisse-hors-ligne.js) ; la caisse du bar
+                      // seulement (l'entrée et le vestiaire demandent le réseau) ?>
+                <button type="button" class="hl-etat" id="hl-etat" aria-haspopup="dialog" hidden>
+                    <span class="hl-etat__point" aria-hidden="true"></span>
+                    <span class="hl-etat__texte" id="hl-etat-texte"><?= e(t('horsligne.en_ligne')) ?></span>
+                    <span class="hl-etat__nombre" id="hl-etat-nombre" hidden></span>
+                </button>
+            <?php endif; ?>
             <?php if ($poste !== 'caisse'): ?>
                 <span class="haut__poste"><?= e(t('nuit.poste_' . $poste)) ?></span>
             <?php endif; ?>
@@ -411,3 +420,4 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
     </dialog>
 </div>
 <script type="application/json" id="donnees-caisse"><?= $json ?></script>
+<?php if (!empty($horsLigne)): ?><?= App\Core\View::rendre('caisse/_hors-ligne', ['horsLigne' => $horsLigne]) ?><?php endif; ?>

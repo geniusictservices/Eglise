@@ -163,7 +163,15 @@ final class CaisseController
         $personne['avatar'] = Database::un('SELECT avatar FROM utilisateurs WHERE id = ?', [$personne['id']])['avatar'] ?? null;
         Session::demarrer();
         $messagePhoto = $_SESSION['caisse_photo'] ?? null;
-        unset($_SESSION['caisse_photo']);
+        // Copie demandée par le service worker (première visite) : le message reste pour la vraie page
+        if (empty($_SERVER['HTTP_X_CAISSE_GARDE'])) {
+            unset($_SESSION['caisse_photo']);
+        }
+        // Mode hors ligne (caisse-sw.js) : le service worker garde la caisse du bar de chaque personne (et de chaque zone)
+        // pour la montrer sans réseau ; jamais l'entrée ni le vestiaire, qui demandent le réseau
+        header('X-Caisse-Page: ' . ($poste === 'caisse' ? 'vente' : 'autre'));
+        header('X-Caisse-Personne: ' . (int) $personne['id']);
+        header('X-Caisse-Partagee: ' . ($appareil !== null ? '1' : '0'));
         View::afficher('caisse/index', [
             'titre' => $nuit ? t('nuit.poste_' . $poste) : t('caisse.titre'),
             'utilisateur' => $personne,
@@ -174,7 +182,9 @@ final class CaisseController
             'peutAutoriser' => $appareil === null && Acces::a($personne['id'], 'caisse.appareils', $id),
             'photoPermise' => (bool) $etab['photo_a_la_caisse'],
             'scripts' => ['/assets/vendor/qrcode.js', '/assets/js/caisse.js', '/assets/js/caisse-ardoise.js', '/assets/js/caisse-session.js', '/assets/js/caisse-salle.js',
-                '/assets/js/scanner-qr.js', '/assets/js/caisse-nuit.js', '/assets/js/photo-profil.js'],
+                '/assets/js/scanner-qr.js', '/assets/js/caisse-nuit.js', '/assets/js/photo-profil.js', '/assets/js/caisse-hors-ligne-base.js', '/assets/js/caisse-hors-ligne.js'],
+            'horsLigne' => CaisseHorsLigneController::donnees($etab, $appareil, $personne, $zone, $poste === 'caisse' ? 'vente' : 'autre', Session::jetonCsrf())
+                + ['cuisine' => $poste === 'caisse' ? CaisseHorsLigneController::categoriesCuisine($etab, $donnees, $zone, $appareil) : []],
             'service' => $contexte['service'], 'happy' => $contexte['happy'],
             'messagePhoto' => $messagePhoto,
             'etab' => $etab,
@@ -273,14 +283,15 @@ final class CaisseController
      * Zone, grille de prix, devises acceptées, devise du ticket et catalogue de la caisse pour un établissement.
      * @return array{zone: ?array, grille: int, grilleDefaut: int, acceptees: array<int, array>, principale: array, donnees: array}
      */
-    public function contexte(array $etab, ?string $codeZone, bool $filtrer = true): array
+    public function contexte(array $etab, ?string $codeZone, bool $filtrer = true, ?\DateTimeImmutable $moment = null): array
     {
         $etablissements = new EtablissementRepository();
         $id = (int) $etab['id'];
         $zone = $codeZone !== null && $codeZone !== '' ? $etablissements->zoneParCode($id, $codeZone) : null;
         $grilleDefaut = (int) $etab['grille_prix_id'];
         // Grille du moment : zone (Carré VIP), sinon happy hour, sinon service en cours, sinon établissement
-        $choix = (new ServiceRepository())->grille($etab, $zone);
+        // ($moment : heure d'une vente faite sans réseau, pour la grille valable à cette heure-là)
+        $choix = (new ServiceRepository())->grille($etab, $zone, $moment);
         $grille = $choix['grille'];
         $service = $choix['service'];
         // Catégories du service en cours (la cuisine fermée disparaît de la caisse) ; $filtrer = false pour payer une note
@@ -515,29 +526,62 @@ final class CaisseController
         if (!is_array($demande)) {
             $this->repondre(422, ['erreur' => t('encaisser.illisible')]);
         }
-        $vendeur = self::vendeur(is_string($demande['etab'] ?? null) ? $demande['etab'] : null);
+        // Vente faite sans réseau, envoyée au retour du réseau (caisse-hors-ligne.js) : la personne vient de la signature
+        // de la vente (sa clé hors ligne sur cet appareil) ou de la session ; l'heure est celle de l'appareil, bornée.
+        // La vente a déjà eu lieu : ni le stock bloqué, ni l'abonnement, ni le pointage, ni une session fermée ne la
+        // refusent ; ce qui aurait été refusé en ligne est noté sur la vente et au journal.
+        $horsLigne = is_array($demande['hors_ligne'] ?? null)
+            ? CaisseHorsLigneController::lireEnvoi($demande, (string) $_POST['vente'], is_string($_POST['signature'] ?? null) ? $_POST['signature'] : '')
+            : null;
+        $vendeur = $horsLigne !== null ? $horsLigne['vendeur'] : self::vendeur(is_string($demande['etab'] ?? null) ? $demande['etab'] : null);
         if ($vendeur === null) {
             $this->repondre(401, ['erreur' => t('encaisser.connexion')]);
         }
         ['personne' => $personne, 'etab' => $etab, 'appareil' => $appareil] = $vendeur;
         $etabId = (int) $etab['id'];
         $uid = (int) $personne['id'];
+        $notes = $horsLigne['notes'] ?? [];
+        $moment = $horsLigne['moment'] ?? null;
+        // La caisse dit qui vend (D.moi) : une page restée ouverte au nom d'une autre personne ne vend jamais sous ce nom-ci
+        if ($horsLigne === null && isset($demande['moi']) && (int) $demande['moi'] !== $uid) {
+            $this->repondre(409, ['erreur' => t('horsligne.personne_changee'), 'code' => 'personne_changee']);
+        }
         $poste = in_array($demande['poste'] ?? null, ['entree', 'vestiaire'], true) ? $demande['poste'] : 'caisse';
+        if ($horsLigne !== null && $poste !== 'caisse') {
+            $this->repondre(422, ['erreur' => t('horsligne.reseau_requis'), 'code' => 'hors_ligne_reseau']);
+        }
         $droit = match ($poste) { 'entree' => 'entrees.vendre', 'vestiaire' => 'vestiaire.gerer', default => 'caisse.encaisser' };
         if (!Acces::a($uid, $droit, $etabId) || ($poste !== 'caisse' && !in_array($poste, self::postesPermis($uid, $etabId), true))) {
-            $this->repondre(403, ['erreur' => t('encaisser.droit')]);
+            if ($horsLigne === null) {
+                $this->repondre(403, ['erreur' => t('encaisser.droit')]);
+            }
+            // Droit retiré depuis (ou personne désactivée) : la vente signée a eu lieu, elle est gardée et signalée
+            $notes[] = 'droit';
         }
         $cle = is_string($demande['cle'] ?? null) ? $demande['cle'] : '';
         if (!preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/', $cle)) {
             $this->repondre(422, ['erreur' => t('encaisser.illisible')]);
         }
         $ventes = new VenteRepository();
-        $session = self::sessionExigee($etab, $personne);
-        // Pointage obligatoire pour ouvrir la caisse (réglage de l'établissement, module Personnel et paie) : refus 409
-        CaissePointageController::exigerPointage($etab, $personne);
-        if (($deja = $ventes->parCle($cle)) !== null) {
-            // Double envoi : la même vente, sans rien refaire
-            $this->repondreVente((int) $deja['id'], $etab, $appareil);
+        if ($horsLigne !== null) {
+            if (($deja = $ventes->parCle($cle)) !== null) {
+                // Déjà reçue (envoi précédent dont la réponse s'est perdue, ou vente passée en ligne) : jamais deux ventes
+                CaisseHorsLigneController::repondreEnvoi((int) $deja['id'], true);
+            }
+            // Session de caisse ouverte à l'heure de la vente (même close depuis) ; sans session : notée, pas refusée
+            $session = CaisseHorsLigneController::sessionAuMoment($etab, $personne, $moment, $horsLigne['session'], $notes);
+            if (CaisseHorsLigneController::pointageManquant($etab, $personne, $moment)) {
+                $notes[] = 'pointage';
+            }
+            $this->momentTaux = $moment->format('Y-m-d H:i:s');
+        } else {
+            $session = self::sessionExigee($etab, $personne);
+            // Pointage obligatoire pour ouvrir la caisse (réglage de l'établissement, module Personnel et paie) : refus 409
+            CaissePointageController::exigerPointage($etab, $personne);
+            if (($deja = $ventes->parCle($cle)) !== null) {
+                // Double envoi : la même vente, sans rien refaire
+                $this->repondreVente((int) $deja['id'], $etab, $appareil);
+            }
         }
         if (isset($_SESSION['nuit_sans_vente'][$cle])) {
             // Double envoi d'entrées ou de dépôts gratuits : les mêmes billets
@@ -547,6 +591,10 @@ final class CaisseController
         // Payer une note ouverte (en entier, par articles ou une part égale) : les lignes viennent de la note
         $noteDemande = $poste === 'caisse' && is_array($demande['note'] ?? null) ? $demande['note'] : null;
         $note = null;
+        if ($horsLigne !== null && ($noteDemande !== null || !empty($demande['credit']) || !empty($demande['cartes']) || !empty($demande['fidelite']))) {
+            // Notes, ardoise, cashless et fidélité demandent le réseau : la caisse ne les met jamais en attente
+            $this->repondre(422, ['erreur' => t('horsligne.reseau_requis'), 'code' => 'hors_ligne_reseau']);
+        }
         if ($noteDemande !== null) {
             $note = (new NoteRepository())->note((int) ($noteDemande['id'] ?? 0));
             if ($note === null || (int) $note['etablissement_id'] !== $etabId || $note['type'] !== 'note') {
@@ -557,7 +605,8 @@ final class CaisseController
             }
             $contexte = $this->contexte($etab, $note['zone_code'], false);
         } elseif ($poste === 'caisse') {
-            $contexte = $this->contexte($etab, is_string($demande['zone'] ?? null) ? $demande['zone'] : null);
+            // Hors ligne : la grille valable à l'heure de la vente, et toute la carte (le service a pu changer depuis)
+            $contexte = $this->contexte($etab, is_string($demande['zone'] ?? null) ? $demande['zone'] : null, $horsLigne === null, $moment);
         } else {
             $contexte = $this->contexteNuit($etab, $poste);
         }
@@ -623,8 +672,12 @@ final class CaisseController
                     $epuisees[] = $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'];
                 }
             }
-            if ($epuisees !== []) {
+            if ($epuisees !== [] && $horsLigne === null) {
                 $this->repondre(422, ['erreur' => t('encaisser.epuise', ['articles' => implode(', ', array_unique($epuisees))]), 'code' => 'epuise']);
+            }
+            if ($epuisees !== []) {
+                // Vendu sans réseau alors que le stock était à zéro (mode « bloquer ») : gardé, signalé ; le stock descend quand même
+                $notes[] = 'stock';
             }
             $formules = new \App\Repositories\FormuleRepository();
             $billetterie = new \App\Repositories\BilletterieRepository();
@@ -632,6 +685,11 @@ final class CaisseController
                 $formatId = (int) ($ligne['id'] ?? 0);
                 $quantite = (int) ($ligne['qte'] ?? 0);
                 $f = $formats[$formatId] ?? null;
+                if ($horsLigne !== null) {
+                    // Format retiré de la carte, sans prix dans la grille, en rupture depuis : la ligne vendue reste, au prix
+                    // de l'appareil si le serveur n'en a plus (noté)
+                    $f = CaisseHorsLigneController::formatVendu($f, $formatId, $ligne, $acceptees, $p, $notes);
+                }
                 // Entrée réduite d'un invité pointé à la porte : son tarif, même s'il n'est pas en vente à tous
                 $invite = null;
                 if ($poste === 'entree' && !empty($ligne['invite'])) {
@@ -675,12 +733,17 @@ final class CaisseController
                 $formule = $formules->formule((int) $f['format']['tailleId']);
                 if ($formule !== null) {
                     try {
-                        $composants = $formules->valider($formule, $ligne['comp'] ?? null, $contexte['epuises']);
+                        $composants = $formules->valider($formule, $ligne['comp'] ?? null, $horsLigne === null ? $contexte['epuises'] : []);
                     } catch (\InvalidArgumentException $e) {
                         $message = $e->getMessage();
-                        $this->repondre(422, str_starts_with($message, 'epuise:')
-                            ? ['erreur' => t('encaisser.epuise', ['articles' => substr($message, 7)]), 'code' => 'epuise']
-                            : ['erreur' => t('nuit.composants_invalides', ['formule' => $f['produit']['nom']]), 'code' => 'composants']);
+                        if ($horsLigne === null) {
+                            $this->repondre(422, str_starts_with($message, 'epuise:')
+                                ? ['erreur' => t('encaisser.epuise', ['articles' => substr($message, 7)]), 'code' => 'epuise']
+                                : ['erreur' => t('nuit.composants_invalides', ['formule' => $f['produit']['nom']]), 'code' => 'composants']);
+                        }
+                        // Formule changée depuis la vente faite sans réseau : la ligne reste, sans ses composants (notée)
+                        $composants = [];
+                        $notes[] = 'formule';
                     }
                     $composants = array_map(static fn (array $c) => $c + ['qte' => $c['quantite']], $composants);
                     foreach ($composants as &$c) {
@@ -758,6 +821,11 @@ final class CaisseController
             $partMax = max($partMax, $calcul['partTicket']);
         }
         $validationRemise = $partMax > 0 && !\App\Repositories\RemiseRepository::permise($uid, $etabId, $partMax);
+        if ($validationRemise && $horsLigne !== null) {
+            // Sans réseau, la caisse n'accorde que dans la limite de la personne : au-delà (limite changée depuis), noté
+            $validationRemise = false;
+            $notes[] = 'remise';
+        }
         if ($validationRemise && empty($demandeRemises['validateur'])) {
             $this->repondre(403, ['erreur' => t('nuit.remise_au_dela', ['part' => self::pourcent($partMax)]), 'code' => 'remise_validation']);
         }
@@ -774,6 +842,10 @@ final class CaisseController
         foreach (is_array($demande['paiements'] ?? null) ? $demande['paiements'] : [] as $pa) {
             $code = is_string($pa['devise'] ?? null) ? $pa['devise'] : '';
             $compte = $comptes[(int) ($pa['compte'] ?? 0)] ?? null;
+            if ($compte === null && $horsLigne !== null) {
+                // Compte désactivé depuis la vente : l'argent y est entré quand même
+                $compte = CaisseHorsLigneController::compteDesactive((int) ($pa['compte'] ?? 0), $etabId, $contexte['acceptees']);
+            }
             $recu = is_numeric($pa['recu'] ?? null) ? round((float) $pa['recu'], (int) ($acceptees[$code]['decimales'] ?? 2)) : 0.0;
             if (!isset($totaux[$code]) || $compte === null || !in_array($code, $compte['devises'], true) || $recu <= 0 || $recu > 1e12) {
                 $this->repondre(422, ['erreur' => t('encaisser.paiement_invalide')]);
@@ -816,6 +888,21 @@ final class CaisseController
             $parts[] = ['devise' => $credit['devise']['code'], 'recu' => $credit['montant']];
         }
         $reglement = Reglement::calculer($totaux, $acceptees, $parts, $p);
+        $ecart = null;
+        if ($horsLigne !== null) {
+            // Prix changés entre la caisse et le serveur (happy hour finie, prix modifié) : les paiements reçus et la monnaie
+            // rendue restent ceux de la caisse ; l'écart de total est gardé sur la vente et montré au gérant
+            $totalAppareil = $horsLigne['total'][$p] ?? null;
+            if ($totalAppareil !== null && abs($totalAppareil - $totaux[$p]) >= Reglement::pas($acceptees[$p]) / 2 - 1e-9) {
+                $ecart = round($totalAppareil - $totaux[$p], 3);
+                $notes[] = 'prix';
+            } elseif (!$reglement['regle'] && !$gratuit) {
+                $ecart = round(-$reglement['reste'][$p], 3);
+                $notes[] = 'prix';
+            }
+            $reglement['regle'] = true;
+            $reglement['rendu'] = CaisseHorsLigneController::renduAppareil($horsLigne['rendu'], $reglement['rendu'], $acceptees);
+        }
         if (!$reglement['regle'] && !$gratuit) {
             $this->repondre(422, ['erreur' => t('encaisser.reste', ['reste' => $this->devisesRepo()->formater($reglement['reste'][$p], $principale)])]);
         }
@@ -938,6 +1025,11 @@ final class CaisseController
             'session_id' => $session !== null ? (int) $session['id'] : null,
             'apres' => [],
         ];
+        if ($horsLigne !== null) {
+            $notes = array_values(array_unique($notes));
+            $vente['date'] = $moment->format('Y-m-d H:i:s');
+            $vente['hors_ligne'] = ['heure_appareil' => $horsLigne['heure_appareil'], 'numero' => $horsLigne['numero'], 'ecart' => $ecart, 'notes' => $notes];
+        }
         if ($note !== null) {
             // Dans la transaction de la vente : la note garde ce qui est payé (et se ferme s'il ne reste rien) ;
             // si quelqu'un a payé ou changé ces lignes entre-temps, la vente est annulée
@@ -987,6 +1079,11 @@ final class CaisseController
             NoteRepository::journal('note_payee', $note, ['vente' => $id, 'mode' => $noteDemande['mode'] ?? 'tout'], $uid, $appareilId);
             $apres = (new NoteRepository())->note((int) $note['id']);
             $this->repondreVente($id, $etab, $appareil, ['note' => ['id' => (int) $note['id'], 'statut' => $apres['statut'] ?? 'payee']]);
+        }
+        if ($horsLigne !== null) {
+            // Rien ne part en cuisine des heures après : la caisse a demandé d'annoncer les plats (reçu provisoire)
+            CaisseHorsLigneController::journaliser($id, $numero, $horsLigne, $notes, $ecart, $p, $totaux[$p], $uid, $appareilId);
+            CaisseHorsLigneController::repondreEnvoi($id, false);
         }
         // Vente directe (comptoir, à emporter) : les plats partent quand même en cuisine
         if ($poste === 'caisse') {
@@ -1306,9 +1403,19 @@ final class CaisseController
         return $this->devisesRepo ??= new DeviseRepository();
     }
 
+    /** Heure d'une vente faite sans réseau : ses paiements gardent le taux valable à cette heure-là. */
+    private ?string $momentTaux = null;
+
     /** Taux en vigueur (unités de la devise pour 1 unité de référence), gardé avec chaque paiement. */
     private function taux(array $devise): ?float
     {
+        if ($this->momentTaux !== null && empty($devise['est_reference'])) {
+            $ligne = Database::un('SELECT taux FROM taux_change WHERE devise_id = ? AND valable_depuis <= ? ORDER BY valable_depuis DESC, id DESC LIMIT 1',
+                [(int) $devise['id'], $this->momentTaux]);
+            if ($ligne !== null && (float) $ligne['taux'] > 0) {
+                return (float) $ligne['taux'];
+            }
+        }
         $taux = $this->devisesRepo()->actives()[(int) $devise['id']]['taux'] ?? null;
         return $taux !== null && (float) $taux > 0 ? (float) $taux : null;
     }
@@ -1433,6 +1540,9 @@ final class CaisseController
     private function afficherQui(array $appareil, array $etab, ?string $erreur = null, ?int $choisi = null, int $code = 200, string $ecran = 'caisse'): void
     {
         http_response_code($code);
+        // Écran de verrouillage de la caisse du bar : gardé par le service worker pour changer de personne sans réseau
+        header('X-Caisse-Page: ' . ($code === 200 && $ecran === 'caisse' && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' ? 'verrou' : 'autre'));
+        header('X-Caisse-Partagee: 1');
         $personnes = [];
         foreach (Database::tous('SELECT id, nom, poste, avatar, pin_bloque_le FROM utilisateurs WHERE actif = 1 AND pin IS NOT NULL ORDER BY nom') as $ligne) {
             // Le bar, l'entrée ou le vestiaire : chacun entre avec son PIN et arrive sur son écran
@@ -1449,7 +1559,8 @@ final class CaisseController
             'choisi' => $choisi,
             'zone' => is_string($_GET['zone'] ?? null) ? $_GET['zone'] : (is_string($_POST['zone'] ?? null) ? $_POST['zone'] : ''),
             'ecran' => $ecran,
-            'scripts' => ['/assets/js/caisse-pin.js'],
+            'horsLigne' => CaisseHorsLigneController::donnees($etab, $appareil, null, null, 'verrou', Session::jetonCsrf()),
+            'scripts' => ['/assets/js/caisse-pin.js', '/assets/js/caisse-hors-ligne-base.js', '/assets/js/caisse-hors-ligne.js'],
         ], 'caisse');
     }
 

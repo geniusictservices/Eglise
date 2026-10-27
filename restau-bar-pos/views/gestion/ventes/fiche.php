@@ -102,6 +102,28 @@ $articles = App\Repositories\NoteRepository::quantiteLisible($nbArticles);
             </dl>
         </section>
 
+        <?php if (!empty($vente['hors_ligne'])): ?>
+            <?php // Vente faite sans réseau, envoyée au retour du réseau : heure de l'appareil, écart, ce qui aurait été refusé en ligne ?>
+            <section class="bloc" aria-labelledby="ven-hl-titre">
+                <h2 id="ven-hl-titre"><?= e(t('gventes.hl_titre')) ?> <span class="badge badge--braise"><?= e(t('gventes.hors_ligne')) ?></span></h2>
+                <dl class="ven-infos">
+                    <?php if ($vente['numero_provisoire']): ?><div><dt><?= e(t('gventes.hl_provisoire')) ?></dt><dd><?= e($vente['numero_provisoire']) ?></dd></div><?php endif; ?>
+                    <?php if ($vente['heure_appareil']): ?><div><dt><?= e(t('gventes.hl_heure')) ?></dt><dd><?= e(A::dateHeure($vente['heure_appareil'])) ?></dd></div><?php endif; ?>
+                    <?php if ($vente['synchronisee_le']): ?><div><dt><?= e(t('gventes.hl_recue')) ?></dt><dd><?= e(A::dateHeure($vente['synchronisee_le'])) ?></dd></div><?php endif; ?>
+                    <?php if ($vente['ecart_hors_ligne'] !== null): ?>
+                        <div><dt><?= e(t('gventes.hl_ecart')) ?></dt><dd class="montant"><strong><?= e($montant($vente['ecart_hors_ligne'], $vente['devise_id'])) ?></strong></dd></div>
+                    <?php endif; ?>
+                </dl>
+                <?php if ($vente['notes_hors_ligne']): ?>
+                    <p class="aide"><?= e(t('gventes.hl_refuse')) ?> :</p>
+                    <ul class="ven-hl-notes">
+                        <?php foreach (explode(',', $vente['notes_hors_ligne']) as $note): ?><li><?= e(t('horsligne.note_' . $note)) ?></li><?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+                <?php if ($vente['ecart_hors_ligne'] !== null): ?><p class="aide"><?= e(t('gventes.hl_ecart_aide')) ?></p><?php endif; ?>
+            </section>
+        <?php endif; ?>
+
         <section class="bloc" aria-labelledby="ven-paiements-titre">
             <h2 id="ven-paiements-titre"><?= e(t('gventes.paiements')) ?></h2>
             <ul class="ven-paiements">

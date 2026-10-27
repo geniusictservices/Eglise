@@ -546,7 +546,13 @@ Principe : chaque personne ne voit que ce dont elle a besoin, au bon moment, sur
 
 ## 15. Exigences transverses
 
-- **Mode hors ligne** : la caisse fonctionne sans réseau et se synchronise quand il revient.
+- **Mode hors ligne** : la caisse fonctionne sans réseau et se synchronise quand il revient. Décidé et fait (migration `023_hors_ligne.sql`) :
+  - un **service worker** (portée `/caisse`, jamais la gestion) garde les fichiers de la caisse et la page de la caisse du bar de chaque personne (par établissement et par zone) à chaque chargement en ligne, et l'écran de verrouillage de la caisse partagée ; sans réseau, il montre la page gardée ; une mise à jour du code remplace ses caches ;
+  - une vente **payée au comptoir sur les comptes** (caisse, mobile money, banque, en FC, en $ ou les deux, monnaie rendue) qui ne joint pas le serveur (coupure, délai dépassé, passerelle 502 à 504 ; jamais après une réponse 4xx) attend sur l'appareil (IndexedDB) avec sa clé unique, qui a vendu, la session et l'heure de l'appareil corrigée de son décalage avec le serveur ; un **reçu provisoire** (« En attente d'envoi », numéro HL-…, imprimable) sort tout de suite ; l'indicateur de l'en-tête dit « En ligne » ou « Hors ligne » et le nombre de ventes en attente ; elles partent seules au retour du réseau (et par « Envoyer maintenant »), la même clé ne crée jamais deux ventes ;
+  - le serveur enregistre la vente **à l'heure de l'appareil** (jamais dans le futur, pas plus de 72 h avant, sinon à l'arrivée), ses mouvements de trésorerie à cette heure, rattachée à la session ouverte à cette heure-là ; il ne la refuse jamais pour le stock bloqué, l'abonnement, le pointage ou une session fermée : il le note sur la vente et au journal ; les prix sont recalculés avec la grille valable à l'heure de la vente, les paiements et la monnaie restent ceux de la caisse, et un écart de total est gardé et montré dans Ventes (badge « Hors ligne », filtre « Ventes hors ligne », fiche) ;
+  - **demandent le réseau** (grisés avec la raison) : ardoise et remboursements, cashless, fidélité, notes, tables et envoi en cuisine, entrées et vestiaire, ouverture et clôture de session, remise au-delà de la limite de la personne ;
+  - **caisse partagée sans réseau** : chaque personne reçoit sur l'appareil une clé hors ligne (secret aléatoire) chiffrée par une clé tirée de son PIN (PBKDF2-SHA256, 150 000 tours, AES-GCM) au moment où elle entre avec le réseau ; sans réseau, seules ces personnes peuvent entrer (le déchiffrement vérifie le PIN), 5 PIN faux effacent leur vérificateur et 15 PIN faux en 10 minutes bloquent l'appareil ; les PIN faux sont rapportés au serveur au retour du réseau (5 bloquent le PIN, comme en ligne) ; chaque vente est signée par cette clé et le serveur vérifie la signature ; au retour du réseau, la caisse se verrouille et chacun entre à nouveau son PIN ;
+  - session expirée à l'envoi (419, 401) : la file reste, la caisse demande le PIN ou la connexion, puis renvoie.
 - **Rapidité** : un barman doit encaisser en 2 ou 3 secondes.
 - **Plusieurs établissements** par client.
 - **Sécurité** : annulations, remises, crédits et changements de taux validés par un gérant, avec historique complet.
@@ -566,7 +572,7 @@ Chaque phase est utilisable seule.
 | 6 | ERP : achats et fournisseurs, stock avancé (inventaires, pertes, recettes, coût de revient, consignes) | Fait (avec préparations, lots et péremption, caisse du marché, suivi des coûts de la cuisine) |
 | 7 | Ressources humaines : présence par code QR et GPS, plannings, congés, paie en $ et en FC avec retenues, avances, commissions · événements | Fait |
 | 8 | Tableaux de bord de la direction · exports PDF et CSV, export comptable · suivi des abonnements dans la console (la facturation en ligne n'est pas prévue : suivi simple) | Fait |
-| — | **Mode hors ligne** de la caisse (section 15) | En cours |
+| — | **Mode hors ligne** de la caisse (section 15) | Fait |
 
 ## 17. Décisions prises
 
@@ -591,7 +597,7 @@ Chaque phase est utilisable seule.
 | Hébergement | LWS mutualisé cPanel : sous-domaine et base de données de chaque client créés à la main dans cPanel, la console guide puis installe les tables |
 | Stock négatif | Au choix du gérant, par établissement : vendre quand même avec une alerte, ou bloquer (le produit passe « épuisé » à 0) |
 | Sessions de caisse | Au choix par établissement : ouverture avec fond de caisse par devise, clôture avec comptage et écart ; un manquant peut être retenu sur la paie |
-| Mode hors ligne | La caisse vend sans réseau : les ventes payées attendent sur l'appareil et partent au retour du réseau, sans double comptage ; ardoises et remboursements demandent le réseau |
+| Mode hors ligne | La caisse vend sans réseau : les ventes payées attendent sur l'appareil et partent au retour du réseau, sans double comptage ; ardoises et remboursements demandent le réseau. Vente enregistrée à l'heure de l'appareil (bornée à 72 h), jamais refusée pour le stock, l'abonnement, le pointage ou la session (noté) ; prix du serveur, écart gardé ; sur une caisse partagée, PIN vérifié sur l'appareil pour les personnes déjà entrées avec le réseau, ventes signées (section 15) |
 | Retenues sur la paie | Ardoises mises à la charge d'un employé et manquants de caisse proposés sur le bulletin ; le gérant peut réduire ou étaler avant de valider |
 | Pointage | Code QR changeant + position GPS (rayon réglable, 100 m par défaut) ; « pointage obligatoire pour ouvrir la caisse » au choix par établissement ; pointage de secours à la caisse avec PIN validé par le gérant |
 | Notes ouvertes et stock | En mode « bloquer », un article épuisé ne peut plus être ajouté ni envoyé ; une note déjà servie se paie toujours. Le stock baisse au paiement |

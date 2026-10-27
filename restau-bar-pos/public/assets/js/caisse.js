@@ -215,10 +215,15 @@
       nbArticles + ' ' + (nbArticles > 1 ? T.articles : T.article) + ' · ' + T.voirTicket;
     document.getElementById('resume-total').textContent = elTotal.textContent;
     document.getElementById('encaisser-total').textContent = videTout ? '' : elTotal.textContent;
-    // Sessions de caisse demandées par l'établissement : rien à encaisser avant d'ouvrir sa caisse
-    var peutEncaisser = !videTout && D.encaisser && (!D.sessions || !!D.session);
-    document.getElementById('encaisser').disabled = !peutEncaisser;
-    document.querySelectorAll('.paiements [data-compte], .paiements [data-ardoise]').forEach(function (b) { b.disabled = !peutEncaisser; });
+    // Sessions de caisse demandées par l'établissement : rien à encaisser avant d'ouvrir sa caisse ; sans réseau
+    // (caisse-hors-ligne.js), la vente au comptoir est acceptée quand même (la session ne peut pas s'ouvrir), mais une
+    // note ouverte ne se paie pas
+    var hl = !!(window.Caisse && window.Caisse.horsLigne && window.Caisse.horsLigne.actif());
+    var peutEncaisser = !videTout && D.encaisser && (!D.sessions || !!D.session || hl) && !(hl && note);
+    var boutonE = document.getElementById('encaisser');
+    boutonE.disabled = !peutEncaisser;
+    if (D.sessions && !D.session) { boutonE.hidden = !hl; }
+    document.querySelectorAll('.paiements [data-compte], .paiements [data-ardoise]').forEach(function (b) { b.disabled = !peutEncaisser || (hl && b.hasAttribute('data-ardoise')); });
     // Salle : lignes déjà envoyées de la note, boutons Envoyer, Addition, Partager, Lancer la suite
     if (window.Caisse && window.Caisse.note && window.Caisse.note.dessiner) { window.Caisse.note.dessiner(); }
   }
@@ -483,7 +488,10 @@
     });
   }
   function imprimer(html) {
-    document.getElementById('zone-impression').innerHTML = html;
+    var zone = document.getElementById('zone-impression');
+    // La feuille d'impression ne montre que les enfants directs de <body> : la zone y est placée
+    if (zone.parentNode !== document.body) { document.body.appendChild(zone); }
+    zone.innerHTML = html;
     window.print();
   }
   function bouton(classe, texte, libelle) {
@@ -873,11 +881,9 @@
     valider.disabled = true;
     valider.textContent = T.envoi;
     document.getElementById('paiement-erreur').hidden = true;
-    var corps = new FormData();
-    corps.append('csrf', D.csrf);
     var nuit = paiement.nuit && window.Caisse.nuit ? window.Caisse.nuit.envoi(paiement) : {};
-    corps.append('vente', JSON.stringify({
-      cle: paiement.cle, etab: D.etab, zone: D.zone, poste: D.poste,
+    var vente = {
+      cle: paiement.cle, etab: D.etab, zone: D.zone, poste: D.poste, moi: D.moi,
       remises: nuit.remises, cartes: nuit.cartes, fidelite: nuit.fidelite, minimum: nuit.minimum,
       extra: paiement.source ? paiement.source.extra : undefined,
       // Une note : ses lignes viennent du serveur ; sinon le ticket (avec précisions et allergies pour la cuisine)
@@ -899,9 +905,25 @@
         client: paiement.credit.client.id, devise: paiement.credit.devise, montant: paiement.credit.montant,
         servi: paiement.credit.servi, garant: paiement.credit.garant, echeance: paiement.credit.echeance, forcer: paiement.credit.forcer
       } : null
-    }));
-    fetch((paiement.source && paiement.source.url) || '/caisse/encaisser', { method: 'POST', body: corps, credentials: 'same-origin', headers: { Accept: 'application/json' } })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+    };
+    var HL = window.Caisse.horsLigne;
+    // Pas de réseau (ou caisse servie depuis l'appareil) : la vente payée attend sur l'appareil
+    if (HL && HL.actif() && !(paiement.source && paiement.source.url)) { enAttente(vente); return; }
+    var corps = new FormData();
+    corps.append('csrf', D.csrf);
+    corps.append('vente', JSON.stringify(vente));
+    // Réseau coupé, délai dépassé, passerelle sans serveur (502 à 504), réponse qui n'est pas celle de la caisse
+    // (portail captif) : la vente peut attendre sur l'appareil ; une réponse 4xx du serveur, jamais
+    var coupure = { reseau: true };
+    var controle = window.AbortController ? new AbortController() : null;
+    var delai = controle ? setTimeout(function () { controle.abort(); }, 15000) : null;
+    fetch((paiement.source && paiement.source.url) || '/caisse/encaisser', { method: 'POST', body: corps, credentials: 'same-origin', headers: { Accept: 'application/json' }, signal: controle ? controle.signal : undefined })
+      .catch(function () { throw coupure; })
+      .then(function (r) {
+        clearTimeout(delai);
+        if (r.status === 502 || r.status === 503 || r.status === 504) { throw coupure; }
+        return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { throw coupure; });
+      })
       .then(function (res) {
         if (!res.ok) {
           // Plafond ou retard : le gérant peut forcer (case dans le bloc de l'ardoise)
@@ -926,11 +948,43 @@
         venteTerminee(res.j);
       })
       .catch(function (e) {
-        paiement.envoi = false;
-        valider.textContent = document.getElementById('paiement-valider').dataset.texte;
-        erreurPaiement(e.message || T.erreurReseau);
-        dessinerBilan();
+        clearTimeout(delai);
+        var echec = function () {
+          paiement.envoi = false;
+          valider.textContent = document.getElementById('paiement-valider').dataset.texte;
+          erreurPaiement((e && e.message) || T.erreurReseau);
+          dessinerBilan();
+        };
+        if (e === coupure && HL) {
+          // Le serveur répond encore (réponse perdue en route) : on réessaie, la même clé ne compte jamais deux fois ;
+          // il ne répond plus : la vente attend sur l'appareil
+          HL.joignable().then(function (joignable) {
+            if (joignable) { echec(); return; }
+            HL.reseauPerdu();
+            enAttente(vente);
+          });
+          return;
+        }
+        echec();
       });
+  }
+
+  // Vente sans réseau : dans la file de l'appareil (caisse-hors-ligne.js), avec un reçu provisoire ; ce qui demande le
+  // réseau (ardoise, note, cashless, fidélité, remise à valider par un gérant) est refusé avec la raison
+  function enAttente(vente) {
+    var HL = window.Caisse.horsLigne;
+    var valider = document.getElementById('paiement-valider');
+    var refus = HL.refus(paiement);
+    var echec = function (texte) {
+      paiement.envoi = false;
+      valider.textContent = valider.dataset.texte;
+      erreurPaiement(texte);
+      dessinerBilan();
+    };
+    if (refus) { echec(refus); return; }
+    HL.vendre(paiement, vente, reglement()).then(function (r) {
+      venteTerminee({ recu: r.recu, numero: r.numero, horsLigne: true, verrouille: !!(D.verrou && D.verrou.apresEncaissement) });
+    }, function () { echec(T.erreurReseau); });
   }
 
   function venteTerminee(reponse) {
@@ -957,6 +1011,7 @@
     if (window.Caisse.apresRecu) { window.Caisse.apresRecu(document.getElementById('paiement-recu')); }
     var suivant = document.getElementById('paiement-suivant');
     paiement.verrouille = reponse.verrouille;
+    paiement.horsLigne = !!reponse.horsLigne;
     if (reponse.verrouille) {
       suivant.textContent = T.terminer;
       var note = el('p', 'paiement-fenetre__note', T.verrouillee);
@@ -967,7 +1022,14 @@
 
   function terminer() {
     fenetre.close();
-    if (paiement && paiement.verrouille) { window.location.reload(); }
+    if (paiement && paiement.verrouille) {
+      // Vente faite sans réseau : la caisse se verrouille aussi sur l'appareil (caisse-hors-ligne.js)
+      if (paiement.horsLigne && window.Caisse.horsLigne) {
+        window.Caisse.horsLigne.verrouiller().then(function () { window.location.reload(); });
+      } else {
+        window.location.reload();
+      }
+    }
     var source = paiement && paiement.source;
     paiement = null;
     // Addition partagée : la part suivante

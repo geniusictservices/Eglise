@@ -78,7 +78,7 @@ Jetons dérivés (recalculés sur chaque bloc thématisé) : `--accent` (= lave,
 | Tableau | `.tableau`, `.defile` (conteneur qui défile), `.nombre` | En-têtes en capitales espacées. |
 | Tuile de caisse | `.tuile`, `__tete`, `__nom`, `__qte`, `__bas`, `__format`, `__prix`, `--choisie`, `--epuise` ; variable `--cat` | Style « Volcan Pro » : fond `--tuile-fond`, contour fin, rayon 16 px, grande image (16/10, 2/1 en S, 4/3 en L) ; nom et pastille de quantité côte à côte (pastille sur l'image si la tuile est étroite) ; prix en police de titre ; tuile choisie : contour et fond teinté à la couleur d'accent. |
 
-Composants propres à un espace : en-tête, barre collante, état d'ouverture et ligne de menu (`vitrine.css`) ; onglets, rangée des sous-catégories (`.sous-onglet`), ticket, choix de la taille et du format, résumé sur téléphone (`caisse.css`) ; intertitre de sous-catégorie (`.sous-categorie__titre`) sur la vitrine ; barre de navigation, blocs, chiffres, alertes, codes QR et chevalet (`gestion.css`).
+Composants propres à un espace : en-tête, barre collante, état d'ouverture et ligne de menu (`vitrine.css`) ; onglets, rangée des sous-catégories (`.sous-onglet`), ticket, choix de la taille et du format, résumé sur téléphone, indicateur du réseau (`.hl-etat` : point vert « En ligne », fond braise « Hors ligne », pastille du nombre de ventes en attente), reçu provisoire (`.recu--provisoire`, bandeau « En attente d'envoi » en pointillés) et opérations grisées sans réseau (`.hl-reseau`) (`caisse.css`) ; intertitre de sous-catégorie (`.sous-categorie__titre`) sur la vitrine ; barre de navigation, blocs, chiffres, alertes, codes QR et chevalet (`gestion.css`).
 
 ## Thème selon le contexte
 

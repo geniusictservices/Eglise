@@ -48,8 +48,19 @@
     if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) { /* sans vibration */ } }
     dessiner();
   }
+  // Sans réseau (caisse-hors-ligne.js) : seules les personnes déjà entrées ici avec le réseau ont un PIN vérifiable
+  var donneesHl = document.getElementById('donnees-hors-ligne');
+  var TH = donneesHl ? (JSON.parse(donneesHl.textContent).textes || {}) : {};
+  var messageHl = document.getElementById('hl-pin-message');
+  function dire(texte) {
+    if (!messageHl) { return; }
+    messageHl.textContent = texte || '';
+    messageHl.hidden = !texte;
+  }
   function ouvrir(lien) {
     if (lien.dataset.bloque) { return; }
+    if (lien.dataset.hlIndisponible) { dire(TH.pin_indisponible); return; }
+    dire('');
     document.querySelectorAll('[data-personne][aria-current]').forEach(function (a) { a.removeAttribute('aria-current'); });
     lien.setAttribute('aria-current', 'true');
     document.getElementById('pave-utilisateur').value = lien.dataset.personne;
@@ -79,6 +90,28 @@
   document.querySelectorAll('[data-personne]').forEach(function (lien) {
     lien.addEventListener('click', function (ev) { ev.preventDefault(); ouvrir(lien); });
   });
+  // Retour du service worker après un PIN vérifié sans réseau : ?personne=<id>&hl=<raison>&reste=<n>
+  var parametres = new URLSearchParams(location.search);
+  var raison = parametres.get('hl');
+  if (raison) {
+    var lienHl = document.querySelector('[data-personne="' + (parseInt(parametres.get('personne'), 10) || 0) + '"]');
+    var nom = lienHl ? lienHl.dataset.nom : '';
+    var message = {
+      incorrect: (TH.pin_incorrect || '').replace('{reste}', parametres.get('reste') || ''),
+      bloque: (TH.pin_bloque || '').replace('{nom}', nom),
+      appareil: TH.pin_appareil,
+      indisponible: TH.pin_indisponible
+    }[raison] || '';
+    if (lienHl && raison === 'incorrect') {
+      ouvrir(lienHl);
+      var aide = document.getElementById('pave-aide');
+      if (aide) { aide.textContent = message; aide.classList.add('pave__aide--erreur'); }
+    } else {
+      dire(message);
+    }
+    // L'adresse redevient /caisse : recharger ne rejoue pas le message
+    if (history.replaceState) { history.replaceState(null, '', location.pathname + (parametres.get('zone') ? '?zone=' + encodeURIComponent(parametres.get('zone')) : '')); }
+  }
   touches.addEventListener('click', function (ev) {
     var b = ev.target.closest('button');
     if (!b) { return; }

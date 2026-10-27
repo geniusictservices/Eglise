@@ -921,3 +921,65 @@ button { cursor: pointer; }
   .ticket__corps { flex: none; overflow: visible; min-height: 6rem; }
   .ticket .encaisser { position: sticky; bottom: 0; z-index: 1; box-shadow: 0 -8px 16px var(--surface); }
 }
+
+/* ---------- Mode hors ligne : indicateur, ventes en attente, reçu provisoire (caisse-hors-ligne.js) ---------- */
+.hl-etat {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 46px; min-width: 46px; padding: 0 12px;
+  border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie); color: var(--encre); font-weight: 700; white-space: nowrap;
+}
+.hl-etat[hidden] { display: none; }
+.hl-etat__point { width: 10px; height: 10px; border-radius: var(--rayon-rond); background: var(--succes); flex: none; }
+.hl-etat[data-etat="hors-ligne"] { background: var(--teinte-braise); border-color: color-mix(in srgb, var(--braise) 50%, var(--ligne)); }
+.hl-etat[data-etat="hors-ligne"] .hl-etat__point { background: var(--braise); }
+.hl-etat__nombre {
+  min-width: 24px; height: 24px; padding: 0 7px; border-radius: var(--rayon-rond); display: inline-grid; place-items: center;
+  background: var(--encre); color: var(--fond); font-size: .8125rem; font-weight: 800; font-variant-numeric: tabular-nums;
+}
+.hl-etat__nombre[hidden] { display: none; }
+@media (max-width: 760px) {
+  .hl-etat[data-etat="en-ligne"] .hl-etat__texte { display: none; }
+}
+/* Téléphone : l'en-tête est plein, le point et le nombre suffisent ; une bande au-dessus des produits dit « hors ligne » */
+.hl-bande { display: none; }
+@media (max-width: 600px) {
+  .haut .hl-etat .hl-etat__texte { display: none; }
+  .haut .hl-etat { padding: 0 10px; }
+  .hl-bande:not([hidden]) { display: block; margin: 10px max(20px, env(safe-area-inset-left, 0px)) 0; padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--braise) 45%, var(--ligne)); border-radius: 12px; background: var(--teinte-braise); color: var(--encre); font-size: .8125rem; font-weight: 600; }
+}
+.verrou__haut { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.verrou__haut .hl-etat { background: rgb(15 17 19 / .55); color: #F3F0EB; border-color: rgb(255 255 255 / .18); }
+.verrou__haut .hl-etat__nombre { background: #F3F0EB; color: #111315; }
+.verrou__personne--reseau { opacity: .55; }
+".pave__aide--erreur { color: var(--erreur); font-weight: 700; }
+
+/* Ce qui demande le réseau, sans réseau : grisé, la raison s'affiche au toucher */
+.hl-reseau { opacity: .45; }
+.hl-reseau:is(a, summary) { cursor: not-allowed; }
+.hl-note { margin: 0; padding: 8px 12px; border: 1px solid color-mix(in srgb, var(--braise) 45%, var(--ligne)); border-radius: 12px; background: var(--teinte-braise); color: var(--encre); font-size: .8125rem; }
+.hl-note[hidden] { display: none; }
+
+.hl-bandeau {
+  position: fixed; z-index: 80; left: 50%; top: calc(12px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+  max-width: calc(100% - 32px); display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0; padding: 10px 16px;
+  border-radius: 14px; background: var(--encre); color: var(--fond); font-weight: 700; box-shadow: var(--ombre);
+}
+.hl-bandeau[hidden] { display: none; }
+.hl-fenetre .paiement-fenetre__corps { gap: 12px; }
+.hl-statut { margin: 0; color: var(--doux); }
+.hl-liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 50vh; overflow: auto; }
+.hl-vente { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie); }
+.hl-vente__tete { display: flex; justify-content: space-between; gap: 8px; }
+.hl-vente__montant { font-weight: 700; font-variant-numeric: tabular-nums; }
+.hl-vente__info { color: var(--doux); font-size: .8125rem; }
+.hl-vente .badge { justify-self: start; }
+.hl-vente .lien { justify-self: start; min-height: var(--cible); }
+.hl-vente__message { margin: 0; color: var(--erreur); font-size: .8125rem; }
+.hl-vide { margin: 0; color: var(--doux); }
+.hl-vide[hidden] { display: none; }
+.hl-aide { display: grid; gap: 6px; color: var(--doux); font-size: .8125rem; }
+.hl-aide p { margin: 0; }
+.recu__attente { margin: 8px 0 0; padding: 6px; text-align: center; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--prix); border: 2px dashed currentColor; border-radius: 8px; }
+.recu__info--provisoire { margin-top: 10px; text-align: center; }
+@media print {
+  #zone-impression .recu__attente { border-color: #000; }
+}

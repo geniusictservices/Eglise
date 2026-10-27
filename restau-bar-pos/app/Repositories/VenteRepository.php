@@ -88,11 +88,13 @@ final class VenteRepository
      *              paiements: list<array{moyen: string, compte: array, devise: array, recu: float, taux: ?float}>,
      *              rendu: ?array{montant: float, devise: array, compte: array, taux: ?float}, date?: string,
      *              credits?: list<array{client_id: int, devise: array, montant: float, echeance: string, servi_par: ?int, garant_id: ?int, note: ?string}>,
-     *              session_id?: ?int, apres?: callable(int): void} $v
+     *              session_id?: ?int, apres?: callable(int): void,
+     *              hors_ligne?: array{heure_appareil: ?string, numero: ?string, ecart: ?float, notes: list<string>}} $v
      *        quantite : décimale pour une part d'une note partagée en parts égales (1/3 de Tilapia)
      *        credits : part du ticket mise à l'ardoise d'un client (une dette par ligne, accordée par utilisateur_id)
      *        date (facultative, « Y-m-d H:i:s ») : heure de la vente et de ses mouvements de trésorerie,
-     *        maintenant si absente (la caisse ne l'envoie jamais ; bin/demo-ventes.php l'utilise)
+     *        maintenant si absente (bin/demo-ventes.php l'utilise ; une vente faite sans réseau garde l'heure de l'appareil)
+     *        hors_ligne (facultatif) : vente faite sans réseau, envoyée au retour du réseau
      * @return int identifiant de la vente
      */
     public function enregistrer(array $v): int
@@ -148,6 +150,16 @@ final class VenteRepository
             // Session de caisse (établissements qui les demandent)
             if (!empty($v['session_id'])) {
                 Database::executer('UPDATE ventes SET session_id = ? WHERE id = ?', [(int) $v['session_id'], $id]);
+            }
+            // Vente faite sans réseau (migration 023) : heure de l'appareil, reçu provisoire, écart et ce qui aurait été refusé
+            if (!empty($v['hors_ligne']) && self::horsLigneDisponible()) {
+                $h = $v['hors_ligne'];
+                Database::executer(
+                    'UPDATE ventes SET hors_ligne = 1, heure_appareil = ?, synchronisee_le = ?, numero_provisoire = ?, ecart_hors_ligne = ?, notes_hors_ligne = ? WHERE id = ?',
+                    [$h['heure_appareil'] ?? null, date('Y-m-d H:i:s'), isset($h['numero']) ? mb_substr((string) $h['numero'], 0, 40) : null,
+                        isset($h['ecart']) ? self::decimal((float) $h['ecart']) : null,
+                        !empty($h['notes']) ? mb_substr(implode(',', $h['notes']), 0, 255) : null, $id]
+                );
             }
             if ($nuit) {
                 Database::executer('UPDATE ventes SET brut = ?, remise = ?, client_id = ? WHERE id = ?', [
@@ -244,6 +256,14 @@ final class VenteRepository
             RemiseRepository::pertesOffertes($id, (int) $v['utilisateur_id']);
         }
         return $id;
+    }
+
+    private static ?bool $horsLigne = null;
+
+    /** Migration 023 (mode hors ligne de la caisse) appliquée ? */
+    public static function horsLigneDisponible(): bool
+    {
+        return self::$horsLigne ??= Database::un("SHOW COLUMNS FROM ventes LIKE 'hors_ligne'") !== null;
     }
 
     /** Préfixe du numéro de ticket : initiales de l'établissement (« comptoir-du-lac » → « CDL »). */
