@@ -74,7 +74,8 @@ ALTER TABLE stock_parametres
 
 -- Vente en gros au dépôt
 ALTER TABLE lieux_stock ADD COLUMN vente_gros TINYINT(1) NOT NULL DEFAULT 0 AFTER par_defaut;
-INSERT IGNORE INTO grilles_prix (code, nom_fr, nom_en) VALUES ('gros', 'Prix de gros', 'Wholesale price');
+-- Identifiant fixe et élevé : une base neuve garde les petits identifiants pour ses propres grilles (et la démonstration)
+INSERT IGNORE INTO grilles_prix (id, code, nom_fr, nom_en) VALUES (900, 'gros', 'Prix de gros', 'Wholesale price');
 
 -- Vente en gros : la vente (ventes) sort du dépôt, au client revendeur ; emballages prêtés ou consigne facturée
 CREATE TABLE ventes_gros (
