@@ -120,6 +120,7 @@ Une instance créée en ligne de commande (`php bin/creer-instance.php …`) a u
 - **Paiements** (section 6) et leur historique.
 - **Instance** : adresse, hôte, base et utilisateur MySQL (le **mot de passe n'est jamais réaffiché**), date d'installation, **connexion à la base** (testée à chaque affichage), mises à jour en attente, boutons **Mettre à jour** et **Télécharger une sauvegarde**.
 - **Utilisation** : personnes actives / limite, établissements actifs / limite, SMS du mois / SMS compris, WhatsApp du mois, dernière connexion. Rien d'autre n'est lu dans la base du bar.
+- **Accès du propriétaire** : si le propriétaire a perdu son mot de passe, ou si son compte a été désactivé ou supprimé, le bouton **Créer ou réinitialiser l'accès** lui donne un nouveau mot de passe temporaire, affiché **une seule fois** (à changer à la première connexion) ; le verrouillage après des essais ratés est levé. S'il n'y a plus de propriétaire actif, le compte est recréé avec l'e-mail du contact du client (modifiez d'abord le **Contact** au besoin). L'action est inscrite au journal de la console et à celui de l'instance.
 - **Statut à la main** (section 7), **Assistance** (section 12), **Contact**, **Messagerie du client** (sender ID propre, section 9), **Relances d'abonnement envoyées**, **Journal** du client.
 
 ## 6. Abonnement et paiements

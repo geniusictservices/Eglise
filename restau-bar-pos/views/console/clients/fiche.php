@@ -71,7 +71,7 @@ $jalons = $client['echeance'] ? [
 
 <?php if ($motDePasse !== null): ?>
     <section class="bloc con-secret" aria-labelledby="con-mdp-titre" data-mot-de-passe-proprietaire>
-        <h2 id="con-mdp-titre"><?= e(t('console.installation_instance.compte_cree')) ?></h2>
+        <h2 id="con-mdp-titre"><?= e(t(($motDePasse['action'] ?? 'cree') === 'reinitialise' ? 'console.proprietaire.reinitialise_titre' : 'console.installation_instance.compte_cree')) ?></h2>
         <p><?= e(t('console.installation_instance.compte_aide')) ?></p>
         <dl class="con-dl">
             <dt><?= e(t('console.installation_instance.adresse')) ?></dt><dd><a class="lien" href="<?= e($url) ?>/gestion" target="_blank" rel="noopener"><?= e($url) ?>/gestion</a></dd>
@@ -289,6 +289,19 @@ $jalons = $client['echeance'] ? [
             </div>
             <div class="con-actions"><button class="bouton bouton--secondaire" type="submit"><?= e(t('console.appliquer')) ?></button></div>
         </form>
+    </section>
+
+    <section class="bloc" id="proprietaire" aria-labelledby="con-proprio-titre">
+        <h2 id="con-proprio-titre"><?= e(t('console.proprietaire.titre')) ?></h2>
+        <p class="aide"><?= e(t('console.proprietaire.aide', ['email' => (string) $client['contact_email']])) ?></p>
+        <?php if (!$installe): ?>
+            <p class="aide"><?= e(t('console.proprietaire.pas_installee')) ?></p>
+        <?php else: ?>
+            <form method="post" action="/clients/<?= $id ?>/proprietaire" onsubmit="return confirm(this.dataset.confirmer)" data-confirmer="<?= e(t('console.proprietaire.confirmer')) ?>">
+                <input type="hidden" name="csrf" value="<?= e($csrf) ?>">
+                <button class="bouton bouton--secondaire" type="submit"><?= e(t('console.proprietaire.bouton')) ?></button>
+            </form>
+        <?php endif; ?>
     </section>
 
     <section class="bloc" id="assistance" aria-labelledby="con-assist-titre">

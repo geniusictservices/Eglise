@@ -14,6 +14,8 @@ use App\Console\Sauvegarde;
 use App\Console\SessionConsole;
 use App\Core\Config;
 use App\Core\Installation;
+use App\Core\Plateforme;
+use PDO;
 use PDOException;
 use Throwable;
 
@@ -384,6 +386,55 @@ final class ClientController extends Base
         }
         Journal::ecrire('assistance_ouverte', (int) $client['id'], [], (int) $admin['id']);
         rediriger(self::urlInstance($client['sous_domaine']) . '/gestion/assistance/entrer/' . $jeton);
+    }
+
+    /**
+     * Accès du propriétaire d'une instance installée : s'il n'y a aucun propriétaire actif, le crée avec l'e-mail
+     * du contact ; sinon donne au propriétaire (celui de l'e-mail du contact, à défaut le premier) un nouveau mot
+     * de passe provisoire, à changer à sa première connexion. Le mot de passe n'est montré qu'une fois.
+     */
+    public function proprietaire(string $id): void
+    {
+        $admin = $this->poste();
+        $client = $this->client($id);
+        if ($client['installe_le'] === null || empty($client['contact_email'])) {
+            SessionConsole::flash(t('console.proprietaire.impossible'), 'erreur');
+            rediriger('/clients/' . $client['id'] . '#proprietaire');
+        }
+        try {
+            $pdo = Instances::pdo($client['sous_domaine']);
+            $requete = $pdo->prepare('SELECT valeur FROM parametres WHERE cle = ?');
+            $requete->execute([Plateforme::CLE_ASSISTANCE_UTILISATEUR]);
+            $assistance = (int) $requete->fetchColumn();
+            $proprietaires = $pdo->prepare(
+                "SELECT u.id, u.email FROM utilisateurs u JOIN utilisateur_roles ur ON ur.utilisateur_id = u.id JOIN roles r ON r.id = ur.role_id
+                  WHERE r.code = 'proprietaire' AND u.actif = 1 AND u.id <> ? ORDER BY (u.email = ?) DESC, u.id"
+            );
+            $proprietaires->execute([$assistance, $client['contact_email']]);
+            $existant = $proprietaires->fetch(PDO::FETCH_ASSOC) ?: null;
+            if ($existant === null) {
+                $telephone = \App\Console\Affichage::telephone($client['contact_telephone']);
+                $resultat = Installation::creerProprietaire($pdo, (string) $client['contact_email'], $client['contact_nom'] ?: $client['nom'], $telephone, $client['langue'], true);
+                $email = (string) $client['contact_email'];
+                $action = 'cree';
+            } else {
+                $motDePasse = Installation::motDePasse();
+                $pdo->prepare('UPDATE utilisateurs SET mot_de_passe = ?, connexion_essais = 0, connexion_bloquee_jusqua = NULL WHERE id = ?')
+                    ->execute([password_hash($motDePasse, PASSWORD_DEFAULT), (int) $existant['id']]);
+                $pdo->prepare('REPLACE INTO parametres (cle, valeur) VALUES (?, ?)')->execute([Plateforme::CLE_MDP_TEMPORAIRE . (int) $existant['id'], '1']);
+                $resultat = ['id' => (int) $existant['id'], 'mot_de_passe' => $motDePasse];
+                $email = (string) ($existant['email'] ?: $client['contact_email']);
+                $action = 'reinitialise';
+            }
+        } catch (Throwable $e) {
+            SessionConsole::flash(t('console.instance.injoignable', ['erreur' => $e instanceof PDOException ? Instances::expliquer($e) : $e->getMessage()]), 'erreur');
+            rediriger('/clients/' . $client['id'] . '#proprietaire');
+        }
+        Instances::journaliser($pdo, 'plateforme_acces_proprietaire', t('console.proprietaire.journal_' . $action));
+        Journal::ecrire('proprietaire_' . $action, (int) $client['id'], ['utilisateur' => $resultat['id']], (int) $admin['id']);
+        $_SESSION['console_mdp_proprietaire'] = ['client' => (int) $client['id'], 'email' => $email, 'mot_de_passe' => $resultat['mot_de_passe'], 'action' => $action];
+        SessionConsole::flash(t('console.proprietaire.fait_' . $action));
+        rediriger('/clients/' . $client['id']);
     }
 
     /** Adresse d'une instance, vue depuis la console (admin.<domaine> → <client>.<domaine>, même schéma et port). */

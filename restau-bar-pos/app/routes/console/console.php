@@ -38,6 +38,7 @@ $routeur->post('/clients/{id}/installer', [ClientController::class, 'installer']
 $routeur->post('/clients/{id}/mettre-a-jour', [ClientController::class, 'migrer']);
 $routeur->post('/clients/{id}/sauvegarde', [ClientController::class, 'sauvegarde']);
 $routeur->post('/clients/{id}/assistance', [ClientController::class, 'assistance']);
+$routeur->post('/clients/{id}/proprietaire', [ClientController::class, 'proprietaire']);
 $routeur->post('/clients/{id}/paiements', [PaiementController::class, 'enregistrer']);
 $routeur->post('/clients/{id}/paiements/{paiement}/annuler', [PaiementController::class, 'annuler']);
 
