@@ -61,6 +61,7 @@
   function ecrire(magasin, valeur) { return operation(magasin, 'readwrite', function (s) { return s.put(valeur); }); }
   function effacer(magasin, cle) { return operation(magasin, 'readwrite', function (s) { return s.delete(cle); }); }
   function tous(magasin) { return operation(magasin, 'readonly', function (s) { return s.getAll(); }); }
+  function vider(magasin) { return operation(magasin, 'readwrite', function (s) { return s.clear(); }); }
   function etat(k) { return lire('etat', k).then(function (e) { return e ? e.v : null; }); }
   function poserEtat(k, v) { return v === null || v === undefined ? effacer('etat', k) : ecrire('etat', { k: k, v: v }); }
   // Compteur de l'appareil (numéros des reçus provisoires) : jamais deux fois le même, même avec deux onglets
@@ -187,7 +188,7 @@
 
   racine.RbpHorsLigne = {
     ESSAIS: ESSAIS, disponible: disponible, cryptoDisponible: cryptoDisponible,
-    lire: lire, ecrire: ecrire, effacer: effacer, tous: tous, etat: etat, poserEtat: poserEtat, suivant: suivant,
+    lire: lire, ecrire: ecrire, effacer: effacer, tous: tous, vider: vider, etat: etat, poserEtat: poserEtat, suivant: suivant,
     clePage: clePage, cleVerrou: cleVerrou, signer: signer, cleHmac: cleHmac, depuisHex: depuisHex,
     preparerAttente: preparerAttente, enregistrerCle: enregistrerCle, deverrouiller: deverrouiller, verrouillerLocal: verrouillerLocal,
     evenement: evenement

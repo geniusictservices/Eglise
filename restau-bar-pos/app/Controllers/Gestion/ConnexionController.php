@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers\Gestion;
 
 use App\Core\Acces;
+use App\Core\CaissePartagee;
 use App\Core\Config;
 use App\Core\Database;
 use App\Core\Journal;
@@ -21,7 +22,10 @@ final class ConnexionController
         if (Session::utilisateur() !== null) {
             rediriger('/gestion');
         }
-        View::afficher('gestion/connexion', ['titre' => t('gestion.connexion'), 'erreur' => null, 'email' => ''], 'gestion');
+        // Juste après une déconnexion sur un appareil personnel : la page efface la caisse hors ligne de ce navigateur
+        $oublierCaisse = !empty($_SESSION['oublier_caisse']);
+        unset($_SESSION['oublier_caisse']);
+        View::afficher('gestion/connexion', ['titre' => t('gestion.connexion'), 'erreur' => null, 'email' => '', 'oublierCaisse' => $oublierCaisse], 'gestion');
     }
 
     public function connecter(): void
@@ -88,6 +92,11 @@ final class ConnexionController
     {
         Session::verifierCsrf();
         Session::deconnecter();
+        // Appareil personnel (pas une caisse partagée autorisée) : ses données de caisse hors ligne seront effacées
+        // par la page de connexion (pages gardées, clés), sauf s'il reste des ventes à envoyer (caisse-oubli.js)
+        if (CaissePartagee::appareil() === null) {
+            $_SESSION['oublier_caisse'] = true;
+        }
         rediriger('/gestion/connexion');
     }
 

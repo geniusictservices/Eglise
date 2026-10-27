@@ -61,6 +61,29 @@ final class StockRepository
         unset($this->parametres[$etablissementId]);
     }
 
+    /**
+     * Caisse des achats au marché de l'établissement (fonds remis au chef, Stock > Lieux > Réglages) quand elle n'est pas
+     * sa seule caisse : cet argent n'est pas dans le tiroir du bar, la caisse ne le propose pas pour encaisser et ne le
+     * compte pas dans une session. null : pas de fonds du marché, ou c'est la seule caisse (elle reste alors à la caisse).
+     */
+    public static function fondsMarcheHorsCaisse(int $etablissementId): ?int
+    {
+        try {
+            $ligne = Database::un('SELECT compte_marche_id FROM stock_parametres WHERE etablissement_id = ?', [$etablissementId]);
+        } catch (\PDOException) {
+            return null;   // base sans le module stock (migration 021)
+        }
+        $fonds = (int) ($ligne['compte_marche_id'] ?? 0);
+        if ($fonds === 0) {
+            return null;
+        }
+        $autre = Database::un(
+            "SELECT id FROM comptes_tresorerie WHERE type = 'caisse' AND active = 1 AND id <> ? AND (etablissement_id IS NULL OR etablissement_id = ?) LIMIT 1",
+            [$fonds, $etablissementId]
+        );
+        return $autre !== null ? $fonds : null;
+    }
+
     /** Alerte de péremption (jours) et caisse des achats au marché d'un établissement. */
     public function definirReglagesCuisine(int $etablissementId, int $alerte, ?int $compteMarcheId, int $utilisateurId): void
     {

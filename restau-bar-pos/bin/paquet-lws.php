@@ -80,7 +80,8 @@ try {
     $nom = 'rbp_paquet_instance';
     $pdo = $baseTemporaire($nom);
     $migrations = Installation::installerTables($pdo, '', false, 'fr');
-    $pdo->exec("DELETE FROM parametres WHERE cle = 'nom_client'");
+    // Le secret des codes QR de pointage est propre à chaque instance : jamais dans le fichier commun (voir Installation)
+    $pdo->exec("DELETE FROM parametres WHERE cle IN ('nom_client', 'pointage.secret')");
     if ((int) $pdo->query('SELECT COUNT(*) FROM utilisateurs')->fetchColumn() !== 0) {
         arreter('La base vide contient des utilisateurs : arrêt.');
     }

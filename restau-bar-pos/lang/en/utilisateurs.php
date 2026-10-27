@@ -4,6 +4,7 @@
 return [
     'acces.interdit_titre' => 'You don\'t have access to this screen',
     'acces.interdit_texte' => 'Your role does not include this right. Ask the owner or the manager to add it in Settings > Users.',
+    'caisse.sans_etablissement' => 'No venue has been created yet. Add one in Settings > Venues, with its currencies and products, then open the till.',
     'caisse.session_titre' => 'Signed-in account',
     'caisse.session_partagee' => 'Shared till “{appareil}”. Lock it before handing it to someone else: your current ticket stays saved under your name.',
     'caisse.session_personnelle' => 'You are selling with your own account on this device. The current ticket stays saved on this device.',

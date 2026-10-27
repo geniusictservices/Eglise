@@ -94,6 +94,7 @@ $lien = static fn (?int $p): string => '/caisse/cuisine?' . http_build_query(arr
             <div class="cuisine-ruptures__liste" id="ruptures-liste"></div>
         </dialog>
     <?php endif; ?>
-    <div id="zone-impression" aria-hidden="true"></div>
 </div>
+<?php /* Enfant direct de <body> : la feuille d'impression ne montre que lui (comme à la caisse) */ ?>
+<div id="zone-impression" aria-hidden="true"></div>
 <script type="application/json" id="donnees-cuisine"><?= $json ?></script>

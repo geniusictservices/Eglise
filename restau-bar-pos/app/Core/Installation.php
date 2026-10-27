@@ -139,6 +139,10 @@ final class Installation
                 }
             }
         } else {
+            // Grille des prix de la carte : sans elle, la seule grille d'une base neuve serait « Prix de gros »
+            // (migration 021), proposée par défaut au premier établissement et au catalogue
+            $pdo->exec("INSERT INTO grilles_prix (code, nom_fr, nom_en)
+                        SELECT 'normal', 'Prix normal', 'Standard price' FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM grilles_prix WHERE code = 'normal')");
             $pdo->prepare('REPLACE INTO parametres (cle, valeur) VALUES (?, ?), (?, ?), (?, ?)')->execute([
                 'nom_client', (string) $nomClient,
                 'langue_defaut', in_array($langue, Config::get('langues', ['fr']), true) ? $langue : Config::get('langue_defaut'),
@@ -147,6 +151,12 @@ final class Installation
         }
         if ($nomClient !== null) {
             $pdo->prepare('REPLACE INTO parametres (cle, valeur) VALUES (?, ?)')->execute(['nom_client', $nomClient]);
+        }
+        // Secret des codes QR de pointage (migration 018) : propre à chaque instance. Une base importée depuis
+        // installation/instance-vide.sql (paquet LWS) n'en a pas, ou celui d'un ancien paquet, commun à tous : nouveau secret
+        $secret = $pdo->query("SELECT valeur FROM parametres WHERE cle = 'pointage.secret'")->fetchColumn();
+        if ($dejaImportee || !is_string($secret) || $secret === '') {
+            $pdo->prepare('REPLACE INTO parametres (cle, valeur) VALUES (?, ?)')->execute(['pointage.secret', bin2hex(random_bytes(32))]);
         }
         return $migrations;
     }

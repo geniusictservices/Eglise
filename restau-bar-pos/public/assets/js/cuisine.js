@@ -189,7 +189,13 @@
   }
   function imprimer(ids) {
     Promise.all(ids.map(function (id) { return requete('GET', '/caisse/cuisine/bon/' + id).then(function (j) { return j.bon; }); }))
-      .then(function (html) { document.getElementById('zone-impression').innerHTML = html.join(''); window.print(); })
+      .then(function (html) {
+        var zone = document.getElementById('zone-impression');
+        // La feuille d'impression ne montre que les enfants directs de <body> : la zone y est placée
+        if (zone.parentNode !== document.body) { document.body.appendChild(zone); }
+        zone.innerHTML = html.join('');
+        window.print();
+      })
       .catch(function (e) { alerte(e.message); });
   }
   var elAlerte = null;

@@ -272,7 +272,8 @@
   }
   // ---------- Production d'une préparation : ingrédients qui vont sortir du lieu ----------
 
-  var production = document.querySelector('[data-production]');
+  // Le formulaire seulement : les lignes du tableau des productions portent aussi data-production (leur identifiant)
+  var production = document.querySelector('form[data-production]');
   if (production) {
     var besoins = {};
     try { besoins = JSON.parse(production.querySelector('[data-production-besoins]').textContent || '{}'); } catch (e) { besoins = {}; }

@@ -5,6 +5,7 @@ return [
     'acces.interdit_titre' => 'Vous n\'avez pas accès à cet écran',
     'acces.interdit_texte' => 'Votre rôle ne donne pas ce droit. Demandez au propriétaire ou au gérant de vous l\'ajouter dans Paramètres > Utilisateurs.',
     'caisse.session_titre' => 'Compte connecté',
+    'caisse.sans_etablissement' => 'Aucun établissement n\'est encore créé. Ajoutez-en un dans Paramètres > Établissements, avec ses devises et ses produits, puis ouvrez la caisse.',
     'caisse.session_partagee' => 'Caisse partagée « {appareil} ». Verrouillez-la avant de la passer à quelqu\'un d\'autre : votre ticket en cours reste gardé à votre nom.',
     'caisse.session_personnelle' => 'Vous vendez avec votre compte sur cet appareil. Le ticket en cours reste gardé sur cet appareil.',
     'caisse.verrouiller' => 'Verrouiller la caisse',

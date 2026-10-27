@@ -23,6 +23,7 @@ use App\Repositories\EtablissementRepository;
 use App\Repositories\NoteRepository;
 use App\Repositories\ServiceRepository;
 use App\Repositories\SessionCaisseRepository;
+use App\Repositories\StockRepository;
 use App\Repositories\VenteRepository;
 
 /**
@@ -113,7 +114,9 @@ final class CaisseController
                     }
                 }
                 http_response_code(403);
-                View::afficher('gestion/interdit', ['titre' => t('acces.interdit_titre'), 'utilisateur' => $utilisateur], 'gestion');
+                // Instance neuve : aucun établissement encore, ce n'est pas une question de rôle
+                $texte = $etablissements->actifs() === [] ? t('caisse.sans_etablissement') : null;
+                View::afficher('gestion/interdit', ['titre' => t('acces.interdit_titre'), 'utilisateur' => $utilisateur, 'texte' => $texte], 'gestion');
                 return;
             }
             $etab = $liste[0];
@@ -439,7 +442,8 @@ final class CaisseController
 
     /**
      * Comptes actifs de l'établissement (ou communs à tous) qui tiennent au moins une devise acceptée,
-     * rangés par type (caisse, mobile money, banque) puis ceux de l'établissement avant les communs.
+     * rangés par type (caisse, mobile money, banque), ceux de l'établissement avant les communs, puis dans l'ordre de la trésorerie (position).
+     * Sans la caisse des achats au marché (fonds du chef), sauf si c'est la seule caisse (StockRepository::fondsMarcheHorsCaisse).
      * @return list<array{id: int, nom: string, type: string, commun: bool, devises: list<string>}>
      */
     public static function comptesCaisse(int $etablissementId, array $acceptees): array
@@ -448,9 +452,9 @@ final class CaisseController
         $lignes = Database::tous(
             "SELECT c.id, c.nom, c.type, c.etablissement_id, cd.devise_id
                FROM comptes_tresorerie c JOIN compte_devises cd ON cd.compte_id = c.id
-              WHERE c.active = 1 AND (c.etablissement_id IS NULL OR c.etablissement_id = ?)
-              ORDER BY FIELD(c.type, 'caisse', 'mobile_money', 'banque'), c.etablissement_id IS NULL, c.nom, c.id",
-            [$etablissementId]
+              WHERE c.active = 1 AND (c.etablissement_id IS NULL OR c.etablissement_id = ?) AND c.id <> ?
+              ORDER BY FIELD(c.type, 'caisse', 'mobile_money', 'banque'), c.etablissement_id IS NULL, c.position, c.nom, c.id",
+            [$etablissementId, StockRepository::fondsMarcheHorsCaisse($etablissementId) ?? 0]
         );
         $comptes = [];
         foreach ($lignes as $ligne) {

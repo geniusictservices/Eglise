@@ -51,7 +51,8 @@ final class SessionCaisseRepository
 
     /**
      * Caisses à compter : comptes actifs de type « caisse » de l'établissement (ou communs), avec chaque
-     * devise qu'ils tiennent parmi celles acceptées. Devise locale d'abord, le dollar ensuite.
+     * devise qu'ils tiennent parmi celles acceptées. Devise locale d'abord, le dollar ensuite. Sans la caisse des achats
+     * au marché (fonds du chef, pas dans le tiroir), sauf si c'est la seule caisse (StockRepository::fondsMarcheHorsCaisse).
      * @param array<int, array> $acceptees devises acceptées (indexées par id)
      * @return list<array{compte_id: int, nom: string, devise_id: int, code: string}>
      */
@@ -59,9 +60,9 @@ final class SessionCaisseRepository
     {
         $lignes = Database::tous(
             "SELECT c.id, c.nom, cd.devise_id FROM comptes_tresorerie c JOIN compte_devises cd ON cd.compte_id = c.id
-              WHERE c.active = 1 AND c.type = 'caisse' AND (c.etablissement_id IS NULL OR c.etablissement_id = ?)
-              ORDER BY c.etablissement_id IS NULL, c.nom, c.id",
-            [$etablissementId]
+              WHERE c.active = 1 AND c.type = 'caisse' AND (c.etablissement_id IS NULL OR c.etablissement_id = ?) AND c.id <> ?
+              ORDER BY c.etablissement_id IS NULL, c.position, c.nom, c.id",
+            [$etablissementId, StockRepository::fondsMarcheHorsCaisse($etablissementId) ?? 0]
         );
         $ordre = array_flip(array_keys($acceptees));
         $resultat = [];

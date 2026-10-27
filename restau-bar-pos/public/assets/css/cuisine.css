@@ -116,7 +116,8 @@ button { cursor: pointer; }
 .bon__lignes--suite .bon__ligne { font-size: .9375rem; font-weight: 600; }
 @media print {
   @page { size: 80mm auto; margin: 4mm; }
-  body > *:not(.cuisine), .cuisine > *:not(#zone-impression) { display: none !important; }
+  html, body { background: #fff; min-height: 0; }
+  body > *:not(#zone-impression) { display: none !important; }
   #zone-impression { display: block !important; }
   #zone-impression .bon { max-width: none; padding: 0; background: #fff; color: #000; page-break-after: always; }
   #zone-impression .bon * { color: #000 !important; }

@@ -157,11 +157,12 @@ if ($moet !== null && $jw !== null && $hennessy !== null) {
         ['nom_fr' => 'Bouteille au choix', 'nom_en' => 'Bottle to choose', 'choix' => 1, 'options' => [$jw, $hennessy]],
         ['nom_fr' => 'Softs au choix', 'nom_en' => 'Mixers to choose', 'choix' => 6, 'options' => array_merge($softs, [$redbull['format']])]]);
 }
-// Stock d'ouverture des nouveaux softs au bar du club (module stock)
+// Stock d'ouverture des nouveaux softs aux bars du club, Bar VIP compris (routage du Carré VIP) (module stock)
 try {
     $stock = new StockRepository();
+    $barsClub = array_map('intval', array_column(Database::tous("SELECT id FROM lieux_stock WHERE etablissement_id = ? AND type = 'comptoir' AND actif = 1 AND id IN (SELECT lieu_id FROM stock_routage_zones UNION SELECT ?)", [$clubId, $stock->comptoirParDefaut($clubId)]), 'id'));
     foreach ([$fanta, $sprite, $tonic, $redbull] as $s) {
-        foreach ([$stock->comptoirParDefaut($clubId)] as $lieu) {
+        foreach ($barsClub as $lieu) {
             if (Database::un('SELECT 1 AS n FROM stock_mouvements WHERE lieu_id = ? AND produit_id = ? LIMIT 1', [$lieu, $s['produit']]) === null) {
                 $stock->mouvement($lieu, $s['produit'], 96, 'ouverture', null, date('Y-m-d H:i:s', strtotime('-25 days')), 'Stock d\'ouverture (démonstration)', $admin);
             }
@@ -473,6 +474,32 @@ if ($lac !== null) {
             $compte['points'] += $points;
         }
     }
+}
+
+// ---------- Réassort du Volcano Club ----------
+// Le club est en « bloquer » (stock négatif, bin/demo-stock-suite.php). Les ventes de la nuit (bouteilles et formules du
+// Carré VIP, softs) et la vente en gros au dépôt arrivent après la simulation du stock (bin/demo-stock.php) : sans
+// réassort, ces articles finiraient sous zéro et seraient « épuisés » à la caisse du club. Pour chaque article à zéro ou
+// moins dans un lieu du club, le stock d'ouverture (la veille des premières ventes) est relevé jusqu'au stock visé (ou
+// jusqu'à zéro s'il n'en a pas) ; les articles encore en stock, même sous leur seuil, gardent leurs suggestions. Idempotent.
+try {
+    $stock ??= new StockRepository();
+    $releves = 0;
+    foreach (Database::tous(
+        'SELECT n.lieu_id, n.produit_id, n.quantite, GREATEST(COALESCE(n.stock_cible, n.seuil_alerte, 0), 0) AS cible
+           FROM stock_niveaux n JOIN lieux_stock l ON l.id = n.lieu_id
+          WHERE l.etablissement_id = ? AND n.quantite <= 0 AND (n.quantite < 0 OR COALESCE(n.stock_cible, n.seuil_alerte, 0) > 0)',
+        [$clubId]
+    ) as $n) {
+        $stock->mouvement((int) $n['lieu_id'], (int) $n['produit_id'], round((float) $n['cible'] - (float) $n['quantite'], 3), 'ouverture', null,
+            date('Y-m-d H:i:s', strtotime('-25 days')), 'Stock d\'ouverture (démonstration)', $admin);
+        $releves++;
+    }
+    if ($releves > 0) {
+        echo "Stock du Volcano Club : $releves articles épuisés relevés au stock visé.\n";
+    }
+} catch (\Throwable $e) {
+    echo 'Réassort du club non fait : ' . $e->getMessage() . "\n";
 }
 
 echo "Nuit de démonstration : " . implode(', ', array_map(static fn ($k, $v) => "$v $k", array_keys($compte), $compte)) . ".\n";

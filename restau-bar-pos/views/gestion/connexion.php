@@ -2,7 +2,9 @@
 /**
  * @var ?string $erreur
  * @var string $email
+ * @var bool $oublierCaisse juste après une déconnexion sur un appareil personnel
  */
+$oublierCaisse ??= false;
 ?>
 <section class="connexion">
     <p class="surtitre"><?= e(t('gestion.nom')) ?></p>
@@ -18,4 +20,11 @@
         <input id="mot_de_passe" name="mot_de_passe" type="password" required autocomplete="current-password">
         <button class="bouton" type="submit"><?= e(t('gestion.se_connecter')) ?></button>
     </form>
+    <?php if ($oublierCaisse): ?>
+        <?php /* Rempli par caisse-oubli.js s'il reste des ventes hors ligne à envoyer sur cet appareil */ ?>
+        <p class="alerte alerte--erreur" id="caisse-oubli" role="alert" hidden
+           data-une="<?= e(t('gestion.caisse_attente_une')) ?>" data-plusieurs="<?= e(t('gestion.caisse_attente')) ?>"></p>
+        <script src="/assets/js/caisse-hors-ligne-base.js" defer></script>
+        <script src="/assets/js/caisse-oubli.js" defer></script>
+    <?php endif; ?>
 </section>

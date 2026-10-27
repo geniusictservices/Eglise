@@ -351,8 +351,10 @@ button { cursor: pointer; }
   .haut select { max-width: 11rem; }
 }
 
-/* Téléphone : deux lignes seulement (lieu, puis recherche + thème) */
+/* Téléphone : deux lignes seulement (lieu, puis recherche + thème) ; un bouton de plus (garanties à confirmer)
+   fait passer les réglages à la ligne plutôt que de déborder de l'écran */
 @media (max-width: 600px) {
+  .haut__reglages { flex-wrap: wrap; justify-content: flex-end; min-width: 0; max-width: 100%; }
   .haut__lieu { flex: 1 1 100%; }
   .haut__lieu select { flex: 1; min-width: 0; max-width: none; }
   .haut__recherche { flex: 1 1 0; }
