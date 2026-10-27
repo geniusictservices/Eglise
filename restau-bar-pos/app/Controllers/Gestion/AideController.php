@@ -29,6 +29,13 @@ final class AideController
             . '<a href="/gestion/aide/manuel.pdf" style="color:#FFB547">' . e(t('aide.telecharger_pdf')) . '</a>'
             . '</div>';
         $html = preg_replace('/<head>/', '<head><base href="/gestion/aide/">', $html, 1);
+        // Les guides de docs/ (console, LWS, Africa's Talking, WhatsApp) ne sont pas servis par l'application :
+        // dans l'aide, leur lien devient le chemin du fichier, à ouvrir dans le dossier du logiciel
+        $html = preg_replace(
+            '#<a class="doc-externe" data-fichier="([^"]+)" href="[^"]*">(.*?)</a>#s',
+            '$2 (<span class="chemin">$1</span>)',
+            $html
+        );
         $html = preg_replace('/<body>/', '<body>' . $barre, $html, 1);
 
         header('Content-Type: text/html; charset=utf-8');
