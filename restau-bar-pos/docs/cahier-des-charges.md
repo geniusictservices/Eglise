@@ -562,11 +562,11 @@ Chaque phase est utilisable seule.
 | 2 | Console super admin (clients, sous-domaines, instances, abonnements, activation des modules, API de messagerie) · utilisateurs, rôles et permissions (portée, PIN, caisse partagée, journal) · dépôts, comptoirs, points de vente | Fait |
 | 3 | Caisse : encaissement multi-devises, comptes choisis directement, taux de change, **sessions de caisse** (au choix par établissement) · stock et transferts · **rapport des ventes par utilisateur et serveur de la période** | Fait |
 | 4 | Clients et dettes (ardoise, garant, relances SMS et WhatsApp) · **dettes des clients liées aux utilisateurs** (servi par, accordé par, garant, responsable) · plan de salle et notes ouvertes · cuisine (circuit des commandes, écran de cuisine, fiches techniques) · services horaires, happy hour, journée d'exploitation, réservations | Fait |
-| 5 | Modules lounge et nightclub (bouteilles et formules, minimum VIP, entrées, invités et promoteurs, vestiaire, cashless à code QR, mode comptoir rapide) · remises et fidélité · vente en gros au dépôt et consignes | En cours |
-| 6 | ERP : achats et fournisseurs, stock avancé (inventaires, pertes, recettes, coût de revient, consignes) | Fait (préparations, péremption et suivi des coûts de la cuisine en cours) |
+| 5 | Modules lounge et nightclub (bouteilles et formules, minimum VIP, entrées, invités et promoteurs, vestiaire, cashless à code QR, mode comptoir rapide) · remises et fidélité · vente en gros au dépôt et consignes | Fait |
+| 6 | ERP : achats et fournisseurs, stock avancé (inventaires, pertes, recettes, coût de revient, consignes) | Fait (avec préparations, lots et péremption, caisse du marché, suivi des coûts de la cuisine) |
 | 7 | Ressources humaines : présence par code QR et GPS, plannings, congés, paie en $ et en FC avec retenues, avances, commissions · événements | Fait |
 | 8 | Tableaux de bord de la direction · exports PDF et CSV, export comptable · suivi des abonnements dans la console (la facturation en ligne n'est pas prévue : suivi simple) | Fait |
-| — | **Mode hors ligne** de la caisse (section 15) | À faire |
+| — | **Mode hors ligne** de la caisse (section 15) | En cours |
 
 ## 17. Décisions prises
 
