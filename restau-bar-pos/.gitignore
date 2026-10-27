@@ -36,3 +36,6 @@
 /outils/**/*.pdf
 /outils/tests/suites/dettes/nettoyage-caisse.json
 /outils/tests/suites/agents/final/audit.json
+/outils/tests/suites/dettes/console-integ.php
+/outils/tests/suites/dettes/r[0-9].txt
+/outils/tests/suites/agents/*/resultats.txt

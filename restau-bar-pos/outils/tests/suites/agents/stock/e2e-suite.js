@@ -412,6 +412,8 @@ async function petitesCibles(page) {
 
   // ---------- 8. Vente en gros ----------
   {
+    // Le club de la démo est en mode « bloquer » et sa réserve peut manquer de Primus Grande : la vente de 3 casiers doit passer
+    sql("UPDATE stock_parametres SET mode_negatif = 'vendre' WHERE etablissement_id = 2");
     const gvc = await connecter(navigateur, GERANTVC);
     await gvc.goto(B + '/gestion/gros');
     verifier(await gvc.locator('tr[data-vente-gros]').count() === 3 && await gvc.locator(`[data-solde-client="${bahati}"]`).innerText().then(t => t.includes('6 × Casier')), 'vente en gros : 3 ventes, soldes des revendeurs');
@@ -456,8 +458,10 @@ async function petitesCibles(page) {
     verifier(r.status() === 422 && (await r.text()).includes('le client n\'en a que') || (await r.text()).includes('n&#039;en a que'), 'plus de vides rapportés que dus refusé', r.status());
     r = await poster(gvc, '/gestion/gros/nouvelle', { lieu_id: L.vcReserve, client_id: bahati, devise_id: cdf, 'lignes[0][conditionnement_id]': C.pgCasier, 'lignes[0][quantite]': '1', 'paiements[0][compte_id]': caisseClub, 'paiements[0][montant]': '90000' });
     verifier(r.status() === 422 && (await r.text()).includes('supérieurs au total'), 'paiement au-delà du total refusé');
+    sql("UPDATE stock_parametres SET mode_negatif = 'bloquer' WHERE etablissement_id = 2");
     r = await poster(gvc, '/gestion/gros/nouvelle', { lieu_id: L.vcReserve, client_id: bahati, devise_id: cdf, 'lignes[0][conditionnement_id]': C.pgCasier, 'lignes[0][quantite]': '500', 'paiements[0][compte_id]': caisseClub, 'paiements[0][montant]': '1000' });
     verifier(r.status() === 422 && (await r.text()).includes('Pas assez de'), 'mode bloquer : plus que le stock du dépôt refusé');
+    sql("UPDATE stock_parametres SET mode_negatif = 'vendre' WHERE etablissement_id = 2");
     r = await poster(gvc, '/gestion/gros/nouvelle', { lieu_id: L.vcReserve, client_id: '', devise_id: cdf, 'lignes[0][conditionnement_id]': C.pgCasier, 'lignes[0][quantite]': '1' });
     verifier(r.status() === 422 && (await r.text()).includes('Choisissez le client'), 'vente sans client refusée');
     r = await poster(gvc, '/gestion/gros/nouvelle', { lieu_id: L.reserve, client_id: bahati, devise_id: cdf, 'lignes[0][conditionnement_id]': C.pgCasier, 'lignes[0][quantite]': '1' });

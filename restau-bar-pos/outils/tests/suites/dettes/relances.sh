@@ -5,13 +5,16 @@ cd /home/user/Eglise/restau-bar-pos
 q() { mysql -N --default-character-set=utf8mb4 rbp_integ -e "$1"; }
 nb=0; ko=0; v() { nb=$((nb+1)); if [ "$1" = "$2" ]; then echo "ok    $3"; else ko=$((ko+1)); echo "ÉCHEC $3 (attendu « $2 », obtenu « $1 »)"; fi; }
 : > $D/mock.log
+# Faux services sur le port 8198 (arrêtés à la fin)
+php -S 127.0.0.1:8198 $D/mock.php > $D/mock-serveur.log 2>&1 & MOCK=$!; sleep 1
 # Depuis la décision « messagerie commune réglée dans la console » (cahier des charges, section 17), les clés SMS et
 # WhatsApp ne sont plus dans l'instance : une console d'essai (rbp_integ_console) les porte ; sans elle, tout est « simulé ».
 export RBP_CONSOLE_CONFIG=$D/console-integ.php
-cat > $RBP_CONSOLE_CONFIG <<'PHP'
-<?php return ['db' => ['hote' => 'localhost', 'port' => 3306, 'nom' => 'rbp_integ_console', 'utilisateur' => 'rbp_demo', 'mot_de_passe' => '6e9bb19352b399f128f1fcf86faf02c6'], 'jeton_installation' => '', 'cache_licence_secondes' => 0];
-PHP
-mysql -e "DROP DATABASE IF EXISTS rbp_integ_console; CREATE DATABASE rbp_integ_console CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL ON rbp_integ_console.* TO 'rbp_demo'@'localhost';"
+# Même utilisateur MySQL que l'instance integ (config/instances/integ.php), sur une base à part
+php -r '$c = require "config/instances/integ.php"; $db = $c["db"]; $db["nom"] = "rbp_integ_console";
+  file_put_contents(getenv("RBP_CONSOLE_CONFIG"), "<?php return " . var_export(["db" => $db, "jeton_installation" => "", "cache_licence_secondes" => 0], true) . ";\n");'
+U=$(php -r '$c = require "config/instances/integ.php"; echo $c["db"]["utilisateur"];')
+mysql -e "DROP DATABASE IF EXISTS rbp_integ_console; CREATE DATABASE rbp_integ_console CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; GRANT ALL ON rbp_integ_console.* TO '$U'@'localhost'; GRANT ALL ON rbp_integ_console.* TO '$U'@'127.0.0.1';"
 php bin/console-admin.php installer > /dev/null || echo "console d'essai : installation impossible"
 c() { mysql -N --default-character-set=utf8mb4 rbp_integ_console -e "$1"; }
 # Les ardoises de la démo (44 ouvertes) sont mises de côté : seules les trois dettes du test sont relancées
@@ -81,4 +84,5 @@ c "DELETE FROM parametres WHERE cle LIKE 'sms.%' OR cle LIKE 'whatsapp.%'"
 php bin/relances.php integ --date=$J > /dev/null
 v "$(q "SELECT COUNT(*) FROM messages WHERE evenement='rappel_responsable'")" "0" "responsables non prévenus si le réglage est coupé"
 mysql -e "DROP DATABASE IF EXISTS rbp_integ_console"; rm -f $RBP_CONSOLE_CONFIG
+kill $MOCK 2>/dev/null
 echo; echo "$((nb-ko))/$nb"

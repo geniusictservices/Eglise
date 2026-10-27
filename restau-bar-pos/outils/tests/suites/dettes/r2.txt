@@ -1,1 +1,0 @@
-integ : 0 envoyé(s), 0 inscrit(s) sans envoi (messagerie non réglée), 6 échec(s), 0 déjà fait(s)
