@@ -47,6 +47,9 @@ final class CaisseNuitController
             'pret' => $pret,
             'textes' => self::textes(),
             'remise' => null, 'cashless' => null, 'fidelite' => null, 'entree' => null, 'vestiaire' => null, 'minimum' => null,
+            // Taux du jour (unités pour 1 unité de référence) : équivalent d'une recharge dans les autres devises
+            'taux' => array_column(array_map(static fn (array $d) => ['code' => $d['code'], 'taux' => $d['taux'] !== null ? (float) $d['taux'] : null], $contexte['acceptees']), 'taux', 'code'),
+            'invites' => false,
         ];
         if (!$pret) {
             return $donnees;
@@ -166,7 +169,7 @@ final class CaisseNuitController
             'support' => $carte['support'], 'porteur' => $carte['porteur'] ?? $carte['client_nom'] ?? null, 'soldes' => $soldes,
             'motif' => $carte['motif_blocage'] ?? null,
             'historique' => $historique ? array_map(static fn (array $m) => [
-                'type' => $m['type'], 'montant' => (float) $m['montant'], 'devise' => $m['devise_code'], 'solde' => (float) $m['solde_apres'],
+                'type' => $m['type'], 'libelle' => t('nuit.mouvement_' . $m['type']), 'montant' => (float) $m['montant'], 'devise' => $m['devise_code'], 'solde' => (float) $m['solde_apres'],
                 'le' => date('d/m H:i', strtotime($m['cree_le'])), 'vente' => $m['vente_numero'], 'par' => $m['par_nom'],
             ], (new CashlessRepository())->historique((int) $carte['id'], 12)) : [],
         ];
@@ -577,6 +580,11 @@ final class CaisseNuitController
             $this->repondre(403, ['erreur' => t('nuit.module_absent')]);
         }
         $slug = $ecriture ? ($_POST['etab'] ?? null) : ($_GET['etab'] ?? null);
+        if ($ecriture && $slug === null && is_string($_POST['vente'] ?? null)) {
+            // Fenêtre de paiement de la caisse (recharge) : l'établissement est dans la demande, comme pour une vente
+            $demande = json_decode($_POST['vente'], true);
+            $slug = is_array($demande) ? ($demande['etab'] ?? null) : null;
+        }
         $vendeur = CaisseController::vendeur(is_string($slug) ? $slug : null);
         if ($vendeur === null) {
             $this->repondre(401, ['erreur' => t('encaisser.connexion')]);

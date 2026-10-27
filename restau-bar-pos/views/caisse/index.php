@@ -6,7 +6,12 @@
  * @var array $zones
  * @var ?array $zone
  * @var array $donnees
+ * @var string $poste caisse (le bar), entree (billetterie, contrôle, invités) ou vestiaire
+ * @var list<string> $postes écrans de caisse permis à la personne
  */
+$poste ??= 'caisse';
+$postes ??= ['caisse'];
+$nuit = $donnees['nuit'] ?? null;
 $textes = [
     'tout' => t('caisse.tout'),
     'formats' => t('caisse.formats'),
@@ -60,9 +65,10 @@ foreach ($donnees['comptes'] as $compte) {
 }
 $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'csrf' => App\Core\Session::jetonCsrf()], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_THROW_ON_ERROR);
 ?>
-<div class="caisse" data-mode="<?= e($donnees['mode']) ?>" id="caisse">
+<link rel="stylesheet" href="/assets/css/caisse-nuit.css">
+<div class="caisse" data-mode="<?= e($donnees['mode']) ?>" data-poste="<?= e($poste) ?>" id="caisse">
     <header class="haut">
-        <form class="haut__lieu" method="get" action="/caisse" data-auto-envoi>
+        <form class="haut__lieu" method="get" action="<?= e($chemin ?? '/caisse') ?>" data-auto-envoi>
             <?php if (count($etablissements) > 1): ?>
                 <label class="visuellement-cache" for="e"><?= e(t('gestion.etablissement')) ?></label>
                 <select id="e" name="e">
@@ -99,6 +105,28 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
         </div>
 
         <div class="haut__reglages">
+            <?php if ($poste !== 'caisse'): ?>
+                <span class="haut__poste"><?= e(t('nuit.poste_' . $poste)) ?></span>
+            <?php endif; ?>
+            <?php if (!empty($nuit['entree']['controler'])): ?>
+                <button type="button" class="haut__nuit" id="nuit-controle" aria-haspopup="dialog"><?= App\Core\Icones::svg('qr', 18) ?><span><?= e(t('nuit.c_controle')) ?></span></button>
+            <?php endif; ?>
+            <?php if (!empty($nuit['entree']['invites'])): ?>
+                <button type="button" class="haut__nuit" id="nuit-invites" aria-haspopup="dialog"><?= App\Core\Icones::svg('personnel', 18) ?><span><?= e(t('nuit.c_invites')) ?></span></button>
+            <?php endif; ?>
+            <?php if (!empty($nuit['entree'])): ?>
+                <span class="haut__compteurs" id="nuit-compteurs" aria-live="polite"></span>
+            <?php endif; ?>
+            <?php if (!empty($nuit['vestiaire'])): ?>
+                <?php if (!$nuit['vestiaire']['payant']): ?>
+                    <button type="button" class="haut__nuit" id="nuit-deposer" aria-haspopup="dialog"><span><?= e(t('nuit.c_vestiaire_deposer')) ?></span></button>
+                <?php endif; ?>
+                <button type="button" class="haut__nuit" id="nuit-rendre" aria-haspopup="dialog"><span><?= e(t('nuit.c_vestiaire_rendre')) ?></span></button>
+                <button type="button" class="haut__nuit" id="nuit-restants" aria-haspopup="dialog"><span><?= e(t('nuit.c_vestiaire_restants')) ?></span> <span class="haut__salle-prets" id="nuit-restants-n"><?= (int) $nuit['vestiaire']['restants'] ?></span></button>
+            <?php endif; ?>
+            <?php if (!empty($nuit['cashless']) && ($nuit['cashless']['recharger'] || $nuit['cashless']['gerer'])): ?>
+                <button type="button" class="haut__nuit" id="nuit-cashless" aria-haspopup="dialog"><?= App\Core\Icones::svg('finance', 18) ?><span><?= e(t('nuit.c_carte')) ?></span></button>
+            <?php endif; ?>
             <?php if ($tables): ?>
                 <?php // Plan de salle : tables et notes ouvertes (pastille : plats prêts pour moi) ?>
                 <button type="button" class="haut__salle" id="salle" aria-haspopup="dialog" title="<?= e(t('note.salle')) ?>">
@@ -216,9 +244,13 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
             <?php if ($donnees['session']): ?>
                 <button class="bouton bouton--secondaire" type="button" id="cloturer-session" aria-haspopup="dialog"><?= e(t('session.cloturer')) ?></button>
             <?php endif; ?>
+            <?php foreach ($postes as $autre): if ($autre === $poste) { continue; } ?>
+                <a class="bouton bouton--secondaire" data-poste-lien="<?= e($autre) ?>" href="<?= e(($autre === 'caisse' ? '/caisse' : '/caisse/' . $autre) . ($partagee ? '' : '?e=' . $etab['slug'])) ?>"><?= e(t('nuit.aller_poste', ['poste' => t('nuit.poste_' . $autre)])) ?></a>
+            <?php endforeach; ?>
             <?php if ($partagee): ?>
                 <form method="post" action="/caisse/verrouiller" id="form-verrouiller">
                     <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
+                    <input type="hidden" name="ecran" value="<?= e($poste) ?>">
                     <button class="bouton" type="submit" id="verrouiller"><?= e(t('caisse.verrouiller')) ?></button>
                 </form>
             <?php endif; ?>
@@ -268,6 +300,8 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
                 <span class="paiement-fenetre__etiquette"><?= e(t('paiement.payer_en')) ?></span>
                 <div class="segments segments--large" id="paiement-devises"></div>
             </div>
+            <?php // Nuit : remise ou offert, minimum de consommation, fidélité, carte cashless (caisse-nuit.js) ?>
+            <div id="paiement-nuit" class="paiement-nuit"></div>
             <div id="paiement-lignes" class="paiement-lignes"></div>
             <div class="paiement-fenetre__bilan" id="paiement-bilan" aria-live="polite"></div>
             <div class="paiement-fenetre__rendu" id="paiement-rendu" hidden>
@@ -352,6 +386,21 @@ $json = json_encode($donnees + ['textes' => $textes, 'cle' => $etab['slug'], 'cs
     <?php if ($salle !== null): ?>
         <?= App\Core\View::rendre('caisse/_salle', ['salle' => $salle, 'etab' => $etab, 'zones' => $zones]) ?>
     <?php endif; ?>
+
+    <?php // Nuit : formule, remise, carte cashless, contrôle, invités, vestiaire, fidélité (contenu dessiné par caisse-nuit.js) ?>
+    <dialog class="paiement-fenetre nuit-fenetre" id="nuit-fenetre" aria-labelledby="nuit-titre">
+        <div class="paiement-fenetre__corps">
+            <div class="paiement-fenetre__tete">
+                <h2 id="nuit-titre"></h2>
+                <button type="button" class="icone" data-fermer-nuit title="<?= e(t('nuit.c_fermer')) ?>">
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.4 5 5 6.4 10.6 12 5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z"/></svg>
+                    <span class="visuellement-cache"><?= e(t('nuit.c_fermer')) ?></span>
+                </button>
+            </div>
+            <div id="nuit-corps" class="nuit-corps"></div>
+        </div>
+    </dialog>
+    <p class="salle-toast nuit-toast" id="nuit-toast" role="status" hidden></p>
 
     <dialog class="formats" id="formats">
         <form method="dialog">

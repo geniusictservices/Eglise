@@ -15,7 +15,7 @@ final class Permissions
     public static function parModule(): array
     {
         return [
-            'caisse' => ['caisse.vendre', 'caisse.encaisser', 'caisse.credit', 'caisse.rembourser', 'caisse.remise', 'caisse.annuler', 'caisse.appareils'],
+            'caisse' => ['caisse.vendre', 'caisse.encaisser', 'caisse.credit', 'caisse.rembourser', 'caisse.remise', 'caisse.annuler', 'caisse.appareils', 'caisse.minimum'],
             'ventes' => ['ventes.voir', 'ventes.annuler', 'clients.voir', 'clients.modifier', 'dettes.voir', 'dettes.rembourser', 'dettes.gerer', 'ventes.gros'],
             // Salle et cuisine : la caisse (notes, envoi en cuisine) demande seulement « caisse.vendre »
             'salle' => ['salle.voir', 'salle.plan', 'salle.reservations', 'salle.services'],
@@ -26,6 +26,11 @@ final class Permissions
             'finance' => ['finance.voir', 'finance.operations', 'finance.comptes', 'finance.taux'],
             'rapports' => ['rapports.voir', 'rapports.marges'],
             'evenements' => ['evenements.voir', 'evenements.gerer'],
+            // Nuit (lounge, nightclub) : formules, minimums, billetterie et entrée, invités et promoteurs, vestiaire
+            'nightclub' => ['nuit.voir', 'nuit.parametrer', 'entrees.vendre', 'entrees.controler', 'invites.gerer', 'invites.pointer',
+                'promoteurs.gerer', 'promoteur.espace', 'vestiaire.gerer'],
+            'cashless' => ['cashless.recharger', 'cashless.gerer'],
+            'fidelite' => ['fidelite.parametrer'],
             'carte' => ['carte.voir', 'carte.modifier', 'carte.prix'],
             'parametres' => ['parametres.etablissements', 'parametres.utilisateurs', 'parametres.messagerie'],
         ];

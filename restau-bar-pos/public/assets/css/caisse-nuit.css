@@ -1,0 +1,125 @@
+/* Caisse : lounge et nightclub (remises, formules, minimum, cashless, fidélité, entrée, vestiaire), billets et cartes.
+   Jetons de volcan.css seulement ; contours fins et égaux, l'état passe par le fond teinté et le texte. */
+
+.haut__poste {
+  display: inline-flex; align-items: center; min-height: 34px; padding: 0 12px; border-radius: var(--rayon-rond);
+  background: var(--teinte-accent); color: var(--accent-texte); font-weight: 800; white-space: nowrap;
+}
+.haut__nuit {
+  position: relative; display: inline-flex; align-items: center; gap: 6px; height: 46px; min-width: 46px; padding: 0 14px;
+  border: 1px solid var(--ligne); border-radius: 12px; background: var(--saisie); color: var(--encre); font-weight: 700; white-space: nowrap;
+}
+.haut__compteurs { font-size: .8125rem; font-weight: 700; color: var(--doux); white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) {
+  .haut__nuit { padding: 0 10px; }
+  .haut__nuit .icone-trait + span { display: none; }
+  .haut__compteurs { flex: 1 1 100%; order: 3; white-space: normal; }
+}
+
+/* Fenêtre de paiement : remises, minimum, cartes, fidélité */
+.paiement-nuit { display: grid; gap: 8px; }
+.paiement-nuit:empty { display: none; }
+.nuit-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.nuit-actions .puce { min-height: var(--cible); }
+.nuit-actions--grandes .bouton { flex: 1 1 10rem; }
+.nuit-resume { display: grid; gap: 6px; }
+.nuit-resume:empty { display: none; }
+.nuit-resume__ligne { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; margin: 0; font-variant-numeric: tabular-nums; }
+.nuit-resume__remise { color: var(--succes); }
+.nuit-resume__detail {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0; padding: 4px 10px;
+  border: 1px solid var(--ligne); border-radius: 10px; background: var(--surface-2); font-size: .875rem;
+}
+.nuit-resume__detail .lien { min-height: var(--cible); }
+.nuit-alerte { margin: 0; padding: 8px 12px; border: 1px solid var(--braise); border-radius: 10px; background: var(--teinte-braise); color: var(--encre); font-weight: 600; }
+.nuit-validation { display: grid; gap: 8px; padding: 10px; border: 1px solid var(--ligne); border-radius: 12px; background: var(--surface); }
+.nuit-validation .aide { margin: 0; font-size: .8125rem; color: var(--doux); }
+.nuit-minimum { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border: 1px solid var(--braise); border-radius: 12px; background: var(--teinte-braise); }
+.nuit-minimum p { margin: 0; font-weight: 700; }
+.nuit-minimum .nuit-validation { flex-basis: 100%; }
+.nuit-minimum--leve { border-color: var(--ligne); background: var(--surface-2); }
+.nuit-puces { display: flex; flex-wrap: wrap; gap: 6px; }
+.nuit-puces .puce { min-height: var(--cible); }
+.nuit-puces[hidden] { display: none; }
+
+/* Fenêtres de la nuit */
+.nuit-fenetre .paiement-fenetre__corps { gap: 12px; }
+.nuit-corps { display: grid; gap: 12px; min-width: 0; }
+.nuit-form { display: grid; gap: 12px; margin: 0; }
+.nuit-form .ardoise-champ[hidden] { display: none; }
+.nuit-erreur[hidden] { display: none; }
+.nuit-formule { display: grid; gap: 12px; }
+.nuit-formule__groupe { display: grid; gap: 6px; margin: 0; padding: 10px; border: 1px solid var(--ligne); border-radius: 14px; }
+.nuit-formule__groupe legend { padding: 0 4px; font-weight: 800; }
+.nuit-option { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: var(--cible); }
+.nuit-option__nom { min-width: 0; overflow-wrap: anywhere; }
+.nuit-option--epuise .nuit-option__nom { color: var(--doux); text-decoration: line-through; }
+.nuit-liste { display: grid; gap: 8px; max-height: 50vh; overflow: auto; }
+.nuit-liste .aide { margin: 0; color: var(--doux); }
+.nuit-invite { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; border: 1px solid var(--ligne); border-radius: 12px; background: var(--surface); }
+.nuit-invite__texte { flex: 1 1 12rem; display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.nuit-invite__texte span { font-size: .8125rem; color: var(--doux); }
+.nuit-invite--entre { background: var(--teinte-succes); }
+.nuit-invite .bouton--petit { min-height: var(--cible); }
+.nuit-carte { display: grid; gap: 10px; }
+.nuit-carte__resume { display: grid; gap: 4px; padding: 12px; border: 1px solid var(--glace); border-radius: 14px; background: var(--teinte-glace); }
+.nuit-carte__resume--bloquee { border-color: var(--erreur); background: var(--teinte-erreur); }
+.nuit-carte__code { font: 800 1.0625rem/1.2 var(--police-titre); overflow-wrap: anywhere; }
+.nuit-carte__soldes { font-variant-numeric: tabular-nums; font-weight: 700; }
+.nuit-historique { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; font-size: .8125rem; font-variant-numeric: tabular-nums; }
+.nuit-historique li { padding: 4px 8px; border: 1px solid var(--ligne); border-radius: 8px; overflow-wrap: anywhere; }
+.nuit-controle { display: grid; gap: 6px; justify-items: center; text-align: center; }
+.nuit-controle:empty { display: none; }
+.nuit-controle--ok, .nuit-controle--refus { padding: 18px 12px; border-radius: 16px; border: 2px solid var(--succes); background: var(--teinte-succes); }
+.nuit-controle--refus { border-color: var(--erreur); background: var(--teinte-erreur); }
+.nuit-controle__titre { font: 800 1.5rem/1.15 var(--police-titre); }
+.nuit-controle .bouton { justify-self: stretch; }
+.nuit-impression { display: grid; gap: 10px; max-height: 55vh; overflow: auto; }
+.nuit-toast { z-index: 80; }
+
+/* Progression vers le minimum de consommation (note d'une table VIP) */
+.nuit-progres { flex-basis: 100%; display: grid; gap: 4px; margin-top: 4px; font-size: .8125rem; font-weight: 700; }
+.nuit-progres__barre { display: block; height: 8px; border-radius: var(--rayon-rond); background: var(--surface-2); border: 1px solid var(--ligne); overflow: hidden; }
+.nuit-progres__plein { display: block; height: 100%; background: var(--braise); }
+.nuit-progres--atteint .nuit-progres__plein { background: var(--succes); }
+.nuit-invite-note { flex-basis: 100%; justify-self: start; min-height: var(--cible); text-align: left; }
+.destination { flex-wrap: wrap; }
+
+/* Lecteur de codes QR */
+.scanner { display: grid; gap: 8px; }
+.scanner__video { width: 100%; max-height: 42vh; border-radius: 14px; background: #000; object-fit: cover; }
+.scanner__video[hidden] { display: none; }
+.scanner__etat { margin: 0; color: var(--doux); font-size: .8125rem; }
+.scanner__etat:empty { display: none; }
+.scanner__form { display: flex; gap: 8px; margin: 0; }
+.scanner__champ { flex: 1 1 auto; min-width: 0; text-transform: uppercase; letter-spacing: .04em; }
+.scanner__valider, .scanner__camera { min-height: var(--hauteur-bouton); }
+
+/* Reçu : composants, remises, cartes */
+.recu__composant td { padding-top: 0; }
+.recu__remise { color: var(--succes) !important; font-weight: 700; }
+.recu__sous-total { display: flex; justify-content: space-between; gap: 8px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.recu__sous-total small { color: var(--doux); }
+.recu__carte td { font-weight: 600; }
+
+/* Billets d'entrée, tickets de vestiaire, cartes cashless (à l'écran et imprimés) */
+.billet, .carte-cashless {
+  display: grid; justify-items: center; gap: 2px; margin-top: 12px; padding: 12px 8px; text-align: center;
+  border: 1px dashed var(--ligne-forte); border-radius: 12px; break-inside: avoid; page-break-inside: avoid;
+}
+.billet p, .carte-cashless p { margin: 0; }
+.billet__etab, .carte-cashless__titre { font: 800 1rem/1.2 var(--police-titre); }
+.billet__titre { font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: .8125rem; }
+.billet__soiree { font-weight: 600; }
+.billet__date, .billet__aide, .carte-cashless__aide { font-size: .8125rem; color: var(--doux); }
+.billet__numero, .carte-cashless__numero { font: 800 2rem/1.1 var(--police-titre); font-variant-numeric: tabular-nums; }
+.billet__qr, .carte-cashless__qr { width: 160px; max-width: 100%; aspect-ratio: 1; padding: 4px; background: #fff; border-radius: 8px; }
+.billet__qr svg, .carte-cashless__qr svg { display: block; width: 100%; height: 100%; }
+.billet__code, .carte-cashless__code { font: 700 .9375rem/1.2 ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; letter-spacing: .06em; overflow-wrap: anywhere; }
+.recu--billets .billet:first-child, .recu--cartes .carte-cashless:first-child { margin-top: 0; }
+
+@media print {
+  #zone-impression .billet, #zone-impression .carte-cashless { border-color: #000; page-break-after: always; }
+  #zone-impression .billet__qr, #zone-impression .carte-cashless__qr { width: 46mm; }
+}
+@media (prefers-reduced-motion: reduce) { .nuit-progres__plein { transition: none; } }

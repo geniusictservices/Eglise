@@ -126,7 +126,9 @@ final class SessionCaisseRepository
                 "SELECT COALESCE(SUM(IF(m.sens = 'entree', m.montant, -m.montant)), 0) AS total FROM mouvements_tresorerie m
                   WHERE m.compte_id = ? AND m.devise_id = ? AND (
                         (m.nature = 'vente' AND m.source_id IN (SELECT id FROM ventes WHERE session_id = ?))
-                     OR (m.nature = 'remboursement' AND m.source_id IN (SELECT id FROM remboursements WHERE session_id = ?)))",
+                     OR (m.nature = 'remboursement' AND m.source_id IN (SELECT id FROM remboursements WHERE session_id = ?))"
+                     // Recharges et remboursements de cartes cashless faits pendant la session (migration 022)
+                     . (RemiseRepository::disponible() ? " OR (m.nature = 'cashless' AND m.source_id IN (SELECT id FROM carte_mouvements WHERE session_id = " . (int) $sessionId . '))' : '') . ')',
                 [(int) $l['compte_id'], (int) $l['devise_id'], $sessionId, $sessionId]
             )['total'];
             $resultat[] = [

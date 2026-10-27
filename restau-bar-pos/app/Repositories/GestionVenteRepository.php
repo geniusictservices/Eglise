@@ -171,8 +171,21 @@ final class GestionVenteRepository
             $encaisse[$deviseId][$l['moyen']] = ($encaisse[$deviseId][$l['moyen']] ?? 0.0) - (float) $l['montant'];
         }
         $annulees = Database::un('SELECT COUNT(*) AS n FROM ventes v WHERE ' . $whereAnnulees, $paramsAnnulees);
+        // Nuit : remises et offerts (devise du ticket), part payée avec des cartes cashless (devise de la carte)
+        $remises = [];
+        $cartes = [];
+        if (RemiseRepository::disponible()) {
+            foreach (Database::tous('SELECT v.devise_id, SUM(v.remise) AS r FROM ventes v WHERE ' . $where . ' AND v.remise > 0 GROUP BY v.devise_id', $params) as $l) {
+                $remises[(int) $l['devise_id']] = (float) $l['r'];
+            }
+            foreach (Database::tous('SELECT vc.devise_id, SUM(vc.montant) AS m FROM vente_cashless vc JOIN ventes v ON v.id = vc.vente_id WHERE ' . $where . ' GROUP BY vc.devise_id', $params) as $l) {
+                $cartes[(int) $l['devise_id']] = (float) $l['m'];
+            }
+        }
 
         return [
+            'remises' => $remises,
+            'cartes' => $cartes,
             'tickets' => (int) $ligne['tickets'],
             'articles' => (int) $articles['n'],
             'parDevise' => $parDevise,
@@ -295,6 +308,16 @@ final class GestionVenteRepository
             }
             Journal::ecrire('vente_annulee', $vente['numero'], ['motif' => mb_substr($motif, 0, 255)], $utilisateurId);
             (new StockRepository())->annulationVente($id);
+            // Nuit : la part payée par carte cashless revient sur la carte, les billets non utilisés sont annulés,
+            // les points de fidélité repris, la commission du promoteur sur la note recalculée
+            if (RemiseRepository::disponible()) {
+                (new CashlessRepository($this->tresorerie))->annulerVente($id, $utilisateurId);
+                (new BilletterieRepository())->annulerVente($id);
+                (new FideliteRepository())->annulerVente($id, $utilisateurId);
+                foreach (Database::tous('SELECT DISTINCT note_id FROM note_paiements WHERE vente_id = ?', [$id]) as $n) {
+                    (new PromoteurRepository())->commissionNote((int) $n['note_id']);
+                }
+            }
             return 'annulee';
         });
     }

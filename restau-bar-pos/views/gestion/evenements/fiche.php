@@ -102,7 +102,22 @@ $badge = ['a_venir' => 'badge--glace', 'en_cours' => 'badge--succes', 'passe' =>
             <?php if ($ev['description']): ?><div><dt><?= e(t('evenements.description')) ?></dt><dd><?= e($ev['description']) ?></dd></div><?php endif; ?>
             <?php if ($ev['cree_par_nom']): ?><div><dt><?= e(t('evenements.cree_par')) ?></dt><dd><?= e($ev['cree_par_nom']) ?> · <?= e(A::dateHeure($ev['cree_le'])) ?></dd></div><?php endif; ?>
         </dl>
-        <p class="aide"><?= e(t('evenements.entrees_bientot')) ?></p>
+        <?php $entrees = App\Repositories\BilletterieRepository::disponible() ? (new App\Repositories\BilletterieRepository())->soireeBilan((int) $ev['id']) : null; ?>
+        <?php if ($entrees !== null && $entrees['billets'] > 0): ?>
+            <h3 id="evt-entrees"><?= e(t('gnuit.entrees_soiree')) ?></h3>
+            <p class="aide"><?= e(t('gnuit.entrees_soiree_aide')) ?></p>
+            <dl class="evt-infos" data-bloc="entrees">
+                <div><dt><?= e(t('gnuit.billets')) ?></dt><dd data-entrees="billets"><?= (int) $entrees['billets'] ?></dd></div>
+                <div><dt><?= e(t('gnuit.entres')) ?></dt><dd data-entrees="entres"><?= (int) $entrees['entres'] ?></dd></div>
+                <div><dt><?= e(t('gnuit.invites_entres')) ?></dt><dd><?= (int) $entrees['invites'] ?></dd></div>
+                <?php foreach ($entrees['categories'] as $c): ?>
+                    <div><dt><?= e(t('nuit.categorie_' . $c['categorie'])) ?></dt><dd><?= (int) $c['billets'] ?><?= ($m = D::montants($c['recettes'], $devises)) !== '' ? ' · ' . e($m) : '' ?></dd></div>
+                <?php endforeach; ?>
+                <?php if (($m = D::montants($entrees['recettes'], $devises)) !== ''): ?><div><dt><?= e(t('gnuit.recette')) ?></dt><dd data-entrees="recette"><?= e($m) ?></dd></div><?php endif; ?>
+            </dl>
+        <?php elseif ($entrees === null): ?>
+            <p class="aide"><?= e(t('evenements.entrees_bientot')) ?></p>
+        <?php endif; ?>
     </section>
 
     <?php if ($bilan['categories'] !== []): ?>

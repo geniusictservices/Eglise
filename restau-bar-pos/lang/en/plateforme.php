@@ -61,7 +61,7 @@ return [
 
     // Upcoming modules a subscription plan can already include (App\Core\Modules::A_VENIR)
     'module.cuisine.nom' => 'Kitchen',
-    'module.nightclub.nom' => 'Nightclub',
+    'module.nightclub.nom' => 'Night and door',
     'module.evenements.nom' => 'Events',
     'module.cashless.nom' => 'Cashless',
 ];

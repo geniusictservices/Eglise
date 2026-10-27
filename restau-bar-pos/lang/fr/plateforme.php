@@ -61,7 +61,7 @@ return [
 
     // Modules à venir, qu'une formule d'abonnement peut déjà inclure (App\Core\Modules::A_VENIR)
     'module.cuisine.nom' => 'Cuisine',
-    'module.nightclub.nom' => 'Nightclub',
+    'module.nightclub.nom' => 'Nuit et entrées',
     'module.evenements.nom' => 'Événements',
     'module.cashless.nom' => 'Cashless',
 ];

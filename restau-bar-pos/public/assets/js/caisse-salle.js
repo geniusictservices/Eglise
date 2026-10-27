@@ -137,6 +137,8 @@
       quitter.title = T.vente_comptoir;
       quitter.addEventListener('click', function () { choisir(null); });
       elDestination.appendChild(quitter);
+      // Nuit (caisse-nuit.js) : minimum de consommation de la table, invité de la note
+      if (note && C.nuit && C.nuit.destination) { C.nuit.destination(elDestination, note, function (n) { note = n; C.redessiner(); }); }
     }
 
     // Lignes déjà envoyées
@@ -292,7 +294,11 @@
     var envoi = {
       cle: cleEnvoi, note: courante.note, table: courante.note ? null : courante.table, nom: courante.note || courante.table ? null : courante.nom,
       reservation: courante.reservation, zone: D.zone,
-      lignes: locales.map(function (l) { return { id: l.id, qte: l.qte, rem: l.rem || null, all: l.all || null, temps: l.temps === 2 ? 2 : 1 }; })
+      lignes: locales.map(function (l) {
+        var ligne = { id: l.id, qte: l.qte, rem: l.rem || null, all: l.all || null, temps: l.temps === 2 ? 2 : 1 };
+        if (l.comp) { ligne.comp = l.comp.map(function (c) { return { id: c.id, qte: c.qte }; }); }   // formule : ses composants
+        return ligne;
+      })
     };
     return requete('POST', '/caisse/notes/envoyer', { envoi: JSON.stringify(envoi) }).then(function (j) {
       envoiEnCours = false;
@@ -360,8 +366,19 @@
 
   // ---------- Encaisser une note ----------
 
-  function source(demande, totaux, titre) {
-    return { note: demande, version: note.version, totaux: totaux, servi: note.serveur ? note.serveur.id : null, titre: titre || titreCourante() };
+  // lignes : ce que paie cette part (remises de caisse-nuit.js) ; minimum : celui de la note, si ce paiement la ferme
+  function source(demande, totaux, titre, lignes) {
+    var parts = lignes || restantes().map(function (l) { return { l: l, q: l.reste }; });
+    var restant = restantes().reduce(function (s, l) { return s + l.reste; }, 0) - parts.reduce(function (s, p) { return s + p.q; }, 0);
+    return {
+      note: demande, version: note.version, totaux: totaux, servi: note.serveur ? note.serveur.id : null, titre: titre || titreCourante(),
+      lignes: parts.map(function (p) {
+        var brut = {};
+        D.devises.forEach(function (d) { var pu = p.l.prix[d.code]; brut[d.code] = typeof pu === 'number' ? pu * p.q : null; });
+        return { cle: 'n' + p.l.id, nom: p.l.libelle, brut: brut, format: p.l.format };
+      }),
+      minimum: restant <= 0.0005 * Math.max(1, note.lignes.length) ? note.minimum : null
+    };
   }
   function payer(compteId, ardoise) {
     if (!D.encaisser) { return; }
@@ -498,7 +515,7 @@
     if (!p.lignes.length) { return; }
     var titre = titreCourante() + (partage.mode === 'egal' ? ' · ' + T.part_de.replace('{n}', String(numeroPart())).replace('{total}', String(nombreParts)) : '');
     fenetrePartage.close();
-    C.ouvrirPaiement(null, false, source(p.demande, totauxPartage(), titre));
+    C.ouvrirPaiement(null, false, source(p.demande, totauxPartage(), titre, p.lignes));
   });
 
   // ---------- Précisions d'une ligne (avant l'envoi) ----------

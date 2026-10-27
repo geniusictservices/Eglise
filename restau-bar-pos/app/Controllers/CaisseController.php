@@ -213,6 +213,18 @@ final class CaisseController
             foreach ($tarifs as $t) {
                 $produits[] = self::produitSimple($t['id'], 1, $t['nom'], t('nuit.categorie_' . $t['categorie']), $t['prix']) + ['entree' => $t['categorie']];
             }
+            // Tarif réduit d'un invité de la soirée qui n'est pas en vente à tous (soirée à tarifs propres) : caché de la
+            // grille, ajouté au ticket quand l'invité est pointé
+            if ($soiree['evenement'] !== null) {
+                $vendus = array_flip(array_column($tarifs, 'id'));
+                foreach (Database::tous("SELECT DISTINCT tarif_id FROM invites WHERE evenement_id = ? AND entree = 'reduite' AND tarif_id IS NOT NULL", [(int) $soiree['evenement']['id']]) as $r) {
+                    $t = isset($vendus[(int) $r['tarif_id']]) ? null : $billetterie->tarif((int) $r['tarif_id']);
+                    if ($t !== null && (int) $t['etablissement_id'] === (int) $etab['id']) {
+                        $produits[] = self::produitSimple((int) $t['id'], 1, champ($t, 'nom'), t('nuit.categorie_' . $t['categorie']), $billetterie->prix((int) $t['id'], $acceptees))
+                            + ['entree' => $t['categorie'], 'cache' => true];
+                    }
+                }
+            }
         } else {
             $frais = (new \App\Repositories\VestiaireRepository())->frais((int) $etab['id']);
             $categories[] = ['id' => 1, 'nom' => t('nuit.vestiaire'), 'sous' => []];
@@ -634,7 +646,7 @@ final class CaisseController
                         'prix' => $billetterie->prix($formatId, $contexte['acceptees'])], 'produit' => ['nom' => champ($tarif, 'nom'), 'entree' => $tarif['categorie']]];
                 }
                 if ($f === null || $quantite < 1 || $quantite > 999 || !$f['format']['disponible'] || ($f['format']['prix'][$p] ?? null) === null
-                    || ($poste !== 'caisse' && $quantite > 50)) {
+                    || ($poste !== 'caisse' && $quantite > 50) || (!empty($f['produit']['cache']) && $invite === null)) {
                     $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
                 }
                 $prix = (float) $f['format']['prix'][$p];

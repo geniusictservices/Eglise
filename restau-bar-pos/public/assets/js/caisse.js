@@ -88,6 +88,9 @@
       if (typeof l.rem === 'string' && l.rem) { ligne.rem = l.rem.slice(0, 160); }
       if (typeof l.all === 'string' && l.all) { ligne.all = l.all.slice(0, 160); }
       if (l.temps === 2) { ligne.temps = 2; }
+      // Formule : composants choisis [{id, qte}] ; entrée réduite d'un invité
+      if (Array.isArray(l.comp) && l.comp.length) { ligne.comp = l.comp.filter(function (c) { return c && +c.id > 0 && +c.qte > 0; }).map(function (c) { return { id: +c.id, qte: +c.qte, nom: String(c.nom || '') }; }); }
+      if (+l.inv > 0) { ligne.inv = +l.inv; ligne.invNom = String(l.invNom || ''); }
       return ligne;
     });
   } catch (e) { ticket = []; }
@@ -107,7 +110,7 @@
     return ticket.reduce(function (n, l) { return formats[l.id].produit === produit ? n + l.qte : n; }, 0);
   }
   // Une ligne avec une précision, une allergie ou « à lancer » reste à part : un autre toucher crée une ligne simple
-  function simple(l) { return !l.rem && !l.all && l.temps !== 2; }
+  function simple(l) { return !l.rem && !l.all && l.temps !== 2 && !l.comp && !l.inv; }
   function ajouter(formatId) {
     var ligne = ticket.find(function (l) { return l.id === formatId && simple(l); });
     if (ligne) { ligne.qte++; } else { ticket.push({ id: formatId, qte: 1 }); }
@@ -171,6 +174,8 @@
       if (l.rem) { texte.appendChild(el('span', 'ligne__precision', l.rem)); }
       if (l.all) { texte.appendChild(el('span', 'ligne__allergie', (T.allergie || '') + ' ' + l.all)); }
       if (l.temps === 2) { texte.appendChild(el('span', 'ligne__temps', T.aLancer || '')); }
+      if (l.comp) { texte.appendChild(el('span', 'ligne__precision', l.comp.map(function (c) { return c.nom + ' ×' + c.qte; }).join(', '))); }
+      if (l.inv) { texte.appendChild(el('span', 'ligne__precision', l.invNom)); }
       if (options) { texte.addEventListener('click', function () { options(index); }); }
       li.appendChild(texte);
 
@@ -331,7 +336,7 @@
     var termes = normaliser(elRecherche.value.trim()).split(/\s+/).filter(Boolean);
     var visibles = 0;
     D.produits.forEach(function (p) {
-      var ok = (categorieActive === 0 || p.categorie === categorieActive) &&
+      var ok = !p.cache && (categorieActive === 0 || p.categorie === categorieActive) &&
         (sousActive === 0 || p.sous === sousActive) &&
         termes.every(function (m) { return p.rechercheNormalisee.indexOf(m) !== -1; });
       tuiles[p.id].hidden = !ok;
@@ -345,6 +350,8 @@
 
   var dialogue = document.getElementById('formats');
   function choisir(p) {
+    // Nuit (caisse-nuit.js) : une formule ouvre le choix de ses composants, le vestiaire demande une description
+    if (window.Caisse.avantChoix && window.Caisse.avantChoix(p) === true) { return; }
     var vendables = p.formats.filter(function (f) { return prix(f, D.principale) !== null; });
     if (!vendables.length) { return; }
     if (vendables.length === 1 && vendables[0].disponible) {
@@ -427,6 +434,18 @@
       produits.forEach(majTuile);
     },
     redessiner: function () { dessinerTicket(); },
+    // Ajoute une ligne à part (formule avec ses composants, entrée d'un invité, dépôt décrit)
+    ajouterLigne: function (ligne) {
+      if (!formats[ligne.id]) { return; }
+      ticket.push(ligne);
+      changerTicket(ligne.id);
+      pulser(tuiles[formats[ligne.id].produit.id]);
+    },
+    produitDe: function (id) { return D.produits.filter(function (p) { return p.id === id; })[0] || null; },
+    paiement: function () { return paiement; },
+    reglement: function () { return reglement(); },
+    redessinerPaiement: function () { if (paiement) { remplirAutomatiquement(); dessinerPaiement(); } },
+    totalEn: function (code) { return totalEn(code); },
     ouvrirPaiement: function (compteId, ardoise, source) { ouvrirPaiement(compteId, ardoise, source); },
     disponibilites: function (indisponibles, epuises) { disponibilites(indisponibles, epuises); },
     fenetreOuverte: function () { return !!document.querySelector('dialog[open]'); }
@@ -504,6 +523,8 @@
     var part = 0;
     var parts = paiement.lignes.slice();
     if (paiement.credit && !sansArdoise) { parts.push({ devise: paiement.credit.devise, recu: paiement.credit.montant }); }
+    // Cartes cashless (caisse-nuit.js) : chacune couvre sa part, dans sa devise
+    if (paiement.nuit && paiement.nuit.cartes) { paiement.nuit.cartes.forEach(function (c) { parts.push({ devise: c.devise, recu: c.montant }); }); }
     parts.forEach(function (l) {
       var t = paiement.totaux[l.devise];
       if (t > 0 && l.recu > 0) { part += l.recu / t; }
@@ -568,7 +589,13 @@
       return;
     }
     if (lignes.length === 1 && !lignes[0].saisi) {
-      lignes[0].recu = paiement.totaux[lignes[0].devise];
+      if (paiement.nuit && paiement.nuit.cartes && paiement.nuit.cartes.length) {
+        // Une carte paie une part : le compte prend le reste
+        lignes[0].recu = 0;
+        lignes[0].recu = reglement().reste[lignes[0].devise];
+      } else {
+        lignes[0].recu = paiement.totaux[lignes[0].devise];
+      }
       return;
     }
     if (lignes.length > 1) {
@@ -620,15 +647,15 @@
     if (choisi && choisi.devises.indexOf(depart) === -1) {
       depart = payables.filter(function (c) { return choisi.devises.indexOf(c) !== -1; })[0] || depart;
     }
+    // Nuit : remises, minimum, fidélité et cartes cashless ; les totaux deviennent ceux après remises
+    paiement.nuit = window.Caisse.nuit && window.Caisse.nuit.preparer ? window.Caisse.nuit.preparer(paiement, source || null) : null;
+    if (paiement.nuit) { paiement.totaux = window.Caisse.nuit.totaux(paiement); }
     paiement.lignes = ardoise ? [] : [nouvelleLigne(depart, compteId)];
     if (ardoise) { ajouterArdoise(); }
     remplirAutomatiquement();
     document.getElementById('paiement-corps').hidden = false;
     document.getElementById('paiement-fin').hidden = true;
     document.getElementById('paiement-erreur').hidden = true;
-    document.getElementById('paiement-total').textContent = formater(totaux[D.principale] || totaux[depart], totaux[D.principale] ? D.principale : depart);
-    document.getElementById('paiement-autres').textContent = Object.keys(totaux).filter(function (c) { return c !== D.principale; })
-      .map(function (c) { return formater(totaux[c], c); }).join('  ·  ');
     dessinerChoixDevises();
     dessinerPaiement();
     racine.classList.remove('ticket-ouvert');
@@ -681,7 +708,20 @@
     if (redessiner) { dessinerPaiement(); } else { dessinerBilan(); }
   }
 
+  function afficherTotaux() {
+    var totaux = paiement.totaux;
+    var code = totaux[D.principale] !== undefined ? D.principale : Object.keys(totaux)[0];
+    document.getElementById('paiement-total').textContent = formater(totaux[code] || 0, code);
+    document.getElementById('paiement-autres').textContent = Object.keys(totaux).filter(function (c) { return c !== code; })
+      .map(function (c) { return formater(totaux[c], c); }).join('  ·  ');
+  }
   function dessinerPaiement() {
+    afficherTotaux();
+    var zoneNuit = document.getElementById('paiement-nuit');
+    if (zoneNuit) {
+      zoneNuit.textContent = '';
+      if (paiement.nuit && window.Caisse.nuit.dessinerPaiement) { window.Caisse.nuit.dessinerPaiement(paiement, zoneNuit); }
+    }
     var actives = paiement.lignes.map(function (l) { return l.devise; }).join(',');
     document.querySelectorAll('#paiement-devises button').forEach(function (b) {
       b.setAttribute('aria-pressed', b.dataset.devises === actives ? 'true' : 'false');
@@ -767,7 +807,7 @@
     // Ardoise : bloc du client à crédit, ou le bouton pour en ajouter une
     if (paiement.credit && window.Caisse.ardoise) {
       zone.appendChild(window.Caisse.ardoise.blocCredit(paiement, { changee: ardoiseChangee, retirer: retirerArdoise, montantSaisie: montantSaisie, lireMontant: lireMontant }));
-    } else if (D.credit && window.Caisse.ardoise) {
+    } else if (D.credit && window.Caisse.ardoise && !(paiement.source && paiement.source.sansArdoise)) {
       var ajout = bouton('bouton bouton--secondaire paiement-ardoise__ajouter', T.ardoise.mettre);
       ajout.id = 'ajouter-ardoise';
       ajout.addEventListener('click', function () { ajouterArdoise(); remplirAutomatiquement(); dessinerPaiement(); });
@@ -835,14 +875,20 @@
     document.getElementById('paiement-erreur').hidden = true;
     var corps = new FormData();
     corps.append('csrf', D.csrf);
+    var nuit = paiement.nuit && window.Caisse.nuit ? window.Caisse.nuit.envoi(paiement) : {};
     corps.append('vente', JSON.stringify({
-      cle: paiement.cle, etab: D.etab, zone: D.zone,
+      cle: paiement.cle, etab: D.etab, zone: D.zone, poste: D.poste,
+      remises: nuit.remises, cartes: nuit.cartes, fidelite: nuit.fidelite, minimum: nuit.minimum,
+      extra: paiement.source ? paiement.source.extra : undefined,
       // Une note : ses lignes viennent du serveur ; sinon le ticket (avec précisions et allergies pour la cuisine)
       note: paiement.source ? paiement.source.note : undefined,
       lignes: paiement.source ? [] : ticket.map(function (l) {
         var ligne = { id: l.id, qte: l.qte };
         if (l.rem) { ligne.rem = l.rem; }
         if (l.all) { ligne.all = l.all; }
+        // Formule : ses composants ; entrée réduite : l'invité pointé à la porte
+        if (l.comp) { ligne.comp = l.comp.map(function (c) { return { id: c.id, qte: c.qte }; }); }
+        if (l.inv) { ligne.invite = l.inv; }
         return ligne;
       }),
       paiements: paiement.lignes.filter(function (l) { return l.recu > 0; }).map(function (l) {
@@ -854,11 +900,19 @@
         servi: paiement.credit.servi, garant: paiement.credit.garant, echeance: paiement.credit.echeance, forcer: paiement.credit.forcer
       } : null
     }));
-    fetch('/caisse/encaisser', { method: 'POST', body: corps, credentials: 'same-origin', headers: { Accept: 'application/json' } })
+    fetch((paiement.source && paiement.source.url) || '/caisse/encaisser', { method: 'POST', body: corps, credentials: 'same-origin', headers: { Accept: 'application/json' } })
       .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
       .then(function (res) {
         if (!res.ok) {
           // Plafond ou retard : le gérant peut forcer (case dans le bloc de l'ardoise)
+          // Remise à valider (PIN d'un supérieur), carte refusée, minimum : caisse-nuit.js montre où corriger
+          if (paiement.nuit && window.Caisse.nuit.erreurServeur && window.Caisse.nuit.erreurServeur(paiement, res.j)) {
+            paiement.envoi = false;
+            valider.textContent = valider.dataset.texte;
+            dessinerPaiement();
+            erreurPaiement(res.j.erreur || T.erreurReseau);
+            return;
+          }
           if (res.j.code === 'credit_refuse' && res.j.peutForcer && paiement.credit) {
             paiement.credit.peutForcer = true;
             paiement.envoi = false;
@@ -883,7 +937,10 @@
     if (reponse.csrf) { D.csrf = reponse.csrf; }
     // Le stock a baissé : ce qui vient de s'épuiser au comptoir se grise (mode « bloquer »)
     if (reponse.epuises) { disponibilites(null, reponse.epuises); }
-    if (paiement.source) {
+    if (paiement.source && paiement.source.apres) {
+      // Recharge cashless (ou autre opération sans le ticket) : le ticket local n'a pas bougé
+      paiement.source.apres(reponse);
+    } else if (paiement.source) {
       // Note payée (en entier ou une part) : le ticket local n'a pas bougé, la note se met à jour
       if (window.Caisse.note && window.Caisse.note.payee) { window.Caisse.note.payee(reponse, paiement.source); }
     } else {
@@ -896,6 +953,8 @@
     document.getElementById('paiement-corps').hidden = true;
     document.getElementById('paiement-fin').hidden = false;
     document.getElementById('paiement-recu').innerHTML = reponse.recu;
+    // Codes QR des billets, tickets de vestiaire et cartes (caisse-nuit.js)
+    if (window.Caisse.apresRecu) { window.Caisse.apresRecu(document.getElementById('paiement-recu')); }
     var suivant = document.getElementById('paiement-suivant');
     paiement.verrouille = reponse.verrouille;
     if (reponse.verrouille) {
@@ -912,7 +971,7 @@
     var source = paiement && paiement.source;
     paiement = null;
     // Addition partagée : la part suivante
-    if (source && window.Caisse.note && window.Caisse.note.apresPaiement) { window.Caisse.note.apresPaiement(source); }
+    if (source && source.note && window.Caisse.note && window.Caisse.note.apresPaiement) { window.Caisse.note.apresPaiement(source); }
   }
 
   if (fenetre && boutonEncaisser) {

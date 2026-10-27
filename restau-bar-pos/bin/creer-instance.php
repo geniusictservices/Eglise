@@ -155,6 +155,14 @@ if ($demo && is_file(RACINE . '/bin/demo-personnel.php')) {
     }
 }
 
+// Nuit : entrées et billets, invités et promoteurs, formules, minimum VIP, vestiaire, cartes cashless, fidélité (après tout le reste)
+if ($demo && is_file(RACINE . '/bin/demo-nuit.php')) {
+    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(RACINE . '/bin/demo-nuit.php') . ' ' . escapeshellarg($sousDomaine), $code);
+    if ($code !== 0) {
+        fwrite(STDERR, "Nuit de démonstration non créée (php bin/demo-nuit.php $sousDomaine pour réessayer).\n");
+    }
+}
+
 $domaine = Config::get('domaine_base');
 echo <<<TXT
 Instance « $sousDomaine » créée.

@@ -492,6 +492,9 @@ final class RapportRepository
             foreach ($lignes as $l) {
                 $id = (int) $l['produit_id'];
                 $nom = $l['nom_parent'] !== null ? trim($l['nom_parent'] . ($l['taille'] ? ' ' . $l['taille'] : '')) : (string) $l['libelle'];
+                if ($id === 0) {
+                    $nom = t('nuit.hors_catalogue');   // entrées, vestiaire, minimum non atteint : lignes sans produit
+                }
                 $produits[$id] ??= ['produit_id' => $id, 'nom' => $nom, 'quantite' => 0.0, 'base' => 0.0, 'locale' => 0.0, 'reference' => 0.0, 'cout' => null, 'marge' => null];
                 $produits[$id]['quantite'] += (float) $l['quantite'];
                 $produits[$id]['base'] += (float) $l['base'];

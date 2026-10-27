@@ -17,7 +17,7 @@ final class Modules
     public const TOUJOURS = ['parametres'];
 
     /** Modules annoncés, pas encore construits, qu'une formule peut déjà inclure (console super admin). */
-    public const A_VENIR = ['nightclub', 'cashless'];
+    public const A_VENIR = [];
 
     /**
      * Modules qu'une formule d'abonnement peut inclure ou non : ceux de tous() (sauf TOUJOURS), puis ceux à venir.
@@ -42,6 +42,9 @@ final class Modules
                 ['cle' => 'remboursements', 'icone' => 'remboursement', 'lien' => '/gestion/remboursements', 'voir' => 'dettes.voir', 'modifier' => 'dettes.voir'],   // saisie (dettes.rembourser) et annulation (dettes.gerer) vérifiées par l'écran
                 // Garanties demandées à la personne connectée : chacun répond pour lui-même
                 ['cle' => 'garanties', 'icone' => 'garantie', 'lien' => '/gestion/garanties', 'voir' => null],
+                // Remises et offerts (rapport, limites des rôles), fidélité (réglages par établissement, récompenses)
+                ['cle' => 'remises', 'icone' => 'prix', 'lien' => '/gestion/remises', 'voir' => 'ventes.voir', 'modifier' => 'parametres.utilisateurs'],
+                ['cle' => 'fidelite', 'icone' => 'clients', 'lien' => '/gestion/fidelite', 'voir' => 'clients.voir', 'modifier' => 'fidelite.parametrer'],
                 // Vente en gros au dépôt (clients revendeurs, prix de gros, emballages) : sans la caisse
                 ['cle' => 'vente_gros', 'icone' => 'lieux', 'lien' => '/gestion/gros', 'voir' => 'ventes.gros'],
             ]],
@@ -109,6 +112,21 @@ final class Modules
             'evenements' => ['icone' => 'evenement', 'lien' => '/gestion/evenements', 'ecrans' => [
                 ['cle' => 'soirees', 'icone' => 'evenement', 'lien' => '/gestion/evenements', 'voir' => 'evenements.voir', 'modifier' => 'evenements.gerer'],
                 ['cle' => 'rentabilite', 'icone' => 'rapports', 'lien' => '/gestion/evenements/rentabilite', 'voir' => 'evenements.voir'],
+            ]],
+            // Nuit (lounge et nightclub) : montré seulement s'il y a un établissement de ce type ; le promoteur n'y voit que son espace
+            'nightclub' => ['icone' => 'nuit', 'lien' => null, 'ecrans' => [
+                ['cle' => 'nuit_entrees', 'icone' => 'qr', 'lien' => '/gestion/nuit/entrees', 'voir' => 'nuit.voir', 'modifier' => 'nuit.parametrer'],
+                ['cle' => 'nuit_invites', 'icone' => 'clients', 'lien' => '/gestion/nuit/invites', 'voir' => 'invites.gerer'],
+                ['cle' => 'nuit_promoteurs', 'icone' => 'paie', 'lien' => '/gestion/nuit/promoteurs', 'voir' => 'promoteurs.gerer'],
+                ['cle' => 'nuit_formules', 'icone' => 'carte', 'lien' => '/gestion/nuit/formules', 'voir' => 'nuit.voir', 'modifier' => 'nuit.parametrer'],
+                ['cle' => 'nuit_minimums', 'icone' => 'salle', 'lien' => '/gestion/nuit/minimums', 'voir' => 'nuit.voir', 'modifier' => 'nuit.parametrer'],
+                ['cle' => 'nuit_vestiaire', 'icone' => 'emballage', 'lien' => '/gestion/nuit/vestiaire', 'voir' => 'nuit.voir', 'modifier' => 'nuit.parametrer'],
+                ['cle' => 'nuit_mon_espace', 'icone' => 'compte', 'lien' => '/gestion/nuit/mon-espace', 'voir' => 'promoteur.espace'],
+            ]],
+            // Cashless : cartes et bracelets (création, impression, blocage, historique), passif des soldes
+            'cashless' => ['icone' => 'cashless', 'lien' => null, 'ecrans' => [
+                ['cle' => 'cashless_cartes', 'icone' => 'cashless', 'lien' => '/gestion/cashless', 'voir' => 'cashless.gerer'],
+                ['cle' => 'cashless_passif', 'icone' => 'rapports', 'lien' => '/gestion/cashless/passif', 'voir' => 'cashless.gerer'],
             ]],
             'carte' => ['icone' => 'carte', 'lien' => '/gestion/catalogue', 'ecrans' => [
                 ['cle' => 'produits', 'icone' => 'carte', 'lien' => '/gestion/catalogue', 'voir' => 'carte.voir', 'modifier' => 'carte.modifier'],
@@ -189,6 +207,9 @@ final class Modules
                 continue;
             }
             if ($code === 'evenements' && !self::aDesSoirees($utilisateurId)) {
+                continue;
+            }
+            if (in_array($code, ['nightclub', 'cashless'], true) && !self::aDesSoirees()) {
                 continue;
             }
             if ($code === 'caisse') {

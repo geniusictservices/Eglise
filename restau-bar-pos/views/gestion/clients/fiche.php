@@ -115,6 +115,20 @@ $non = t('gclients.non');
         <?php if ($voirDettes && $fiche['dettes'] !== []): ?>
             <p class="det-pied"><a class="lien" href="/gestion/dettes?client=<?= (int) $client['id'] ?>&amp;statut=toutes"><?= e(t('gclients.voir_dettes')) ?></a></p>
         <?php endif; ?>
+        <?php
+        // Fidélité (module Nuit) : solde de points et derniers mouvements
+        $fidelite = App\Repositories\FideliteRepository::disponible() ? new App\Repositories\FideliteRepository() : null;
+        $fidMouvements = $fidelite ? $fidelite->historique((int) $client['id'], 8) : [];
+        ?>
+        <?php if ($fidMouvements !== []): ?>
+            <h3 id="det-fidelite"><?= e(t('gnuit.fidelite_titre')) ?></h3>
+            <dl class="det-infos" data-bloc="fidelite">
+                <div><dt><?= e(t('gnuit.points')) ?></dt><dd data-points><?= (int) $fidelite->solde((int) $client['id']) ?></dd></div>
+                <?php foreach ($fidMouvements as $m): ?>
+                    <div><dt><?= e(A::dateHeure($m['cree_le'])) ?></dt><dd><?= e(t('gnuit.fid_' . $m['type'])) ?> · <?= ((int) $m['points'] > 0 ? '+' : '') . (int) $m['points'] ?><?= $m['numero'] ? ' · ' . e($m['numero']) : '' ?><?= ($m['recompense_' . App\Core\I18n::langue()] ?? null) ? ' · ' . e($m['recompense_' . App\Core\I18n::langue()]) : '' ?></dd></div>
+                <?php endforeach; ?>
+            </dl>
+        <?php endif; ?>
     </section>
 </div>
 

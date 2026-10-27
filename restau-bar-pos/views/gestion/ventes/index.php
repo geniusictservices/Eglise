@@ -118,6 +118,19 @@ uksort($parDevise, static fn ($a, $b) => ($ordre[$a] ?? 999) <=> ($ordre[$b] ?? 
                     <span class="chiffre__libelle"><?= e(t('gventes.total_tickets_en', ['code' => $devises[$deviseId]['code'] ?? ''])) ?></span>
                 </div>
             <?php endforeach; ?>
+            <?php // Nuit : remises et offerts, part payée avec des cartes cashless ?>
+            <?php foreach ($totaux['remises'] ?? [] as $deviseId => $somme): ?>
+                <div class="chiffre">
+                    <span class="chiffre__valeur" data-total="remises-<?= (int) $deviseId ?>">−<?= e($montant($somme, (int) $deviseId)) ?></span>
+                    <span class="chiffre__libelle"><a class="lien" href="/gestion/remises"><?= e(t('nuit.recu_remises')) ?></a></span>
+                </div>
+            <?php endforeach; ?>
+            <?php foreach ($totaux['cartes'] ?? [] as $deviseId => $somme): ?>
+                <div class="chiffre">
+                    <span class="chiffre__valeur" data-total="cashless-<?= (int) $deviseId ?>"><?= e($montant($somme, (int) $deviseId)) ?></span>
+                    <span class="chiffre__libelle"><?= e(t('nuit.c_carte_payer')) ?></span>
+                </div>
+            <?php endforeach; ?>
             <?php if ($reference): ?>
                 <div class="chiffre">
                     <span class="chiffre__valeur" data-total="reference">≈ <?= e(A::montant($totaux['reference'], $reference)) ?></span>

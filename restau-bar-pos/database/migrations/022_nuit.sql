@@ -438,7 +438,7 @@ SELECT r.id, p.permission FROM roles r JOIN (
     SELECT 'gerant' AS code, 'caisse.minimum' AS permission UNION ALL SELECT 'gerant', 'nuit.voir' UNION ALL SELECT 'gerant', 'nuit.parametrer'
     UNION ALL SELECT 'gerant', 'entrees.vendre' UNION ALL SELECT 'gerant', 'entrees.controler' UNION ALL SELECT 'gerant', 'invites.gerer'
     UNION ALL SELECT 'gerant', 'invites.pointer' UNION ALL SELECT 'gerant', 'promoteurs.gerer' UNION ALL SELECT 'gerant', 'vestiaire.gerer'
-    UNION ALL SELECT 'gerant', 'cashless.recharger' UNION ALL SELECT 'gerant', 'cashless.gerer'
+    UNION ALL SELECT 'gerant', 'cashless.recharger' UNION ALL SELECT 'gerant', 'cashless.gerer' UNION ALL SELECT 'gerant', 'fidelite.parametrer'
     UNION ALL SELECT 'superviseur', 'nuit.voir' UNION ALL SELECT 'superviseur', 'entrees.controler' UNION ALL SELECT 'superviseur', 'invites.pointer'
     UNION ALL SELECT 'superviseur', 'cashless.recharger'
     UNION ALL SELECT 'caissier', 'cashless.recharger' UNION ALL SELECT 'barman', 'cashless.recharger'

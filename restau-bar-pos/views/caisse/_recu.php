@@ -10,6 +10,7 @@
  * @var list<array> $totaux
  * @var array<int, array> $devises
  * @var array $etablissement
+ * @var list<array> $cartes part payée avec une carte cashless ; $remises ; $billets ; $depots ; $points (fidélité)
  */
 $formateur = new App\Repositories\DeviseRepository();
 $montant = static fn (float|string $m, int $deviseId): string => isset($devises[$deviseId]) ? $formateur->formater((float) $m, $devises[$deviseId]) : (string) $m;
@@ -33,16 +34,29 @@ $autres = array_values(array_filter($totaux, static fn (array $t) => (int) $t['d
     <?php endif; ?>
     <table class="recu__lignes">
         <tbody>
-            <?php foreach ($lignes as $l): ?>
+            <?php foreach ($lignes as $l): $nature = $l['nature'] ?? 'article'; $remiseLigne = (float) ($l['remise'] ?? 0); ?>
+                <?php if ($nature === 'composant'): ?>
+                    <?php // Composant d'une formule : compris dans son prix ?>
+                    <tr class="recu__composant">
+                        <td class="recu__qte"><?= e(App\Repositories\NoteRepository::quantiteLisible($l['quantite'])) ?> ×</td>
+                        <td colspan="2"><small><?= e($l['libelle']) ?><?= $l['format'] ? ' · ' . e($l['format']) : '' ?> (<?= e(t('nuit.c_inclus')) ?>)</small></td>
+                    </tr>
+                    <?php continue; ?>
+                <?php endif; ?>
                 <tr>
                     <td class="recu__qte"><?= e(App\Repositories\NoteRepository::quantiteLisible($l['quantite'])) ?> ×</td>
                     <td><?= e($l['libelle']) ?><?php if ($l['format']): ?><br><small><?= e($l['format']) ?></small><?php endif; ?>
-                        <?php if ((float) $l['quantite'] != 1.0): ?><br><small><?= e($montant($l['prix_unitaire'], $ticket)) ?></small><?php endif; ?></td>
+                        <?php if ((float) $l['quantite'] != 1.0): ?><br><small><?= e($montant($l['prix_unitaire'], $ticket)) ?></small><?php endif; ?>
+                        <?php if ($remiseLigne > 0.0005): ?><br><small class="recu__remise"><?= e(!empty($l['offert']) ? t('nuit.recu_offert') : t('nuit.recu_remise')) ?> −<?= e($montant($remiseLigne, $ticket)) ?></small><?php endif; ?></td>
                     <td class="recu__montant"><?= e($montant($l['montant'], $ticket)) ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
+    <?php if ((float) ($vente['remise'] ?? 0) > 0.0005): ?>
+        <div class="recu__sous-total"><span><?= e(t('nuit.recu_brut')) ?></span><span><?= e($montant($vente['brut'] ?? ((float) $vente['total'] + (float) $vente['remise']), $ticket)) ?></span></div>
+        <div class="recu__sous-total"><span><?= e(t('nuit.recu_remises')) ?><?php foreach ($remises ?? [] as $r): ?><br><small><?= e(t('nuit.motif_' . $r['motif'])) ?><?= $r['precision_motif'] ? ' — ' . e($r['precision_motif']) : '' ?> · <?= e($r['accorde_nom'] ?? '') ?><?= $r['valide_nom'] ? ' / ' . e($r['valide_nom']) : '' ?></small><?php endforeach; ?></span><span>−<?= e($montant($vente['remise'], $ticket)) ?></span></div>
+    <?php endif; ?>
     <div class="recu__total">
         <span><?= e(t('recu.total')) ?></span>
         <strong><?= e($montant($vente['total'], $ticket)) ?></strong>
@@ -55,6 +69,9 @@ $autres = array_values(array_filter($totaux, static fn (array $t) => (int) $t['d
             <?php foreach ($paiements as $p): ?>
                 <tr><td><?= e($p['compte']) ?><br><small><?= e(t('tresorerie.type_' . $p['moyen'])) ?></small></td><td class="recu__montant"><?= e($montant($p['recu'], (int) $p['devise_id'])) ?></td></tr>
             <?php endforeach; ?>
+            <?php foreach ($cartes ?? [] as $c): ?>
+                <tr class="recu__carte"><td><?= e(t('nuit.recu_carte', ['code' => 'C' . str_pad((string) $c['numero'], 4, '0', STR_PAD_LEFT)])) ?><br><small><?= e(t('nuit.recu_carte_solde', ['solde' => $montant((float) $c['solde'], (int) $c['devise_id'])])) ?></small></td><td class="recu__montant"><?= e($montant($c['montant'], (int) $c['devise_id'])) ?></td></tr>
+            <?php endforeach; ?>
             <?php foreach ($credits ?? [] as $c): ?>
                 <tr class="recu__ardoise"><td><?= e(t('recu.ardoise')) ?><br><small><?= e(t('recu.ardoise_detail', ['client' => $c['client_nom'], 'date' => date('d/m/Y', strtotime($c['echeance']))])) ?></small></td><td class="recu__montant"><?= e($montant($c['montant'], (int) $c['devise_id'])) ?></td></tr>
             <?php endforeach; ?>
@@ -63,5 +80,11 @@ $autres = array_values(array_filter($totaux, static fn (array $t) => (int) $t['d
             <?php endif; ?>
         </tbody>
     </table>
+    <?php foreach ($points ?? [] as $pt): ?>
+        <p class="recu__info"><?= e($pt['type'] === 'utilisation' ? t('nuit.recu_points_utilises', ['points' => -(int) $pt['points']]) : t('nuit.recu_points', ['client' => $pt['client_nom'], 'points' => (int) $pt['points'], 'solde' => (int) $pt['solde']])) ?></p>
+    <?php endforeach; ?>
     <p class="recu__merci"><?= e(t('recu.merci')) ?></p>
+    <?php if (!empty($billets) || !empty($depots)): ?>
+        <?= App\Core\View::rendre('caisse/_billets', ['etablissement' => $etablissement, 'billets' => $billets ?? [], 'depots' => $depots ?? [], 'seul' => false]) ?>
+    <?php endif; ?>
 </article>

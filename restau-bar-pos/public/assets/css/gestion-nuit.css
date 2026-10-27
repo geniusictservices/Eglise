@@ -1,0 +1,42 @@
+/* Gestion : module Nuit, cashless, remises, fidélité. Jetons de volcan.css seulement ; contours fins et égaux. */
+
+.nuit-tarifs { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.nuit-tarifs li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; overflow-wrap: anywhere; }
+.nuit-grille { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); }
+.nuit-grille > .bloc { margin: 0; }
+.nuit-ligne--entre td { background: var(--teinte-succes); }
+.nuit-actions-ligne { display: flex; flex-wrap: wrap; gap: 6px; }
+.nuit-actions-ligne form { margin: 0; }
+.nuit-actions-ligne .bouton--petit { min-height: var(--cible); }
+.nuit-form-formule { display: grid; gap: 12px; }
+.nuit-formule__groupe { margin: 0; padding: 12px; border: 1px solid var(--ligne); border-radius: 14px; background: var(--surface); }
+.nuit-formule__groupe legend { padding: 0 6px; font-weight: 800; }
+.nuit-multiple { min-height: 9rem; height: auto; padding: 6px; }
+.nuit-multiple option { padding: 6px 4px; }
+tr[aria-current="true"] td { background: var(--teinte-accent); }
+code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; font-size: .8125rem; overflow-wrap: anywhere; }
+
+/* Planche de cartes cashless (format carte bancaire 85 × 54 mm, fond blanc) */
+.planche-cartes { margin: 0; padding: 16px; background: var(--fond); color: var(--encre); font-family: var(--police-texte); }
+.planche-cartes__tete { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 16px; }
+.planche-cartes__tete .aide { flex-basis: 100%; margin: 0; color: var(--doux); }
+.planche-cartes__grille { display: flex; flex-wrap: wrap; gap: 6mm; }
+.carte-imprimee {
+  box-sizing: border-box; width: 85mm; max-width: 100%; height: 54mm; display: grid; grid-template-columns: 30mm 1fr; align-items: center; gap: 3mm;
+  padding: 3mm; border: 1px solid #999; border-radius: 3mm; background: #fff; color: #000; break-inside: avoid; page-break-inside: avoid;
+}
+.carte-imprimee__qr { width: 30mm; height: 30mm; }
+.carte-imprimee__qr svg { display: block; width: 100%; height: 100%; }
+.carte-imprimee__texte { display: grid; gap: 1mm; min-width: 0; }
+.carte-imprimee__texte p { margin: 0; }
+.carte-imprimee__titre { font: 800 11pt/1.1 var(--police-titre); }
+.carte-imprimee__numero { font: 800 16pt/1.1 var(--police-titre); }
+.carte-imprimee__code { font: 700 8pt/1.2 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .04em; overflow-wrap: anywhere; }
+.carte-imprimee__aide { font-size: 7pt; color: #333; }
+@media print {
+  .planche-cartes { padding: 0; background: #fff; }
+  .planche-cartes__tete { display: none; }
+}
+@media (max-width: 600px) {
+  .carte-imprimee { width: 100%; height: auto; }
+}
