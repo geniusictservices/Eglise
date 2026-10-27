@@ -28,7 +28,7 @@
   background: var(--surface); border: 1px solid var(--ligne); border-radius: var(--rayon-carte);
 }
 .rap-kpi__libelle { color: var(--doux); font-size: var(--taille-s); font-weight: 600; }
-.rap-kpi__valeur { font: 800 clamp(1.25rem, 2.4vw, 1.625rem)/1.15 var(--police-titre); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.rap-kpi__valeur { font: 800 clamp(1.125rem, 1.6vw, 1.625rem)/1.15 var(--police-titre); font-variant-numeric: tabular-nums; white-space: normal; overflow-wrap: anywhere; }
 .rap-kpi__second { color: var(--doux); font-weight: 600; font-variant-numeric: tabular-nums; }
 .rap-kpi__pied { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .6rem; margin-top: .25rem; font-size: .8125rem; color: var(--doux); }
 .rap-kpi--resultat { background: var(--teinte-succes); border-color: color-mix(in srgb, var(--succes) 35%, var(--ligne)); }

@@ -35,9 +35,9 @@ $m = static fn (float $x, int $id): string => isset($devises[$id]) ? $formateur-
 <section class="bloc" aria-labelledby="remises-totaux">
     <h2 id="remises-totaux"><?= e(t('gnuit.ventes_et_remises')) ?></h2>
     <?php foreach ($totaux as $deviseId => $tt): ?>
-        <div class="chiffres" data-devise="<?= e($devises[$deviseId]['code'] ?? '') ?>">
+        <div class="chiffres gnuit-chiffres" data-devise="<?= e($devises[$deviseId]['code'] ?? '') ?>">
             <div class="chiffre"><span class="chiffre__libelle"><?= e(t('gnuit.ventes_brutes')) ?></span><strong class="chiffre__valeur montant" data-chiffre="brut"><?= e($m($tt['brut'], $deviseId)) ?></strong><span class="aide"><?= e(t('gnuit.tickets_n', ['n' => $tt['tickets']])) ?></span></div>
-            <div class="chiffre"><span class="chiffre__libelle"><?= e(t('nuit.recu_remises')) ?></span><strong class="chiffre__valeur montant" data-chiffre="remises">−<?= e($m($tt['remises'], $deviseId)) ?></strong><span class="aide"><?= e(t('gnuit.tickets_remises', ['n' => $tt['remises_n']])) ?></span></div>
+            <div class="chiffre"><span class="chiffre__libelle"><?= e(t('nuit.recu_remises')) ?></span><strong class="chiffre__valeur montant" data-chiffre="remises"><?= $tt['remises'] > 0 ? '−' : '' ?><?= e($m($tt['remises'], $deviseId)) ?></strong><span class="aide"><?= e(t('gnuit.tickets_remises', ['n' => $tt['remises_n']])) ?></span></div>
             <div class="chiffre"><span class="chiffre__libelle"><?= e(t('gnuit.dont_offerts')) ?></span><strong class="chiffre__valeur montant" data-chiffre="offerts"><?= e($m($tt['offerts'], $deviseId)) ?></strong></div>
             <div class="chiffre"><span class="chiffre__libelle"><?= e(t('gnuit.ventes_nettes')) ?></span><strong class="chiffre__valeur montant" data-chiffre="net"><?= e($m($tt['net'], $deviseId)) ?></strong></div>
         </div>

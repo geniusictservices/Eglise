@@ -81,8 +81,7 @@ final class CaissePartagee
 
     public static function connecter(array $utilisateur, array $appareil): void
     {
-        Session::demarrer();
-        session_regenerate_id(true);
+        Session::regenerer();
         // Sur une caisse partagée, la session de gestion d'un gérant ne doit pas rester ouverte derrière un serveur
         unset($_SESSION['utilisateur']);
         $_SESSION['caissier'] = ['id' => (int) $utilisateur['id'], 'nom' => $utilisateur['nom'], 'appareil_id' => (int) $appareil['id']];
@@ -92,7 +91,7 @@ final class CaissePartagee
     {
         Session::demarrer();
         unset($_SESSION['caissier']);
-        session_regenerate_id(true);
+        Session::regenerer();
     }
 
     /** Règle de verrouillage de l'établissement, en une phrase (écran de verrouillage, fenêtre de la caisse). */

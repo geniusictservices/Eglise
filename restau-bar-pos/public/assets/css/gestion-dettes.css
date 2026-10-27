@@ -62,7 +62,7 @@
 .det-lignes li { display: flex; justify-content: space-between; align-items: center; gap: .5rem 1rem; padding: .6rem 0; border-top: 1px solid var(--ligne); min-height: var(--cible); }
 .det-lignes li:first-child { border-top: 0; }
 .det-lignes li > span { min-width: 0; overflow-wrap: anywhere; }
-.det-lignes li > .montant { white-space: nowrap; }
+.det-lignes li > .montant { white-space: nowrap; flex: none; }
 .det-lignes .badge { margin-left: .35rem; }
 .det-lignes--numerotees { counter-reset: det-dette; }
 .det-lignes--numerotees li { counter-increment: det-dette; }

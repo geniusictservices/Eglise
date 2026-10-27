@@ -7,6 +7,9 @@ namespace App\Core;
 /** Session de l'espace de gestion, avec jeton CSRF pour les formulaires. */
 final class Session
 {
+    /** Secondes pendant lesquelles un ancien identifiant renvoie à la session qui l'a remplacé (voir regenerer()) */
+    private const RENVOI_SECONDES = 30;
+
     public static function demarrer(): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
@@ -21,6 +24,43 @@ final class Session
             'samesite' => 'Lax',
         ]);
         session_start();
+        // Identifiant remplacé il y a quelques secondes par une requête voisine (PIN envoyé deux fois, requête partie
+        // avec l'ancien cookie) : on suit le renvoi vers la nouvelle session, et le navigateur reçoit le nouveau cookie
+        for ($sauts = 0; is_array($renvoi = $_SESSION['_renvoi'] ?? null); $sauts++) {
+            if ($sauts >= 3 || time() - (int) ($renvoi['le'] ?? 0) > self::RENVOI_SECONDES || !is_string($renvoi['id'] ?? null) || $renvoi['id'] === '') {
+                $_SESSION = [];
+                break;
+            }
+            session_write_close();
+            session_id($renvoi['id']);
+            session_start();
+            setcookie(session_name(), $renvoi['id'], self::parametresCookie());
+        }
+    }
+
+    /**
+     * Nouvel identifiant de session (connexion, PIN, verrouillage). L'ancienne session ne garde rien d'autre qu'un renvoi
+     * vers la nouvelle pendant quelques secondes : avec plusieurs processus PHP, une requête voisine partie avec l'ancien
+     * cookie (PIN touché deux fois, demande de la clé hors ligne) ne tombe pas sur une session vide, et le navigateur
+     * qui n'a pas reçu la réponse de la première requête n'est pas déconnecté.
+     */
+    public static function regenerer(): void
+    {
+        self::demarrer();
+        $donnees = $_SESSION;
+        $nouveau = session_create_id();
+        $_SESSION = ['_renvoi' => ['id' => $nouveau, 'le' => time()]];
+        session_write_close();
+        session_id($nouveau);
+        session_start();
+        $_SESSION = $donnees;
+        setcookie(session_name(), $nouveau, self::parametresCookie());
+    }
+
+    private static function parametresCookie(): array
+    {
+        $p = session_get_cookie_params();
+        return ['expires' => 0, 'path' => $p['path'], 'domain' => $p['domain'], 'secure' => $p['secure'], 'httponly' => $p['httponly'], 'samesite' => $p['samesite']];
     }
 
     public static function jetonCsrf(): string
@@ -50,8 +90,7 @@ final class Session
 
     public static function connecter(array $utilisateur): void
     {
-        self::demarrer();
-        session_regenerate_id(true);
+        self::regenerer();
         $_SESSION['utilisateur'] = [
             'id' => (int) $utilisateur['id'],
             'nom' => $utilisateur['nom'],

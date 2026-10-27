@@ -842,9 +842,17 @@
 
   var minuterie = null;
   var enCours = false;
+  var rechargerApres = false;
+  // Fenêtre ouverte autre que la salle (paiement et reçu, ardoise…) : on n'y touche pas
+  function fenetreBloquante() {
+    return Array.prototype.some.call(document.querySelectorAll('dialog[open]'), function (d) { return d !== fenetreSalle; });
+  }
   function actualiser() {
-    // Sans réseau (ou caisse servie depuis l'appareil) : rien à demander au serveur
-    if (enCours || (C.horsLigne && C.horsLigne.actif())) { return; }
+    // Caisse verrouillée par le serveur (401) pendant qu'un reçu était ouvert : rechargée une fois la fenêtre fermée
+    if (rechargerApres) { if (!fenetreBloquante()) { window.location.reload(); } return; }
+    // Sans réseau (ou caisse servie depuis l'appareil) : rien à demander au serveur. Pendant le paiement et le reçu non
+    // plus : sur une caisse partagée verrouillée après l'encaissement, la réponse serait 401 et le reçu se fermerait
+    if (enCours || (C.horsLigne && C.horsLigne.actif()) || fenetreBloquante()) { return; }
     enCours = true;
     requete('GET', '/caisse/salle' + (D.zone ? '?zone=' + encodeURIComponent(D.zone) : '')).then(function (j) {
       enCours = false;
@@ -863,7 +871,9 @@
       if (j.grille !== D.grille) { prixChanges(); }
     }).catch(function (e) {
       enCours = false;
-      if (e.statut === 401) { window.location.reload(); }
+      if (e.statut === 401) {
+        if (fenetreBloquante()) { rechargerApres = true; } else { window.location.reload(); }
+      }
     });
   }
   var prixAvertis = false;

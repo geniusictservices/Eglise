@@ -40,3 +40,8 @@ code { font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; 
 @media (max-width: 600px) {
   .carte-imprimee { width: 100%; height: auto; }
 }
+
+/* Remises et offerts : les grands montants en FC (143 037 700 FC) restent dans leur case */
+.gnuit-chiffres { grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); }
+.gnuit-chiffres .chiffre { min-width: 0; }
+.gnuit-chiffres .chiffre__valeur { font-size: clamp(1.125rem, 1.6vw, 1.625rem); white-space: normal; overflow-wrap: anywhere; }
