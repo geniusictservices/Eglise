@@ -1,0 +1,33 @@
+// Sans console (pas de config/console.php) : l'instance est libre, comme avant (port 8183, sans RBP_CONSOLE_CONFIG)
+const { chromium } = require('playwright');
+const fs = require('fs');
+const { execSync } = require('child_process');
+const { v, q, D, connecterInstance, bilan, surveiller } = require('./outils');
+const C = 'rbp_console_essai';
+(async () => {
+  const { bar } = JSON.parse(fs.readFileSync(D + '/etat.json'));
+  q(C, `UPDATE clients SET echeance=DATE_SUB(CURDATE(), INTERVAL 60 DAY), statut_force='suspendu', statut_force_motif='essai' WHERE id=${bar}`);
+  execSync(`cd /home/user/Eglise/restau-bar-pos && (env -u RBP_CONSOLE_CONFIG setsid nohup php -S 127.0.0.1:8183 -t public public/index.php > ${D}/serveur-libre.log 2>&1 < /dev/null & echo $! > ${D}/serveur-libre.pid) && sleep 0.7`);
+  const b = await chromium.launch(); const erreurs = [];
+  const p = await (await b.newContext()).newPage(); surveiller(p, erreurs);
+  let r = await p.goto('http://cnslbar.localhost:8183/');
+  v(r.status(), 200, 'sans console : vitrine ouverte (même si la console d\'essai dit « suspendu »)');
+  await connecterInstance({ goto: (u) => p.goto(u.replace(':8180', ':8183')), fill: p.fill.bind(p), click: p.click.bind(p), waitForNavigation: p.waitForNavigation.bind(p) }, 'cnslbar', 'patron@cnslbar.test', 'Patron-Bar-2026');
+  v(p.url(), 'http://cnslbar.localhost:8183/gestion', 'sans console : connexion à la gestion');
+  v(await p.locator('.plf-bandeau').count(), 0, 'sans console : aucun bandeau');
+  const noms = (await p.locator('.module__nom').allTextContents()).join('|');
+  v(noms.includes('Personnel') && noms.includes('Finance'), true, 'sans console : tous les modules');
+  r = await p.goto('http://cnslbar.localhost:8183/caisse?e=comptoir-du-lac');
+  v(r.status(), 200, 'sans console : la caisse s\'ouvre');
+  await p.goto('http://cnslbar.localhost:8183/gestion/compte');
+  v((await p.locator('.lateral__lien').allTextContents()).join('|').includes('Assistance'), false, 'sans console : pas d\'écran Assistance');
+  r = await p.goto('http://admin.localhost:8183/');
+  v(p.url(), 'http://admin.localhost:8183/installation', 'sans console : admin.<domaine> propose l\'installation');
+  r = await p.goto('http://www.localhost:8183/');
+  v(r.status(), 404, 'autre sous-domaine réservé (www) : page introuvable');
+  execSync(`kill $(cat ${D}/serveur-libre.pid); cd /home/user/Eglise/restau-bar-pos && rm -f storage/console-installation.code`);
+  q(C, `UPDATE clients SET echeance=DATE_ADD(CURDATE(), INTERVAL 20 DAY), statut_force=NULL, statut_force_motif=NULL WHERE id=${bar}`);
+  v(erreurs.length, 0, 'aucune erreur JavaScript');
+  await b.close();
+  process.exit(bilan() ? 1 : 0);
+})();

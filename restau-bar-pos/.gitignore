@@ -18,3 +18,17 @@
 
 # Documents du personnel (contrats, pièces d'identité) : hors de la racine web, jamais versionnés
 /storage/documents/
+
+# Outils de test et du manuel : états et résultats produits en local
+/outils/tests/instance.txt
+/outils/tests/suites/instance.txt
+/outils/tests/creer-integ.txt
+/outils/tests/pristine.sql
+/outils/tests/uploads-pristine/
+/outils/tests/resultats/
+/outils/manuel/instance.txt
+/outils/manuel/pdf-tmp/
+/outils/manuel/pages.json
+/outils/**/*.log
+/outils/**/*.pid
+/outils/**/*.png

@@ -1,0 +1,1798 @@
+[
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/e/comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/e/volcano-club?zone=vip&devise=CDF",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/q/volc-vip",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/page-inexistante",
+  "statut": 404,
+  "pb": [
+   "JS : console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "thème nuit"
+  ]
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/connexion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/utilisateurs",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/utilisateurs/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/utilisateurs/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/utilisateurs/roles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/utilisateurs/roles/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/utilisateurs/appareils",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/utilisateurs/journal",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/tableau-de-bord",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/tresorerie",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/tresorerie/transferts",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/depenses",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/depenses/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/catalogue",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/catalogue/produits/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/catalogue/produits/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/catalogue/categories",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/etablissements",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/etablissements/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/etablissements/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/etablissements/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/grilles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/devises",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/devises/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/devises/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/compte",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/qr",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/qr/volc-vip/imprimer",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/gestion/design",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/caisse?e=comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-bureau",
+  "url": "/caisse?e=volcano-club",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/e/comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/e/volcano-club?zone=vip&devise=CDF",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/q/volc-vip",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/page-inexistante",
+  "statut": 404,
+  "pb": [
+   "JS : console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "thème nuit"
+  ]
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/connexion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/utilisateurs",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/utilisateurs/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/utilisateurs/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/utilisateurs/roles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/utilisateurs/roles/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/utilisateurs/appareils",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/utilisateurs/journal",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/tableau-de-bord",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/tresorerie",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/tresorerie/transferts",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/depenses",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/depenses/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/catalogue",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/catalogue/produits/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/catalogue/produits/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/catalogue/categories",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/etablissements",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/etablissements/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/etablissements/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/etablissements/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/grilles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/devises",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/devises/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/devises/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/compte",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/qr",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/qr/volc-vip/imprimer",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/gestion/design",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/caisse?e=comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-jour-tel",
+  "url": "/caisse?e=volcano-club",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/e/comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/e/volcano-club?zone=vip&devise=CDF",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/q/volc-vip",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/page-inexistante",
+  "statut": 404,
+  "pb": [
+   "JS : console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/connexion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/utilisateurs",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/utilisateurs/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/utilisateurs/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/utilisateurs/roles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/utilisateurs/roles/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/utilisateurs/appareils",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/utilisateurs/journal",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/tableau-de-bord",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/tresorerie",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/tresorerie/transferts",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/depenses",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/depenses/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/catalogue",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/catalogue/produits/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/catalogue/produits/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/catalogue/categories",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/etablissements",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/etablissements/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/etablissements/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/etablissements/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/grilles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/devises",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/devises/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/devises/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/compte",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/qr",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/qr/volc-vip/imprimer",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/gestion/design",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/caisse?e=comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-bureau",
+  "url": "/caisse?e=volcano-club",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/e/comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/e/volcano-club?zone=vip&devise=CDF",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/q/volc-vip",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/page-inexistante",
+  "statut": 404,
+  "pb": [
+   "JS : console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/connexion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/utilisateurs",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/utilisateurs/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/utilisateurs/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/utilisateurs/roles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/utilisateurs/roles/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/utilisateurs/appareils",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/utilisateurs/journal",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/tableau-de-bord",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/tresorerie",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/tresorerie/transferts",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/depenses",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/depenses/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/catalogue",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/catalogue/produits/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/catalogue/produits/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/catalogue/categories",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/etablissements",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/etablissements/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/etablissements/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/etablissements/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/grilles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/devises",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/devises/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/devises/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/compte",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/qr",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/qr/volc-vip/imprimer",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/gestion/design",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/caisse?e=comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "fr-nuit-tel",
+  "url": "/caisse?e=volcano-club",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/e/comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/e/volcano-club?zone=vip&devise=CDF",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/q/volc-vip",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/page-inexistante",
+  "statut": 404,
+  "pb": [
+   "JS : console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "thème nuit"
+  ]
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/connexion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/utilisateurs",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/utilisateurs/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/utilisateurs/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/utilisateurs/roles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/utilisateurs/roles/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/utilisateurs/appareils",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/utilisateurs/journal",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/tableau-de-bord",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/tresorerie",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/tresorerie/transferts",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/depenses",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/depenses/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/catalogue",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/catalogue/produits/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/catalogue/produits/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/catalogue/categories",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/etablissements",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/etablissements/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/etablissements/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/etablissements/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/grilles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/devises",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/devises/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/devises/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/compte",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/qr",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/qr/volc-vip/imprimer",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/gestion/design",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/caisse?e=comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-bureau",
+  "url": "/caisse?e=volcano-club",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/e/comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/e/volcano-club?zone=vip&devise=CDF",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/q/volc-vip",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/page-inexistante",
+  "statut": 404,
+  "pb": [
+   "JS : console: Failed to load resource: the server responded with a status of 404 (Not Found)",
+   "thème nuit"
+  ]
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/connexion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/utilisateurs",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/utilisateurs/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/utilisateurs/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/utilisateurs/roles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/utilisateurs/roles/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/utilisateurs/appareils",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/utilisateurs/journal",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/tableau-de-bord",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/tresorerie",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/tresorerie/transferts",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/depenses",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/depenses/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/catalogue",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/catalogue/produits/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/catalogue/produits/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/catalogue/categories",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/etablissements",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/etablissements/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/etablissements/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/etablissements/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/grilles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/devises",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/devises/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/devises/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/compte",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/qr",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/qr/volc-vip/imprimer",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/gestion/design",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/caisse?e=comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-jour-tel",
+  "url": "/caisse?e=volcano-club",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/e/comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/e/volcano-club?zone=vip&devise=CDF",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/q/volc-vip",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/page-inexistante",
+  "statut": 404,
+  "pb": [
+   "JS : console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/connexion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/utilisateurs",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/utilisateurs/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/utilisateurs/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/utilisateurs/roles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/utilisateurs/roles/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/utilisateurs/appareils",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/utilisateurs/journal",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/tableau-de-bord",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/tresorerie",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/tresorerie/transferts",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/depenses",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/depenses/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/catalogue",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/catalogue/produits/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/catalogue/produits/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/catalogue/categories",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/etablissements",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/etablissements/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/etablissements/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/etablissements/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/grilles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/devises",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/devises/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/devises/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/compte",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/qr",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/qr/volc-vip/imprimer",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/gestion/design",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/caisse?e=comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-bureau",
+  "url": "/caisse?e=volcano-club",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/e/comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/e/volcano-club?zone=vip&devise=CDF",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/q/volc-vip",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/page-inexistante",
+  "statut": 404,
+  "pb": [
+   "JS : console: Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ]
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/connexion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/utilisateurs",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/utilisateurs/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/utilisateurs/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/utilisateurs/roles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/utilisateurs/roles/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/utilisateurs/appareils",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/utilisateurs/journal",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/tableau-de-bord",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/tresorerie",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/tresorerie/transferts",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/depenses",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/depenses/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/catalogue",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/catalogue/produits/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/catalogue/produits/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/catalogue/categories",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/etablissements",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/etablissements/nouveau",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/etablissements/1",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/etablissements/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/grilles",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/devises",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/devises/2",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/devises/nouvelle",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/compte",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/qr",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/qr/volc-vip/imprimer",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/gestion/design",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/caisse?e=comptoir-du-lac",
+  "statut": 200,
+  "pb": []
+ },
+ {
+  "combo": "en-nuit-tel",
+  "url": "/caisse?e=volcano-club",
+  "statut": 200,
+  "pb": []
+ }
+]

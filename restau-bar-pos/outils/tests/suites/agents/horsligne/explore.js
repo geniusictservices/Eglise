@@ -1,0 +1,33 @@
+// Exploration : appareil personnel, hors ligne, rechargement depuis le cache, une vente
+const { chromium } = require('playwright');
+const c = require('./commun');
+(async () => {
+  const b = await chromium.launch();
+  const ctx = await b.newContext({ viewport: { width: 1366, height: 860 } });
+  const err = [];
+  const p = await c.connecter(ctx, 'admin@demo.test', c.MDP, err);
+  await p.goto(c.B + '/caisse?e=comptoir-du-lac');
+  console.log('sw', await c.swPret(p));
+  await p.waitForTimeout(1500);
+  console.log('etat', await p.textContent('#hl-etat'));
+  console.log('caches', await p.evaluate(async () => { const r = []; for (const n of await caches.keys()) { const cc = await caches.open(n); r.push(n + ': ' + (await cc.keys()).map(k => k.url.replace(location.origin, '')).join(' ')); } return r; }));
+  console.log('cles', await p.evaluate(() => window.RbpHorsLigne.tous('cles').then(l => l.map(x => x.uid + ':' + x.cleId))));
+  await ctx.setOffline(true);
+  await p.reload();
+  await p.waitForSelector('#caisse');
+  console.log('meta cache', await p.evaluate(() => !!document.querySelector('meta[name="rbp-hors-ligne"]')));
+  await p.waitForTimeout(500);
+  console.log('etat hors', await p.textContent('#hl-etat'));
+  await c.ajouter(p, ['Primus|Grande', 'Kivu Sunset']);
+  await c.payer(p);
+  console.log('recu', (await p.textContent('#paiement-recu')).slice(0, 200));
+  console.log('file', (await c.fileHl(p)).map(i => i.numero + ' ' + i.statut + ' sig=' + !!i.signature));
+  await p.screenshot({ path: c.S + 'x-explore.png' });
+  await p.click('#paiement-suivant');
+  await ctx.setOffline(false);
+  await p.waitForTimeout(6000);
+  console.log('file après', (await c.fileHl(p)).map(i => i.numero + ' ' + i.statut + ' ' + (i.message || '')));
+  console.log(c.sql("SELECT id, numero, hors_ligne, heure_appareil, cree_le, numero_provisoire, notes_hors_ligne, ecart_hors_ligne FROM ventes ORDER BY id DESC LIMIT 2"));
+  console.log('erreurs', err);
+  await b.close();
+})();

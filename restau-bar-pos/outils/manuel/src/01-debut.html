@@ -1,0 +1,92 @@
+<header class="couverture" id="haut">
+  <p class="couverture__sur">Manuel d'utilisation · version complète · 27 octobre 2026</p>
+  <h1>restau-bar-pos</h1>
+  <p class="couverture__chapeau">La caisse et la gestion de votre restaurant-bar, de votre lounge ou de votre nightclub : vendre en francs et en dollars, suivre les ardoises, le stock, le personnel et la trésorerie, avec une vitrine publique que vos clients ouvrent en scannant un code QR.</p>
+  <div class="publics">
+    <a href="#partie-caisse"><strong>À la caisse</strong><span>Serveurs, caissiers, barmans, agents d'entrée, vestiaire.</span></a>
+    <a href="#partie-gestion"><strong>Dans la gestion</strong><span>Propriétaire, gérant, comptable, RH, magasinier, chef de cuisine.</span></a>
+    <a href="#partie-plateforme"><strong>La plateforme</strong><span>Super admin : installation, clients, abonnements, messagerie.</span></a>
+  </div>
+  <div class="couverture__image"><img src="captures/caisse-ticket-ordi.jpg" alt="La caisse du Comptoir du Lac"></div>
+</header>
+
+<!--SOMMAIRE-IMPRESSION-->
+
+<div class="partie" id="partie-debut">
+  <p class="partie__sur">Pour tout le monde</p>
+  <h2>Prise en main</h2>
+  <p>Ce qu'est restau-bar-pos, comment se connecter et se repérer. À lire une fois, quel que soit votre poste.</p>
+</div>
+
+<section class="chapitre" id="bienvenue">
+  <h2>Bienvenue</h2>
+  <p class="intro">restau-bar-pos réunit trois espaces qui partagent les mêmes produits, les mêmes prix, les mêmes devises et les mêmes comptes.</p>
+  <div class="tableau"><table>
+    <thead><tr><th>Espace</th><th>Pour qui</th><th>Adresse</th></tr></thead>
+    <tbody>
+      <tr><td>La caisse</td><td>Serveurs, caissiers, barmans, agents d'entrée et vestiaire : vendre, encaisser, envoyer en cuisine, contrôler les billets.</td><td><span class="chemin">monbar.&lt;domaine&gt;/caisse</span></td></tr>
+      <tr><td>La gestion</td><td>Propriétaire, gérant, comptable, RH, magasinier, chef de cuisine : tout le reste, module par module.</td><td><span class="chemin">monbar.&lt;domaine&gt;/gestion</span></td></tr>
+      <tr><td>La vitrine</td><td>Vos clients : présentation, horaires et menu avec les prix, ouverte par un code QR.</td><td><span class="chemin">monbar.&lt;domaine&gt;/</span></td></tr>
+    </tbody>
+  </table></div>
+  <p>Chaque client (un bar, un groupe de bars) a sa propre adresse, son sous-domaine, et sa propre base de données. Tout fonctionne dans un navigateur, sur ordinateur, tablette ou téléphone, en français et en anglais. Au-dessus des bars, la <strong>console super admin</strong> gère la plateforme : clients, abonnements, messagerie (partie III).</p>
+  <h3>Les trois parties de ce manuel</h3>
+  <ul>
+    <li><a href="#partie-caisse">I. À la caisse</a> : les gestes du service, écran par écran. Les chapitres sont courts et commencent par « Pour… ».</li>
+    <li><a href="#partie-gestion">II. Dans la gestion</a> : régler les établissements, la carte, les droits, suivre les ventes, les ardoises, l'argent, le stock, les achats, le personnel, les soirées et les rapports.</li>
+    <li><a href="#partie-plateforme">III. La plateforme</a> : l'installation sur un hébergement LWS et la console super admin.</li>
+  </ul>
+  <p>En fin de manuel : les <a href="#faq">questions fréquentes</a>, le <a href="#glossaire">glossaire</a> et les <a href="#comptes-demo">comptes de démonstration</a>.</p>
+  <h3>La démonstration utilisée dans les captures</h3>
+  <p>Le « Groupe Démo » a deux établissements à Goma : <strong>Le Comptoir du Lac</strong>, un restaurant-bar (thème jour, clair), et <strong>Volcano Club</strong>, un nightclub (thème nuit, sombre). Les prix sont en francs congolais (FC) avec l'équivalent en dollars ($). Chaque écran est montré sur ordinateur et, quand c'est utile, sur téléphone.</p>
+  <div class="note"><p><strong>Le design s'adapte au lieu.</strong>Le nightclub et le lounge s'affichent en thème « nuit », le restaurant-bar en thème « jour ». Le bouton ◐ change de thème ; le choix est gardé sur l'appareil.</p></div>
+  <h3>Devises : toujours la devise locale d'abord</h3>
+  <p>Partout (caisse, reçus, trésorerie, rapports), les montants s'affichent en <strong>devise locale</strong> (FC) d'abord, puis en <strong>dollars</strong>, puis dans les autres devises acceptées (par exemple « 79 500 FC · $28 · 40 600 FRw »). Chaque opération d'argent dit toujours <strong>dans quel compte</strong> (une caisse, un compte mobile money, une banque) et <strong>dans quelle devise</strong> elle entre ou sort.</p>
+</section>
+
+<section class="chapitre" id="connexion">
+  <h2>Se connecter et se repérer</h2>
+  <p class="intro">La gestion s'ouvre avec un téléphone ou un e-mail et un mot de passe. La caisse s'ouvre avec un PIN de 6 chiffres (chapitre suivant).</p>
+  <h3>Pour se connecter à la gestion</h3>
+  <ol class="etapes">
+    <li>Ouvrez <span class="chemin">monbar.&lt;domaine&gt;/gestion</span>.</li>
+    <li>Tapez votre <strong>e-mail ou votre numéro de téléphone</strong> (<span class="chemin">0810000101</span> ou <span class="chemin">+243 81 000 0101</span>), puis votre mot de passe. L'œil à droite du champ montre ce que vous tapez.</li>
+    <li>Touchez <span class="bouton">Se connecter</span>.</li>
+  </ol>
+  <p>Après 5 essais faux, le compte est bloqué 5 minutes. Seules les personnes qui ont un module de gestion reçoivent un mot de passe ; un serveur n'a qu'un PIN de caisse. À la première connexion avec un mot de passe temporaire, la gestion vous envoie d'abord sur <span class="libelle">Mon compte</span> pour en choisir un nouveau.</p>
+  <div class="captures">
+    <figure><img src="captures/connexion-ordi.jpg" alt="Page de connexion sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Connexion</figcaption></figure>
+    <figure><img src="captures/connexion-tel.jpg" alt="Page de connexion sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Connexion</figcaption></figure>
+  </div>
+  <h3>L'écran des modules</h3>
+  <p>Après la connexion, chacun voit <strong>seulement les modules de son rôle</strong> : Caisse, Ventes, Salle, Cuisine, Achats, Stock, Personnel et paie, Finance, Rapports, Événements, Nuit et entrées, Cashless, Carte et vitrine, Paramètres. Les modules Événements, Nuit et entrées et Cashless n'apparaissent que s'il y a un lounge ou un nightclub. Un module que votre abonnement ne comprend pas n'apparaît pas.</p>
+  <p>Un bandeau en haut signale ce qui vous attend : une garantie d'ardoise à confirmer, un abonnement qui arrive à échéance (pour le propriétaire)…</p>
+  <div class="captures">
+    <figure><img src="captures/modules-ordi.jpg" alt="Écran des modules sur ordinateur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Les modules du propriétaire</figcaption></figure>
+    <figure><img src="captures/modules-tel.jpg" alt="Écran des modules sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Les modules</figcaption></figure>
+  </div>
+  <h3>Dans un module</h3>
+  <p>Sur ordinateur, les écrans du module sont dans la <strong>barre latérale</strong> à gauche ; <span class="libelle">Modules</span> en haut de cette barre ramène à l'écran des modules. Sur téléphone, ils sont dans la <strong>barre du bas</strong>. En haut à droite : la langue (<span class="libelle">EN</span> / <span class="libelle">FR</span>), le thème ◐, votre photo et <span class="libelle">Se déconnecter</span>.</p>
+  <div class="captures">
+    <figure><img src="captures/tresorerie-ordi.jpg" alt="Un module sur ordinateur avec sa barre latérale" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Module Finance : barre latérale</figcaption></figure>
+    <figure><img src="captures/tresorerie-tel.jpg" alt="Un module sur téléphone avec sa barre du bas" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Barre du bas</figcaption></figure>
+  </div>
+  <h3>Les listes, les filtres et les exports</h3>
+  <ul>
+    <li>Les listes ont des <strong>filtres</strong> en haut : période (Aujourd'hui, 7 jours, Ce mois-ci, Mois dernier, Cette année, Tout, ou du… au…), établissement, personne, statut. Touchez <span class="bouton">Afficher</span>.</li>
+    <li>Chacun ne voit que les <strong>établissements où il a des droits</strong>.</li>
+    <li>Les rapports et les listes d'argent ont un groupe <span class="libelle">Exporter</span> : <span class="libelle">CSV</span> (tableur) et <span class="libelle">Imprimer / PDF</span> (chapitre <a href="#rapports">Tableaux de bord et rapports</a>).</li>
+  </ul>
+  <h3>Pour changer son nom, sa langue, sa photo ou son mot de passe</h3>
+  <p>Paramètres → <span class="libelle">Mon compte</span>.</p>
+  <ul>
+    <li><strong>Photo de profil</strong> : elle s'affiche sur l'écran de verrouillage des caisses partagées. Sans photo, ce sont vos initiales sur une couleur.</li>
+    <li><strong>Nom</strong> et <strong>langue de l'interface</strong> (Français ou English), appliquée à chaque connexion.</li>
+    <li><strong>Mot de passe</strong> : l'actuel, puis le nouveau deux fois (10 caractères au moins ; une petite phrase est facile à retenir).</li>
+  </ul>
+  <div class="captures captures--seule">
+    <figure><img src="captures/compte-ordi.jpg" alt="Mon compte" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Mon compte</figcaption></figure>
+  </div>
+  <h3>L'aide</h3>
+  <p>Paramètres → <span class="libelle">Aide</span> ouvre ce manuel dans l'application. Le lien <span class="libelle">Télécharger le manuel (PDF)</span>, en haut, donne la version imprimable.</p>
+</section>

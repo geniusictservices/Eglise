@@ -1,0 +1,5 @@
+/gestion/personnel/employes/4
+/gestion/tableau-de-bord
+/gestion/remises
+/gestion/dettes/1
+/gestion/clients/6

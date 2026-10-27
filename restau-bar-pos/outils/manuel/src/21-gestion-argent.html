@@ -1,0 +1,151 @@
+
+<section class="chapitre" id="ventes">
+  <h2>Ventes, tickets et sessions</h2>
+  <p class="qui">Module Ventes · droits « Voir les ventes », « Annuler une vente encaissée »</p>
+  <p class="intro">Chaque ticket encaissé, avec ses paiements, ses mouvements de trésorerie et sa remise éventuelle.</p>
+  <h3>La liste des tickets</h3>
+  <p>Filtres : période, établissement, vendeur, type de compte (Caisse, Mobile money, Banque), statut (payées, annulées) et <span class="libelle">Ventes hors ligne</span>. En haut, les <strong>totaux des ventes payées</strong> par devise, l'encaissé par devise et par compte, et l'équivalent en dollars.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/ventes-ordi.jpg" alt="Tickets" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Tickets du jour et leurs totaux</figcaption></figure>
+  </div>
+  <h3>La fiche d'une vente</h3>
+  <p>Le reçu (à réimprimer), la vente (établissement, zone, vendeur, appareil, grille de prix, taux), les <strong>paiements</strong> avec leur compte et les <strong>mouvements de trésorerie</strong>. Une vente faite sans réseau porte le badge « Hors ligne », avec l'heure de l'appareil et l'écart éventuel de prix.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/vente-fiche-ordi.jpg" alt="Fiche d'une vente" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Ticket VC-000704</figcaption></figure>
+    <figure><img src="captures/ventes-hors-ligne-ordi.jpg" alt="Ventes hors ligne" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Filtre « Ventes hors ligne »</figcaption></figure>
+  </div>
+  <h3>Pour annuler une vente</h3>
+  <ol class="etapes">
+    <li>Ouvrez la vente, descendez à <span class="libelle">Annuler la vente</span>.</li>
+    <li>Écrivez le <strong>motif</strong>, cochez la confirmation (« Je confirme l'annulation du ticket VC-000704 (285 000 FC) et le remboursement du client »).</li>
+    <li>Touchez <span class="bouton">Annuler la vente</span>.</li>
+  </ol>
+  <p>Une contre-écriture datée du jour de l'annulation sort de chaque compte qui avait reçu l'argent ; le stock revient ; la part à l'ardoise est annulée (sauf si le client a déjà remboursé : annulez d'abord le remboursement). Tout est inscrit au journal.</p>
+  <div class="captures captures--moitie">
+    <figure><img src="captures/vente-annuler.jpg" alt="Annuler une vente" loading="lazy"><figcaption><span class="etiquette">Section</span>Annuler la vente</figcaption></figure>
+  </div>
+  <h3>Les sessions de caisse</h3>
+  <p>Chaque ouverture et clôture : qui, quand, sur quel établissement, et l'écart par devise. La fiche reprend le rapport de clôture. Les sessions s'activent dans Paramètres → Utilisateurs → Caisses partagées.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/sessions-ordi.jpg" alt="Sessions de caisse" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Sessions de caisse</figcaption></figure>
+    <figure><img src="captures/session-fiche-ordi.jpg" alt="Fiche d'une session" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>La session d'Esther, avec un manquant</figcaption></figure>
+  </div>
+  <h3>Remises et offerts</h3>
+  <p>Le rapport des remises de la période (ventes brutes, remises, offerts, ventes nettes ; chaque remise avec sa vente, sa cible, son motif et qui l'a accordée). En bas, la <strong>limite de remise de chaque rôle</strong> (en %) : au-delà, la caisse demande le PIN d'un supérieur. « Sans limite » pour le gérant et le propriétaire.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/remises-ordi.jpg" alt="Remises et offerts" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Remises et offerts</figcaption></figure>
+    <figure><img src="captures/remises-limites.jpg" alt="Limite de remise" loading="lazy"><figcaption><span class="etiquette">Section</span>Limite de remise de chaque rôle</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="clients-dettes">
+  <h2>Clients, dettes et relances</h2>
+  <p class="qui">Module Ventes · gérant, comptable, caissier</p>
+  <p class="intro">Les ardoises de la caisse deviennent des dettes : on les suit, on décide, on encaisse les remboursements. Les rappels partent seuls.</p>
+  <h3>Les clients</h3>
+  <p>Recherche par nom, téléphone ou e-mail ; filtres <span class="libelle">Avec une dette</span>, <span class="libelle">En retard</span> et par type (Particulier, Habitué, VIP, Entreprise, Revendeur, Personnel). En haut : nombre de clients et ce qu'ils doivent, par devise.</p>
+  <p>La <strong>fiche</strong> d'un client : ce qu'il doit, ses coordonnées et préférences, son historique (visites, dépensé, panier moyen), sa fidélité, ses dettes, ses remboursements et les messages envoyés. <span class="bouton">Encaisser un remboursement</span> et <span class="libelle">Modifier</span> sont en haut.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/clients-ordi.jpg" alt="Clients" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Clients</figcaption></figure>
+    <figure><img src="captures/client-fiche-ordi.jpg" alt="Fiche client" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fiche de Jean-Marie Bisimwa, en retard</figcaption></figure>
+  </div>
+  <h3>Pour créer ou modifier un client</h3>
+  <p>Nom, <strong>téléphone</strong> (enregistré au format +243…, unique), e-mail, anniversaire, type, langue des messages, canal préféré (SMS ou WhatsApp), rappels automatiques oui ou non, <strong>plafond de crédit</strong> et sa devise (vide = sans plafond), <strong>crédit bloqué</strong>, notes (boisson favorite, allergies). Les clients « personnel » se créent seuls (dettes mises à la charge d'un employé) et restent en lecture seule.</p>
+  <div class="captures captures--moitie">
+    <figure><img src="captures/client-modifier-ordi.jpg" alt="Modifier un client" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Modifier un client : rappels, plafond, blocage</figcaption></figure>
+  </div>
+  <h3>Les dettes</h3>
+  <p>Toutes les ardoises, avec des filtres (ouvertes, soldées, annulées, remises, mises à charge ; échéance en retard ou à venir ; période ; établissement ; responsable ; servi par ; devise ; garant en attente de réponse). En haut : le reste dû par devise et l'<strong>ancienneté</strong> (0 à 30 jours, 31 à 60, plus de 60).</p>
+  <div class="captures">
+    <figure><img src="captures/dettes-ordi.jpg" alt="Dettes" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Les dettes et leur ancienneté</figcaption></figure>
+    <figure><img src="captures/dettes-tel.jpg" alt="Dettes sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Dettes</figcaption></figure>
+  </div>
+  <h3>La fiche d'une dette et les décisions du gérant</h3>
+  <p>Montant, reste, échéance, ticket d'origine, et <strong>qui en répond</strong> : qui a servi, qui a accordé le crédit, le garant et sa réponse, le responsable. Puis les remboursements reçus et les messages envoyés. Le gérant (droit « Décider sur les dettes ») peut, avec un motif inscrit au journal :</p>
+  <ul>
+    <li><strong>Changer le responsable</strong> (le serveur a quitté l'établissement…) ;</li>
+    <li><strong>Mettre à la charge du responsable</strong>, seulement après l'échéance : la dette du client se ferme et une dette du même montant s'ouvre au nom de l'employé, proposée en retenue sur sa paie ;</li>
+    <li><strong>Annuler</strong> une dette qui n'aurait pas dû exister (impossible si le client a déjà remboursé une partie) ;</li>
+    <li><strong>Remettre</strong> le reste (geste commercial : le client ne doit plus rien).</li>
+  </ul>
+  <div class="captures captures--moitie">
+    <figure><img src="captures/dette-fiche-ordi.jpg" alt="Fiche d'une dette" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Une dette, qui en répond, et les décisions</figcaption></figure>
+  </div>
+  <h3>Pour enregistrer un remboursement dans la gestion</h3>
+  <ol class="etapes">
+    <li>Ventes → <span class="libelle">Remboursements</span> → <span class="bouton">+ Encaisser un remboursement</span> (ou depuis la fiche du client).</li>
+    <li>Cherchez le client ; ses dettes s'affichent, de la plus ancienne à la plus récente.</li>
+    <li>Choisissez l'établissement, le compte (de l'établissement ou commun), la devise et le montant.</li>
+    <li>Enregistrez. Les plus anciennes dettes sont réglées d'abord, au taux du jour. Un double envoi ne compte qu'une fois.</li>
+  </ol>
+  <p>La liste des remboursements donne les totaux par devise et par type de compte. Un remboursement saisi par erreur s'annule par le gérant, avec un motif.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/remboursement-nouveau-ordi.jpg" alt="Encaisser un remboursement" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Encaisser un remboursement</figcaption></figure>
+    <figure><img src="captures/remboursements-ordi.jpg" alt="Remboursements" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Remboursements de la période</figcaption></figure>
+  </div>
+  <h3>Les garanties</h3>
+  <p>Ventes → <span class="libelle">Garanties</span> : les ardoises dont <strong>vous</strong> êtes garant, à accepter ou refuser ; l'écran des modules les annonce. Comme à la caisse : en acceptant, vous devenez responsable.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/modules-garantie-ordi.jpg" alt="Garantie annoncée sur l'écran des modules" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>« Une ardoise attend votre réponse de garant »</figcaption></figure>
+    <figure><img src="captures/garanties-ordi.jpg" alt="Garanties" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Accepter ou refuser</figcaption></figure>
+  </div>
+  <h3>La messagerie : les rappels automatiques</h3>
+  <p>Paramètres → <span class="libelle">Messagerie</span>. Les SMS (Africa's Talking) et WhatsApp sont fournis par la plateforme : l'écran dit seulement s'ils sont prêts. Vous réglez :</p>
+  <ul>
+    <li><span class="libelle">Envoyer les rappels automatiquement</span> ;</li>
+    <li>les <strong>étapes</strong>, en jours par rapport à l'échéance (<span class="chemin">-1,1,7,30</span> : la veille, puis J+1, J+7 et J+30) et l'<strong>heure d'envoi</strong> (10:00) ;</li>
+    <li>le <strong>canal</strong> : préféré du client (l'autre sert de secours), SMS seulement ou WhatsApp seulement ;</li>
+    <li><span class="libelle">Prévenir aussi le responsable de la dette</span>.</li>
+  </ul>
+  <p>La page montre quand le script des rappels est passé pour la dernière fois (s'il ne passe jamais, la tâche planifiée du serveur ne tourne pas), et permet un <strong>message d'essai</strong>. Le <span class="libelle">Journal des messages</span> liste chaque message (Envoyé, Échec, Inscrit sans envoi) par événement et par canal. Chaque message ne part qu'une fois et commence par le nom de l'établissement.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/messagerie-ordi.jpg" alt="Messagerie" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Réglages des rappels</figcaption></figure>
+    <figure><img src="captures/messagerie-journal-ordi.jpg" alt="Journal des messages" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Journal des messages</figcaption></figure>
+  </div>
+  <h3>Le rapport des créances</h3>
+  <p>Rapports → <span class="libelle">Créances</span> : le total dû par devise et en dollars, l'ancienneté, et le détail par responsable, par personne qui a servi, par établissement, par devise, les clients qui doivent le plus et les garanties en attente.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/creances-ordi.jpg" alt="Créances" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Créances</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="tresorerie">
+  <h2>Trésorerie : comptes, transferts, dépenses</h2>
+  <p class="qui">Module Finance · comptable, gérant, propriétaire</p>
+  <p class="intro">L'argent de chaque caisse, compte mobile money et compte bancaire, dans chacune de ses devises, calculé depuis un journal unique où écrivent les ventes, les achats, les dépenses et les salaires.</p>
+  <h3>Les comptes</h3>
+  <p>Trois <strong>types</strong> : Caisse, Mobile money, Banque. Dans chaque type, autant de comptes que nécessaire (Caisse du Comptoir, Caisse du Club, Caisse cuisine (chef) ; M-Pesa, Airtel Money ; Rawbank, Equity BCDC). Un compte tient <strong>une ou plusieurs devises</strong>, chacune avec son solde : la Caisse du Comptoir a un solde en FC et un solde en $. En haut : le total par devise et le total général au taux du jour.</p>
+  <h3>Pour créer un compte</h3>
+  <ol class="etapes">
+    <li><span class="bouton">+ Nouveau compte</span> (ou « + Ajouter une caisse » sous le type).</li>
+    <li>Type, nom, établissement (ou commun à tous), opérateur ou banque et numéro.</li>
+    <li>Ses devises, chacune avec son <strong>solde d'ouverture</strong>. Une devise s'ajoute plus tard ; elle ne se retire que sans mouvement.</li>
+  </ol>
+  <p>La fiche d'un compte liste ses mouvements sur une période, avec la devise et le solde après chaque ligne.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/tresorerie-ordi.jpg" alt="Trésorerie" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Les comptes par type, les totaux par devise</figcaption></figure>
+    <figure><img src="captures/compte-tresorerie-ordi.jpg" alt="Fiche d'un compte" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Les mouvements de la Caisse du Comptoir</figcaption></figure>
+  </div>
+  <h3>Pour faire un transfert ou un change</h3>
+  <ol class="etapes">
+    <li>Finance → <span class="libelle">Transferts</span> → <span class="libelle">Nouveau transfert</span>.</li>
+    <li>Depuis le compte et la devise envoyée, le montant ; vers le compte et la devise reçue.</li>
+    <li>Entre deux devises, le montant reçu est proposé au taux du jour ; changez-le si le taux réel est différent (<span class="libelle">Reprendre le montant proposé</span> revient au calcul). Le taux réellement appliqué est enregistré.</li>
+    <li>Date, motif, <span class="bouton">Enregistrer le transfert</span>.</li>
+  </ol>
+  <p>Un change dans une même caisse (100 $ → 284 000 FC) est un transfert de la caisse vers elle-même. Un transfert s'annule avec confirmation.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/transferts-tresorerie-ordi.jpg" alt="Transferts" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Nouveau transfert</figcaption></figure>
+  </div>
+  <h3>Pour enregistrer une dépense</h3>
+  <ol class="etapes">
+    <li><span class="bouton">+ Nouvelle dépense</span> : libellé, catégorie (loyer, électricité, carburant du groupe électrogène, sécurité, artistes et DJ…), établissement, date, payé à, et la <strong>soirée</strong> si la dépense lui est liée.</li>
+    <li><strong>Paiement</strong> : le compte, une de ses devises et le montant. Une dépense payée en dollars et en francs a deux paiements (<span class="libelle">+ Ajouter un paiement dans une autre devise</span>), de la même caisse ou de deux comptes.</li>
+    <li><span class="bouton">Enregistrer la dépense</span>. Un découvert (solde négatif d'un compte dans une devise) est signalé, pas bloqué.</li>
+  </ol>
+  <p>La liste filtre par période, catégorie, établissement et type de compte, avec les totaux par devise, l'équivalent en dollars et la répartition par catégorie. Les catégories se gèrent dans <span class="libelle">Catégories</span>.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/depenses-ordi.jpg" alt="Dépenses" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Dépenses de la période</figcaption></figure>
+    <figure><img src="captures/depense-nouvelle-ordi.jpg" alt="Nouvelle dépense" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Nouvelle dépense</figcaption></figure>
+  </div>
+</section>

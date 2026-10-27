@@ -1,0 +1,164 @@
+
+<div class="partie" id="partie-plateforme">
+  <p class="partie__sur">Partie III</p>
+  <h2>La plateforme (super admin)</h2>
+  <p>Pour la personne qui héberge restau-bar-pos et le loue aux bars : l'installation sur LWS, puis la console super admin (clients, formules, abonnements, messagerie, mises à jour, sauvegardes, assistance). Les guides complets sont dans le dossier <span class="chemin">docs/</span> du logiciel.</p>
+</div>
+
+<section class="chapitre" id="installation">
+  <h2>Installer sur LWS (cPanel)</h2>
+  <p class="qui">Super admin · sans accès SSH</p>
+  <p class="intro">Résumé du guide <a class="doc-externe" data-fichier="docs/installation-lws.md" href="../installation-lws.md">Installer restau-bar-pos sur LWS</a>. Tout se fait dans cPanel (gestionnaire de fichiers, bases MySQL, domaines, tâches cron) et dans le navigateur.</p>
+  <div class="tableau tableau--cle"><table>
+    <thead><tr><th>Adresse</th><th>Rôle</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chemin">admin.mondomaine.cd</span></td><td>La console super admin.</td></tr>
+      <tr><td><span class="chemin">&lt;client&gt;.mondomaine.cd</span></td><td>Une instance par client : sa caisse, sa gestion, sa vitrine, sa base de données.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Tous ces sous-domaines pointent vers <strong>le même dossier</strong> <span class="chemin">public/</span> ; l'application reconnaît l'instance d'après le sous-domaine.</p>
+  <h3>1. Avant de commencer</h3>
+  <ul>
+    <li>Une formule LWS cPanel avec assez de bases MySQL et de sous-domaines (une base et un sous-domaine par client, plus la console), et le nom de domaine chez LWS.</li>
+    <li><strong>PHP 8.2 ou plus</strong> (8.3 conseillé), avec les extensions <span class="chemin">pdo_mysql, mbstring, curl, gd, fileinfo, json, zip, intl, openssl</span>.</li>
+    <li>Réglages PHP : <span class="chemin">upload_max_filesize</span> et <span class="chemin">post_max_size</span> à 16M, <span class="chemin">memory_limit</span> à 256M, <span class="chemin">max_execution_time</span> à 120, <span class="chemin">date.timezone</span> à <span class="chemin">Africa/Lubumbashi</span>.</li>
+  </ul>
+  <h3>2. Déposer le code</h3>
+  <ol class="etapes">
+    <li>Fabriquez l'archive (<span class="chemin">php bin/paquet-lws.php</span> donne <span class="chemin">restau-bar-pos-lws-AAAAMMJJ.zip</span>), chargez-la dans <span class="chemin">/home/moncompte</span> (<strong>pas</strong> dans <span class="chemin">public_html</span>) et extrayez-la.</li>
+    <li>Droits <span class="chemin">755</span> pour <span class="chemin">storage/</span>, <span class="chemin">storage/logs/</span>, <span class="chemin">public/uploads/</span>, <span class="chemin">config/</span> et <span class="chemin">config/instances/</span>.</li>
+    <li>Créez <span class="chemin">config/app.local.php</span> avec votre domaine :</li>
+  </ol>
+  <pre><code>&lt;?php
+return [
+    'domaine_base' =&gt; 'mondomaine.cd',
+    'instance_par_defaut' =&gt; null,
+];</code></pre>
+  <h3>3. Installer la console</h3>
+  <ol class="etapes">
+    <li>cPanel → <strong>Domaines</strong> : créez <span class="chemin">admin.mondomaine.cd</span>, racine du document = <span class="chemin">/home/moncompte/restau-bar-pos/public</span> (décochez la création d'un dossier).</li>
+    <li>cPanel → <strong>Bases de données MySQL</strong> : base <span class="chemin">rbpconsole</span>, utilisateur <span class="chemin">rbpconsole</span>, <strong>tous les privilèges</strong> (LWS préfixe : <span class="chemin">moncompte_rbpconsole</span>).</li>
+    <li>HTTPS : cPanel → SSL/TLS Status (Let's Encrypt).</li>
+    <li>Ouvrez <span class="chemin">https://admin.mondomaine.cd</span> : la page d'installation demande une <strong>preuve d'accès</strong> (un fichier vide au nom affiché, à créer dans <span class="chemin">storage/</span>), la base (nom et utilisateur complets), puis le <strong>premier super admin</strong> (mot de passe de 12 caractères au moins). Elle disparaît ensuite pour toujours.</li>
+  </ol>
+  <div class="captures captures--deux">
+    <figure><img src="captures/console-installation-console.jpg" alt="Installation de la console" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Installation : preuve et base</figcaption></figure>
+    <figure><img src="captures/console-installation-console-admin.jpg" alt="Premier super admin" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Installation : premier super admin</figcaption></figure>
+  </div>
+  <p>Si la page ne peut pas créer les tables (délai, droits), importez <span class="chemin">installation/console-vide.sql</span> avec phpMyAdmin puis rechargez la page.</p>
+  <h3>4. Créer les clients, les tâches cron, la messagerie</h3>
+  <p>Chaque client se crée dans la console (chapitre suivant). Ajoutez ensuite deux tâches cron (cPanel → Tâches Cron) et réglez les API de messagerie. Pour finir, vérifiez : la connexion à la console, la gestion et la caisse d'un client, sa vitrine, et que <span class="chemin">storage/logs/php-erreurs.log</span> reste vide.</p>
+  <h3>5. Mettre à jour le code</h3>
+  <ol class="etapes">
+    <li><strong>Sauvegardez</strong> : la sauvegarde de chaque client depuis la console, et la base de la console avec phpMyAdmin.</li>
+    <li>Remplacez <span class="chemin">app/</span>, <span class="chemin">bin/</span>, <span class="chemin">database/</span>, <span class="chemin">docs/</span>, <span class="chemin">lang/</span>, <span class="chemin">public/assets/</span>, <span class="chemin">views/</span>, <span class="chemin">public/index.php</span>. <strong>Ne remplacez jamais</strong> <span class="chemin">config/app.local.php</span>, <span class="chemin">config/console.php</span>, <span class="chemin">config/instances/</span>, <span class="chemin">storage/</span> ni <span class="chemin">public/uploads/</span>.</li>
+    <li>Console → Clients → <span class="libelle">Mettre à jour toutes les instances</span>.</li>
+  </ol>
+  <div class="note note--attention"><p><strong>Sécurité</strong>Les fichiers <span class="chemin">config/console.php</span> et <span class="chemin">config/instances/*.php</span> contiennent des mots de passe : ils ne sont ni dans l'archive ni dans le dépôt, et sont hors de <span class="chemin">public/</span>. HTTPS sur chaque sous-domaine ; un utilisateur MySQL par client ; des sauvegardes régulières hors de l'hébergement.</p></div>
+</section>
+
+<section class="chapitre" id="console">
+  <h2>La console super admin</h2>
+  <p class="qui">admin.mondomaine.cd · super admin</p>
+  <p class="intro">Résumé du guide <a class="doc-externe" data-fichier="docs/console.md" href="../console.md">Console super admin</a>. La console ne montre jamais les ventes, les clients ni les dettes des bars : seulement l'abonnement et des nombres d'utilisation.</p>
+  <h3>Connexion et tableau de bord</h3>
+  <p><span class="chemin">/connexion</span> : e-mail et mot de passe (5 essais faux bloquent 5 minutes ; la session s'arrête après une heure sans activité). Le tableau de bord donne le nombre de clients, le <strong>revenu mensuel récurrent</strong> (formules en cours ramenées au mois, sans essais ni suspendus), l'encaissé du mois par devise, les clients en retard, les essais qui finissent, et « À suivre ». Écrans : Tableau de bord, Clients, Formules, API de messagerie, Réglages, Journal, Mon compte.</p>
+  <div class="captures">
+    <figure><img src="captures/console-tableau-de-bord.jpg" alt="Tableau de bord de la console" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Tableau de bord de la console</figcaption></figure>
+    <figure><img src="captures/console-tableau-de-bord-telephone.jpg" alt="Console sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>La console</figcaption></figure>
+  </div>
+  <h3>Les formules</h3>
+  <p>Une formule contient les <strong>modules inclus</strong> (Paramètres l'est toujours), les <strong>limites</strong> (établissements actifs, personnes actives ; vide = sans limite), les <strong>prix en dollars</strong> par mois, trimestre et année, les <strong>SMS compris par mois</strong>. Un module non inclus disparaît de l'écran des modules du bar. Baisser une limite ne désactive rien : seules les nouvelles créations sont refusées. Une formule archivée n'est plus proposée.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/console-formules.jpg" alt="Formules" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Formules</figcaption></figure>
+    <figure><img src="captures/console-formule.jpg" alt="Une formule" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Modules, limites et prix d'une formule</figcaption></figure>
+  </div>
+  <h3>Pour créer un client et installer son instance</h3>
+  <ol class="etapes">
+    <li>Clients → <span class="libelle">Nouveau client</span> : nom, <strong>sous-domaine</strong> (minuscules, chiffres, tirets ; il ne change plus), propriétaire (nom, e-mail, téléphone, langue), formule, période, début, jours d'essai (14 proposés).</li>
+    <li>Sa fiche affiche les étapes exactes dans cPanel : créer le sous-domaine (même racine <span class="chemin">public/</span>), la base et l'utilisateur (tous les privilèges), le certificat SSL.</li>
+    <li>Sur la fiche : hôte <span class="chemin">localhost</span>, port 3306, base et utilisateur complets, mot de passe → <span class="bouton">Tester la connexion</span>. « Base vide, prête pour l'installation » : continuez. Une base qui contient déjà des tables est refusée.</li>
+    <li><span class="bouton">Installer l'instance</span> : la console écrit le fichier de configuration, installe les tables et crée le compte propriétaire.</li>
+    <li>Le <strong>mot de passe temporaire</strong> s'affiche une seule fois : transmettez au propriétaire l'adresse de sa gestion, son e-mail et ce mot de passe. Il en choisira un autre à la première connexion.</li>
+  </ol>
+  <div class="captures captures--deux">
+    <figure><img src="captures/console-nouveau-client.jpg" alt="Nouveau client" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Nouveau client</figcaption></figure>
+    <figure><img src="captures/console-installation-instance.jpg" alt="Installation guidée" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Installation guidée dans cPanel</figcaption></figure>
+  </div>
+  <p>Une instance créée en ligne de commande (<span class="chemin">php bin/creer-instance.php</span>) apparaît sous <span class="libelle">Instances non rattachées</span> : <span class="libelle">Rattacher</span> lui crée sa fiche sans rien installer.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/console-clients.jpg" alt="Clients" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Clients, statuts et instances non rattachées</figcaption></figure>
+  </div>
+  <h3>Abonnement, paiements et statuts</h3>
+  <p>Sur la fiche du client : formule, période, échéance, essai, délai de grâce (7 jours) et durée de la lecture seule (15 jours), avec l'<strong>échéancier</strong>. Les <strong>paiements</strong> se notent à la main : montant et devise (USD ou CDF), moyen (mobile money, virement, espèces), référence, date, nombre de périodes ; la nouvelle échéance s'ajoute à l'échéance en cours (après une suspension, au jour du paiement). Seul le dernier paiement valable s'annule, avec un motif.</p>
+  <div class="captures captures--trois">
+    <figure><img src="captures/console-fiche-abonnement.jpg" alt="Abonnement" loading="lazy"><figcaption><span class="etiquette">Section</span>Abonnement et échéancier</figcaption></figure>
+    <figure><img src="captures/console-fiche-paiements.jpg" alt="Paiements" loading="lazy"><figcaption><span class="etiquette">Section</span>Noter un paiement</figcaption></figure>
+    <figure><img src="captures/console-fiche-statut.jpg" alt="Statut à la main" loading="lazy"><figcaption><span class="etiquette">Section</span>Statut à la main</figcaption></figure>
+  </div>
+  <div class="tableau tableau--cle"><table>
+    <thead><tr><th>Statut</th><th>Quand</th><th>Dans le bar</th></tr></thead>
+    <tbody>
+      <tr><td>Essai</td><td>Essai gratuit, jusqu'à l'échéance</td><td>Tout fonctionne ; bandeau au propriétaire les 7 derniers jours.</td></tr>
+      <tr><td>Actif</td><td>Échéance dans plus de 7 jours</td><td>Tout fonctionne.</td></tr>
+      <tr><td>À relancer</td><td>De J-7 à l'échéance</td><td>Tout fonctionne ; bandeau ; relances SMS et e-mail.</td></tr>
+      <tr><td>En grâce</td><td>Après l'échéance, pendant le délai de grâce</td><td>Tout fonctionne ; bandeau « tout fonctionne jusqu'au… ».</td></tr>
+      <tr><td>Lecture seule</td><td>Ensuite, 15 jours par défaut</td><td>On voit tout, on ne modifie plus ; <strong>la caisse ne s'ouvre plus</strong> ; la vitrine reste visible.</td></tr>
+      <tr><td>Suspendu</td><td>Ensuite</td><td>Une page explique la suspension ; la vitrine affiche « Menu momentanément indisponible ».</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Jamais en plein service</strong> : un blocage s'applique à la prochaine ouverture de la caisse (chargement, PIN, ouverture de session) ; une caisse déjà ouverte continue d'encaisser. Les données ne sont jamais supprimées. Le <strong>statut à la main</strong> (Suspendre, Mettre en lecture seule, Garder actif, Réactiver selon les dates) demande un motif.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/console-instance-lecture-seule.jpg" alt="Bar en lecture seule" loading="lazy"><figcaption><span class="etiquette">Bar</span>Lecture seule : le bandeau dans la gestion</figcaption></figure>
+    <figure><img src="captures/console-instance-caisse-fermee.jpg" alt="Caisse fermée" loading="lazy"><figcaption><span class="etiquette">Bar</span>La caisse ne s'ouvre plus</figcaption></figure>
+  </div>
+  <h3>Relances d'abonnement</h3>
+  <p>Le script <span class="chemin">bin/console-relances.php</span> (chaque heure) écrit au propriétaire, par SMS et par e-mail, aux étapes réglées (<span class="chemin">-7,-3,-1,1</span> par défaut), puis au passage en lecture seule et à la suspension. Chaque message ne part qu'une fois ; tout est sur la fiche et dans Journal → Messages. L'adresse d'envoi des e-mails et l'heure d'envoi se règlent dans <span class="libelle">Réglages</span>, qui affiche aussi les lignes cron avec vos chemins.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/console-reglages.jpg" alt="Réglages de la console" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Réglages : plateforme, relances, préfixe cPanel</figcaption></figure>
+  </div>
+  <h3>API de messagerie : Africa's Talking et WhatsApp</h3>
+  <p>Un <strong>seul compte Africa's Talking</strong> (SMS) et un <strong>seul numéro WhatsApp Business</strong> servent à tous les bars ; les bars ne voient jamais les clés, qui ne sont jamais réaffichées (<span class="chemin">•••• 1234</span> : laissez vide pour garder, cochez Effacer pour retirer). Chaque message commence par le nom du bar ; un bar peut avoir son propre sender ID (VOLCANO). Le tableau <span class="libelle">Messages par client</span> compare les SMS du mois aux SMS compris dans la formule (le dépassement est à refacturer). <span class="libelle">Message d'essai</span> vérifie un canal.</p>
+  <ul>
+    <li>Guide pas à pas SMS : <a class="doc-externe" data-fichier="docs/plateformes/africastalking.md" href="../plateformes/africastalking.md">Africa's Talking</a> (compte, vérification KYC, sandbox, clé d'API, sender ID pour la RDC, crédit, dépannage).</li>
+    <li>Guide pas à pas WhatsApp : <a class="doc-externe" data-fichier="docs/plateformes/whatsapp-business.md" href="../plateformes/whatsapp-business.md">WhatsApp Business</a> (compte Meta Business, numéro, jeton permanent, les trois modèles <span class="chemin">rappel_client</span>, <span class="chemin">rappel_responsable</span>, <span class="chemin">garant_demande</span> à faire approuver, fenêtre de 24 heures, erreurs fréquentes).</li>
+  </ul>
+  <div class="captures captures--deux">
+    <figure><img src="captures/console-messagerie-africastalking.jpg" alt="Réglages Africa's Talking" loading="lazy"><figcaption><span class="etiquette">Section</span>Africa's Talking</figcaption></figure>
+    <figure><img src="captures/console-messagerie-whatsapp.jpg" alt="Réglages WhatsApp" loading="lazy"><figcaption><span class="etiquette">Section</span>WhatsApp Business</figcaption></figure>
+  </div>
+  <div class="captures captures--deux">
+    <figure><img src="captures/console-messagerie-usage.jpg" alt="Messages par client" loading="lazy"><figcaption><span class="etiquette">Section</span>Messages par client et sender ID</figcaption></figure>
+    <figure><img src="captures/console-messagerie-essai.jpg" alt="Message d'essai" loading="lazy"><figcaption><span class="etiquette">Section</span>Message d'essai</figcaption></figure>
+  </div>
+  <h3>Mises à jour, sauvegardes, assistance</h3>
+  <ul>
+    <li><strong>Mises à jour</strong> : après chaque nouveau code, Clients → <span class="libelle">Mettre à jour toutes les instances</span>, ou <span class="libelle">Mettre à jour</span> sur une fiche (« À jour » ou « N en attente »). Avec SSH : <span class="chemin">php bin/migrer.php --toutes</span>.</li>
+    <li><strong>Sauvegardes</strong> : <span class="libelle">Télécharger une sauvegarde (SQL)</span> sur la fiche, un fichier <span class="chemin">rbp-&lt;sous-domaine&gt;-AAAAMMJJ-HHMMSS.sql</span> à garder hors du serveur ; il se restaure avec phpMyAdmin → Importer. Chaque sauvegarde est inscrite au journal de la console et à celui du bar.</li>
+    <li><strong>Assistance</strong> : seulement si le propriétaire l'a autorisée (Paramètres → Assistance, 24 h). La fiche affiche alors <span class="bouton">Ouvrir l'instance</span> : un lien à usage unique de deux minutes ouvre la gestion du bar sous le compte « Assistance restau-bar-pos ».</li>
+  </ul>
+  <div class="captures captures--deux">
+    <figure><img src="captures/console-fiche-instance.jpg" alt="Instance du client" loading="lazy"><figcaption><span class="etiquette">Section</span>Instance : mise à jour et sauvegarde</figcaption></figure>
+    <figure><img src="captures/console-fiche-assistance.jpg" alt="Assistance côté console" loading="lazy"><figcaption><span class="etiquette">Section</span>Assistance, selon l'accord du client</figcaption></figure>
+  </div>
+  <h3>Les tâches cron</h3>
+  <p>cPanel → <strong>Tâches Cron</strong>, deux lignes (le chemin de PHP dépend de la version : <span class="chemin">/usr/local/bin/php</span> ou <span class="chemin">/opt/alt/php83/usr/bin/php</span>) :</p>
+  <pre><code>5 * * * *  /usr/local/bin/php /home/moncompte/restau-bar-pos/bin/relances.php --toutes
+20 * * * * /usr/local/bin/php /home/moncompte/restau-bar-pos/bin/console-relances.php</code></pre>
+  <p>La première envoie les rappels des ardoises de tous les bars (clients, responsables, garants) ; la seconde les relances d'abonnement. Toutes deux tournent chaque heure et n'envoient qu'à partir de leur heure d'envoi.</p>
+  <h3>Journal et dépannage</h3>
+  <p>Le <span class="libelle">Journal</span> garde les 200 dernières actions de la console (connexions, clients, paiements, statuts, formules, réglages, mises à jour, sauvegardes, assistance). Quelques cas :</p>
+  <div class="tableau"><table>
+    <thead><tr><th>Problème</th><th>Que faire</th></tr></thead>
+    <tbody>
+      <tr><td>« Base de la console injoignable »</td><td>Vérifier <span class="chemin">config/console.php</span> (nom complet avec le préfixe, mot de passe). Les bars continuent avec leur dernier abonnement connu.</td></tr>
+      <tr><td>Une instance « Injoignable »</td><td>Le mot de passe MySQL a changé dans cPanel : corriger <span class="chemin">config/instances/&lt;sous-domaine&gt;.php</span>.</td></tr>
+      <tr><td>Un bar ne voit pas un changement de formule</td><td>Il relit son abonnement toutes les 5 minutes, et à chaque ouverture de la caisse.</td></tr>
+      <tr><td>« Relances jamais passées »</td><td>La tâche cron ne tourne pas : vérifier le chemin de PHP et la commande.</td></tr>
+      <tr><td>Mot de passe temporaire perdu</td><td>Un autre propriétaire du bar le change ; sinon, avec l'accord du bar, ouvrir l'instance (assistance) et en donner un nouveau dans Paramètres → Utilisateurs.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="captures captures--seule">
+    <figure><img src="captures/console-journal.jpg" alt="Journal de la console" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Journal de la console</figcaption></figure>
+  </div>
+</section>

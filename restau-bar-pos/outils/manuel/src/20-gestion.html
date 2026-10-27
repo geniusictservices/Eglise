@@ -1,0 +1,187 @@
+
+<div class="partie" id="partie-gestion">
+  <p class="partie__sur">Partie II</p>
+  <h2>Dans la gestion</h2>
+  <p>Pour le propriétaire, le gérant, le comptable, la RH, le magasinier et le chef de cuisine : régler, suivre et décider, module par module. Chacun ne voit que les modules, les écrans et les établissements de ses rôles.</p>
+</div>
+
+<section class="chapitre" id="demarrer">
+  <h2>Démarrer : l'ordre conseillé</h2>
+  <p class="qui">Propriétaire, gérant</p>
+  <p class="intro">Pour une nouvelle instance, réglez les choses dans cet ordre ; chaque étape sert à la suivante.</p>
+  <ol class="etapes">
+    <li><a href="#devises">Devises et taux</a> : la devise de référence (USD), la devise locale (CDF) et le taux du jour.</li>
+    <li><a href="#etablissements">Établissements</a> : informations, horaires, devises acceptées, zones (salle, terrasse, carré VIP), délai des ardoises.</li>
+    <li><a href="#tresorerie">Trésorerie</a> : les comptes (Caisse du Comptoir, M-Pesa, Rawbank…) avec leurs devises et leur solde d'ouverture.</li>
+    <li><a href="#carte">Carte et vitrine</a> : catégories, produits, tailles, formats et prix ; photos ; codes QR.</li>
+    <li><a href="#stock">Stock</a> : dépôts et comptoirs, routage des ventes, réglages, puis les premières réceptions ou un inventaire.</li>
+    <li><a href="#utilisateurs">Utilisateurs</a> : les personnes, leurs rôles et leur PIN ; les caisses partagées et leur verrouillage.</li>
+    <li>Selon vos besoins : <a href="#salle-gestion">salle et cuisine</a>, <a href="#nuit-gestion">nuit et entrées</a>, <a href="#personnel">personnel et paie</a>, <a href="#clients-dettes">messagerie des ardoises</a>.</li>
+  </ol>
+</section>
+
+<section class="chapitre" id="etablissements">
+  <h2>Établissements et leurs réglages</h2>
+  <p class="qui">Paramètres → Établissements</p>
+  <p class="intro">Vos lieux : présentation, horaires, zones et prix de leur vitrine, et le délai proposé pour les ardoises.</p>
+  <p>La liste montre chaque établissement, son type, son état ouvert ou fermé en ce moment et le lien vers sa vitrine. <span class="bouton">+ Nouvel établissement</span> demande le nom et le type ; le reste se complète ensuite. <span class="libelle">Grilles de prix</span> ouvre les grilles (chapitre <a href="#carte">Carte et vitrine</a>).</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/etablissements-ordi.jpg" alt="Liste des établissements" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Établissements</figcaption></figure>
+  </div>
+  <h3>La fiche, section par section</h3>
+  <ol>
+    <li><strong>Informations</strong> : nom, adresse de la vitrine (<span class="chemin">/e/volcano-club</span>), type (restaurant-bar, lounge bar, nightclub : il choisit aussi le thème et les modules montrés), slogan et description en deux langues, adresse, lien de carte, téléphone, WhatsApp, e-mail, réseaux sociaux.</li>
+    <li><strong>Apparence</strong> : couleur d'accent, logo et photo de couverture (avec leur crédit). La couverture sert aussi de fond à l'écran de verrouillage.</li>
+    <li><strong>Prix, devises et ardoise</strong> : grille de prix par défaut, devises acceptées, devise affichée à l'arrivée sur la vitrine, et <strong>délai de paiement proposé pour une ardoise</strong> (en jours ; 0 = le jour même).</li>
+    <li><strong>Horaires</strong> : une ligne par service et par horaire (jours, ouverture, fermeture). Une fermeture plus tôt que l'ouverture veut dire le lendemain : un club de 22:00 à 05:00 compte pour la soirée où il ouvre.</li>
+    <li><strong>Zones</strong> : Salle, Terrasse, Piste, Carré VIP… chacune avec sa grille de prix (prix VIP) ; un code QR posé dans la zone affiche ses prix.</li>
+    <li><strong>Activer ou désactiver</strong> : un établissement désactivé disparaît de la vitrine et de la caisse, sans rien effacer.</li>
+  </ol>
+  <div class="captures">
+    <figure><img src="captures/etablissement-fiche-ordi.jpg" alt="Fiche d'un établissement" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fiche du Comptoir du Lac</figcaption></figure>
+    <figure><img src="captures/etablissement-prix.jpg" alt="Prix, devises et ardoise" loading="lazy"><figcaption><span class="etiquette">Section</span>Prix, devises et délai des ardoises</figcaption></figure>
+  </div>
+  <div class="captures captures--deux">
+    <figure><img src="captures/etablissement-horaires.jpg" alt="Horaires du club" loading="lazy"><figcaption><span class="etiquette">Section</span>Horaires du club, jusqu'au lendemain</figcaption></figure>
+    <figure><img src="captures/etablissement-zones.jpg" alt="Zones du club" loading="lazy"><figcaption><span class="etiquette">Section</span>Zones et leurs prix</figcaption></figure>
+  </div>
+  <h3>Où se règle le reste ?</h3>
+  <p>Les autres réglages d'un établissement sont dans le module qui les utilise :</p>
+  <div class="tableau tableau--cle"><table>
+    <thead><tr><th>Réglage</th><th>Où</th><th>Ce qu'il fait</th></tr></thead>
+    <tbody>
+      <tr><td>Verrouillage des caisses partagées</td><td>Paramètres → Utilisateurs → Caisses partagées</td><td>Après chaque encaissement et/ou après N minutes ; message de l'écran ; selfie permis.</td></tr>
+      <tr><td>Sessions de caisse</td><td>Même écran</td><td>Fond compté à l'ouverture, comptage et écart à la clôture.</td></tr>
+      <tr><td>Stock négatif</td><td>Stock → Dépôts et comptoirs → Réglages du stock</td><td>Vendre quand même avec une alerte, ou bloquer (le produit passe épuisé à 0).</td></tr>
+      <tr><td>Inventaire validé par une autre personne, alerte de péremption, caisse des achats au marché</td><td>Même écran</td><td>Séparation des tâches ; jours d'alerte ; compte remis au chef.</td></tr>
+      <tr><td>Position et rayon du pointage, pointage obligatoire</td><td>Personnel → Présence → Réglages</td><td>GPS de l'établissement, distance acceptée (100 m), caisse fermée aux non-pointés.</td></tr>
+      <tr><td>Fin de la journée d'exploitation</td><td>Salle → Services horaires</td><td>Heure (05:00, 07:00) avant laquelle une vente compte pour la veille.</td></tr>
+      <tr><td>Services horaires, happy hour</td><td>Même écran</td><td>Prix, catégories et modules de chaque service.</td></tr>
+      <tr><td>Fidélité</td><td>Ventes → Fidélité</td><td>Activée ou non, points par tranche, récompenses.</td></tr>
+      <tr><td>Messagerie des ardoises</td><td>Paramètres → Messagerie</td><td>Étapes des rappels, canal, heure d'envoi.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="chapitre" id="carte">
+  <h2>Carte et vitrine</h2>
+  <p class="qui">Module Carte et vitrine</p>
+  <p class="intro">Vos produits, tels qu'ils apparaissent à la caisse et sur le menu public, avec leurs photos et leurs codes QR.</p>
+  <h3>La liste des produits</h3>
+  <ul>
+    <li>Les produits sont groupés par catégorie et sous-catégorie (Bières › Locales). Les <strong>tailles</strong> d'un produit (Primus Petite, Primus Grande) sont en retrait sous lui.</li>
+    <li>Filtres : catégorie, établissement, recherche.</li>
+    <li>Le bouton <span class="libelle">Disponible</span> passe un produit en <strong>épuisé</strong> d'un toucher, sur la caisse et la vitrine ; un second toucher le remet. Les flèches changent l'ordre.</li>
+  </ul>
+  <div class="captures">
+    <figure><img src="captures/catalogue-ordi.jpg" alt="Catalogue" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Catalogue</figcaption></figure>
+    <figure><img src="captures/catalogue-tel.jpg" alt="Catalogue sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Catalogue</figcaption></figure>
+  </div>
+  <h3>Pour créer un produit</h3>
+  <ol class="etapes">
+    <li><span class="bouton">+ Nouveau produit</span> : catégorie, nom en français (l'anglais est facultatif), premier format (Bouteille) et son prix au moins dans la devise de référence.</li>
+    <li><span class="bouton">Créer le produit</span> : la fiche complète s'ouvre.</li>
+  </ol>
+  <h3>La fiche produit</h3>
+  <ol>
+    <li><strong>Informations</strong> : catégorie, noms et descriptions FR/EN, <strong>unité de base</strong> (celle du stock : bouteille, cl, kg, pièce), badges (Populaire, Nouveau, Épicé), allergènes.</li>
+    <li><strong>Photo</strong> : glisser-déposer, choisir un fichier (appareil photo sur téléphone), coller, ou choisir dans la médiathèque ; avec son crédit.</li>
+    <li><strong>Tailles</strong> : pour une bouteille qui existe en plusieurs tailles physiquement différentes (Petite 33 cl, Grande 72 cl). Chaque taille a son stock, ses formats, ses prix et sa disponibilité ; <span class="bouton">+ Ajouter une taille</span> reprend la catégorie, les établissements et la photo du produit principal.</li>
+    <li><strong>Formats et prix</strong> : un format est une façon de vendre ou d'acheter, en unité de base (casier = 12 bouteilles, dose = 4 cl, bouteille = 70 cl). <span class="libelle">Vendu aux clients</span> et/ou <span class="libelle">Acheté aux fournisseurs</span>. Le tableau des prix croise formats, grilles et devises : une case vide est calculée (le montant calculé est affiché en gris), une case remplie fixe un prix rond (5 500 FC).</li>
+    <li><strong>Où il est vendu</strong> : les établissements, <span class="libelle">Visible sur le menu public</span>, <span class="libelle">Disponible</span>.</li>
+    <li><strong>Désactiver</strong> : le produit disparaît du menu et de la caisse mais reste dans l'historique.</li>
+  </ol>
+  <div class="captures captures--deux">
+    <figure><img src="captures/produit-fiche-ordi.jpg" alt="Fiche produit" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fiche de la Primus</figcaption></figure>
+    <figure><img src="captures/produit-tailles.jpg" alt="Tailles d'un produit" loading="lazy"><figcaption><span class="etiquette">Section</span>Ses deux tailles</figcaption></figure>
+  </div>
+  <div class="captures captures--seule">
+    <figure><img src="captures/produit-prix.jpg" alt="Formats et prix" loading="lazy"><figcaption><span class="etiquette">Section</span>Prix de vente du whisky : chaque format × chaque grille × chaque devise (« auto » = calculé)</figcaption></figure>
+  </div>
+  <h3>Catégories, grilles de prix, médiathèque</h3>
+  <ul>
+    <li><strong>Catégories</strong> : deux niveaux au plus (Spiritueux › Whisky). Nom FR/EN, <span class="libelle">Ranger dans</span>, <span class="libelle">Visible sur le menu public</span>, ordre avec les flèches. Une catégorie avec des produits actifs ou des sous-catégories ne se supprime pas.</li>
+    <li><strong>Prix</strong> (grilles) : Prix normal, Prix VIP, Prix de gros, Happy hour… Une grille utilisée ne se supprime pas ; les prix se saisissent sur chaque produit.</li>
+    <li><strong>Images</strong> (médiathèque) : toutes les images, ajoutées par glisser-déposer, collage ou choix de fichiers (JPEG, PNG, WebP, 8 Mo au plus, réduites à 1600 px). La fiche d'une image donne ses textes alternatifs, son crédit et où elle sert. Seule une image inutilisée se supprime.</li>
+  </ul>
+  <div class="captures captures--trois">
+    <figure><img src="captures/categories-ordi.jpg" alt="Catégories" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Catégories</figcaption></figure>
+    <figure><img src="captures/grilles-ordi.jpg" alt="Grilles de prix" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Grilles de prix</figcaption></figure>
+    <figure><img src="captures/mediatheque-ordi.jpg" alt="Médiathèque" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Médiathèque</figcaption></figure>
+  </div>
+  <h3>Pour créer un code QR et son chevalet</h3>
+  <ol class="etapes">
+    <li><span class="libelle">Codes QR</span> → <span class="libelle">Nouveau code QR</span> : établissement, zone (facultatif), libellé (« Table 12 », « Entrée du club »).</li>
+    <li><span class="bouton">Créer le code QR</span>.</li>
+    <li><span class="libelle">Imprimer</span> donne un chevalet de table ; <span class="libelle">Télécharger (SVG)</span> l'image pour un imprimeur.</li>
+  </ol>
+  <p>Chaque scan est compté (total et 7 derniers jours). Un code lié à une zone ouvre le menu avec les prix de cette zone.</p>
+  <div class="captures">
+    <figure><img src="captures/qr-ordi.jpg" alt="Codes QR" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Codes QR et scans</figcaption></figure>
+    <figure><img src="captures/qr-chevalet.jpg" alt="Chevalet de table" loading="lazy"><figcaption><span class="etiquette">Impression</span>Chevalet du carré VIP</figcaption></figure>
+  </div>
+  <h3>La vitrine publique</h3>
+  <p>C'est ce que voient vos clients en scannant un code QR, sans connexion : présentation, état « Ouvert » ou « Fermé · ouvre à 17:00 », puis une barre collante avec la <strong>devise</strong> des prix, la <strong>langue</strong>, le thème et les <strong>catégories</strong>. Chaque produit montre sa photo, ses badges, ses allergènes et le prix de chaque taille et format ; un produit épuisé est barré. La recherche filtre dès la première lettre. En bas : horaires, adresse, téléphone, WhatsApp. Un abonnement suspendu affiche « Menu momentanément indisponible ».</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/vitrine-accueil-ordi.jpg" alt="Accueil de la vitrine" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>L'accueil de la vitrine : les établissements du groupe</figcaption></figure>
+  </div>
+  <div class="captures">
+    <figure><img src="captures/vitrine-restaurant-ordi.jpg" alt="Vitrine du restaurant" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Le Comptoir du Lac, thème jour</figcaption></figure>
+    <figure><img src="captures/vitrine-club-tel.jpg" alt="Vitrine du club" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Volcano Club, carré VIP, prix en FC</figcaption></figure>
+  </div>
+  <div class="captures captures--tels">
+    <figure><img src="captures/vitrine-restaurant-tel.jpg" alt="Vitrine sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Le menu</figcaption></figure>
+    <figure><img src="captures/vitrine-recherche-tel.jpg" alt="Recherche dans le menu" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Recherche « tilapia »</figcaption></figure>
+    <figure><img src="captures/vitrine-club-menu-tel.jpg" alt="Menu du club" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>Tailles et prix VIP</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="devises">
+  <h2>Devises et taux</h2>
+  <p class="qui">Finance → Devises · droit « Modifier les taux »</p>
+  <p class="intro">La devise de référence sert à la comptabilité et aux prix de base ; la devise locale s'affiche en premier partout ; le taux du jour convertit le reste.</p>
+  <ul>
+    <li><strong>Devise de référence</strong> (USD) : on ne la change que tant qu'aucun prix n'y est enregistré.</li>
+    <li><strong>Devise locale</strong> (CDF) : en premier sur les tickets, les reçus et les rapports, le dollar toujours en deuxième.</li>
+    <li><strong>Taux du jour</strong> : « 1 USD = 2 850 CDF », avec un exemple calculé (« 10 $ → 28 500 FC ») et une date de début (maintenant, ou programmée). Seuls les prix calculés changent ; les prix fixés à la main restent.</li>
+    <li><strong>Toutes les devises</strong> : code, symbole et sa place, décimales (0 pour le franc), arrondi (100 : 28 437 FC devient 28 400 FC), ordre, activation.</li>
+    <li><strong>Historique</strong> : chaque taux, sa date et qui l'a saisi. Chaque vente garde le taux de son moment.</li>
+  </ul>
+  <div class="captures captures--seule">
+    <figure><img src="captures/devises-ordi.jpg" alt="Devises et taux" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Devises et taux</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="utilisateurs">
+  <h2>Utilisateurs, rôles et appareils</h2>
+  <p class="qui">Paramètres → Utilisateurs · propriétaire, gérant</p>
+  <p class="intro">Qui peut faire quoi, et où : chaque personne a un ou plusieurs rôles, chacun pour un établissement ou pour tous.</p>
+  <h3>Pour ajouter une personne</h3>
+  <ol class="etapes">
+    <li><span class="bouton">+ Nouvelle personne</span> : nom, poste, téléphone, e-mail, langue.</li>
+    <li><strong>Rôles</strong> : choisissez un rôle et <span class="libelle">Où</span> (un établissement ou tous). <span class="libelle">+ Ajouter un rôle</span> pour en cumuler.</li>
+    <li><strong>Accès à la gestion</strong> : un mot de passe, seulement si la personne a des modules de gestion.</li>
+    <li><strong>PIN de caisse</strong> : tapez-le ou touchez <span class="libelle">Tirer un PIN au hasard</span>. Un PIN trop simple (000000, 123456) est refusé ; deux personnes actives n'ont jamais le même.</li>
+  </ol>
+  <p>La fiche permet aussi d'ajouter une <strong>photo</strong>, de <strong>débloquer</strong> un PIN ou un compte bloqué, de retirer le PIN et de <strong>désactiver</strong> la personne. On ne donne que les droits qu'on a soi-même ; seul un propriétaire modifie un propriétaire, et il reste toujours au moins un propriétaire actif.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/utilisateurs-ordi.jpg" alt="Utilisateurs" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Les personnes, leurs rôles, PIN et accès</figcaption></figure>
+    <figure><img src="captures/utilisateur-fiche-ordi.jpg" alt="Fiche d'une personne" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fiche de Patrick : rôle Gérant au Comptoir du Lac</figcaption></figure>
+  </div>
+  <h3>Les rôles</h3>
+  <p>Les rôles proposés sont des modèles à adapter : Propriétaire / Direction, Gérant, Superviseur, Caissier, Serveur, Barman, Comptable, RH, Chef de cuisine, Magasinier, Acheteur, Cuisinier, Agent d'entrée, Vestiaire, Promoteur. Ouvrez un rôle pour cocher ses droits, rangés par module (Caisse : vendre, encaisser, accorder un crédit, remise, annuler un article envoyé, autoriser un appareil, lever le minimum… ; Ventes ; Salle ; Cuisine ; Achats ; Stock ; Finance ; Personnel ; Rapports ; Nuit…). La limite de remise de chaque rôle se règle dans Ventes → Remises et offerts.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/roles-ordi.jpg" alt="Rôles" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Les rôles et leur nombre de droits</figcaption></figure>
+    <figure><img src="captures/role-fiche-ordi.jpg" alt="Droits d'un rôle" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Les droits du superviseur</figcaption></figure>
+  </div>
+  <h3>Caisses partagées : verrouillage et sessions</h3>
+  <p>Pour chaque établissement : <span class="libelle">Verrouiller après chaque encaissement</span>, <span class="libelle">Verrouiller aussi après, sans toucher l'écran</span> (Jamais, 1, 2, 5, 10, 15 ou 30 min), le message de l'écran de verrouillage en deux langues, <span class="libelle">Chacun peut prendre ou changer sa photo depuis la caisse</span>, et les <span class="libelle">Sessions de caisse</span>. Plus bas : les <strong>appareils autorisés</strong> (retirer un appareil perdu) et leur état sans réseau.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/appareils-ordi.jpg" alt="Caisses partagées" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Réglages des caisses partagées</figcaption></figure>
+  </div>
+  <h3>Le journal</h3>
+  <p>Les 200 dernières actions sensibles : connexions, PIN, changements de droits, appareils, annulations, remises validées, assistance… avec qui, quand et sur quel appareil. Filtre par personne.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/journal-ordi.jpg" alt="Journal" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Journal des actions</figcaption></figure>
+  </div>
+</section>

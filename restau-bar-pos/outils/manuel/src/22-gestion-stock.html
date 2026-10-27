@@ -1,0 +1,139 @@
+
+<section class="chapitre" id="stock">
+  <h2>Le stock</h2>
+  <p class="qui">Module Stock · magasinier, barman, chef de cuisine, gérant</p>
+  <p class="intro">Chaque vente fait baisser le comptoir qui la sert. Le stock se compte dans l'unité de base du produit et s'affiche en formats lisibles : « 9 casiers + 7 bouteilles ».</p>
+  <h3>Les lieux : dépôts et comptoirs</h3>
+  <p>Stock → <span class="libelle">Dépôts et comptoirs</span>. Pour chaque établissement : des <strong>dépôts</strong> (réserve, chambre froide) qui reçoivent les livraisons et approvisionnent, et des <strong>comptoirs</strong> (bar, bar VIP, cuisine) qui servent. Le comptoir <strong>par défaut</strong> (« Bar ») sert ce qui n'a pas d'autre règle. Des <strong>dépôts centraux</strong> peuvent servir plusieurs établissements ; un dépôt peut <strong>vendre en gros</strong>.</p>
+  <p><span class="libelle">Quel comptoir vend quoi</span> : le routage des ventes. La catégorie d'abord (Plats → Cuisine), puis l'appareil de caisse, puis la zone (Carré VIP → Bar VIP).</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/lieux-ordi.jpg" alt="Dépôts et comptoirs" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Dépôts et comptoirs</figcaption></figure>
+    <figure><img src="captures/lieux-reglages.jpg" alt="Réglages du stock" loading="lazy"><figcaption><span class="etiquette">Section</span>Routage et réglages du stock</figcaption></figure>
+  </div>
+  <h3>Les réglages du stock (par établissement)</h3>
+  <ul>
+    <li><strong>Quand le comptoir n'a plus le produit</strong> : <em>Vendre quand même, avec une alerte</em> (le stock passe en négatif) ou <em>Bloquer</em> (le produit passe « épuisé » à 0 dans le comptoir qui le sert, et la caisse le grise).</li>
+    <li><strong>Faire valider les inventaires par une autre personne</strong> que celle qui a compté.</li>
+    <li><strong>Alerte de péremption</strong> : combien de jours avant.</li>
+    <li><strong>Caisse des achats au marché</strong> : le compte de trésorerie remis au chef (Caisse cuisine).</li>
+  </ul>
+  <h3>L'état du stock</h3>
+  <p>Chaque article dans chaque lieu, sa valeur au <strong>coût moyen pondéré</strong>, et les alertes : stock négatif, sous le seuil d'alerte, lots périmés ou qui périment bientôt. <span class="libelle">Suggestions de commande</span> propose un transfert depuis le dépôt pour un comptoir, ou un bon de commande au fournisseur habituel pour un dépôt. <span class="libelle">Ajuster un stock</span> corrige un lieu (stock d'ouverture, ajustement), avec un motif.</p>
+  <div class="captures">
+    <figure><img src="captures/stock-ordi.jpg" alt="État du stock" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>État du stock et alertes</figcaption></figure>
+    <figure><img src="captures/stock-tel.jpg" alt="Stock sur téléphone" loading="lazy"><figcaption><span class="etiquette">Téléphone</span>État du stock</figcaption></figure>
+  </div>
+  <div class="captures captures--deux">
+    <figure><img src="captures/suggestions-ordi.jpg" alt="Suggestions de commande" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Suggestions de transferts et de commandes</figcaption></figure>
+    <figure><img src="captures/stock-mouvements-ordi.jpg" alt="Mouvements de stock" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Mouvements : qui, quand, pourquoi</figcaption></figure>
+  </div>
+  <h3>Ce qui fait bouger le stock</h3>
+  <ul>
+    <li><strong>Une vente</strong> : quantité × contenu du format (une dose de whisky = 4 cl). Un cocktail ou un plat fait sortir les ingrédients de sa <strong>fiche technique</strong>. Une bouteille consignée rend son vide au comptoir.</li>
+    <li><strong>L'annulation d'une vente</strong> remet tout en stock. Une vente n'est jamais bloquée par le stock, sauf en mode « bloquer ».</li>
+    <li>Les réceptions, transferts, pertes, productions, inventaires et ajustements.</li>
+  </ul>
+  <p>Le <strong>journal des mouvements</strong> filtre par période, lieu, type et article, avec le stock après chaque mouvement et le motif.</p>
+  <h3>Pour transférer du dépôt vers un comptoir</h3>
+  <ol class="etapes">
+    <li>Stock → <span class="libelle">Transferts</span> → <span class="bouton">+ Nouveau transfert</span> : depuis, vers, les articles dans leurs formats (casiers, cartons).</li>
+    <li>L'expéditeur (magasinier) <strong>confirme la sortie</strong> : le transfert est « En route ».</li>
+    <li>Le responsable du comptoir <strong>confirme la réception</strong> avec la quantité vraiment reçue ; un écart s'explique.</li>
+  </ol>
+  <div class="captures captures--deux">
+    <figure><img src="captures/stock-transferts-ordi.jpg" alt="Transferts de stock" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Transferts : brouillon, en route, reçu, écart</figcaption></figure>
+    <figure><img src="captures/stock-transfert-fiche-ordi.jpg" alt="Fiche d'un transfert" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Envoyé, reçu et suivi</figcaption></figure>
+  </div>
+  <h3>Pour faire un inventaire</h3>
+  <ol class="etapes">
+    <li>Stock → <span class="libelle">Inventaires</span> → <span class="libelle">Nouvel inventaire</span> : le lieu, le type (complet, de fin de service, par catégorie), une note. <span class="bouton">Commencer l'inventaire</span>.</li>
+    <li>Comptez <strong>à l'aveugle</strong> (le stock attendu n'est pas affiché), dans n'importe quel format : casiers et bouteilles, une bouteille entamée en fraction ou en cl.</li>
+    <li>Terminez : l'inventaire passe « À valider ». Les <strong>écarts</strong> se lisent ligne par ligne : début + entrées − ventes − pertes ± autres = attendu, puis compté et écart, avec une justification.</li>
+    <li>Une autre personne <strong>valide</strong> : le stock est corrigé.</li>
+  </ol>
+  <div class="captures captures--deux">
+    <figure><img src="captures/inventaires-ordi.jpg" alt="Inventaires" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Inventaires</figcaption></figure>
+    <figure><img src="captures/inventaire-fiche-ordi.jpg" alt="Écarts d'inventaire" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Les écarts d'un inventaire validé</figcaption></figure>
+  </div>
+  <h3>Pertes</h3>
+  <p>Stock → <span class="libelle">Pertes</span> → <span class="libelle">Déclarer une perte</span> : lieu, article et format, quantité, motif (Casse, Offert, Consommation du personnel, Périmé, Renvoyé par le client, Autre), explication. La liste donne la valeur des pertes de la période.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/pertes-ordi.jpg" alt="Pertes" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Pertes</figcaption></figure>
+  </div>
+  <h3>Fiches techniques, préparations et productions</h3>
+  <ul>
+    <li><strong>Fiche technique</strong> d'un cocktail ou d'un plat : les ingrédients, la quantité et la <strong>part utilisable</strong> de chacun (1 kg de poisson n'en donne que 600 g). Elle donne le <strong>coût de revient</strong> et la marge de chaque format vendu (droit « Voir les marges »).</li>
+    <li><strong>Préparation</strong> (sauce, marinade, bouillon) : une fiche « préparation » produite à l'avance. Stock → <span class="libelle">Productions</span> → <span class="libelle">Produire une préparation</span> : lieu, préparation, quantité, péremption ; les ingrédients sortent, la préparation entre en stock avec son coût. Les fiches des plats l'utilisent (un seul niveau).</li>
+  </ul>
+  <div class="captures captures--deux">
+    <figure><img src="captures/recettes-ordi.jpg" alt="Fiches techniques" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fiches techniques et préparations</figcaption></figure>
+    <figure><img src="captures/recette-fiche-ordi.jpg" alt="Fiche technique du Kivu Sunset" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fiche technique du Kivu Sunset</figcaption></figure>
+  </div>
+  <div class="captures captures--seule">
+    <figure><img src="captures/productions-ordi.jpg" alt="Productions" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Productions</figcaption></figure>
+  </div>
+  <h3>Péremptions</h3>
+  <p>Les réceptions, achats au marché, productions et transferts créent des <strong>lots datés</strong>. Les sorties prennent d'abord le lot qui périme le plus tôt (FEFO). L'écran <span class="libelle">Péremptions</span> liste les lots périmés (<span class="bouton">Déclarer en perte</span> d'un clic) et ceux qui périment dans les jours qui viennent.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/peremptions-ordi.jpg" alt="Péremptions" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Péremptions</figcaption></figure>
+  </div>
+  <h3>Emballages consignés</h3>
+  <p>Casiers et bouteilles vides, avec leur <strong>consigne</strong> (8 000 FC le casier Bralima). Les formats qui apportent un emballage (un casier de Primus apporte un casier vide et 12 bouteilles vides), les vides en stock, ce que vous <strong>devez aux fournisseurs</strong> et ce que les <strong>clients vous doivent</strong> ; <span class="libelle">Enregistrer un échange</span> (vides rendus, reçus, consigne facturée).</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/emballages-ordi.jpg" alt="Emballages consignés" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Emballages consignés</figcaption></figure>
+  </div>
+</section>
+
+<section class="chapitre" id="achats">
+  <h2>Achats, fournisseurs et vente en gros</h2>
+  <p class="qui">Module Achats · acheteur, magasinier, comptable, gérant</p>
+  <p class="intro">Du bon de commande au paiement du fournisseur, chaque réception fait entrer la marchandise en stock et met à jour le coût moyen.</p>
+  <h3>Les fournisseurs</h3>
+  <p>Brasserie, distributeur, grossiste, marché : coordonnées, délai de paiement, devise. La fiche montre ce qu'on lui doit, les emballages, les dernières réceptions et les prix d'achat.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/fournisseurs-ordi.jpg" alt="Fournisseurs" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Fournisseurs</figcaption></figure>
+    <figure><img src="captures/fournisseur-fiche-ordi.jpg" alt="Fiche fournisseur" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Bralima Goma</figcaption></figure>
+  </div>
+  <h3>Pour commander</h3>
+  <ol class="etapes">
+    <li>Achats → <span class="libelle">Commandes</span> → <span class="bouton">+ Nouveau bon de commande</span> (ou depuis les suggestions du stock) : fournisseur, lieu de livraison, articles dans leurs formats d'achat, prix prévus.</li>
+    <li>Le <span class="libelle">Bon à envoyer</span> est un texte prêt à copier dans un SMS ou un WhatsApp. Marquez le bon « Envoyé ».</li>
+    <li>À la livraison, <span class="bouton">Recevoir la livraison</span> ouvre une réception pré-remplie.</li>
+  </ol>
+  <div class="captures captures--deux">
+    <figure><img src="captures/commandes-ordi.jpg" alt="Bons de commande" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Bons de commande</figcaption></figure>
+    <figure><img src="captures/commande-fiche-ordi.jpg" alt="Bon de commande" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Un bon et son texte à envoyer</figcaption></figure>
+  </div>
+  <h3>Pour enregistrer une réception</h3>
+  <ol class="etapes">
+    <li>Achats → <span class="libelle">Réceptions</span> → <span class="bouton">+ Nouvelle réception</span> : fournisseur, lieu (dépôt ou comptoir), date, devise.</li>
+    <li>La facture (numéro, échéance, justificatif), ou <span class="libelle">Achat sans facture (marché)</span> avec la photo du ticket.</li>
+    <li>La marchandise reçue : article et format, quantité, prix, et si besoin le <strong>lot et la péremption</strong>.</li>
+    <li>Les emballages : vides rendus et consigne payée.</li>
+    <li><span class="libelle">Payer maintenant</span> (tout ou partie) : compte, devise, montant ; une facture en dollars peut se payer en francs. Sinon, elle reste à payer.</li>
+    <li><span class="bouton">Enregistrer la réception</span> : le stock entre, le coût moyen se met à jour au taux du jour.</li>
+  </ol>
+  <div class="captures captures--deux">
+    <figure><img src="captures/receptions-ordi.jpg" alt="Réceptions" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Réceptions : payées, à payer, en retard</figcaption></figure>
+    <figure><img src="captures/reception-nouvelle-ordi.jpg" alt="Nouvelle réception" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Nouvelle réception</figcaption></figure>
+  </div>
+  <h3>Payer les fournisseurs</h3>
+  <p>Achats → <span class="libelle">Dettes fournisseurs</span> : par fournisseur, chaque facture, son échéance et son retard, et <span class="libelle">Payer</span>. Le paiement se fait comme une dépense : compte, devise, plusieurs lignes ; un trop-payé est refusé ; le mouvement de trésorerie est de nature « achat ». <span class="libelle">Prix d'achat</span> garde l'historique des prix par produit et par fournisseur.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/dettes-fournisseurs-ordi.jpg" alt="Dettes fournisseurs" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Dettes envers les fournisseurs</figcaption></figure>
+    <figure><img src="captures/prix-achat-ordi.jpg" alt="Prix d'achat" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Historique des prix d'achat</figcaption></figure>
+  </div>
+  <h3>Les achats au marché</h3>
+  <p class="qui">Droit « Acheter au marché avec la caisse de la cuisine »</p>
+  <p>Le chef reçoit une caisse (un compte de type caisse, choisi dans les réglages du stock). Achats → <span class="libelle">Achats au marché</span> : lieu de livraison, devise, <strong>photo du ticket ou de la marchandise</strong> (obligatoire), ce qui a été acheté et le prix réellement payé, avec lot et péremption. L'argent sort de la caisse de la cuisine ; les prix payés mettent à jour le coût moyen. L'écran montre le solde de chaque caisse de marché et les derniers achats.</p>
+  <div class="captures captures--seule">
+    <figure><img src="captures/marche-ordi.jpg" alt="Achats au marché" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Achats au marché</figcaption></figure>
+  </div>
+  <h3>La vente en gros au dépôt</h3>
+  <p class="qui">Ventes → Vente en gros · droit « Vendre en gros au dépôt »</p>
+  <p>Un dépôt qui vend en gros vend au casier à des clients revendeurs, avec la grille « Prix de gros » (<span class="libelle">Prix de gros</span>). <span class="bouton">Nouvelle vente en gros</span> : dépôt, client, devise, articles, emballages (<strong>prêtés</strong> : le client les doit et les rapporte ; ou <strong>consigne facturée</strong>), vides rapportés, paiements et éventuellement ardoise (avec échéance, et « Faire crédit malgré le plafond »). L'écran montre ce que doit chaque revendeur : emballages prêtés, consignés, ardoise.</p>
+  <div class="captures captures--deux">
+    <figure><img src="captures/gros-ordi.jpg" alt="Vente en gros" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Vente en gros et dettes des revendeurs</figcaption></figure>
+    <figure><img src="captures/gros-nouvelle-ordi.jpg" alt="Nouvelle vente en gros" loading="lazy"><figcaption><span class="etiquette">Ordinateur</span>Nouvelle vente en gros</figcaption></figure>
+  </div>
+</section>
