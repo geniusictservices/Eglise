@@ -28,10 +28,48 @@ use App\Repositories\VenteRepository;
  */
 final class CaisseController
 {
-    public function index(): void
+    /** Caisse de l'entrée (billetterie, contrôle des billets, invités) : un point de vente sans stock. */
+    public function entree(): void
+    {
+        $this->index('entree');
+    }
+
+    /** Vestiaire : dépôt (frais facultatifs), retour, objets encore au vestiaire. */
+    public function vestiaire(): void
+    {
+        $this->index('vestiaire');
+    }
+
+    /** Permission qui ouvre chaque écran de caisse (le bar, l'entrée, le vestiaire). */
+    public const POSTES = [
+        'caisse' => ['caisse.vendre'],
+        'entree' => ['entrees.vendre', 'entrees.controler', 'invites.pointer'],
+        'vestiaire' => ['vestiaire.gerer'],
+    ];
+
+    /** Écrans de caisse que la personne peut ouvrir dans cet établissement (dans l'ordre : bar, entrée, vestiaire). */
+    public static function postesPermis(int $utilisateurId, int $etabId): array
+    {
+        $postes = [];
+        foreach (self::POSTES as $poste => $droits) {
+            if ($poste !== 'caisse' && (!Plateforme::moduleInclus('nightclub') || !\App\Repositories\BilletterieRepository::disponible())) {
+                continue;
+            }
+            foreach ($droits as $droit) {
+                if (Acces::a($utilisateurId, $droit, $etabId)) {
+                    $postes[] = $poste;
+                    break;
+                }
+            }
+        }
+        return $postes;
+    }
+
+    public function index(string $poste = 'caisse'): void
     {
         $etablissements = new EtablissementRepository();
         $appareil = CaissePartagee::appareil();
+        $chemin = $poste === 'caisse' ? '/caisse' : '/caisse/' . $poste;
 
         if ($appareil !== null) {
             // Caisse partagée : l'établissement est celui de l'appareil ; chacun entre avec son PIN
@@ -40,27 +78,36 @@ final class CaisseController
                 pageIntrouvable();
             }
             $caissier = CaissePartagee::caissier();
-            if ($caissier !== null && !Acces::a($caissier['id'], 'caisse.vendre', (int) $etab['id'])) {
+            if ($caissier !== null && !in_array($poste, self::postesPermis($caissier['id'], (int) $etab['id']), true)) {
+                // Un agent d'entrée (ou du vestiaire) arrive sur son écran ; sinon, la caisse se verrouille
+                $autres = self::postesPermis($caissier['id'], (int) $etab['id']);
+                if ($poste === 'caisse' && $autres !== []) {
+                    rediriger('/caisse/' . $autres[0]);
+                }
                 CaissePartagee::verrouiller();
                 $caissier = null;
             }
             if ($caissier === null) {
                 // ?personne=<id> : pavé du PIN de cette personne (sans JavaScript)
                 $choisi = (int) ($_GET['personne'] ?? 0);
-                $this->afficherQui($appareil, $etab, null, $choisi > 0 ? $choisi : null);
+                $this->afficherQui($appareil, $etab, null, $choisi > 0 ? $choisi : null, 200, $poste);
                 return;
             }
             $personne = $caissier;
             $liste = [$etab];
         } else {
-            // Appareil personnel : il faut être connecté à la gestion avec le droit de vendre
+            // Appareil personnel : il faut être connecté à la gestion avec le droit d'ouvrir cet écran
             $utilisateur = Session::exigerConnexion();
-            $permis = Acces::etablissements((int) $utilisateur['id'], 'caisse.vendre');
-            $liste = array_values(array_filter(
-                $etablissements->actifs(),
-                static fn (array $e) => $permis === null || in_array((int) $e['id'], $permis, true)
-            ));
+            $uid = (int) $utilisateur['id'];
+            $liste = array_values(array_filter($etablissements->actifs(), static fn (array $e) => in_array($poste, self::postesPermis($uid, (int) $e['id']), true)));
             if ($liste === []) {
+                // Pas de caisse du bar, mais l'entrée ou le vestiaire : son écran
+                foreach ($etablissements->actifs() as $e) {
+                    $autres = self::postesPermis($uid, (int) $e['id']);
+                    if ($poste === 'caisse' && $autres !== []) {
+                        rediriger('/caisse/' . $autres[0] . '?e=' . $e['slug']);
+                    }
+                }
                 http_response_code(403);
                 View::afficher('gestion/interdit', ['titre' => t('acces.interdit_titre'), 'utilisateur' => $utilisateur], 'gestion');
                 return;
@@ -73,25 +120,26 @@ final class CaisseController
                     }
                 }
             }
-            $personne = ['id' => (int) $utilisateur['id'], 'nom' => $utilisateur['nom']];
+            $personne = ['id' => $uid, 'nom' => $utilisateur['nom']];
         }
         $id = (int) $etab['id'];
-        $zones = $etablissements->zones($id);
-        $contexte = $this->contexte($etab, is_string($_GET['zone'] ?? null) ? $_GET['zone'] : null);
+        $nuit = $poste !== 'caisse';
+        $zones = $nuit ? [] : $etablissements->zones($id);
+        $contexte = $nuit ? $this->contexteNuit($etab, $poste) : $this->contexte($etab, is_string($_GET['zone'] ?? null) ? $_GET['zone'] : null);
         $zone = $contexte['zone'];
         $donnees = $contexte['donnees'];
         // Comptes de trésorerie où peuvent entrer les paiements de cet établissement, par type, avec leurs devises
         $donnees['comptes'] = self::comptesCaisse($id, $contexte['acceptees']);
-        $donnees['encaisser'] = Acces::a($personne['id'], 'caisse.encaisser', $id);
+        $donnees['encaisser'] = Acces::a($personne['id'], match ($poste) { 'entree' => 'entrees.vendre', 'vestiaire' => 'vestiaire.gerer', default => 'caisse.encaisser' }, $id);
         // Ardoise : mettre à crédit (caisse.credit), passer outre plafond et retard (dettes.gerer), rembourser (caisse.rembourser)
-        $donnees['credit'] = $donnees['encaisser'] && Acces::a($personne['id'], 'caisse.credit', $id);
-        $donnees['forcer'] = Acces::a($personne['id'], 'dettes.gerer', $id);
-        $donnees['rembourser'] = Acces::a($personne['id'], 'caisse.rembourser', $id);
+        $donnees['credit'] = !$nuit && $donnees['encaisser'] && Acces::a($personne['id'], 'caisse.credit', $id);
+        $donnees['forcer'] = !$nuit && Acces::a($personne['id'], 'dettes.gerer', $id);
+        $donnees['rembourser'] = !$nuit && Acces::a($personne['id'], 'caisse.rembourser', $id);
         $donnees['moi'] = $personne['id'];
         $donnees['personnel'] = $donnees['credit'] ? self::personnel($id) : [];
         $donnees['delai'] = (int) $etab['credit_delai_jours'];
         $donnees['aujourdhui'] = date('Y-m-d');
-        $donnees['garanties'] = CaisseDetteController::garantiesJson($personne['id']);
+        $donnees['garanties'] = $nuit ? [] : CaisseDetteController::garantiesJson($personne['id']);
         // Sessions de caisse (au choix de l'établissement) : pas d'encaissement sans session ouverte
         $donnees['sessions'] = SessionCaisseRepository::obligatoires($etab) && ($donnees['encaisser'] || $donnees['rembourser']);
         $donnees['session'] = null;
@@ -102,15 +150,18 @@ final class CaisseController
         }
         $donnees['etab'] = $etab['slug'];
         $donnees['zone'] = $zone['code'] ?? '';
-        // Salle et cuisine : plan de salle, notes ouvertes, envoi en cuisine (null sans le module)
+        $donnees['poste'] = $poste;
+        // Salle et cuisine : plan de salle, notes ouvertes, envoi en cuisine (null sans le module, ni à l'entrée)
         $donnees['grille'] = $contexte['grille'];
-        $donnees['salle'] = CaisseNoteController::donneesCaisse($etab, $personne, $contexte, $zones);
+        $donnees['salle'] = $nuit ? null : CaisseNoteController::donneesCaisse($etab, $personne, $contexte, $zones);
+        // Nuit : remises, formules, minimum, cashless, fidélité, entrée et vestiaire (caisse-nuit.js)
+        $donnees['nuit'] = CaisseNuitController::donneesCaisse($etab, $personne, $poste, $contexte, $appareil);
         $personne['avatar'] = Database::un('SELECT avatar FROM utilisateurs WHERE id = ?', [$personne['id']])['avatar'] ?? null;
         Session::demarrer();
         $messagePhoto = $_SESSION['caisse_photo'] ?? null;
         unset($_SESSION['caisse_photo']);
         View::afficher('caisse/index', [
-            'titre' => t('caisse.titre'),
+            'titre' => $nuit ? t('nuit.poste_' . $poste) : t('caisse.titre'),
             'utilisateur' => $personne,
             'partagee' => $appareil !== null,
             'appareil' => $appareil,
@@ -118,21 +169,88 @@ final class CaisseController
             'aLaGestion' => Acces::aLaGestion($personne['id']),
             'peutAutoriser' => $appareil === null && Acces::a($personne['id'], 'caisse.appareils', $id),
             'photoPermise' => (bool) $etab['photo_a_la_caisse'],
-            'scripts' => ['/assets/js/caisse.js', '/assets/js/caisse-ardoise.js', '/assets/js/caisse-session.js', '/assets/js/caisse-salle.js', '/assets/js/photo-profil.js'],
+            'scripts' => ['/assets/vendor/qrcode.js', '/assets/js/caisse.js', '/assets/js/caisse-ardoise.js', '/assets/js/caisse-session.js', '/assets/js/caisse-salle.js',
+                '/assets/js/scanner-qr.js', '/assets/js/caisse-nuit.js', '/assets/js/photo-profil.js'],
             'service' => $contexte['service'], 'happy' => $contexte['happy'],
             'messagePhoto' => $messagePhoto,
             'etab' => $etab,
             'etablissements' => $liste,
             'zones' => $zones,
             'zone' => $zone,
+            'poste' => $poste,
+            'postes' => self::postesPermis($personne['id'], $id),
+            'chemin' => $chemin,
             // Ticket gardé par personne : un serveur ne retrouve pas le ticket du précédent
             'regle' => $appareil !== null ? CaissePartagee::regle($etab) : null,
             // Verrouillage choisi par l'administrateur (caisses partagées seulement)
-            'donnees' => $donnees + ['cleTicket' => $etab['slug'] . '.' . $personne['id'], 'verrou' => [
+            'donnees' => $donnees + ['cleTicket' => $etab['slug'] . '.' . $personne['id'] . ($nuit ? '.' . $poste : ''), 'verrou' => [
                 'minutes' => $appareil !== null ? (int) $etab['verrou_minutes'] : 0,
                 'apresEncaissement' => $appareil !== null && (bool) $etab['verrou_apres_encaissement'],
             ]],
         ], 'caisse');
+    }
+
+    /**
+     * Catalogue de l'entrée (les tarifs de la soirée) ou du vestiaire (le dépôt, avec ses frais), dans la même forme
+     * que contexte() : la grille, le ticket et la fenêtre de paiement de la caisse servent tels quels.
+     */
+    public function contexteNuit(array $etab, string $poste): array
+    {
+        ['acceptees' => $acceptees, 'principale' => $principale] = self::devisesCaisse($etab);
+        $produits = [];
+        $categories = [];
+        $soiree = null;
+        $tarifs = [];
+        if ($poste === 'entree') {
+            $billetterie = new \App\Repositories\BilletterieRepository();
+            $soiree = $billetterie->soiree($etab);
+            $tarifs = $billetterie->tarifsEnVente($etab, $soiree['evenement'], $acceptees);
+            $categories[] = ['id' => 1, 'nom' => t('nuit.entrees'), 'sous' => []];
+            foreach ($tarifs as $t) {
+                $produits[] = self::produitSimple($t['id'], 1, $t['nom'], t('nuit.categorie_' . $t['categorie']), $t['prix']) + ['entree' => $t['categorie']];
+            }
+        } else {
+            $frais = (new \App\Repositories\VestiaireRepository())->frais((int) $etab['id']);
+            $categories[] = ['id' => 1, 'nom' => t('nuit.vestiaire'), 'sous' => []];
+            $produits[] = self::produitSimple(1, 1, t('nuit.vestiaire_depot'), $frais === [] ? t('nuit.gratuit') : t('nuit.vestiaire_frais'),
+                \App\Repositories\BilletterieRepository::prixDevises($frais, $acceptees));
+        }
+        $donnees = [
+            'mode' => 'rapide',
+            'langue' => \App\Core\I18n::langue(),
+            'principale' => $principale['code'],
+            'devises' => self::devisesJson($acceptees),
+            'categories' => $categories,
+            'produits' => $produits,
+            'epuises' => [],
+        ];
+        return [
+            'zone' => null, 'grille' => (int) $etab['grille_prix_id'], 'grilleDefaut' => (int) $etab['grille_prix_id'], 'acceptees' => $acceptees,
+            'principale' => $principale, 'service' => null, 'happy' => null, 'source' => 'etablissement', 'epuises' => [],
+            'donnees' => $donnees, 'soiree' => $soiree, 'tarifs' => $tarifs,
+        ];
+    }
+
+    /** Une tuile d'un seul format (tarif d'entrée, dépôt au vestiaire). */
+    private static function produitSimple(int $id, int $categorie, string $nom, string $format, array $prix): array
+    {
+        return [
+            'id' => $id, 'categorie' => $categorie, 'sous' => 0, 'nom' => $nom, 'recherche' => mb_strtolower($nom . ' ' . $format),
+            'disponible' => true, 'photo' => null, 'tailles' => 0,
+            'formats' => [['id' => $id, 'nom' => $format, 'unite' => false, 'taille' => '', 'tailleId' => $id, 'freres' => 1, 'disponible' => true, 'prix' => $prix]],
+        ];
+    }
+
+    /** Devises de la caisse pour caisse.js (ordre : locale, dollar, autres). */
+    public static function devisesJson(array $acceptees): array
+    {
+        return array_values(array_map(static fn (array $d) => [
+            'code' => $d['code'],
+            'symbole' => $d['symbole'],
+            'decimales' => (int) $d['decimales'],
+            'symboleAvant' => (bool) $d['symbole_avant'],
+            'arrondi' => (float) $d['arrondi'],
+        ], $acceptees));
     }
 
     /**

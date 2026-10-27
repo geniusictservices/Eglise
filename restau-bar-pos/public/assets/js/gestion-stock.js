@@ -321,4 +321,32 @@
       if (lieuMarche.value && !saisi) window.location.href = '/gestion/achats/marche?lieu=' + encodeURIComponent(lieuMarche.value);
     });
   }
+  // ---------- Vente en gros : prix de gros proposé, dépôt / client / devise qui actualisent le formulaire ----------
+
+  var venteGros = document.querySelector('[data-vente-gros]');
+  if (venteGros) {
+    var prixGros = json(venteGros.dataset.prixGros, {});
+    var deviseGros = venteGros.querySelector('[data-devise-facture]');
+    venteGros.addEventListener('change', function (evenement) {
+      var cible = evenement.target;
+      if (cible.matches('[data-ligne-format]')) {
+        var ligne = cible.closest('[data-ligne]');
+        var prix = ligne && ligne.querySelector('[data-ligne-prix]');
+        var parDevise = prixGros[cible.value] || {};
+        var montant = deviseGros ? parDevise[deviseGros.value] : undefined;
+        if (prix && montant !== undefined && (prix.value.trim() === '' || prix.dataset.propose === '1')) {
+          prix.value = String(montant).replace('.', langue === 'fr' ? ',' : '.');
+          prix.dataset.propose = '1';
+          prix.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      } else if (cible.matches('[data-ligne-prix]')) {
+        cible.dataset.propose = '0';
+      } else if (cible.matches('[data-recharger]')) {
+        var action = document.createElement('input');
+        action.type = 'hidden'; action.name = 'action'; action.value = 'actualiser';
+        venteGros.appendChild(action);
+        venteGros.submit();
+      }
+    });
+  }
 })();

@@ -150,11 +150,7 @@ $sansFonds = array_filter($fonds, static fn (array $f): bool => $f['compte'] ===
             </div>
             <p class="aide"><?= e(t('achats.marche_paiement_aide', ['compte' => $lieu['fonds']['nom'] ?? '—'])) ?></p>
             <div class="tre-actions">
-                <?php if ($avertissements !== []): ?>
-                    <button class="bouton" type="submit" name="confirme" value="1"><?= e(t('achats.marche_confirmer')) ?></button>
-                <?php else: ?>
-                    <button class="bouton" type="submit"><?= e(t('achats.marche_enregistrer')) ?></button>
-                <?php endif; ?>
+                <button class="bouton" type="submit"><?= e(t('achats.marche_enregistrer')) ?></button>
             </div>
         </section>
     </form>

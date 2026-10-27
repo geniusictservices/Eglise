@@ -209,3 +209,29 @@
 /* En-têtes de ligne d'un tableau : texte normal (les capitales sont pour les en-têtes de colonnes) */
 .stk-table tbody th, .stk-routage tbody th { text-transform: none; letter-spacing: 0; font-size: inherit; font-weight: 700; color: var(--encre); text-align: left; }
 .stk-table tbody th .tre-sous-texte { font-weight: 400; }
+
+/* ---------- Stock, suite : productions, lots, marché, vente en gros, coûts ---------- */
+.stk-apercu-production { grid-column: 1 / -1; padding: .75rem 1rem; border: 1px solid var(--ligne); border-radius: var(--rayon, 10px); background: var(--surface-2, transparent); }
+.stk-apercu-production h3 { margin: 0 0 .25rem; font-size: 1rem; }
+.stk-apercu-production li[data-manque] .montant { color: var(--erreur); }
+.stk-liste-lignes .tre-sous-texte { display: block; }
+/* Lot facultatif d'une ligne de réception : replié par défaut */
+.stk-ligne__lot { margin-top: .25rem; }
+.stk-ligne__lot > summary { min-height: var(--cible); display: inline-flex; align-items: center; cursor: pointer; }
+.stk-ligne__lot .stk-ligne__champs { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: .5rem; }
+.stk-reglages-cuisine { margin-top: 1rem; }
+.stk-nouvelle-prep { margin-top: 1rem; }
+.stk-nouvelle-prep > summary { list-style: none; display: inline-flex; }
+.stk-nouvelle-prep > summary::-webkit-details-marker { display: none; }
+.stk-actions-ligne form { margin: 0; }
+.stk-actions-ligne { text-align: right; white-space: nowrap; }
+.stk-prix-gros .tre-montant { min-width: 9rem; }
+.stk-couts td .tre-sous-texte, .stk-couts th .tre-sous-texte { display: block; }
+tr[aria-current="true"] td, tr[aria-current="true"] th { background: var(--teinte-accent, transparent); }
+@media (max-width: 600px) {
+  .stk-ligne__lot .stk-ligne__champs { grid-template-columns: minmax(0, 1fr); }
+  .stk-actions-ligne { text-align: left; white-space: normal; }
+  .stk-prix-gros .tre-montant { min-width: 0; width: 100%; }
+}
+.stk-lien-cible { min-height: var(--cible); display: inline-flex; align-items: center; }
+.stk-prix-gros .tre-montant input { width: 100%; padding-right: 3.25rem; text-align: right; font-variant-numeric: tabular-nums; }

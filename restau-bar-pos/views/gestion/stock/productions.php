@@ -120,7 +120,7 @@ $erreurChamp = static fn (string $champ): string => isset($erreurs[$champ]) ? '<
                             <td data-libelle="<?= e(t('stock.prep_preparation')) ?>"><strong><?= e(champ($p, 'nom')) ?></strong><span class="tre-sous-texte"><?= e($p['lieu_nom'] . ' · ' . ($p['etablissement_nom'] ?? t('stock.central')) . ($p['auteur'] ? ' · ' . $p['auteur'] : '')) ?></span>
                                 <?php if ($p['notes']): ?><span class="tre-sous-texte"><?= e($p['notes']) ?></span><?php endif; ?></td>
                             <td class="nombre" data-libelle="<?= e(t('stock.col_quantite')) ?>"><?= e(S::nombre($q) . ' ' . S::unite((string) $p['unite_base'], $q)) ?></td>
-                            <td data-libelle="<?= e(t('stock.peremption')) ?>"><?= $p['peremption'] ? e(A::date($p['peremption'])) : '—' ?></td>
+                            <td data-libelle="<?= e(t('stock.peremption')) ?>"><?= $p['peremption'] ? e(A::jour($p['peremption'])) : '—' ?></td>
                             <?php if ($voirValeur): ?><td class="nombre" data-libelle="<?= e(t('stock.prep_cout')) ?>"><?= $p['cout_total'] !== null && $reference && $q > 0
                                 ? e(A::montant((float) $p['cout_total'], $reference)) . '<span class="tre-sous-texte">' . e(t('stock.cout_par', ['cout' => A::montant((float) $p['cout_total'] / $q, $reference), 'unite' => S::unite((string) $p['unite_base'])])) . '</span>'
                                 : '—' ?></td><?php endif; ?>

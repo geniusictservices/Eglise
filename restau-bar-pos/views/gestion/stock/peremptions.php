@@ -41,7 +41,7 @@ $tableau = static function (array $lots, bool $perime) use ($articles, $cumps, $
                     <tr data-lot="<?= (int) $l['id'] ?>">
                         <td data-libelle="<?= e(t('stock.col_article')) ?>"><strong><?= e(champ($l, 'nom')) ?></strong>
                             <span class="tre-sous-texte"><?= e($l['lieu_nom'] . ' · ' . ($l['etablissement_nom'] ?? t('stock.central'))) ?><?= $l['numero'] ? ' · ' . e(t('stock.lot_numero', ['numero' => $l['numero']])) : '' ?></span></td>
-                        <td data-libelle="<?= e(t('stock.peremption')) ?>"><?= e(A::date($l['peremption'])) ?>
+                        <td data-libelle="<?= e(t('stock.peremption')) ?>"><?= e(A::jour($l['peremption'])) ?>
                             <span class="badge <?= $perime ? 'badge--erreur' : ($jours <= 1 ? 'badge--braise' : 'badge--neutre') ?>" data-jours="<?= $jours ?>"><?= e($perime
                                 ? t(-$jours > 1 ? 'stock.perime_depuis_n' : 'stock.perime_depuis_1', ['n' => -$jours])
                                 : ($jours === 0 ? t('stock.perime_aujourdhui') : t($jours > 1 ? 'stock.perime_dans_n' : 'stock.perime_dans_1', ['n' => $jours]))) ?></span></td>

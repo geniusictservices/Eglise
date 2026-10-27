@@ -100,7 +100,7 @@ final class RapportCoutsController
         Csv::envoyer(Csv::nomFichier(t('couts.fichier_ecarts'), $periode), [
             t('couts.col_produit'), t('couts.col_unite'), t('couts.col_ventes'), t('couts.col_production'), t('couts.col_attendue'),
             t('couts.col_pertes'), t('couts.col_inventaire'), t('couts.col_ajustements'), t('couts.col_reelle'), t('couts.col_ecart'),
-            t('couts.col_ecart_pct') . ' (%)', t('couts.col_valeur_ecart') . ' (' . $code . ')',
+            t('couts.col_ecart') . ' (%)', t('couts.col_valeur_ecart') . ' (' . $code . ')',
         ], array_map(static fn (array $e): array => [
             champ($e, 'nom'), StockAffichage::unite((string) $e['unite_base'], 2), Csv::nombre($e['ventes'], 3), Csv::nombre($e['production'], 3),
             Csv::nombre($e['attendue'], 3), Csv::nombre($e['pertes'], 3), Csv::nombre($e['inventaire'], 3), Csv::nombre($e['ajustements'], 3),

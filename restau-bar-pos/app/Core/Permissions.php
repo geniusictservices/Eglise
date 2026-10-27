@@ -16,11 +16,11 @@ final class Permissions
     {
         return [
             'caisse' => ['caisse.vendre', 'caisse.encaisser', 'caisse.credit', 'caisse.rembourser', 'caisse.remise', 'caisse.annuler', 'caisse.appareils'],
-            'ventes' => ['ventes.voir', 'ventes.annuler', 'clients.voir', 'clients.modifier', 'dettes.voir', 'dettes.rembourser', 'dettes.gerer'],
+            'ventes' => ['ventes.voir', 'ventes.annuler', 'clients.voir', 'clients.modifier', 'dettes.voir', 'dettes.rembourser', 'dettes.gerer', 'ventes.gros'],
             // Salle et cuisine : la caisse (notes, envoi en cuisine) demande seulement « caisse.vendre »
             'salle' => ['salle.voir', 'salle.plan', 'salle.reservations', 'salle.services'],
             'cuisine' => ['cuisine.voir', 'cuisine.ruptures', 'cuisine.parametrer'],
-            'achats' => ['achats.voir', 'achats.fournisseurs', 'achats.commander', 'achats.recevoir', 'achats.payer'],
+            'achats' => ['achats.voir', 'achats.fournisseurs', 'achats.commander', 'achats.recevoir', 'achats.payer', 'achats.marche'],
             'stock' => ['stock.voir', 'stock.transferer', 'stock.inventorier', 'stock.valider', 'stock.ajuster', 'stock.recettes', 'stock.parametrer'],
             'personnel' => ['personnel.voir', 'personnel.gerer', 'personnel.presence', 'personnel.paie', 'personnel.payer'],
             'finance' => ['finance.voir', 'finance.operations', 'finance.comptes', 'finance.taux'],

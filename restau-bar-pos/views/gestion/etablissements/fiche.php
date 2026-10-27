@@ -170,6 +170,8 @@ $tailleMax = Images::tailleLisible($octetsMax);
             <span class="etb-modifie" hidden><?= e(t('etab.non_enregistre')) ?></span>
         </div>
     </form>
+<?php /* Réglages du stock de l'établissement (stock négatif, péremption, caisse du marché) : module Stock */ ?>
+    <p class="aide" data-lien-reglages-stock><?= e(t('etab.reglages_stock')) ?> <a class="lien" href="/gestion/stock/lieux#reglages-<?= $id ?>"><?= e(t('etab.reglages_stock_lien')) ?></a></p>
 </section>
 
 <!-- 4. Horaires -->

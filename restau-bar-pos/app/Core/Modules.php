@@ -42,6 +42,8 @@ final class Modules
                 ['cle' => 'remboursements', 'icone' => 'remboursement', 'lien' => '/gestion/remboursements', 'voir' => 'dettes.voir', 'modifier' => 'dettes.voir'],   // saisie (dettes.rembourser) et annulation (dettes.gerer) vérifiées par l'écran
                 // Garanties demandées à la personne connectée : chacun répond pour lui-même
                 ['cle' => 'garanties', 'icone' => 'garantie', 'lien' => '/gestion/garanties', 'voir' => null],
+                // Vente en gros au dépôt (clients revendeurs, prix de gros, emballages) : sans la caisse
+                ['cle' => 'vente_gros', 'icone' => 'lieux', 'lien' => '/gestion/gros', 'voir' => 'ventes.gros'],
             ]],
             // Salle : plan de salle et tables, notes ouvertes, réservations, services horaires et happy hour
             'salle' => ['icone' => 'salle', 'lien' => null, 'ecrans' => [
@@ -63,6 +65,7 @@ final class Modules
                 ['cle' => 'fournisseurs', 'icone' => 'etablissements', 'lien' => '/gestion/achats/fournisseurs', 'voir' => 'achats.voir'],
                 ['cle' => 'dettes_fournisseurs', 'icone' => 'dettes', 'lien' => '/gestion/achats/dettes', 'voir' => 'achats.voir'],
                 ['cle' => 'prix_achats', 'icone' => 'prix', 'lien' => '/gestion/achats/prix', 'voir' => 'achats.voir'],
+                ['cle' => 'achats_marche', 'icone' => 'achats', 'lien' => '/gestion/achats/marche', 'voir' => 'achats.marche'],
             ]],
             'stock' => ['icone' => 'stock', 'lien' => null, 'ecrans' => [
                 ['cle' => 'etat_stock', 'icone' => 'stock', 'lien' => '/gestion/stock', 'voir' => 'stock.voir'],
@@ -71,6 +74,8 @@ final class Modules
                 ['cle' => 'inventaires', 'icone' => 'inventaire', 'lien' => '/gestion/stock/inventaires', 'voir' => 'stock.voir'],
                 ['cle' => 'pertes', 'icone' => 'perte', 'lien' => '/gestion/stock/pertes', 'voir' => 'stock.voir'],
                 ['cle' => 'recettes', 'icone' => 'recette', 'lien' => '/gestion/stock/recettes', 'voir' => 'stock.voir'],
+                ['cle' => 'productions', 'icone' => 'recette', 'lien' => '/gestion/stock/productions', 'voir' => 'stock.voir'],
+                ['cle' => 'peremptions', 'icone' => 'horloge', 'lien' => '/gestion/stock/peremptions', 'voir' => 'stock.voir'],
                 ['cle' => 'emballages', 'icone' => 'emballage', 'lien' => '/gestion/stock/emballages', 'voir' => 'stock.voir'],
                 ['cle' => 'depots', 'icone' => 'lieux', 'lien' => '/gestion/stock/lieux', 'voir' => 'stock.voir'],
             ]],
@@ -97,6 +102,7 @@ final class Modules
                 ['cle' => 'rapport_personnel', 'icone' => 'compte', 'lien' => '/gestion/rapports/personnel', 'voir' => null, 'chacun' => true],
                 // Présence du personnel (heures, retards, absences) et masse salariale si personnel.paie (module Personnel et paie)
                 ['cle' => 'rapport_presence', 'icone' => 'planning', 'lien' => '/gestion/rapports/presence', 'voir' => 'rapports.voir'],
+                ['cle' => 'rapport_couts', 'icone' => 'prix', 'lien' => '/gestion/rapports/couts', 'voir' => 'rapports.marges'],
                 ['cle' => 'export_comptable', 'icone' => 'journal', 'lien' => '/gestion/rapports/export-comptable', 'voir' => 'finance.voir'],
             ]],
             // Soirées des lounges et nightclubs : montré seulement s'il y a un établissement de ce type

@@ -533,12 +533,13 @@ final class StockRepository
                 [$venteId]
             );
             // Vente en gros : les emballages prêtés, consignes facturées et vides rapportés sont annulés aussi
-            if (self::suite()) {
+            $libelleAnnulation = 'Annulation vente ' . $vente['numero'];
+            if (self::suite() && Database::un('SELECT id FROM emballage_mouvements WHERE vente_id IS NULL AND notes = ? LIMIT 1', [$libelleAnnulation]) === null) {
                 Database::executer(
                     'INSERT INTO emballage_mouvements (client_id, produit_id, type, quantite, vente_id, valeur, devise_id, date_mouvement, notes, utilisateur_id)
                      SELECT client_id, produit_id, type, -quantite, NULL, IF(valeur IS NULL, NULL, -valeur), devise_id, ?, ?, ?
                        FROM emballage_mouvements WHERE vente_id = ?',
-                    [$date, 'Annulation vente ' . $vente['numero'], $uid, $venteId]
+                    [$date, $libelleAnnulation, $uid, $venteId]
                 );
             }
             foreach ($mouvements as $m) {

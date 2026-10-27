@@ -86,7 +86,7 @@ final class PeremptionController
         }
         $commentaire = trim(t('stock.lot_perime_commentaire', [
             'lot' => (string) ($lot['numero'] ?? '#' . $lot['id']),
-            'date' => $lot['peremption'] !== null ? TresorerieAffichage::date($lot['peremption']) : '—',
+            'date' => $lot['peremption'] !== null ? TresorerieAffichage::jour($lot['peremption']) : '—',
         ]));
         $this->depot->creerPerte([
             'lieu_id' => (int) $lot['lieu_id'], 'produit_id' => (int) $lot['produit_id'], 'conditionnement_id' => (int) $format['id'],

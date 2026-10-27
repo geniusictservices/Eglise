@@ -115,7 +115,7 @@ final class VenteGrosController
         }
         $paiementsSaisis = $paiementsSaisis ?: [['compte_id' => null, 'montant' => '']];
         $action = (string) ($_POST['action'] ?? '');
-        if ($action === 'ajouter_ligne' || $action === 'ajouter_paiement') {
+        if ($action === 'ajouter_ligne' || $action === 'ajouter_paiement' || $action === 'actualiser') {
             if ($action === 'ajouter_ligne') {
                 $saisies[] = ['conditionnement_id' => null, 'quantite' => '', 'prix' => ''];
             } elseif (count($paiementsSaisis) < self::MAX_PAIEMENTS) {

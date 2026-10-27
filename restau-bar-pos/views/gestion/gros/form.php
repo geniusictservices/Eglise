@@ -65,7 +65,6 @@ $lignePaiement = static function (string|int $i, array $p) use ($comptes, $erreu
             </div>
         </div>
         <?php if ($e): ?><p class="champ__erreur"><?= e($e) ?></p><?php endif; ?>
-        <button type="button" class="lien stk-ligne__retirer" data-retirer-ligne hidden><?= e(t('stock.retirer_ligne')) ?></button>
     </fieldset>
     <?php return (string) ob_get_clean();
 };
@@ -126,6 +125,7 @@ $lignePaiement = static function (string|int $i, array $p) use ($comptes, $erreu
                 <?= $erreurChamp('date') ?>
             </div>
         </div>
+        <noscript><button class="bouton bouton--secondaire" type="submit" name="action" value="actualiser" formnovalidate><?= e(t('gros.actualiser')) ?></button></noscript>
     </section>
 
     <section class="bloc" aria-labelledby="lignes-titre">
@@ -138,7 +138,7 @@ $lignePaiement = static function (string|int $i, array $p) use ($comptes, $erreu
         <template data-modele-ligne><?= $ligneVente('__i__', ['conditionnement_id' => null, 'quantite' => '', 'prix' => '']) ?></template>
         <button class="bouton bouton--secondaire stk-ajouter-ligne" type="submit" name="action" value="ajouter_ligne" formnovalidate data-ajouter-ligne>+ <?= e(t('stock.ajouter_ligne')) ?></button>
         <p class="tre-resume" data-total-lignes aria-live="polite" hidden></p>
-        <p class="champ__aide"><a class="lien" href="/gestion/gros/prix"><?= e(t('gros.voir_prix')) ?></a></p>
+        <p class="champ__aide"><a class="lien stk-lien-cible" href="/gestion/gros/prix"><?= e(t('gros.voir_prix')) ?></a></p>
     </section>
 
     <?php if ($emballages !== []): ?>
@@ -185,7 +185,7 @@ $lignePaiement = static function (string|int $i, array $p) use ($comptes, $erreu
             <?php foreach (array_values($paiements) as $i => $p): ?><?= $lignePaiement($i, $p) ?><?php endforeach; ?>
         </div>
         <?php if (count($paiements) < $maxPaiements): ?>
-            <button class="bouton bouton--secondaire stk-ajouter-ligne" type="submit" name="action" value="ajouter_paiement" formnovalidate>+ <?= e(t('depenses.ajouter_paiement')) ?></button>
+            <button class="bouton bouton--secondaire stk-ajouter-ligne" type="submit" name="action" value="ajouter_paiement" formnovalidate>+ <?= e(t('gros.ajouter_paiement')) ?></button>
         <?php endif; ?>
         <?php if ($peutCredit): ?>
             <div class="tre-paire">
