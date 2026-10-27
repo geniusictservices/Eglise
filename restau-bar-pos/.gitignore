@@ -32,3 +32,7 @@
 /outils/**/*.log
 /outils/**/*.pid
 /outils/**/*.png
+/outils/**/*.sql
+/outils/**/*.pdf
+/outils/tests/suites/dettes/nettoyage-caisse.json
+/outils/tests/suites/agents/final/audit.json
