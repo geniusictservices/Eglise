@@ -139,6 +139,14 @@ if ($demo && is_file(RACINE . '/bin/demo-stock.php')) {
     }
 }
 
+// Stock, suite : préparations et productions, caisse de la cuisine et achats au marché, vente en gros au dépôt
+if ($demo && is_file(RACINE . '/bin/demo-stock-suite.php')) {
+    passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(RACINE . '/bin/demo-stock-suite.php') . ' ' . escapeshellarg($sousDomaine), $code);
+    if ($code !== 0) {
+        fwrite(STDERR, "Suite du stock de démonstration non créée (php bin/demo-stock-suite.php $sousDomaine pour réessayer).\n");
+    }
+}
+
 // Personnel et paie de démonstration (fiches des employés, plannings, pointages, avance, bulletins), après les ventes
 if ($demo && is_file(RACINE . '/bin/demo-personnel.php')) {
     passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(RACINE . '/bin/demo-personnel.php') . ' ' . escapeshellarg($sousDomaine), $code);

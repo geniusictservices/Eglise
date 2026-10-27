@@ -470,7 +470,9 @@ final class StockRepository
                    FROM vente_lignes l
               LEFT JOIN conditionnements c ON c.id = l.conditionnement_id
               LEFT JOIN produits p ON p.id = COALESCE(c.produit_id, l.produit_id)
-                  WHERE l.vente_id = ? ORDER BY l.id',
+                  WHERE l.vente_id = ?' . (RemiseRepository::disponible()
+                    // Nuit (migration 022) : une formule sort par ses composants ; un article offert sort en perte (motif « offert »)
+                    ? " AND l.nature <> 'formule' AND l.offert = 0" : '') . ' ORDER BY l.id',
                 [$venteId]
             );
             if ($gros !== null) {

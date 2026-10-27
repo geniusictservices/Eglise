@@ -126,7 +126,7 @@ final class Remises
             }
         }
         foreach ($totaux as $c => $t) {
-            $totaux[$c] = $t === null ? null : round($t, (int) ($devises[$c]['decimales'] ?? 2));
+            $totaux[$c] = $t === null ? null : round($t, 3);
         }
         return ['lignes' => $resultat, 'partTicket' => $partTicket, 'totaux' => $totaux, 'bruts' => $bruts];
     }

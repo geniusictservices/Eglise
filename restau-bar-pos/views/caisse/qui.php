@@ -10,6 +10,7 @@
  * @var ?string $erreur
  * @var ?int $choisi
  * @var string $zone
+ * @var string $ecran écran de caisse d'où l'on vient (caisse, entree, vestiaire)
  */
 use App\Core\Avatars;
 use App\Core\CaissePartagee;
@@ -64,7 +65,7 @@ $date = class_exists(IntlDateFormatter::class)
                 <?php foreach ($personnes as $p): $bloque = $p['pin_bloque_le'] !== null; ?>
                     <li>
                         <a class="verrou__personne<?= $bloque ? ' verrou__personne--bloquee' : '' ?>"
-                           href="/caisse?personne=<?= (int) $p['id'] ?><?= $zone !== '' ? '&amp;zone=' . e($zone) : '' ?>"
+                           href="/caisse<?= ($ecran ?? 'caisse') !== 'caisse' ? '/' . e($ecran) : '' ?>?personne=<?= (int) $p['id'] ?><?= $zone !== '' ? '&amp;zone=' . e($zone) : '' ?>"
                            data-personne="<?= (int) $p['id'] ?>" data-nom="<?= e($p['nom']) ?>"
                            <?= (int) $p['id'] === $choisi ? 'aria-current="true"' : '' ?> <?= $bloque ? 'data-bloque="1"' : '' ?>>
                             <?= View::rendre('partials/_avatar', ['nom' => $p['nom'], 'photo' => $p['avatar'], 'classe' => '']) ?>
@@ -82,6 +83,7 @@ $date = class_exists(IntlDateFormatter::class)
             <input type="hidden" name="csrf" value="<?= e(App\Core\Session::jetonCsrf()) ?>">
             <input type="hidden" name="utilisateur_id" id="pave-utilisateur" value="<?= (int) ($personneChoisie['id'] ?? 0) ?>">
             <input type="hidden" name="zone" value="<?= e($zone) ?>">
+            <input type="hidden" name="ecran" value="<?= e($ecran ?? 'caisse') ?>">
             <div class="pave__avatar" id="pave-avatar">
                 <?php if ($personneChoisie): ?><?= View::rendre('partials/_avatar', ['nom' => $personneChoisie['nom'], 'photo' => $personneChoisie['avatar'], 'classe' => 'avatar--geant']) ?><?php endif; ?>
             </div>

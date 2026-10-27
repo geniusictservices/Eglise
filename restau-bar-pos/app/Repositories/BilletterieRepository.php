@@ -87,9 +87,19 @@ final class BilletterieRepository
     public function prix(int $tarifId, array $acceptees): array
     {
         $saisis = array_map('floatval', array_column(Database::tous('SELECT devise_id, montant FROM entree_tarif_prix WHERE tarif_id = ?', [$tarifId]), 'montant', 'devise_id'));
+        return self::prixDevises($saisis, $acceptees);
+    }
+
+    /**
+     * Prix dans chaque devise acceptée depuis des montants saisis (devise_id → montant) : une devise sans montant
+     * est convertie depuis la première devise saisie qui a un taux (avec son arrondi) ; rien de saisi : gratuit (0).
+     * @param array<int, float> $saisis
+     * @param array<int, array> $acceptees id → devise (avec son taux)
+     * @return array<string, ?float> code → montant
+     */
+    public static function prixDevises(array $saisis, array $acceptees): array
+    {
         $devises = new DeviseRepository();
-        $prix = [];
-        // Équivalent en devise de référence, depuis le premier prix saisi dans une devise qui a un taux
         $reference = null;
         foreach ($saisis as $deviseId => $m) {
             $taux = $acceptees[$deviseId]['taux'] ?? ($devises->actives()[$deviseId]['taux'] ?? null);
@@ -98,6 +108,7 @@ final class BilletterieRepository
                 break;
             }
         }
+        $prix = [];
         foreach ($acceptees as $id => $d) {
             if (isset($saisis[$id])) {
                 $prix[$d['code']] = $saisis[$id];

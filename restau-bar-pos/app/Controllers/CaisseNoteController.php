@@ -199,7 +199,24 @@ final class CaisseNoteController
                 'validePar' => $l['validee_par_nom'], 'perte' => (bool) $l['perte'],
             ];
         }
+        // Minimum de consommation (carré VIP) : progression ; invité de la note (promoteur)
+        $minimum = null;
+        if (\App\Repositories\MinimumRepository::disponible() && $note['type'] === 'note') {
+            $caisse = new CaisseController();
+            ['acceptees' => $acc, 'principale' => $principale] = CaisseController::devisesCaisse($etab);
+            $info = $caisse->minimumInfo($note, $etab, ['principale' => $principale], array_column($acc, null, 'code'));
+            if ($info !== null) {
+                $minimum = ['action' => $info['action'], 'minimum' => $info['minimum'], 'manque' => $info['manque'], 'consomme' => $info['consomme'],
+                    'atteint' => $info['atteint'], 'leve' => ($note['minimum_leve_le'] ?? null) !== null];
+            }
+        }
+        $invite = null;
+        if (!empty($note['invite_id'])) {
+            $i = Database::un('SELECT i.nom, p.nom AS promoteur FROM invites i LEFT JOIN promoteurs p ON p.id = i.promoteur_id WHERE i.id = ?', [(int) $note['invite_id']]);
+            $invite = $i !== null ? ['id' => (int) $note['invite_id'], 'nom' => $i['nom'], 'promoteur' => $i['promoteur']] : null;
+        }
         return [
+            'minimum' => $minimum, 'invite' => $invite,
             'id' => (int) $note['id'], 'version' => (int) $note['version'], 'statut' => $note['statut'],
             'table' => $note['table_id'] !== null ? ['id' => (int) $note['table_id'], 'nom' => $note['table_nom']] : null,
             'nom' => $note['nom'], 'zone' => $note['zone_code'] ?? '', 'zoneNom' => $note['zone_nom_fr'] !== null ? champ($note, 'zone_nom') : null,
@@ -277,6 +294,7 @@ final class CaisseNoteController
         $zoneId = $note !== null ? ($note['zone_id'] !== null ? (int) $note['zone_id'] : null)
             : ($table !== null ? ($table['zone_id'] !== null ? (int) $table['zone_id'] : null) : ($zoneNommee ? (int) $zoneNommee['id'] : null));
         $lignes = [];
+        $formules = new \App\Repositories\FormuleRepository();
         foreach (is_array($envoi['lignes'] ?? null) ? $envoi['lignes'] : [] as $l) {
             $f = $formats[(int) ($l['id'] ?? 0)] ?? null;
             $quantite = (int) ($l['qte'] ?? 0);
@@ -288,15 +306,34 @@ final class CaisseNoteController
                 $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
             }
             $categorie = (int) ($f['produit']['sous'] ?: $f['produit']['categorie']);
+            // Formule (bouteille avec softs) : les composants choisis, vérifiés (le stock compte : on ajoute une ligne)
+            $composants = [];
+            $formule = $formules->formule((int) $f['format']['tailleId']);
+            if ($formule !== null) {
+                try {
+                    $composants = $formules->valider($formule, $l['comp'] ?? null, $contexte['epuises']);
+                } catch (\InvalidArgumentException $e) {
+                    $message = $e->getMessage();
+                    $this->repondre(422, str_starts_with($message, 'epuise:')
+                        ? ['erreur' => t('encaisser.epuise', ['articles' => substr($message, 7)]), 'code' => 'epuise']
+                        : ['erreur' => t('nuit.composants_invalides', ['formule' => $f['produit']['nom']]), 'code' => 'composants']);
+                }
+            }
+            $remarque = self::texteLibre($l['rem'] ?? null);
+            if ($composants !== []) {
+                $remarque = self::texteLibre(CaisseController::texteComposants($composants, 1) . ($remarque !== null ? ' — ' . $remarque : ''));
+            }
             $lignes[] = [
                 'produit_id' => (int) $f['format']['tailleId'], 'conditionnement_id' => (int) $f['format']['id'], 'categorie_id' => $categorie,
                 'libelle' => $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'],
                 'format' => (!$f['format']['unite'] || $f['format']['freres'] > 1) ? $f['format']['nom'] : null,
                 'quantite' => $quantite, 'grille' => $contexte['grille'], 'prix' => (float) $f['format']['prix'][$principale],
                 'prix_devises' => array_filter($f['format']['prix'], static fn ($p) => $p !== null),
-                'remarque' => self::texteLibre($l['rem'] ?? null), 'allergie' => self::texteLibre($l['all'] ?? null),
+                'remarque' => $remarque, 'allergie' => self::texteLibre($l['all'] ?? null),
                 'temps' => (int) ($l['temps'] ?? 1) === 2 ? 2 : 1,
                 'poste_id' => $cuisine?->postePour($etabId, $categorie, $zoneId, $appareil ? (int) $appareil['id'] : null),
+                'composants' => array_map(static fn (array $c) => ['id' => $c['conditionnement_id'], 'qte' => $c['quantite'], 'libelle' => $c['libelle'],
+                    'format' => $c['format'], 'produit_id' => $c['produit_id']], $composants),
             ];
         }
         if ($lignes === []) {

@@ -89,6 +89,13 @@ if ($dejaFaite !== null && !$reset) {
 // ---------- Effacement (--reset) ----------
 
 if ($reset) {
+    // D'abord ce qu'a créé la suite (ventes en gros, productions, lots, caisse de la cuisine, préparations)
+    if (StockRepository::suite() && is_file(__DIR__ . '/demo-stock-suite.php')) {
+        passthru(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg(__DIR__ . '/demo-stock-suite.php') . ' ' . escapeshellarg($instance) . ' --effacer', $code);
+        if ($code !== 0) {
+            arreter('Effacement de la suite du stock impossible.');
+        }
+    }
     $pdo = Database::pdo();
     $pdo->beginTransaction();
     foreach (array_column(Database::tous('SELECT id FROM paiements_fournisseurs'), 'id') as $id) {

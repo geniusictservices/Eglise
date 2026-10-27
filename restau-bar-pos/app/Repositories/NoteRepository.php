@@ -173,6 +173,10 @@ final class NoteRepository
                     $statut === 'recu' ? $maintenant : null,
                 ]
             );
+            // Formule : les composants choisis (pour une unité), payés et sortis du stock avec elle
+            if (!empty($l['composants']) && RemiseRepository::disponible()) {
+                Database::executer('UPDATE note_lignes SET composants = ? WHERE id = ?', [json_encode($l['composants'], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), Database::dernierId()]);
+            }
         }
         $this->toucher($noteId);
         return array_values($envois);

@@ -219,7 +219,7 @@ final class Plateforme
         $gestion = $chemin === '/gestion' || str_starts_with($chemin, '/gestion/');
         $caisse = $chemin === '/caisse' || str_starts_with($chemin, '/caisse/');
         // Ouvrir la caisse : charger /caisse, entrer son PIN, faire d'un appareil une caisse partagée, ouvrir une session de caisse
-        $ouverture = ($methode === 'GET' && $chemin === '/caisse')
+        $ouverture = ($methode === 'GET' && in_array($chemin, ['/caisse', '/caisse/entree', '/caisse/vestiaire'], true))
             || ($methode === 'POST' && in_array($chemin, ['/caisse/pin', '/caisse/appareil', '/caisse/session/ouvrir'], true));
 
         if ($gestion) {

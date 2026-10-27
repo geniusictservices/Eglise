@@ -9,6 +9,10 @@ use App\Core\Avatars;
 use App\Core\CaissePartagee;
 use App\Core\Database;
 use App\Core\Journal;
+use App\Core\Plateforme;
+use App\Core\PinRefuse;
+use App\Core\PinSuperieur;
+use App\Core\Remises;
 use App\Core\Reglement;
 use App\Core\Session;
 use App\Core\View;
@@ -291,6 +295,23 @@ final class CaisseController
             }
             unset($produit);
         }
+        // Formules (bouteille avec softs) : groupes de composants à choisir, avec ce qui est épuisé
+        $formules = new \App\Repositories\FormuleRepository();
+        $ids = array_flip($formules->produits());
+        if ($ids !== []) {
+            $hors = array_flip($epuises);
+            foreach ($donnees['produits'] as &$produit) {
+                if (!isset($ids[$produit['id']]) || ($f = $formules->formule((int) $produit['id'])) === null) {
+                    continue;
+                }
+                $produit['formule'] = array_map(static fn (array $g) => [
+                    'nom' => $g['nom'], 'choix' => $g['choix'],
+                    'options' => array_map(static fn (array $o) => ['id' => $o['id'], 'nom' => $o['libelle'], 'format' => $o['format'],
+                        'epuise' => !$o['disponible'] || isset($hors[$o['id']])], $g['options']),
+                ], $f['groupes']);
+            }
+            unset($produit);
+        }
         return [
             'zone' => $zone, 'grille' => $grille, 'grilleDefaut' => $grilleDefaut, 'acceptees' => $acceptees, 'principale' => $principale,
             'service' => $service, 'happy' => $choix['happy'], 'source' => $choix['source'], 'epuises' => $epuises,
@@ -310,7 +331,22 @@ final class CaisseController
         }
         try {
             $appareil = CaissePartagee::appareil();
-            return array_map('intval', (new \App\Repositories\StockRepository())->epuises((int) $etab['id'], $appareil ? (int) $appareil['id'] : null, $zone ? (int) $zone['id'] : null));
+            $liste = array_map('intval', (new \App\Repositories\StockRepository())->epuises((int) $etab['id'], $appareil ? (int) $appareil['id'] : null, $zone ? (int) $zone['id'] : null));
+            // Une formule n'a pas de stock à elle : elle est épuisée quand un de ses groupes ne peut plus être servi
+            $formules = new \App\Repositories\FormuleRepository();
+            $produits = $liste === [] ? [] : $formules->produits();
+            if ($produits !== []) {
+                $formats = Database::tous('SELECT id, produit_id FROM conditionnements WHERE produit_id IN (' . implode(',', $produits) . ')');
+                $deFormule = array_flip(array_map('intval', array_column($formats, 'id')));
+                $liste = array_values(array_filter($liste, static fn (int $id) => !isset($deFormule[$id])));
+                foreach ($formats as $f) {
+                    $formule = $formules->formule((int) $f['produit_id']);
+                    if ($formule !== null && $formules->epuisee($formule, $liste)) {
+                        $liste[] = (int) $f['id'];
+                    }
+                }
+            }
+            return $liste;
         } catch (\Throwable $e) {
             error_log('Stock épuisé non lu : ' . $e->getMessage());
             return [];
@@ -449,9 +485,11 @@ final class CaisseController
     }
 
     /**
-     * Encaisser le ticket : la caisse envoie les lignes (format, quantité) et les paiements (devise, moyen, compte, montant reçu).
-     * Le serveur recalcule les prix, les totaux et le règlement ; il refuse tout ce qui ne colle pas.
-     * Réponse JSON : numéro, reçu (HTML), et si la caisse est verrouillée (réglage de l'établissement).
+     * Encaisser le ticket : la caisse envoie les lignes (format, quantité ; composants d'une formule) et les paiements
+     * (devise, compte, montant reçu ; cartes cashless ; ardoise), les remises et la fidélité. Le serveur recalcule les
+     * prix, les remises, le minimum de consommation, les totaux et le règlement ; il refuse tout ce qui ne colle pas.
+     * « poste » : caisse (le bar), entree (tarifs d'entrée : un billet à code QR par entrée), vestiaire (frais de dépôt :
+     * un ticket par objet). Réponse JSON : numéro, reçu (HTML), et si la caisse est verrouillée.
      */
     public function encaisser(): void
     {
@@ -471,7 +509,10 @@ final class CaisseController
         }
         ['personne' => $personne, 'etab' => $etab, 'appareil' => $appareil] = $vendeur;
         $etabId = (int) $etab['id'];
-        if (!Acces::a($personne['id'], 'caisse.encaisser', $etabId)) {
+        $uid = (int) $personne['id'];
+        $poste = in_array($demande['poste'] ?? null, ['entree', 'vestiaire'], true) ? $demande['poste'] : 'caisse';
+        $droit = match ($poste) { 'entree' => 'entrees.vendre', 'vestiaire' => 'vestiaire.gerer', default => 'caisse.encaisser' };
+        if (!Acces::a($uid, $droit, $etabId) || ($poste !== 'caisse' && !in_array($poste, self::postesPermis($uid, $etabId), true))) {
             $this->repondre(403, ['erreur' => t('encaisser.droit')]);
         }
         $cle = is_string($demande['cle'] ?? null) ? $demande['cle'] : '';
@@ -486,9 +527,13 @@ final class CaisseController
             // Double envoi : la même vente, sans rien refaire
             $this->repondreVente((int) $deja['id'], $etab, $appareil);
         }
+        if (isset($_SESSION['nuit_sans_vente'][$cle])) {
+            // Double envoi d'entrées ou de dépôts gratuits : les mêmes billets
+            $this->repondreSansVente($_SESSION['nuit_sans_vente'][$cle], $etab, $appareil);
+        }
 
         // Payer une note ouverte (en entier, par articles ou une part égale) : les lignes viennent de la note
-        $noteDemande = is_array($demande['note'] ?? null) ? $demande['note'] : null;
+        $noteDemande = $poste === 'caisse' && is_array($demande['note'] ?? null) ? $demande['note'] : null;
         $note = null;
         if ($noteDemande !== null) {
             $note = (new NoteRepository())->note((int) ($noteDemande['id'] ?? 0));
@@ -499,126 +544,268 @@ final class CaisseController
                 $this->repondre(409, ['erreur' => t('note.deja_fermee'), 'code' => 'note_changee']);
             }
             $contexte = $this->contexte($etab, $note['zone_code'], false);
-        } else {
+        } elseif ($poste === 'caisse') {
             $contexte = $this->contexte($etab, is_string($demande['zone'] ?? null) ? $demande['zone'] : null);
+        } else {
+            $contexte = $this->contexteNuit($etab, $poste);
         }
         $acceptees = array_column($contexte['acceptees'], null, 'code');
         $principale = $contexte['principale'];
+        $p = $principale['code'];
+        $reference = $this->devisesRepo()->reference();
         $formats = [];
         foreach ($contexte['donnees']['produits'] as $produit) {
             foreach ($produit['formats'] as $format) {
                 $formats[$format['id']] = ['format' => $format, 'produit' => $produit];
             }
         }
+        $prixDe = static function (array $prixUnitaires, float $quantite) use ($acceptees): array {
+            $brut = [];
+            foreach (array_keys($acceptees) as $code) {
+                $brut[$code] = ($prixUnitaires[$code] ?? null) === null ? null : (float) $prixUnitaires[$code] * $quantite;
+            }
+            return $brut;
+        };
 
-        // Lignes : formats existants, disponibles, avec un prix dans la devise du ticket
-        $lignes = [];
-        $totaux = array_fill_keys(array_keys($acceptees), 0.0);
+        // ---------- Lignes ----------
+        // Chaque ligne de base : sa clé pour les remises (« i3 » : ligne du ticket, « n42 » : ligne de note), ses montants
+        // bruts dans chaque devise, la ligne de vente, les composants d'une formule, les billets ou dépôts à créer
+        $base = [];
         $partNote = null;
         $pourCuisine = [];
         if ($note !== null) {
-            // Prix recalculés avec la grille du moment de chaque commande (happy hour, VIP) ; quantités
-            // éventuellement fractionnaires (partage en parts égales)
             try {
                 $partNote = NoteRepository::part($note, $noteDemande);
             } catch (\InvalidArgumentException) {
                 $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
             }
-            // Stock en mode « bloquer » : un article que le comptoir ne peut plus fournir ne se vend pas
-            $horsStock = array_flip($contexte['epuises']);
-            $epuisees = array_unique(array_map(static fn (array $p) => $p['ligne']['libelle'],
-                array_filter($partNote, static fn (array $p) => isset($horsStock[(int) $p['ligne']['conditionnement_id']]))));
-            if ($epuisees !== []) {
-                $this->repondre(422, ['erreur' => t('encaisser.epuise', ['articles' => implode(', ', $epuisees)]), 'code' => 'epuise']);
-            }
+            // Un article déjà servi se paie toujours, même si le stock l'a épuisé depuis (on ne bloque jamais une vente
+            // déjà servie) : le refus « épuisé » ne vaut que pour ajouter une ligne et pour la vente directe.
+            // Prix recalculés avec la grille du moment de chaque commande (happy hour, VIP) ; quantités fractionnaires possibles
             $prixNote = $this->prixLignesNote($etab, array_column($partNote, 'ligne'));
-            $reference = $this->devisesRepo()->reference();
-            foreach ($partNote as $p) {
-                $l = $p['ligne'];
+            foreach ($partNote as $pn) {
+                $l = $pn['ligne'];
+                $q = $pn['quantite'];
                 $pu = $prixNote[(int) $l['id']];
-                if (($pu[$principale['code']] ?? null) === null) {
+                if (($pu[$p] ?? null) === null) {
                     $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
                 }
-                foreach (array_keys($totaux) as $code) {
-                    $totaux[$code] = ($pu[$code] ?? null) === null || $totaux[$code] === null ? null : $totaux[$code] + $pu[$code] * $p['quantite'];
+                $composants = array_map(static fn (array $c) => $c + ['quantite' => $c['qte'] * $q], self::composantsNote($l));
+                $base[] = [
+                    'cle' => 'n' . (int) $l['id'], 'brut' => $prixDe($pu, $q), 'remisable' => true, 'composants' => $composants,
+                    'ligne' => [
+                        'produit_id' => $l['produit_id'] !== null ? (int) $l['produit_id'] : null,
+                        'conditionnement_id' => $l['conditionnement_id'] !== null ? (int) $l['conditionnement_id'] : null,
+                        'libelle' => $l['libelle'], 'format' => $l['format'], 'quantite' => $q, 'prix' => $pu[$p],
+                        'prix_reference' => $reference ? ($pu[$reference['code']] ?? null) : null, 'nature' => $composants !== [] ? 'formule' : 'article',
+                    ],
+                ];
+            }
+        } else {
+            $lignesDemande = is_array($demande['lignes'] ?? null) ? array_values($demande['lignes']) : [];
+            // Stock en mode « bloquer » : la liste des articles épuisés, plutôt qu'un refus sans explication
+            $epuisees = [];
+            foreach ($poste === 'caisse' ? $lignesDemande : [] as $ligne) {
+                $f = $formats[(int) ($ligne['id'] ?? 0)] ?? null;
+                if ($f !== null && !empty($f['format']['epuise'])) {
+                    $epuisees[] = $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'];
                 }
-                $lignes[] = [
-                    'produit_id' => $l['produit_id'] !== null ? (int) $l['produit_id'] : null,
-                    'conditionnement_id' => $l['conditionnement_id'] !== null ? (int) $l['conditionnement_id'] : null,
-                    'libelle' => $l['libelle'], 'format' => $l['format'], 'quantite' => $p['quantite'], 'prix' => $pu[$principale['code']],
-                    'prix_reference' => $reference ? ($pu[$reference['code']] ?? null) : null,
+            }
+            if ($epuisees !== []) {
+                $this->repondre(422, ['erreur' => t('encaisser.epuise', ['articles' => implode(', ', array_unique($epuisees))]), 'code' => 'epuise']);
+            }
+            $formules = new \App\Repositories\FormuleRepository();
+            $billetterie = new \App\Repositories\BilletterieRepository();
+            foreach ($lignesDemande as $i => $ligne) {
+                $formatId = (int) ($ligne['id'] ?? 0);
+                $quantite = (int) ($ligne['qte'] ?? 0);
+                $f = $formats[$formatId] ?? null;
+                // Entrée réduite d'un invité pointé à la porte : son tarif, même s'il n'est pas en vente à tous
+                $invite = null;
+                if ($poste === 'entree' && !empty($ligne['invite'])) {
+                    $invite = (new \App\Repositories\PromoteurRepository())->invite((int) $ligne['invite']);
+                    $soiree = $contexte['soiree']['evenement'] ?? null;
+                    if ($invite === null || $soiree === null || (int) $invite['evenement_id'] !== (int) $soiree['id'] || $invite['entree'] !== 'reduite'
+                        || (int) $invite['tarif_id'] !== $formatId || $quantite > 1 + (int) $invite['accompagnants']) {
+                        $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
+                    }
+                    $tarif = $billetterie->tarif($formatId);
+                    $f = ['format' => ['id' => $formatId, 'nom' => t('nuit.categorie_' . $tarif['categorie']), 'taille' => '', 'disponible' => true,
+                        'prix' => $billetterie->prix($formatId, $contexte['acceptees'])], 'produit' => ['nom' => champ($tarif, 'nom'), 'entree' => $tarif['categorie']]];
+                }
+                if ($f === null || $quantite < 1 || $quantite > 999 || !$f['format']['disponible'] || ($f['format']['prix'][$p] ?? null) === null
+                    || ($poste !== 'caisse' && $quantite > 50)) {
+                    $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
+                }
+                $prix = (float) $f['format']['prix'][$p];
+                $prixRef = $reference && isset($f['format']['prix'][$reference['code']]) ? (float) $f['format']['prix'][$reference['code']] : null;
+                if ($poste === 'entree') {
+                    $base[] = [
+                        'cle' => 'i' . $i, 'brut' => $prixDe($f['format']['prix'], $quantite), 'remisable' => true, 'composants' => [],
+                        'billets' => ['tarif_id' => $formatId, 'categorie' => $f['produit']['entree'], 'invite' => $invite !== null ? (int) $invite['id'] : null],
+                        'ligne' => ['produit_id' => null, 'conditionnement_id' => null, 'libelle' => t('nuit.ligne_entree', ['tarif' => $f['produit']['nom']]),
+                            'format' => null, 'quantite' => $quantite, 'prix' => $prix, 'prix_reference' => $prixRef, 'nature' => 'entree'],
+                    ];
+                    continue;
+                }
+                if ($poste === 'vestiaire') {
+                    $description = CaisseNoteController::texteLibre($ligne['rem'] ?? null);
+                    $base[] = [
+                        'cle' => 'i' . $i, 'brut' => $prixDe($f['format']['prix'], $quantite), 'remisable' => true, 'composants' => [],
+                        'vestiaire' => ['description' => $description],
+                        'ligne' => ['produit_id' => null, 'conditionnement_id' => null, 'libelle' => t('nuit.vestiaire_depot'), 'format' => $description,
+                            'quantite' => $quantite, 'prix' => $prix, 'prix_reference' => $prixRef, 'nature' => 'vestiaire'],
+                    ];
+                    continue;
+                }
+                // Formule : les composants choisis (exactement le nombre de chaque groupe, rien d'épuisé)
+                $composants = [];
+                $formule = $formules->formule((int) $f['format']['tailleId']);
+                if ($formule !== null) {
+                    try {
+                        $composants = $formules->valider($formule, $ligne['comp'] ?? null, $contexte['epuises']);
+                    } catch (\InvalidArgumentException $e) {
+                        $message = $e->getMessage();
+                        $this->repondre(422, str_starts_with($message, 'epuise:')
+                            ? ['erreur' => t('encaisser.epuise', ['articles' => substr($message, 7)]), 'code' => 'epuise']
+                            : ['erreur' => t('nuit.composants_invalides', ['formule' => $f['produit']['nom']]), 'code' => 'composants']);
+                    }
+                    $composants = array_map(static fn (array $c) => $c + ['qte' => $c['quantite']], $composants);
+                    foreach ($composants as &$c) {
+                        $c['quantite'] = $c['qte'] * $quantite;
+                    }
+                    unset($c);
+                }
+                $nom = $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'];
+                $vente = [
+                    'produit_id' => (int) $f['format']['tailleId'], 'conditionnement_id' => $formatId,
+                    'libelle' => $nom, 'format' => (!$f['format']['unite'] || $f['format']['freres'] > 1) ? $f['format']['nom'] : null,
+                    'quantite' => $quantite, 'prix' => $prix, 'prix_reference' => $prixRef, 'nature' => $composants !== [] ? 'formule' : 'article',
+                ];
+                $base[] = ['cle' => 'i' . $i, 'brut' => $prixDe($f['format']['prix'], $quantite), 'remisable' => true, 'composants' => $composants, 'ligne' => $vente];
+                // Vente directe d'un plat : il part quand même en cuisine (avec ses précisions)
+                $remarque = CaisseNoteController::texteLibre($ligne['rem'] ?? null);
+                if ($composants !== []) {
+                    $remarque = CaisseNoteController::texteLibre(self::texteComposants($composants, 1) . ($remarque !== null ? ' — ' . $remarque : ''));
+                }
+                $pourCuisine[] = $vente + [
+                    'categorie_id' => (int) ($f['produit']['sous'] ?: $f['produit']['categorie']),
+                    'remarque' => $remarque, 'allergie' => CaisseNoteController::texteLibre($ligne['all'] ?? null),
+                    'prix_devises' => array_filter($f['format']['prix'], static fn ($x) => $x !== null), 'grille' => $contexte['grille'],
                 ];
             }
         }
-        // Stock en mode « bloquer » : la liste des articles épuisés, plutôt qu'un refus sans explication
-        $epuisees = [];
-        foreach ($note !== null ? [] : (is_array($demande['lignes'] ?? null) ? $demande['lignes'] : []) as $ligne) {
-            $f = $formats[(int) ($ligne['id'] ?? 0)] ?? null;
-            if ($f !== null && !empty($f['format']['epuise'])) {
-                $epuisees[] = $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'];
-            }
-        }
-        if ($epuisees !== []) {
-            $this->repondre(422, ['erreur' => t('encaisser.epuise', ['articles' => implode(', ', array_unique($epuisees))]), 'code' => 'epuise']);
-        }
-        foreach ($note !== null ? [] : (is_array($demande['lignes'] ?? null) ? $demande['lignes'] : []) as $ligne) {
-            $formatId = (int) ($ligne['id'] ?? 0);
-            $quantite = (int) ($ligne['qte'] ?? 0);
-            $f = $formats[$formatId] ?? null;
-            if ($f === null || $quantite < 1 || $quantite > 999 || !$f['format']['disponible'] || ($f['format']['prix'][$principale['code']] ?? null) === null) {
-                $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
-            }
-            foreach (array_keys($totaux) as $code) {
-                $prix = $f['format']['prix'][$code] ?? null;
-                // Une devise où un article n'a pas de prix ne peut pas servir à payer ce ticket
-                $totaux[$code] = $prix === null || $totaux[$code] === null ? null : $totaux[$code] + (float) $prix * $quantite;
-            }
-            $nom = $f['format']['taille'] !== '' ? $f['produit']['nom'] . ' ' . $f['format']['taille'] : $f['produit']['nom'];
-            $reference = $this->devisesRepo()->reference();
-            $lignes[] = [
-                'produit_id' => (int) $f['format']['tailleId'], 'conditionnement_id' => $formatId,
-                'libelle' => $nom, 'format' => (!$f['format']['unite'] || $f['format']['freres'] > 1) ? $f['format']['nom'] : null,
-                'quantite' => $quantite, 'prix' => (float) $f['format']['prix'][$principale['code']],
-                'prix_reference' => $reference && isset($f['format']['prix'][$reference['code']]) ? (float) $f['format']['prix'][$reference['code']] : null,
-            ];
-            // Vente directe d'un plat : il part quand même en cuisine (avec ses précisions)
-            $pourCuisine[] = end($lignes) + [
-                'categorie_id' => (int) ($f['produit']['sous'] ?: $f['produit']['categorie']),
-                'remarque' => CaisseNoteController::texteLibre($ligne['rem'] ?? null),
-                'allergie' => CaisseNoteController::texteLibre($ligne['all'] ?? null),
-                'prix_devises' => array_filter($f['format']['prix'], static fn ($p) => $p !== null), 'grille' => $contexte['grille'],
-            ];
-        }
-        if ($lignes === []) {
+        if ($base === []) {
             $this->repondre(422, ['erreur' => t('encaisser.vide')]);
         }
-        $totaux = array_filter($totaux, static fn ($t) => $t !== null);
 
-        // Paiements : un compte de cet établissement (ou commun) qui tient la devise, montant positif ;
+        // ---------- Minimum de consommation (paiement qui ferme une note du carré VIP) ----------
+        $minimum = $note !== null ? $this->minimumNote($note, $partNote, $etab, $contexte, $acceptees) : null;
+        $minimumLigne = null;
+        $leverMinimum = $minimum !== null && !empty($demande['minimum']['lever']);
+        if ($minimum !== null && !$leverMinimum && $minimum['action'] === 'ajouter') {
+            $minimumLigne = $minimum['manque'];
+        }
+
+        // ---------- Remises, offerts et fidélité ----------
+        $demandeRemises = is_array($demande['remises'] ?? null) ? $demande['remises'] : [];
+        $indexParCle = array_flip(array_column($base, 'cle'));
+        $remisesLignes = [];
+        $remiseTicket = null;
+        try {
+            foreach (is_array($demandeRemises['lignes'] ?? null) ? $demandeRemises['lignes'] : [] as $cleLigne => $r) {
+                if (!isset($indexParCle[$cleLigne])) {
+                    throw new \InvalidArgumentException('ligne');
+                }
+                $remisesLignes[$indexParCle[$cleLigne]] = Remises::lire($r, $acceptees);
+            }
+            if (($demandeRemises['ticket'] ?? null) !== null) {
+                $remiseTicket = Remises::lire($demandeRemises['ticket'], $acceptees);
+            }
+        } catch (\InvalidArgumentException) {
+            $this->repondre(422, ['erreur' => t('nuit.remise_invalide'), 'code' => 'remise']);
+        }
+        $fidelite = $poste === 'caisse' && is_array($demande['fidelite'] ?? null) ? $this->fidelite($demande['fidelite'], $etab, $base, $remisesLignes, $remiseTicket) : null;
+        $calculees = array_map(static fn (array $b) => ['brut' => $b['brut'], 'remisable' => $b['remisable']], $base);
+        if ($minimumLigne !== null) {
+            $calculees[] = ['brut' => $minimumLigne, 'remisable' => false];
+        }
+        try {
+            $calcul = Remises::appliquer($calculees, $remisesLignes, $remiseTicket, $acceptees);
+        } catch (\InvalidArgumentException) {
+            $this->repondre(422, ['erreur' => t('nuit.remise_trop'), 'code' => 'remise']);
+        }
+        // Part la plus grande accordée à la main (une ligne offerte = 100 %) : au-delà de la limite, le PIN d'un supérieur
+        $partMax = 0.0;
+        foreach ($remisesLignes as $i => $r) {
+            if (empty($r['fidelite'])) {
+                $partMax = max($partMax, $calcul['lignes'][$i]['part']);
+            }
+        }
+        if ($remiseTicket !== null && empty($remiseTicket['fidelite'])) {
+            $partMax = max($partMax, $calcul['partTicket']);
+        }
+        $validationRemise = $partMax > 0 && !\App\Repositories\RemiseRepository::permise($uid, $etabId, $partMax);
+        if ($validationRemise && empty($demandeRemises['validateur'])) {
+            $this->repondre(403, ['erreur' => t('nuit.remise_au_dela', ['part' => self::pourcent($partMax)]), 'code' => 'remise_validation']);
+        }
+        $totaux = array_filter($calcul['totaux'], static fn ($t) => $t !== null);
+        if (!isset($totaux[$p])) {
+            $this->repondre(422, ['erreur' => t('encaisser.ligne_invalide')]);
+        }
+
+        // ---------- Paiements ----------
+        // Un compte de cet établissement (ou commun) qui tient la devise, montant positif ;
         // le moyen enregistré est le type du compte (caisse, mobile money, banque)
         $comptes = array_column(self::comptesCaisse($etabId, $contexte['acceptees']), null, 'id');
         $paiements = [];
-        foreach (is_array($demande['paiements'] ?? null) ? $demande['paiements'] : [] as $p) {
-            $code = is_string($p['devise'] ?? null) ? $p['devise'] : '';
-            $compte = $comptes[(int) ($p['compte'] ?? 0)] ?? null;
-            $recu = is_numeric($p['recu'] ?? null) ? round((float) $p['recu'], (int) ($acceptees[$code]['decimales'] ?? 2)) : 0.0;
+        foreach (is_array($demande['paiements'] ?? null) ? $demande['paiements'] : [] as $pa) {
+            $code = is_string($pa['devise'] ?? null) ? $pa['devise'] : '';
+            $compte = $comptes[(int) ($pa['compte'] ?? 0)] ?? null;
+            $recu = is_numeric($pa['recu'] ?? null) ? round((float) $pa['recu'], (int) ($acceptees[$code]['decimales'] ?? 2)) : 0.0;
             if (!isset($totaux[$code]) || $compte === null || !in_array($code, $compte['devises'], true) || $recu <= 0 || $recu > 1e12) {
                 $this->repondre(422, ['erreur' => t('encaisser.paiement_invalide')]);
             }
             $paiements[] = ['moyen' => $compte['type'], 'compte' => $compte, 'devise' => $acceptees[$code], 'recu' => $recu, 'taux' => $this->taux($acceptees[$code])];
         }
-        $credit = is_array($demande['credit'] ?? null) ? $this->credit($demande['credit'], $personne, $etab, $totaux, $acceptees) : null;
-        if ($paiements === [] && $credit === null) {
+        // Cartes cashless : la part payée avec la carte, dans une devise de la carte (aucun mouvement de trésorerie)
+        $cartes = [];
+        $partCartes = 0.0;
+        foreach (is_array($demande['cartes'] ?? null) ? $demande['cartes'] : [] as $pc) {
+            $code = is_string($pc['devise'] ?? null) ? $pc['devise'] : '';
+            $carte = \App\Repositories\CashlessRepository::disponible() ? (new \App\Repositories\CashlessRepository())->parCode($pc['code'] ?? null) : null;
+            $montant = is_numeric($pc['montant'] ?? null) ? round((float) $pc['montant'], (int) ($acceptees[$code]['decimales'] ?? 2)) : 0.0;
+            if ($carte === null || !isset($totaux[$code]) || $montant <= 0 || $montant > 1e12) {
+                $this->repondre(422, ['erreur' => t('nuit.carte_invalide'), 'code' => 'carte']);
+            }
+            if ($carte['statut'] !== 'active') {
+                $this->repondre(409, ['erreur' => t('nuit.carte_bloquee', ['carte' => $carte['code']]), 'code' => 'carte_bloquee']);
+            }
+            if ($montant > ($carte['soldes'][(int) $acceptees[$code]['id']] ?? 0.0) + 0.0005) {
+                $this->repondre(409, ['erreur' => t('nuit.carte_solde', ['carte' => $carte['code']]), 'code' => 'carte_solde']);
+            }
+            $cartes[] = ['carte' => $carte, 'devise' => $acceptees[$code], 'montant' => $montant, 'taux' => $this->taux($acceptees[$code])];
+            $partCartes += $totaux[$code] > 0 ? $montant / $totaux[$code] : 0.0;
+        }
+        if ($partCartes > 1 + 1e-6) {
+            $this->repondre(422, ['erreur' => t('nuit.carte_trop'), 'code' => 'carte']);
+        }
+        $credit = $poste === 'caisse' && is_array($demande['credit'] ?? null) ? $this->credit($demande['credit'], $personne, $etab, $totaux, $acceptees) : null;
+        $gratuit = $totaux[$p] <= 0.0005;
+        if ($paiements === [] && $cartes === [] && $credit === null && !$gratuit) {
             $this->repondre(422, ['erreur' => t('encaisser.sans_paiement')]);
         }
-        // L'ardoise compte comme un paiement dans sa devise : elle couvre sa part du ticket
-        $parts = array_map(static fn (array $p) => ['devise' => $p['devise']['code'], 'recu' => $p['recu']], $paiements);
+        // L'ardoise et les cartes comptent comme des paiements dans leur devise : chacune couvre sa part du ticket
+        $parts = array_map(static fn (array $pa) => ['devise' => $pa['devise']['code'], 'recu' => $pa['recu']], $paiements);
+        foreach ($cartes as $pc) {
+            $parts[] = ['devise' => $pc['devise']['code'], 'recu' => $pc['montant']];
+        }
         if ($credit !== null) {
             $parts[] = ['devise' => $credit['devise']['code'], 'recu' => $credit['montant']];
         }
-        $reglement = Reglement::calculer($totaux, $acceptees, $parts, $principale['code']);
-        if (!$reglement['regle']) {
-            $this->repondre(422, ['erreur' => t('encaisser.reste', ['reste' => $this->devisesRepo()->formater($reglement['reste'][$principale['code']], $principale)])]);
+        $reglement = Reglement::calculer($totaux, $acceptees, $parts, $p);
+        if (!$reglement['regle'] && !$gratuit) {
+            $this->repondre(422, ['erreur' => t('encaisser.reste', ['reste' => $this->devisesRepo()->formater($reglement['reste'][$p], $principale)])]);
         }
         // On ne rend pas de monnaie sur une ardoise : elle ne couvre que le reste
         if ($credit !== null && array_sum($reglement['rendu']) > 0) {
@@ -629,11 +816,11 @@ final class CaisseController
         // celle qui a reçu des espèces dans cette devise, sinon la première caisse de l'établissement
         $rendu = null;
         if (array_sum($reglement['rendu']) > 0) {
-            $codeRendu = is_string($demande['rendu'] ?? null) && isset($reglement['rendu'][$demande['rendu']]) ? $demande['rendu'] : $principale['code'];
+            $codeRendu = is_string($demande['rendu'] ?? null) && isset($reglement['rendu'][$demande['rendu']]) ? $demande['rendu'] : $p;
             $caisseRendu = null;
-            foreach ($paiements as $p) {
-                if ($p['moyen'] === 'caisse' && in_array($codeRendu, $p['compte']['devises'], true)) {
-                    $caisseRendu = $p['compte'];
+            foreach ($paiements as $pa) {
+                if ($pa['moyen'] === 'caisse' && in_array($codeRendu, $pa['compte']['devises'], true)) {
+                    $caisseRendu = $pa['compte'];
                     break;
                 }
             }
@@ -651,35 +838,352 @@ final class CaisseController
             }
         }
 
-        $reference = $this->devisesRepo()->reference();
+        // ---------- Validations par un supérieur (après toutes les autres vérifications) ----------
+        $validePar = null;
+        if ($validationRemise) {
+            try {
+                $validePar = PinSuperieur::verifier((int) $demandeRemises['validateur'], (string) ($demandeRemises['pin'] ?? ''), $appareil,
+                    static fn (int $id): bool => \App\Repositories\RemiseRepository::permise($id, $etabId, $partMax), 'remise');
+            } catch (PinRefuse $e) {
+                $this->repondre($e->statut, ['erreur' => $e->getMessage(), 'code' => 'remise_' . $e->raison]);
+            }
+        }
+        $minimumLevePar = null;
+        if ($leverMinimum) {
+            if (Acces::a($uid, 'caisse.minimum', $etabId)) {
+                $minimumLevePar = ['id' => $uid, 'nom' => $personne['nom']];
+            } else {
+                try {
+                    $minimumLevePar = PinSuperieur::verifier((int) ($demande['minimum']['validateur'] ?? 0), (string) ($demande['minimum']['pin'] ?? ''), $appareil,
+                        static fn (int $id): bool => Acces::a($id, 'caisse.minimum', $etabId), 'minimum');
+                } catch (PinRefuse $e) {
+                    $this->repondre($e->statut, ['erreur' => $e->getMessage(), 'code' => 'minimum_' . $e->raison]);
+                }
+            }
+        }
+
+        // ---------- Lignes de la vente : chaque ligne (remise comprise), puis ses composants à prix 0 ----------
+        $lignes = [];
+        foreach ($base as $i => $b) {
+            $partLigne = 1 - (1 - $calcul['lignes'][$i]['part']) * (1 - $calcul['partTicket']);
+            $offert = $partLigne >= 1 - 1e-9;
+            $brutP = $b['ligne']['prix'] * $b['ligne']['quantite'];
+            $lignes[] = $b['ligne'] + ['remise' => round(max(0.0, $brutP - (float) $calcul['lignes'][$i]['net'][$p]), 3), 'offert' => $offert];
+            $base[$i]['index'] = count($lignes) - 1;
+            $base[$i]['net'] = (float) $calcul['lignes'][$i]['net'][$p];
+            foreach ($b['composants'] as $c) {
+                $lignes[] = [
+                    'produit_id' => $c['produit_id'], 'conditionnement_id' => $c['conditionnement_id'], 'libelle' => $c['libelle'], 'format' => $c['format'],
+                    'quantite' => $c['quantite'], 'prix' => 0.0, 'prix_reference' => $reference ? 0.0 : null, 'nature' => 'composant',
+                    'parent' => $base[$i]['index'], 'remise' => 0.0, 'offert' => $offert,
+                ];
+            }
+        }
+        if ($minimumLigne !== null) {
+            $lignes[] = ['produit_id' => null, 'conditionnement_id' => null, 'libelle' => t('nuit.minimum_ligne'), 'format' => null, 'quantite' => 1,
+                'prix' => (float) $minimumLigne[$p], 'prix_reference' => $reference ? ($minimumLigne[$reference['code']] ?? null) : null, 'nature' => 'minimum',
+                'remise' => 0.0, 'offert' => false];
+        }
+        $remises = [];
+        foreach ($remisesLignes as $i => $r) {
+            $remises[] = ['ligne' => $base[$i]['index'], 'type' => !empty($r['fidelite']) ? 'fidelite' : $r['type'], 'valeur' => $r['valeur'],
+                'devise_id' => $r['devise'] !== null ? (int) $acceptees[$r['devise']]['id'] : null, 'part' => $calcul['lignes'][$i]['part'],
+                'montant' => round((float) $base[$i]['brut'][$p] * $calcul['lignes'][$i]['part'], 3), 'motif' => $r['motif'], 'precision' => $r['precision'],
+                'accorde_par' => $uid, 'valide_par' => empty($r['fidelite']) && $validePar !== null ? $validePar['id'] : null, 'recompense' => $r['recompense'] ?? null];
+        }
+        if ($remiseTicket !== null) {
+            $apresLignes = 0.0;
+            foreach ($base as $i => $b) {
+                $apresLignes += (float) $b['brut'][$p] * (1 - $calcul['lignes'][$i]['part']);
+            }
+            $remises[] = ['ligne' => null, 'type' => !empty($remiseTicket['fidelite']) ? 'fidelite' : $remiseTicket['type'], 'valeur' => $remiseTicket['valeur'],
+                'devise_id' => $remiseTicket['devise'] !== null ? (int) $acceptees[$remiseTicket['devise']]['id'] : null, 'part' => $calcul['partTicket'],
+                'montant' => round($apresLignes * $calcul['partTicket'], 3), 'motif' => $remiseTicket['motif'], 'precision' => $remiseTicket['precision'],
+                'accorde_par' => $uid, 'valide_par' => empty($remiseTicket['fidelite']) && $validePar !== null ? $validePar['id'] : null,
+                'recompense' => $remiseTicket['recompense'] ?? null];
+        }
+        $brut = (float) $calcul['bruts'][$p];
+
+        // Entrées gratuites ou dépôts sans frais, sans paiement : les billets ou tickets, sans vente (pas de ticket à 0)
+        if ($poste !== 'caisse' && $gratuit && $paiements === [] && $cartes === []) {
+            $crees = (new \App\Repositories\GestionTresorerieRepository())->transaction(fn () => $this->billetsEtDepots(null, [], $base, $etab, $contexte, $principale, $uid));
+            $_SESSION['nuit_sans_vente'] = array_slice(($_SESSION['nuit_sans_vente'] ?? []) + [$cle => $crees], -30, null, true);
+            Journal::ecrire($poste === 'entree' ? 'entrees_gratuites' : 'vestiaire_depot', null, ['billets' => count($crees['billets']), 'depots' => count($crees['depots'])], $uid, $appareil ? (int) $appareil['id'] : null);
+            $this->repondreSansVente($crees, $etab, $appareil);
+        }
+
         $vente = [
             'etablissement' => $etab, 'cle' => $cle, 'zone_id' => $contexte['zone'] ? (int) $contexte['zone']['id'] : null,
-            'grille_id' => $contexte['grille'], 'utilisateur_id' => $personne['id'], 'appareil_id' => $appareil ? (int) $appareil['id'] : null,
-            'devise' => $principale, 'total' => $totaux[$principale['code']],
+            'grille_id' => $contexte['grille'], 'utilisateur_id' => $uid, 'appareil_id' => $appareil ? (int) $appareil['id'] : null,
+            'devise' => $principale, 'total' => $totaux[$p], 'brut' => $brut, 'remise' => round(max(0.0, $brut - $totaux[$p]), 3),
             'reference' => $reference, 'total_reference' => $reference ? ($totaux[$reference['code']] ?? null) : null,
             'totaux' => array_map(fn (string $code) => ['devise' => $acceptees[$code], 'total' => $totaux[$code], 'taux' => $this->taux($acceptees[$code])], array_keys($totaux)),
             'lignes' => $lignes, 'paiements' => $paiements, 'rendu' => $rendu,
             'credits' => $credit !== null ? [$credit] : [],
+            'cashless' => array_map(static fn (array $pc) => ['carte_id' => (int) $pc['carte']['id'], 'devise' => $pc['devise'], 'montant' => $pc['montant'], 'taux' => $pc['taux']], $cartes),
+            'remises' => $remises,
+            'client_id' => $fidelite !== null ? (int) $fidelite['client']['id'] : null,
             'session_id' => $session !== null ? (int) $session['id'] : null,
+            'apres' => [],
         ];
         if ($note !== null) {
             // Dans la transaction de la vente : la note garde ce qui est payé (et se ferme s'il ne reste rien) ;
             // si quelqu'un a payé ou changé ces lignes entre-temps, la vente est annulée
             $parts = ($noteDemande['mode'] ?? '') === 'egal' ? (int) $noteDemande['parts'] : null;
-            $vente['apres'] = static fn (int $venteId) => (new NoteRepository())->appliquerPaiement((int) $note['id'], $partNote, $venteId, $parts);
-            try {
-                $id = $ventes->enregistrer($vente);
-            } catch (\DomainException) {
-                $this->repondre(409, ['erreur' => t('note.changee'), 'code' => 'note_changee']);
-            }
-            NoteRepository::journal('note_payee', $note, ['vente' => $id, 'mode' => $noteDemande['mode'] ?? 'tout'], $personne['id'], $appareil ? (int) $appareil['id'] : null);
+            $vente['apres'][] = static function (int $venteId) use ($note, $partNote, $parts, $minimumLevePar): void {
+                (new NoteRepository())->appliquerPaiement((int) $note['id'], $partNote, $venteId, $parts);
+                if ($minimumLevePar !== null) {
+                    (new \App\Repositories\MinimumRepository())->lever((int) $note['id'], $minimumLevePar['id']);
+                }
+                // Note d'un invité entièrement payée : commission du promoteur sur la note
+                if (!empty($note['invite_id'])) {
+                    (new \App\Repositories\PromoteurRepository())->commissionNote((int) $note['id']);
+                }
+            };
+        }
+        if ($poste !== 'caisse') {
+            $vente['apres'][] = fn (int $venteId, array $ligneIds) => $this->billetsEtDepots($venteId, $ligneIds, $base, $etab, $contexte, $principale, $uid);
+        }
+        if ($fidelite !== null) {
+            $vente['apres'][] = static function (int $venteId) use ($fidelite, $totaux, $reference, $acceptees, $remises, $etabId, $uid): void {
+                self::pointsFidelite($venteId, $fidelite, $totaux, $reference, $acceptees, $remises, $etabId, $uid);
+            };
+        }
+        try {
+            $id = $ventes->enregistrer($vente);
+        } catch (\DomainException $e) {
+            $this->repondre(409, match ($e->getMessage()) {
+                'solde' => ['erreur' => t('nuit.carte_solde', ['carte' => '']), 'code' => 'carte_solde'],
+                'bloquee' => ['erreur' => t('nuit.carte_bloquee', ['carte' => '']), 'code' => 'carte_bloquee'],
+                'points' => ['erreur' => t('nuit.points_insuffisants'), 'code' => 'points'],
+                default => ['erreur' => t('note.changee'), 'code' => 'note_changee'],
+            });
+        }
+        $numero = (string) (Database::un('SELECT numero FROM ventes WHERE id = ?', [$id])['numero'] ?? $id);
+        $appareilId = $appareil ? (int) $appareil['id'] : null;
+        if ($remises !== []) {
+            Journal::ecrire('remise_accordee', $numero, [
+                'remise' => round($brut - $totaux[$p], 3), 'devise' => $p, 'part_max' => round($partMax, 4),
+                'motifs' => array_values(array_unique(array_column($remises, 'motif'))),
+                'demande_par' => $personne['nom'], 'valide_par' => $validePar['nom'] ?? null,
+            ], $uid, $appareilId);
+        }
+        if ($minimumLevePar !== null && $note !== null) {
+            NoteRepository::journal('minimum_leve', $note, ['vente' => $id, 'demande_par' => $personne['nom'], 'valide_par' => $minimumLevePar['nom']], $uid, $appareilId);
+        }
+        if ($note !== null) {
+            NoteRepository::journal('note_payee', $note, ['vente' => $id, 'mode' => $noteDemande['mode'] ?? 'tout'], $uid, $appareilId);
             $apres = (new NoteRepository())->note((int) $note['id']);
             $this->repondreVente($id, $etab, $appareil, ['note' => ['id' => (int) $note['id'], 'statut' => $apres['statut'] ?? 'payee']]);
         }
-        $id = $ventes->enregistrer($vente);
         // Vente directe (comptoir, à emporter) : les plats partent quand même en cuisine
-        CaisseNoteController::venteEnCuisine($id, $etab, $personne, $contexte, $pourCuisine);
+        if ($poste === 'caisse') {
+            CaisseNoteController::venteEnCuisine($id, $etab, $personne, $contexte, $pourCuisine);
+        }
         $this->repondreVente($id, $etab, $appareil);
+    }
+
+    /** « 25 % » */
+    private static function pourcent(float $part): string
+    {
+        return rtrim(rtrim(number_format($part * 100, 1, ',', ' '), '0'), ',') . ' %';
+    }
+
+    /**
+     * Composants d'une ligne de note (formule), pour UNE unité : [{conditionnement_id, produit_id, libelle, format, qte}].
+     * @return list<array>
+     */
+    public static function composantsNote(array $ligne): array
+    {
+        $json = json_decode((string) ($ligne['composants'] ?? ''), true);
+        if (!is_array($json)) {
+            return [];
+        }
+        $composants = [];
+        foreach ($json as $c) {
+            if (is_array($c) && (int) ($c['id'] ?? 0) > 0 && (float) ($c['qte'] ?? 0) > 0) {
+                $composants[] = ['conditionnement_id' => (int) $c['id'], 'produit_id' => isset($c['produit_id']) ? (int) $c['produit_id'] : null,
+                    'libelle' => (string) ($c['libelle'] ?? ''), 'format' => isset($c['format']) ? (string) $c['format'] : null, 'qte' => (float) $c['qte']];
+            }
+        }
+        return $composants;
+    }
+
+    /** « Coca-Cola ×2, Fanta ×2 » (composants d'une formule, pour la cuisine, le bar et la note). */
+    public static function texteComposants(array $composants, float $parUnite): string
+    {
+        return implode(', ', array_map(static fn (array $c) => $c['libelle'] . ' ×' . NoteRepository::quantiteLisible(($c['qte'] ?? $c['quantite']) * $parUnite), $composants));
+    }
+
+    /**
+     * Minimum de consommation d'une note qui se ferme avec ce paiement (toutes ses lignes payées) : ce qui manque dans
+     * chaque devise, si le minimum de sa table ou de sa zone n'est pas atteint et n'a pas été levé ; sinon null.
+     * @return array{action: string, manque: array<string, ?float>, minimum: array<string, ?float>}|null
+     */
+    private function minimumNote(array $note, array $partNote, array $etab, array $contexte, array $acceptees): ?array
+    {
+        if ($note['minimum_leve_le'] ?? null) {
+            return null;
+        }
+        $restant = 0.0;
+        foreach ($note['lignes'] as $l) {
+            $restant += NoteRepository::reste($l);
+        }
+        foreach ($partNote as $pn) {
+            $restant -= $pn['quantite'];
+        }
+        if ($restant > NoteRepository::EPSILON * max(1, count($note['lignes']))) {
+            return null;
+        }
+        $info = $this->minimumInfo($note, $etab, $contexte, $acceptees);
+        return $info !== null && !$info['atteint'] ? $info : null;
+    }
+
+    /**
+     * Minimum de la note (table, puis zone) et progression : consommé (toutes les lignes non annulées, au prix du
+     * moment de leur commande), minimum et manque par devise.
+     */
+    public function minimumInfo(array $note, array $etab, array $contexte, array $acceptees): ?array
+    {
+        $minimum = (new \App\Repositories\MinimumRepository())->pour((int) $etab['id'], $note['zone_id'] !== null ? (int) $note['zone_id'] : null,
+            $note['table_id'] !== null ? (int) $note['table_id'] : null);
+        if ($minimum === null) {
+            return null;
+        }
+        $actives = array_values(array_filter($note['lignes'], static fn (array $l) => $l['annulee_le'] === null));
+        $prix = $this->prixLignesNote($etab, $actives);
+        $consomme = array_fill_keys(array_keys($acceptees), 0.0);
+        foreach ($actives as $l) {
+            foreach (array_keys($acceptees) as $code) {
+                $pu = $prix[(int) $l['id']][$code] ?? null;
+                $consomme[$code] = $consomme[$code] === null || $pu === null ? null : $consomme[$code] + $pu * (float) $l['quantite'];
+            }
+        }
+        $m = \App\Repositories\MinimumRepository::manque($minimum, $consomme, $acceptees, $contexte['principale']['code'], $this->devisesRepo());
+        return ['action' => $minimum['action'], 'consomme' => $consomme] + $m;
+    }
+
+    /**
+     * Fidélité demandée à l'encaissement : client identifié, et récompense éventuelle (remise en % sur le ticket, ou un
+     * article offert sur la ligne de ce format). Les points sont vérifiés à nouveau dans la transaction de la vente.
+     */
+    private function fidelite(array $demande, array $etab, array $base, array &$remisesLignes, ?array &$remiseTicket): array
+    {
+        $repo = new \App\Repositories\FideliteRepository();
+        $reglages = $repo->reglages((int) $etab['id']);
+        $client = (new DetteRepository())->client((int) ($demande['client'] ?? 0));
+        if ($reglages === null || $client === null || !$client['actif'] || $client['type'] === 'personnel') {
+            $this->repondre(422, ['erreur' => t('nuit.fidelite_invalide'), 'code' => 'fidelite']);
+        }
+        $recompense = null;
+        if (!empty($demande['recompense'])) {
+            $recompense = $repo->recompense((int) $demande['recompense']);
+            if ($recompense === null || (int) $recompense['etablissement_id'] !== (int) $etab['id'] || !$recompense['actif']) {
+                $this->repondre(422, ['erreur' => t('nuit.fidelite_invalide'), 'code' => 'fidelite']);
+            }
+            if ($repo->solde((int) $client['id']) < (int) $recompense['points']) {
+                $this->repondre(409, ['erreur' => t('nuit.points_insuffisants'), 'code' => 'points']);
+            }
+            $nom = champ($recompense, 'nom');
+            if ($recompense['type'] === 'remise') {
+                if ($remiseTicket !== null) {
+                    $this->repondre(422, ['erreur' => t('nuit.remise_double'), 'code' => 'remise']);
+                }
+                $remiseTicket = ['type' => 'pourcent', 'valeur' => (float) $recompense['pourcent'], 'devise' => null, 'motif' => 'fidelite',
+                    'precision' => $nom, 'fidelite' => true, 'recompense' => (int) $recompense['id']];
+            } else {
+                $trouve = null;
+                foreach ($base as $i => $b) {
+                    if (($b['ligne']['conditionnement_id'] ?? null) === (int) $recompense['conditionnement_id'] && !isset($remisesLignes[$i])) {
+                        $trouve = $i;
+                        break;
+                    }
+                }
+                if ($trouve === null) {
+                    $this->repondre(422, ['erreur' => t('nuit.recompense_article', ['recompense' => $nom]), 'code' => 'fidelite']);
+                }
+                // Un seul article offert : sur une ligne de 2, la moitié
+                $remisesLignes[$trouve] = ['type' => 'pourcent', 'valeur' => round(100 / (float) $base[$trouve]['ligne']['quantite'], 3), 'devise' => null,
+                    'motif' => 'fidelite', 'precision' => $nom, 'fidelite' => true, 'recompense' => (int) $recompense['id']];
+            }
+        }
+        return ['client' => $client, 'reglages' => $reglages, 'recompense' => $recompense];
+    }
+
+    /** Points de la vente (dans sa transaction) : récompense utilisée, puis points gagnés sur le total payé. */
+    private static function pointsFidelite(int $venteId, array $fidelite, array $totaux, ?array $reference, array $acceptees, array $remises, int $etabId, int $uid): void
+    {
+        $repo = new \App\Repositories\FideliteRepository();
+        $clientId = (int) $fidelite['client']['id'];
+        if ($fidelite['recompense'] !== null) {
+            if ($repo->solde($clientId, true) < (int) $fidelite['recompense']['points']) {
+                throw new \DomainException('points');
+            }
+            $repo->mouvement($clientId, $etabId, $venteId, 'utilisation', -(int) $fidelite['recompense']['points'], (int) $fidelite['recompense']['id'], $uid);
+        }
+        $code = $fidelite['reglages']['devise_code'];
+        $montant = $totaux[$code] ?? null;
+        if ($montant === null && $reference !== null && isset($totaux[$reference['code']], $acceptees[$code]['taux'])) {
+            $montant = $totaux[$reference['code']] * (float) $acceptees[$code]['taux'];
+        }
+        $points = \App\Repositories\FideliteRepository::pointsPour($fidelite['reglages'], (float) ($montant ?? 0));
+        $repo->mouvement($clientId, $etabId, $venteId, 'gain', $points, null, $uid);
+    }
+
+    /**
+     * Billets d'entrée et tickets de vestiaire d'une vente (ou sans vente : entrées gratuites, dépôts sans frais), dans la
+     * transaction : un billet par entrée (utilisé tout de suite pour un invité pointé), un ticket par dépôt.
+     * @param array<int, int> $ligneIds index de ligne de vente → id
+     * @return array{billets: list<int>, depots: list<int>}
+     */
+    private function billetsEtDepots(?int $venteId, array $ligneIds, array $base, array $etab, array $contexte, array $principale, int $uid): array
+    {
+        $billetterie = new \App\Repositories\BilletterieRepository();
+        $vestiaire = new \App\Repositories\VestiaireRepository();
+        $crees = ['billets' => [], 'depots' => []];
+        foreach ($base as $b) {
+            $q = (int) $b['ligne']['quantite'];
+            if (isset($b['billets'])) {
+                $soiree = $contexte['soiree'] ?? $billetterie->soiree($etab);
+                $unitaire = $q > 0 ? round((float) ($b['net'] ?? 0) / $q, 3) : 0.0;
+                for ($k = 0; $k < $q; $k++) {
+                    $crees['billets'][] = $billetterie->creer([
+                        'etablissement_id' => (int) $etab['id'], 'evenement_id' => $soiree['evenement'] ? (int) $soiree['evenement']['id'] : null,
+                        'journee' => $soiree['journee'], 'tarif_id' => $b['billets']['tarif_id'], 'categorie' => $b['billets']['categorie'],
+                        'vente_id' => $venteId, 'vente_ligne_id' => isset($b['index']) ? ($ligneIds[$b['index']] ?? null) : null,
+                        'invite_id' => $b['billets']['invite'], 'prix' => $unitaire, 'devise_id' => (int) $principale['id'],
+                        'utilise' => $b['billets']['invite'] !== null, 'par' => $uid,
+                    ])['id'];
+                }
+            }
+            if (isset($b['vestiaire'])) {
+                for ($k = 0; $k < $q; $k++) {
+                    $crees['depots'][] = (int) $vestiaire->deposer($etab, $b['vestiaire']['description'], 1, $venteId, $uid)['id'];
+                }
+            }
+        }
+        return $crees;
+    }
+
+    /** Réponse d'entrées gratuites ou de dépôts sans frais : billets et tickets à imprimer, sans vente. */
+    private function repondreSansVente(array $crees, array $etab, ?array $appareil): never
+    {
+        $verrouille = false;
+        if ($appareil !== null && $etab['verrou_apres_encaissement']) {
+            CaissePartagee::verrouiller();
+            $verrouille = true;
+        }
+        $this->repondre(200, [
+            'numero' => null,
+            'recu' => View::rendre('caisse/_billets', [
+                'etablissement' => $etab,
+                'billets' => (new \App\Repositories\BilletterieRepository())->parIds($crees['billets']),
+                'depots' => (new \App\Repositories\VestiaireRepository())->parIds($crees['depots']),
+                'seul' => true,
+            ]),
+            'verrouille' => $verrouille,
+            'csrf' => Session::jetonCsrf(),
+        ]);
     }
 
     /**
@@ -820,12 +1324,13 @@ final class CaisseController
         $personne = $utilisateurId > 0
             ? Database::un('SELECT * FROM utilisateurs WHERE id = ? AND actif = 1 AND pin IS NOT NULL', [$utilisateurId])
             : null;
-        if ($personne === null || !Acces::a($utilisateurId, 'caisse.vendre', (int) $etab['id'])) {
-            $this->afficherQui($appareil, $etab, t('caisse_pin.choisir'), null, 422);
+        $ecran = in_array($_POST['ecran'] ?? '', ['entree', 'vestiaire'], true) ? $_POST['ecran'] : 'caisse';
+        if ($personne === null || self::postesPermis($utilisateurId, (int) $etab['id']) === []) {
+            $this->afficherQui($appareil, $etab, t('caisse_pin.choisir'), null, 422, $ecran);
             return;
         }
         if ($personne['pin_bloque_le'] !== null) {
-            $this->afficherQui($appareil, $etab, t('caisse_pin.bloque', ['nom' => $personne['nom']]), $utilisateurId, 423);
+            $this->afficherQui($appareil, $etab, t('caisse_pin.bloque', ['nom' => $personne['nom']]), $utilisateurId, 423, $ecran);
             return;
         }
         if (!CaissePartagee::pinValide($pin) || !password_verify($pin, $personne['pin'])) {
@@ -844,14 +1349,17 @@ final class CaisseController
             $message = $bloque
                 ? t('caisse_pin.bloque', ['nom' => $personne['nom']])
                 : t('caisse_pin.incorrect', ['reste' => CaissePartagee::ESSAIS_PIN - $essais]);
-            $this->afficherQui($appareil, $etab, $message, $bloque ? null : $utilisateurId, 422);
+            $this->afficherQui($appareil, $etab, $message, $bloque ? null : $utilisateurId, 422, $ecran);
             return;
         }
         Database::executer('UPDATE utilisateurs SET pin_essais = 0 WHERE id = ?', [$utilisateurId]);
         CaissePartagee::connecter($personne, $appareil);
         Journal::ecrire('pin_connexion', $appareil['nom'], [], $utilisateurId, $appareilId);
         $zone = is_string($_POST['zone'] ?? null) && preg_match('/^[a-z0-9-]+$/', $_POST['zone']) ? $_POST['zone'] : '';
-        rediriger('/caisse' . ($zone !== '' ? '?zone=' . $zone : ''));
+        // Retour à l'écran d'où l'on vient (entrée, vestiaire), s'il est permis ; sinon le premier permis
+        $postes = self::postesPermis($utilisateurId, (int) $etab['id']);
+        $ecran = in_array($ecran, $postes, true) ? $ecran : $postes[0];
+        rediriger(($ecran === 'caisse' ? '/caisse' : '/caisse/' . $ecran) . ($zone !== '' && $ecran === 'caisse' ? '?zone=' . $zone : ''));
     }
 
     /** Photo de profil prise sur la caisse (selfie), si l'établissement le permet. */
@@ -885,7 +1393,8 @@ final class CaisseController
             Journal::ecrire('caisse_verrouillee', null, [], $caissier['id'], $caissier['appareil_id']);
         }
         CaissePartagee::verrouiller();
-        rediriger('/caisse');
+        $ecran = in_array($_POST['ecran'] ?? '', ['entree', 'vestiaire'], true) ? '/' . $_POST['ecran'] : '';
+        rediriger('/caisse' . $ecran);
     }
 
     /** Un gérant fait de cet appareil une caisse partagée de l'établissement. */
@@ -909,12 +1418,13 @@ final class CaisseController
     }
 
     /** Écran « Qui êtes-vous ? » : les personnes qui peuvent vendre ici, puis le pavé du PIN. */
-    private function afficherQui(array $appareil, array $etab, ?string $erreur = null, ?int $choisi = null, int $code = 200): void
+    private function afficherQui(array $appareil, array $etab, ?string $erreur = null, ?int $choisi = null, int $code = 200, string $ecran = 'caisse'): void
     {
         http_response_code($code);
         $personnes = [];
         foreach (Database::tous('SELECT id, nom, poste, avatar, pin_bloque_le FROM utilisateurs WHERE actif = 1 AND pin IS NOT NULL ORDER BY nom') as $ligne) {
-            if (Acces::a((int) $ligne['id'], 'caisse.vendre', (int) $etab['id'])) {
+            // Le bar, l'entrée ou le vestiaire : chacun entre avec son PIN et arrive sur son écran
+            if (self::postesPermis((int) $ligne['id'], (int) $etab['id']) !== []) {
                 $personnes[] = $ligne;
             }
         }
@@ -926,6 +1436,7 @@ final class CaisseController
             'erreur' => $erreur,
             'choisi' => $choisi,
             'zone' => is_string($_GET['zone'] ?? null) ? $_GET['zone'] : (is_string($_POST['zone'] ?? null) ? $_POST['zone'] : ''),
+            'ecran' => $ecran,
             'scripts' => ['/assets/js/caisse-pin.js'],
         ], 'caisse');
     }

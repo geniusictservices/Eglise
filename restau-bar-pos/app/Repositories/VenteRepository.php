@@ -64,6 +64,16 @@ final class VenteRepository
                 [$id]
             ),
             'credits' => (new DetteRepository($this->tresorerie))->dettesDeVente($id),
+            // Nuit : cartes cashless, remises, billets d'entrée, tickets de vestiaire, points de fidélité
+            'cartes' => RemiseRepository::disponible() ? (new CashlessRepository($this->tresorerie))->deVente($id) : [],
+            'remises' => RemiseRepository::disponible() ? Database::tous(
+                'SELECT r.*, a.nom AS accorde_nom, va.nom AS valide_nom FROM vente_remises r LEFT JOIN utilisateurs a ON a.id = r.accorde_par
+              LEFT JOIN utilisateurs va ON va.id = r.valide_par WHERE r.vente_id = ? ORDER BY r.id', [$id]) : [],
+            'billets' => RemiseRepository::disponible() ? (new BilletterieRepository())->deVente($id) : [],
+            'depots' => RemiseRepository::disponible() ? (new VestiaireRepository())->deVente($id) : [],
+            'points' => RemiseRepository::disponible() ? Database::tous(
+                'SELECT m.type, m.points, c.nom AS client_nom, (SELECT COALESCE(SUM(x.points), 0) FROM fidelite_mouvements x WHERE x.client_id = m.client_id) AS solde
+                   FROM fidelite_mouvements m JOIN clients c ON c.id = m.client_id WHERE m.vente_id = ? ORDER BY m.id', [$id]) : [],
             // Toutes les devises (même désactivées depuis) pour afficher les montants
             'devises' => array_column((new GestionDeviseRepository())->toutes(), null, 'id'),
             'etablissement' => Database::un('SELECT * FROM etablissements WHERE id = ?', [(int) $vente['etablissement_id']]),
@@ -87,6 +97,8 @@ final class VenteRepository
      */
     public function enregistrer(array $v): int
     {
+        // Migration 022 (nuit) : remises, natures de lignes, cartes cashless, client de la fidélité
+        $nuit = RemiseRepository::disponible();
         $pdo = Database::pdo();
         $pdo->beginTransaction();
         try {
@@ -104,9 +116,14 @@ final class VenteRepository
             $numero = self::prefixe($etab['slug']) . '-' . str_pad((string) $sequence, 6, '0', STR_PAD_LEFT);
             $maintenant = $v['date'] ?? date('Y-m-d H:i:s');
 
+            // Contre-valeur encaissée : paiements reçus moins la monnaie, plus la part payée avec une carte cashless
+            // (l'argent est entré dans la trésorerie à la recharge)
             $encaisse = 0.0;
             foreach ($v['paiements'] as $p) {
                 $encaisse += $p['taux'] ? $p['recu'] / $p['taux'] : 0.0;
+            }
+            foreach ($v['cashless'] ?? [] as $c) {
+                $encaisse += $c['taux'] ? $c['montant'] / $c['taux'] : 0.0;
             }
             if ($v['rendu'] !== null && $v['rendu']['taux']) {
                 $encaisse -= $v['rendu']['montant'] / $v['rendu']['taux'];
@@ -132,6 +149,11 @@ final class VenteRepository
             if (!empty($v['session_id'])) {
                 Database::executer('UPDATE ventes SET session_id = ? WHERE id = ?', [(int) $v['session_id'], $id]);
             }
+            if ($nuit) {
+                Database::executer('UPDATE ventes SET brut = ?, remise = ?, client_id = ? WHERE id = ?', [
+                    self::decimal((float) ($v['brut'] ?? $v['total'])), self::decimal((float) ($v['remise'] ?? 0)), $v['client_id'] ?? null, $id,
+                ]);
+            }
 
             foreach ($v['totaux'] as $t) {
                 Database::executer(
@@ -139,15 +161,36 @@ final class VenteRepository
                     [$id, (int) $t['devise']['id'], self::decimal($t['total']), $t['taux'] !== null ? GestionDeviseRepository::decimal($t['taux']) : null]
                 );
             }
-            foreach ($v['lignes'] as $l) {
+            // Lignes : montant = prix × quantité − remise ; un composant de formule garde sa formule (parent)
+            $ligneIds = [];
+            $offerts = false;
+            foreach ($v['lignes'] as $index => $l) {
+                $remise = (float) ($l['remise'] ?? 0);
                 Database::executer(
                     'INSERT INTO vente_lignes (vente_id, produit_id, conditionnement_id, libelle, format, quantite, prix_unitaire, montant, prix_reference)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     [
                         $id, $l['produit_id'], $l['conditionnement_id'], mb_substr($l['libelle'], 0, 160), $l['format'] !== null ? mb_substr($l['format'], 0, 80) : null,
-                        is_int($l['quantite']) ? $l['quantite'] : number_format((float) $l['quantite'], 3, '.', ''), self::decimal($l['prix']), self::decimal($l['prix'] * $l['quantite']),
+                        is_int($l['quantite']) ? $l['quantite'] : number_format((float) $l['quantite'], 3, '.', ''), self::decimal($l['prix']),
+                        self::decimal($l['prix'] * $l['quantite'] - $remise),
                         $l['prix_reference'] !== null ? self::decimal($l['prix_reference']) : null,
                     ]
+                );
+                $ligneIds[$index] = Database::dernierId();
+                if ($nuit && (($l['nature'] ?? 'article') !== 'article' || $remise > 0 || !empty($l['offert']))) {
+                    Database::executer('UPDATE vente_lignes SET nature = ?, parent_id = ?, remise = ?, offert = ? WHERE id = ?', [
+                        $l['nature'] ?? 'article', isset($l['parent']) ? ($ligneIds[$l['parent']] ?? null) : null, self::decimal($remise),
+                        !empty($l['offert']) ? 1 : 0, $ligneIds[$index],
+                    ]);
+                    $offerts = $offerts || !empty($l['offert']);
+                }
+            }
+            foreach ($v['remises'] ?? [] as $r) {
+                Database::executer(
+                    'INSERT INTO vente_remises (vente_id, vente_ligne_id, type, valeur, devise_id, taux, montant, motif, precision_motif, accorde_par, valide_par, cree_le)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [$id, $r['ligne'] !== null ? ($ligneIds[$r['ligne']] ?? null) : null, $r['type'], self::decimal($r['valeur']), $r['devise_id'],
+                        number_format($r['part'], 6, '.', ''), self::decimal($r['montant']), $r['motif'], $r['precision'], $r['accorde_par'], $r['valide_par'], $maintenant]
                 );
             }
             $libelle = 'Vente ' . $numero;
@@ -162,6 +205,15 @@ final class VenteRepository
                 );
                 $this->tresorerie->ajouterMouvement($p['compte'], 'entree', $p['recu'], 'vente', $id, $maintenant, $libelle, $v['utilisateur_id'], (int) $p['devise']['id']);
             }
+            // Cartes cashless : le solde baisse (verrouillé, jamais négatif), sans mouvement de trésorerie
+            foreach ($v['cashless'] ?? [] as $c) {
+                (new CashlessRepository($this->tresorerie))->debiter($c['carte_id'], (int) $c['devise']['id'], $c['montant'], $id, (int) $etab['id'],
+                    (int) $v['utilisateur_id'], $v['appareil_id'], $maintenant);
+                Database::executer('INSERT INTO vente_cashless (vente_id, carte_id, devise_id, montant, taux, contre_valeur) VALUES (?, ?, ?, ?, ?, ?)', [
+                    $id, $c['carte_id'], (int) $c['devise']['id'], self::decimal($c['montant']), $c['taux'] !== null ? GestionDeviseRepository::decimal($c['taux']) : null,
+                    $c['taux'] ? self::decimal(round($c['montant'] / $c['taux'], 3)) : null,
+                ]);
+            }
             foreach ($v['credits'] ?? [] as $c) {
                 (new DetteRepository($this->tresorerie))->creer([
                     'client_id' => $c['client_id'], 'etablissement_id' => (int) $etab['id'], 'vente_id' => $id,
@@ -175,16 +227,23 @@ final class VenteRepository
                     'Monnaie rendue ' . $numero, $v['utilisateur_id'], (int) $v['rendu']['devise']['id']);
             }
             (new StockRepository())->sortieVente($id);
-            // Suite dans la même transaction (payer une note : marquer ce qui est payé) ; une exception annule la vente
-            if (isset($v['apres']) && is_callable($v['apres'])) {
-                ($v['apres'])($id);
+            // Suites dans la même transaction (payer une note, billets, points…) ; une exception annule la vente
+            $apres = $v['apres'] ?? [];
+            foreach (is_callable($apres) ? [$apres] : (array) $apres as $suite) {
+                if (is_callable($suite)) {
+                    $suite($id, $ligneIds);
+                }
             }
             $pdo->commit();
-            return $id;
         } catch (\Throwable $e) {
             $pdo->rollBack();
             throw $e;
         }
+        // Articles offerts : perte dans le stock (après la vente, sans jamais la bloquer)
+        if ($offerts) {
+            RemiseRepository::pertesOffertes($id, (int) $v['utilisateur_id']);
+        }
+        return $id;
     }
 
     /** Préfixe du numéro de ticket : initiales de l'établissement (« comptoir-du-lac » → « CDL »). */
