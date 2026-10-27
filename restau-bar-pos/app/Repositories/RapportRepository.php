@@ -27,6 +27,17 @@ use App\Core\Journee;
  */
 final class RapportRepository
 {
+    /**
+     * Les composants d'une formule (softs compris dans une bouteille, à 0) ne comptent pas parmi les produits vendus.
+     * La colonne vente_lignes.nature n'existe qu'à partir de la migration 022.
+     */
+    public static function sansComposants(string $alias): string
+    {
+        static $nature = null;
+        $nature ??= Database::un("SHOW COLUMNS FROM vente_lignes LIKE 'nature'") !== null;
+        return $nature ? " AND $alias.nature <> 'composant'" : '';
+    }
+
     /** @var array<string, bool> */
     private static array $tables = [];
     /** @var array<string, bool> */
@@ -485,7 +496,7 @@ final class RapportRepository
               LEFT JOIN conditionnements c ON c.id = l.conditionnement_id
               LEFT JOIN produits p ON p.id = COALESCE(c.produit_id, l.produit_id)
               LEFT JOIN produits pp ON pp.id = p.parent_id
-                  WHERE l.vente_id IN (' . implode(',', array_map('intval', $morceau)) . ')
+                  WHERE l.vente_id IN (' . implode(',', array_map('intval', $morceau)) . ')' . self::sansComposants('l') . '
                GROUP BY COALESCE(c.produit_id, l.produit_id)',
                 [(int) $this->locale['id'], $taux]
             );

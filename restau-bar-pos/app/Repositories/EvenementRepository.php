@@ -298,8 +298,14 @@ final class EvenementRepository
         if ($ids !== []) {
             $champ = I18n::langue() === 'en' ? 'en' : 'fr';
             $locale = $this->rapports->locale();
+            // Lignes sans produit : entrées, vestiaire, minimum non atteint (migration 022), sinon « sans catégorie »
+            $pdo = Database::pdo();
+            $sansCategorie = RapportRepository::sansComposants('l') !== ''
+                ? "CASE l.nature WHEN 'entree' THEN " . $pdo->quote(t('evenements.cat_entrees')) . " WHEN 'vestiaire' THEN " . $pdo->quote(t('evenements.cat_vestiaire'))
+                    . " WHEN 'minimum' THEN " . $pdo->quote(t('evenements.cat_minimum')) . ' ELSE ' . $pdo->quote(t('evenements.sans_categorie')) . ' END'
+                : $pdo->quote(t('evenements.sans_categorie'));
             $resultat['categories'] = Database::tous(
-                'SELECT COALESCE(cp.id, c.id) AS id, COALESCE(cp.nom_' . $champ . ', c.nom_' . $champ . ', ?) AS nom,
+                'SELECT COALESCE(cp.id, c.id) AS id, COALESCE(cp.nom_' . $champ . ', c.nom_' . $champ . ', ' . $sansCategorie . ') AS nom,
                         SUM(l.quantite) AS quantite,
                         SUM(CASE WHEN v.devise_id = ? THEN l.montant ELSE COALESCE(l.prix_reference, 0) * l.quantite * ? END) AS locale,
                         SUM(COALESCE(l.prix_reference, 0) * l.quantite) AS reference
@@ -309,10 +315,10 @@ final class EvenementRepository
               LEFT JOIN produits p ON p.id = COALESCE(co.produit_id, l.produit_id)
               LEFT JOIN categories c ON c.id = p.categorie_id
               LEFT JOIN categories cp ON cp.id = c.parent_id
-                  WHERE l.vente_id IN (' . implode(',', array_map('intval', $ids)) . ')
-               GROUP BY COALESCE(cp.id, c.id), COALESCE(cp.nom_' . $champ . ', c.nom_' . $champ . ', ?)
+                  WHERE l.vente_id IN (' . implode(',', array_map('intval', $ids)) . ')' . RapportRepository::sansComposants('l') . '
+               GROUP BY COALESCE(cp.id, c.id), COALESCE(cp.nom_' . $champ . ', c.nom_' . $champ . ', ' . $sansCategorie . ')
                ORDER BY locale DESC',
-                [t('evenements.sans_categorie'), (int) ($locale['id'] ?? 0), $this->rapports->tauxLocal(), t('evenements.sans_categorie')]
+                [(int) ($locale['id'] ?? 0), $this->rapports->tauxLocal()]
             );
             $produits = $this->rapports->produits($ventes);
             usort($produits, static fn (array $a, array $b) => $b['locale'] <=> $a['locale']);

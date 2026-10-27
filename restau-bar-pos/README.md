@@ -159,6 +159,7 @@ Créés avec `--demo` (en plus de l'administrateur, propriétaire, dont le mot d
 
 | Personne | Rôle et portée | Gestion (identifiant · mot de passe) | PIN de caisse |
 |---|---|---|---|
+| Administrateur | Propriétaire, tous (valide remises, minimum VIP et annulations à la caisse) | `admin@demo.test` · affiché à la création | 908172 |
 | Patrick Kambale | Gérant, Comptoir du Lac | `patrick@demo.test` ou `+243 81 000 0101` · `Gerant-Goma-2026` | 482913 |
 | Grace Mwamini | Comptable, tous | `grace@demo.test` · `Compta-Goma-2026` | — |
 | Riziki Amani | Superviseure, Volcano Club | `riziki@demo.test` · `Superviseur-2026` | 662607 |

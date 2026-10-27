@@ -20,6 +20,10 @@ SELECT '+243810000101' AS tel, 'gerant' AS role, 1 AS etab
     UNION ALL SELECT '+243810000107' AS tel, 'superviseur' AS role, 2 AS etab
 ) x JOIN utilisateurs u ON u.telephone = x.tel JOIN roles r ON r.code = x.role;
 
+-- Le propriétaire (identifiant 1) a aussi un PIN : à la caisse, il valide remises, minimum VIP et annulations
+-- dans les deux établissements (aucun gérant n'est rattaché au Volcano Club dans la démonstration)
+UPDATE utilisateurs SET pin = '$2y$10$bfWePnHQCanY/UIe1ZluqevICP2fFSeVgdinIYcB8CZVEL8K1xc8K' WHERE id = 1 AND pin IS NULL;
+
 -- Caisses partagées : message de l'écran de verrouillage et règles, choisis par établissement
 UPDATE etablissements SET verrou_apres_encaissement = 1, verrou_minutes = 2,
     message_verrou_fr = 'Bienvenue au Comptoir du Lac. Touchez votre nom, puis tapez votre PIN.',
