@@ -104,7 +104,47 @@ Tant que rien n'est réglé, les messages sont seulement inscrits au journal («
    **Ne remplacez jamais** `config/app.local.php`, `config/console.php`, `config/instances/`, `storage/` ni `public/uploads/`.
 3. Console > **Clients** > *Mettre à jour toutes les instances* (et la console elle-même si elle le propose) : les nouvelles migrations s'appliquent.
 
-## 9. Sécurité
+## 9. Essayer sur un ordinateur (XAMPP, WAMP, Laragon)
+
+L'application doit être servie depuis son dossier **`public/`, à la racine d'une adresse**. Une adresse comme `http://localhost/bar-resto/` (le projet dans un sous-dossier de `htdocs` ou `www`) ne fonctionne pas : elle n'affiche qu'une page d'explication, et les dossiers `config/`, `database/`, `storage/`, `bin/` et `installation/` y sont refusés.
+
+1. **Base de données** : dans phpMyAdmin (`http://localhost/phpmyadmin`), créez la base `rbp_demo` (interclassement `utf8mb4_unicode_ci`), puis **Importer** > `installation/instance-demo.sql` (démonstration complète) ou `installation/instance-vide.sql` (bar vide).
+2. **Accès à la base** : copiez `config/instances/exemple.php.dist` en `config/instances/demo.php` et remplissez-le (avec XAMPP : utilisateur `root`, mot de passe vide) :
+
+   ```php
+   <?php
+   return [
+       'actif' => true,
+       'db' => ['hote' => '127.0.0.1', 'port' => 3306, 'nom' => 'rbp_demo', 'utilisateur' => 'root', 'mot_de_passe' => ''],
+   ];
+   ```
+
+   L'adresse `localhost` ouvre l'instance `demo` (réglage `instance_par_defaut` de `config/app.php`).
+3. **Lancer** : le plus simple est le serveur intégré de PHP, dans un terminal ouvert dans le dossier du projet (avec XAMPP sous Windows : `C:\xampp\php\php.exe` à la place de `php`) :
+
+   ```
+   php -S localhost:8000 -t public public/index.php
+   ```
+
+   Ouvrez ensuite `http://localhost:8000/gestion` (comptes de démonstration : voir le README) et `http://localhost:8000/caisse`.
+
+   **Ou avec Apache** (XAMPP, WAMP) : ajoutez un hôte virtuel dont la racine est le dossier `public`, par exemple dans `C:\xampp\apache\conf\extra\httpd-vhosts.conf`, puis redémarrez Apache et ouvrez `http://localhost:8000` :
+
+   ```apache
+   Listen 8000
+   <VirtualHost *:8000>
+       DocumentRoot "C:/xampp/htdocs/bar-resto/public"
+       <Directory "C:/xampp/htdocs/bar-resto/public">
+           AllowOverride All
+           Require all granted
+       </Directory>
+   </VirtualHost>
+   ```
+
+   Le module `mod_rewrite` doit être actif (c'est le cas par défaut avec XAMPP). Avec Laragon, *Menu > Apache > Document root* ou un hôte virtuel vers `public`.
+4. **Console (facultatif)** : créez la base `rbp_console`, importez `installation/console-vide.sql`, copiez `config/console.php.dist` en `config/console.php` avec ces accès, et ouvrez `http://admin.localhost:8000` (Chrome, Edge et Firefox envoient `*.localhost` vers l'ordinateur lui-même). Un autre bar s'essaie de même sur `http://<sous-domaine>.localhost:8000` avec son fichier `config/instances/<sous-domaine>.php`.
+
+## 10. Sécurité
 
 - Les fichiers `config/console.php` et `config/instances/*.php` contiennent des mots de passe : ils ne sont jamais dans l'archive ni dans le dépôt, et sont hors de `public/` (non servis sur le web).
 - HTTPS sur chaque sous-domaine (Let's Encrypt, renouvelé automatiquement par LWS).

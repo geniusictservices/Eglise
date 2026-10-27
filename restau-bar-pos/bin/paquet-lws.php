@@ -122,6 +122,9 @@ try {
 
         TXT);
 
+    // Les fichiers SQL ne sont jamais servis sur le web, même si le dossier du projet l'est par erreur
+    copy(RACINE . '/config/.htaccess', $dossier . '/installation/.htaccess');
+
     // 4. Archive : le code du dernier commit + installation/
     $racineGit = trim((string) shell_exec('git -C ' . escapeshellarg(RACINE) . ' rev-parse --show-toplevel'));
     $prefixe = trim((string) shell_exec('git -C ' . escapeshellarg(RACINE) . ' rev-parse --show-prefix'));
